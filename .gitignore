@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Local ck3chronicle config / runtime
+config.toml
+.ck3chronicle/
+ck3chronicle.db
+ck3chronicle.db-journal
+ck3chronicle.db-wal
+ck3chronicle.db-shm

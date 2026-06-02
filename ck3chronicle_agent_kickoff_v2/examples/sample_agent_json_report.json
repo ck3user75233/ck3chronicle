@@ -1,0 +1,34 @@
+{
+  "schema_version": "ck3chronicle.report.v1",
+  "session_id": "2026-05-31T01-45-22",
+  "crash_detected": true,
+  "comparison": {
+    "mode": "previous_session",
+    "new_issue_count": 3,
+    "fixed_issue_count": 17,
+    "worse_issue_count": 2,
+    "improved_issue_count": 5,
+    "ignored_issue_count": 31
+  },
+  "top_action_candidates": [
+    {
+      "file": "common/scripted_effects/TCT_scripted_effects.txt",
+      "fixability_score": 91,
+      "highest_severity": "High",
+      "winning_source_name": "Gambo+EC724 Submod",
+      "winning_source_type": "local_mod",
+      "our_submod_override": true,
+      "recently_modified": true,
+      "recommendation": "Inspect/fix directly in our submod override.",
+      "confidence": "High",
+      "sample_issue": {
+        "schema_version": "ck3chronicle.issue.v1",
+        "category": "Script Execution",
+        "message": "untyped trigger [ Scoped object of type 'character' is not valid ... ]",
+        "primary_file": "common/scripted_effects/TCT_scripted_effects.txt",
+        "primary_line": 275,
+        "primary_symbol": "predict_new_cardinal"
+      }
+    }
+  ]
+}
