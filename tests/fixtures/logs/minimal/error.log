@@ -1,0 +1,2 @@
+# Minimal fixture — error.log
+[14:01:02][data_loader.cpp:511]: Broken history for [char_id:1234]
