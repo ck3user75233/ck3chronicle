@@ -805,3 +805,72 @@ phase being executed.
   promoted per Section 5.
 - The user's authoritative decisions on 2026-06-02 — already baked into
   the charter and reflected here.
+
+---
+
+## §9 Orchestrator Model Tier Guidance
+
+The orchestrator (the role driving subagent dispatch and reviewer routing) is
+not assumed to be a single model. Different orchestrator actions have different
+reasoning demands. This section defines the tiering so the orchestrator — or a
+human driving the orchestrator role — knows when a model swap is appropriate,
+and so subagents emit a one-token signal at the end of every reply.
+
+### §9.1 Tiers
+
+**Tier A — heavy reasoning required.** Use a top-tier model (Opus-class).
+Triggers:
+- Drafting a new phase's launch packet (each phase has a new shape until §7 stabilizes the pipeline).
+- Diagnosing a reviewer `REJECT` (boundary-rule, heritage-rule, or canonical-architecture interpretation).
+- Charter or implementation-plan revisions.
+- Cross-phase scoping questions (e.g., "does this belong in Phase 3 or Phase 5?").
+- Heritage reference-only rule interpretation when an implementer asks to import or edit `error analysis refactor/` or `ck3chronicle_proto/`.
+
+**Tier B — mechanical orchestration.** Use a mid-tier model (Sonnet-class).
+Triggers:
+- Dispatching an already-drafted launch packet to the implementer subagent.
+- Routing reviewer `REQUEST_CHANGES` items back to the implementer.
+- Single-agent phases (Phases 0, 2, 7, 9, 11) once the packet exists.
+- Git, PR, and housekeeping operations.
+- Reading subagent output and forwarding to the next agent in the pipeline.
+
+### §9.2 Subagent Hand-off Signal (mandatory)
+
+Every implementer, reviewer, and test-designer subagent reply MUST end with
+one line:
+
+```
+Orchestrator tier signal: [A | B]
+Reason: <one short sentence>
+```
+
+The signal is **forward-looking** — it describes the tier needed for the
+*next* orchestrator action, not the action that produced the reply.
+
+Examples:
+- Reviewer issues `APPROVE` → `Tier B` (next action is dispatch of next phase's already-drafted packet, or close-out housekeeping).
+- Reviewer issues `REQUEST_CHANGES` with itemized fixes → `Tier B` (mechanical re-dispatch).
+- Reviewer issues `REJECT` → `Tier A` (boundary-rule diagnosis).
+- Implementer finishes a phase that closes the pipeline shape change (Phases 1, 3, 4, 5, 6, 8, 10) and the next phase has no launch packet yet → `Tier A` (packet drafting).
+- Implementer finishes a single-agent phase (0, 2, 7, 9, 11) with no follow-on packet drafting → `Tier B`.
+
+### §9.3 Reviewer Hand-off Note Template Addition
+
+The "Reviewer Hand-off Note" section in every phase launch packet (see §7
+phase contracts) must include this final line in the template:
+
+```
+Orchestrator tier signal: [A | B]  ← reviewer fills in based on §9.2
+Reason: <one short sentence>
+```
+
+This propagates the signal through every phase without per-phase reasoning.
+
+### §9.4 What this section does NOT do
+
+- It does NOT bind the orchestrator to a specific model name. "Opus-class"
+  and "Sonnet-class" are tiers, not product names.
+- It does NOT override the human user's right to keep the orchestrator on
+  Tier A for the entire project if desired.
+- It does NOT change reviewer or implementer responsibilities — only adds a
+  one-line signal at the end of their reply.

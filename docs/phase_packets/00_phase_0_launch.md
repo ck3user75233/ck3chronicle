@@ -403,3 +403,23 @@ When the implementer reports done, the reviewer subagent must:
 - Any IDE / ck3lens / MCP integration. (Phase 9.)
 - Edit, import from, or move anything inside
   `error analysis refactor/` or `ck3chronicle_proto/`.
+
+---
+
+## §13 Orchestrator Tier Signal (per §9 of implementation plan)
+
+Every reply from this phase's implementer and reviewer MUST end with:
+
+```
+Orchestrator tier signal: [A | B]
+Reason: <one short sentence>
+```
+
+For Phase 0 specifically:
+- **Implementer success** → `Tier B` (next action: orchestrator invokes reviewer; mechanical).
+- **Reviewer `APPROVE`** → `Tier A` (next action: orchestrator drafts Phase 1 launch packet — first three-agent pipeline phase, new shape).
+- **Reviewer `REQUEST_CHANGES`** → `Tier B` (next action: orchestrator re-dispatches implementer with the itemized fix list).
+- **Reviewer `REJECT`** → `Tier A` (next action: orchestrator diagnoses boundary-rule or heritage-rule violation).
+
+This applies even when the orchestrator is a human; the signal documents
+recommended tier without forcing it.
