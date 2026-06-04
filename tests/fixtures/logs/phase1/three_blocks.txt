@@ -1,0 +1,4 @@
+[10:00:01][script_system.cpp:1234]: Script error in "common/traits/00_traits.txt" near line 10.
+Invalid token: foo_trait
+[10:00:02][localization.cpp:456]: Localization key 'TRAIT_FOO_NAME' not found.
+[10:00:03][texture.cpp:100]: Failed to load texture "gfx/interface/icons/foo.dds".

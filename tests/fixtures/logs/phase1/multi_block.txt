@@ -1,0 +1,15 @@
+[10:00:01][script_system.cpp:1234]: Script system error in "common/traits/00_traits.txt" near line 10.
+Invalid token: bad_trait_token
+[10:00:02][localization.cpp:456]: Localization key 'MY_KEY_001' not found in any localization file.
+[10:00:03][persistent_reader.cpp:789]: Error reading save file "save_game.ck3" at position 42.
+Failed to read field "character_wealth"
+[10:00:04][texture.cpp:100]: Failed to load texture "gfx/interface/icons/foo.dds": file not found.
+[10:00:05][gui.cpp:200]: Failed to find widget "broken_window_button" in "gui/broken.gui".
+[10:00:06][event.cpp:300]: Unresolved event id "foo_mod.1234" in trigger block.
+[10:00:07][database_conflicts.cpp:400]: Duplicate database key "c_london" found.
+[10:00:08][history.cpp:500]: Error loading history file "history/characters/1000.txt" near line 15.
+Invalid date format: 999.99.99
+[10:00:09][culture.cpp:600]: Unknown faith "foo_faith" referenced in culture definition.
+[10:00:10][script_hygiene.cpp:700]: Deprecated effect "add_wealth" in "common/decisions/foo.txt" near line 20.
+[10:00:11][descriptor.cpp:800]: Failed to read mod descriptor: missing required field "name".
+[10:00:12][unknown_source.cpp:999]: This block matches no known extractor category pattern.

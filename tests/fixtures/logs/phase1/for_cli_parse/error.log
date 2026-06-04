@@ -1,0 +1,3 @@
+[14:00:01][script_system.cpp:1234]: Script system error in "common/traits/00_traits.txt" near line 5.
+Unrecognised token: bad_foo_trait
+[14:00:02][localization.cpp:456]: Localization key 'CLI_TEST_KEY' not found in any localization file.
