@@ -86,7 +86,7 @@ ck3chronicle/                                            (existing standalone re
         history_setup.py                                 (new — history/ load errors)
         culture_faith.py                                 (new — culture / faith / religion loads)
         script_hygiene.py                                (new — deprecated effects, unused vars)
-        unclassified.py                                  (new — fallback; emits category=Unclassified)
+        unclassified.py                                  (new — fallback; emits category=unclassified)
       normalize.py                                       (new — volatile masking + signature)
     db/
       schema.py                                          (extend — issues, issue_occurrences)
@@ -147,10 +147,10 @@ Phase 1 abandons monolithic enums (e.g. `Category.MISSING_LOCALIZATION`) in
 favor of a three-field model:
 
 - **`category: str`** — broad subsystem / fix-domain. Stable, small set.
-  Examples: `Localization`, `ScriptSystem`, `Descriptor`,
-  `PersistentReader`, `AssetGraphics`, `GuiInterface`, `EventSystem`,
-  `DatabaseReference`, `HistorySetup`, `CultureFaith`, `ScriptHygiene`,
-  `Unclassified`.
+  Examples: `localization`, `script_system`, `descriptor`,
+  `persistent_reader`, `asset_graphics`, `gui_interface`, `event_system`,
+  `database_reference`, `history_setup`, `culture_faith`, `script_hygiene`,
+  `unclassified`.
 - **`error_type: str`** — canonical recurring error signature within a
   category. Examples: `missing_key`, `unexpected_localization_token`,
   `unknown_trait_reference`, `unresolved_event_id`, `texture_load_failed`,
@@ -177,7 +177,7 @@ documenting the rationale in the implementation summary.
   - `high` — extractor matched a curated rule with high specificity.
   - `medium` — partial match, heuristic fallback applied within a known
     category.
-  - `low` — `Unclassified` only.
+  - `low` — `unclassified` only.
 
 These are stored as lowercase strings, not enums, to keep the model
 serialization-friendly and the registry open.
@@ -198,7 +198,7 @@ parser/extractors/__init__.py
         │
         ▼
 each TimestampedLogBlock → first claiming extractor → IssueDraft
-   unclaimed blocks → unclassified extractor (category=Unclassified,
+   unclaimed blocks → unclassified extractor (category=unclassified,
                                               error_type=unknown,
                                               confidence=low)
         │
@@ -443,7 +443,7 @@ executable specification for the extractor registry.
 
 `error.log` — one timestamped block that no specialized extractor claims.
 Must be claimed by the unclassified extractor with
-`category="Unclassified"`, `error_type="unknown"`, `confidence="low"`. The
+`category="unclassified"`, `error_type="unknown"`, `confidence="low"`. The
 `raw_block` and `engine_source` MUST be preserved so a human can triage.
 
 ### `tests/fixtures/logs/database_conflicts/`
@@ -469,7 +469,7 @@ ck3chronicle parse --session N [--reparse]
   - `parsed <L> timestamped blocks` (count of blocks processed)
   - `produced <K> issues across <M> categories`
   - `top categories: <category>=<n>, <category>=<n>, ...` (top 3 by count)
-  - `unclassified: <n>` (count of `Unclassified` issues)
+  - `unclassified: <n>` (count of `unclassified` issues)
 
 The `ingest`, `sessions`, and `doctor` Phase 0 subcommands MUST continue to
 behave exactly as before; their tests MUST remain green.
@@ -480,7 +480,7 @@ behave exactly as before; their tests MUST remain green.
       stdlib-only deps. **No** new requirements added to `pyproject.toml`.
 - [ ] **Every timestamped block is accounted for.** A unit test asserts
       that for each fixture, `len(blocks) == len(occurrences)` (no block
-      silently dropped). Unmatched blocks land in `Unclassified`.
+      silently dropped). Unmatched blocks land in `unclassified`.
 - [ ] **Multi-line script error** fixture produces exactly one `Issue`
       with intact `primary_file` and `primary_line`, and at least one
       entry in `referenced_objects` (the scope chain or file basename).
@@ -505,17 +505,17 @@ behave exactly as before; their tests MUST remain green.
 - [ ] **Categorizer matrix:** one assertion per registered `category`
       value verifies the expected `(category, error_type, severity,
       confidence)` tuple is produced for its representative block.
-- [ ] **Unclassified fallback:** the `unclassified_block` fixture
+- [ ] **unclassified fallback:** the `unclassified_block` fixture
       produces exactly one `Issue` with
-      `category="Unclassified" AND error_type="unknown" AND confidence="low"`,
+      `category="unclassified" AND error_type="unknown" AND confidence="low"`,
       and the `raw_block` is preserved verbatim in the occurrence row.
 - [ ] **Per-extractor coverage:** every extractor module in
       `parser/extractors/` has at least one fixture-driven acceptance
       test asserting it claims and extracts correctly. Categories
-      required: `Localization`, `ScriptSystem`, `Descriptor`,
-      `PersistentReader`, `AssetGraphics`, `GuiInterface`, `EventSystem`,
-      `DatabaseReference`, `HistorySetup`, `CultureFaith`,
-      `ScriptHygiene`, `Unclassified`.
+      required: `localization`, `script_system`, `descriptor`,
+      `persistent_reader`, `asset_graphics`, `gui_interface`, `event_system`,
+      `database_reference`, `history_setup`, `culture_faith`,
+      `script_hygiene`, `unclassified`.
 - [ ] **Registry validation:** importing the parser package on a build
       where an extractor declares an unknown `(category, error_type)`
       pair raises `ValueError` at import time. A regression test induces
@@ -562,7 +562,7 @@ copied 2 files (2 logs, 0 crash artifacts) to durable storage
 $ ck3chronicle parse --session 1
 parsed 50 timestamped blocks
 produced 1 issues across 1 categories
-top categories: Localization=1
+top categories: localization=1
 unclassified: 0
 
 $ ck3chronicle parse --session 1
@@ -576,7 +576,7 @@ copied 2 files (...)
 $ ck3chronicle parse --session 2
 parsed 12 timestamped blocks
 produced 12 issues across 12 categories
-top categories: Localization=1, ScriptSystem=1, Descriptor=1
+top categories: localization=1, script_system=1, descriptor=1
 unclassified: 0
 
 $ ck3chronicle ingest --logs tests/fixtures/logs/unclassified_block/
@@ -587,7 +587,7 @@ copied 2 files (...)
 $ ck3chronicle parse --session 3
 parsed 1 timestamped blocks
 produced 1 issues across 1 categories
-top categories: Unclassified=1
+top categories: unclassified=1
 unclassified: 1
 
 $ pytest

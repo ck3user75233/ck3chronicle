@@ -27,3 +27,10 @@ ck3chronicle.db
 ck3chronicle.db-journal
 ck3chronicle.db-wal
 ck3chronicle.db-shm
+
+# Phase 1 hygiene additions
+*.db
+*.sqlite
+*.sqlite3
+reports/
+tmp/
