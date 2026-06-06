@@ -4,6 +4,8 @@ Phase 1 taxonomy is (category, error_type, tags). All categories are
 snake_case strings. KNOWN_CATEGORIES is the curated registry.
 """
 from __future__ import annotations
+from enum import Enum
+from typing import Literal
 
 from dataclasses import dataclass, field
 from typing import Any
@@ -23,6 +25,14 @@ KNOWN_CATEGORIES: frozenset[str] = frozenset({
     "script_hygiene",
     "unclassified",
 })
+
+class Confidence(str, Enum):
+    HIGH = "high"
+    MEDIUM = "medium"
+    LOW = "low"
+
+ConfidenceValue = Literal["high", "medium", "low"]
+
 
 
 @dataclass
@@ -46,7 +56,7 @@ class IssueDraft:
     referenced_objects: list[str]
     extra_json: dict[str, Any]
     severity: str
-    confidence: float
+    confidence: ConfidenceValue
     raw_block: str
     log_relpath: str
     line_number: int
@@ -73,7 +83,7 @@ class NormalizedIssue:
     referenced_objects: list[str]
     extra_json: dict[str, Any]
     severity: str
-    confidence: float
+    confidence: ConfidenceValue
     raw_block: str
     log_relpath: str
     line_number: int
@@ -91,7 +101,7 @@ class Issue:
     tags: list[str]
     engine_source: str
     severity: str
-    confidence: float
+    confidence: ConfidenceValue
     message_template: str
     sample_message: str
     primary_file: str | None

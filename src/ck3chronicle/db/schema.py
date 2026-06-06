@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS issues (
     tags_json                TEXT NOT NULL DEFAULT '[]',
     engine_source            TEXT NOT NULL DEFAULT '',
     severity                 TEXT NOT NULL DEFAULT 'error',
-    confidence               REAL NOT NULL DEFAULT 1.0,
+    confidence               TEXT NOT NULL DEFAULT 'high',
     message_template         TEXT NOT NULL,
     sample_message           TEXT NOT NULL DEFAULT '',
     primary_file             TEXT,

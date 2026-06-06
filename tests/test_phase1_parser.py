@@ -238,7 +238,7 @@ def test_normalize_masks_volatile_tokens():
         referenced_objects=[],
         extra_json={},
         severity="error",
-        confidence=1.0,
+        confidence="high",
         raw_block=(
             "[10:00:01][script_system.cpp:1234]: Script error in "
             r'"C:\Users\foo\mods\common\traits\00_traits.txt" near line 42.'
@@ -282,7 +282,7 @@ def test_normalize_determinism():
             referenced_objects=[],
             extra_json={},
             severity="error",
-            confidence=1.0,
+            confidence="high",
             raw_block="[10:00:02][localization.cpp:456]: Localization key 'MY_KEY' not found.",
             log_relpath="error.log",
             line_number=10,

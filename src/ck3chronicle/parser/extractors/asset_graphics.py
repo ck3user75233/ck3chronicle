@@ -28,7 +28,7 @@ def extract(block: TimestampedLogBlock) -> IssueDraft:
         referenced_objects=[],
         extra_json={},
         severity="error",
-        confidence=0.8,
+        confidence="medium",
         raw_block=block.raw_block,
         log_relpath=block.log_relpath,
         line_number=block.line_number,

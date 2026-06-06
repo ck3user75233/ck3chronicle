@@ -11,6 +11,9 @@ from datetime import datetime, timezone
 from .schema import ALL_DDL, CANONICAL_ISSUES_VERSION, CURRENT_VERSION
 
 
+# Phase 1 note: migrations are intentionally idempotent and non-destructive.
+# We use CREATE TABLE IF NOT EXISTS and record canonical issue schema version so
+# migration runs are safe to re-run while preserving existing data.
 def apply_migrations(conn: sqlite3.Connection) -> None:
     """Apply all DDL statements and record component schema versions."""
     cur = conn.cursor()

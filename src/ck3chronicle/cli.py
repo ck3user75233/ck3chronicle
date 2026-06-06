@@ -142,7 +142,7 @@ def cmd_parse(args: argparse.Namespace) -> int:
                         json.dumps(result.tags),
                         result.engine_source,
                         result.severity,
-                        float(result.confidence),
+                        result.confidence,
                         result.message_template,
                         result.sample_message,
                         result.primary_file,
