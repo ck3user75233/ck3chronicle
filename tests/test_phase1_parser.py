@@ -51,6 +51,71 @@ def test_iter_log_blocks_splits_correctly(tmp_path):
     assert blocks[2].source_tag == "texture.cpp:100"
 
 
+def test_iter_log_blocks_parses_three_part_ck3_header(tmp_path):
+    """Real CK3 header [time][level][source] is parsed with source_tag=source."""
+    from ck3chronicle.parser.log_blocks import iter_log_blocks
+
+    log = tmp_path / "error.log"
+    log.write_text(
+        "[13:04:56][E][dlc_descriptor.cpp:70]: Invalid supported_version in file: mod/ugc_123.mod line: 7\n",
+        encoding="utf-8",
+    )
+
+    blocks = list(iter_log_blocks(log))
+
+    assert len(blocks) == 1
+    assert blocks[0].timestamp == "13:04:56"
+    assert blocks[0].source_tag == "dlc_descriptor.cpp:70"
+    assert "Invalid supported_version" in blocks[0].header_line
+
+
+def test_normalize_strips_header_and_primary_file_from_signature():
+    """Timestamp/source and primary_file differences should still cluster."""
+    from ck3chronicle.models.issue import IssueDraft
+    from ck3chronicle.parser.normalize import normalize
+
+    d1 = IssueDraft(
+        category="script_system",
+        error_type="syntax_error",
+        tags=[],
+        engine_source="script_system.cpp:1234",
+        sample_message='[14:00:01][E][script_system.cpp:1234]: Script system error in "common/traits/00_traits.txt" near line 5.',
+        primary_file="common/traits/00_traits.txt",
+        primary_line=5,
+        referenced_symbols=[],
+        referenced_objects=[],
+        extra_json={},
+        severity="error",
+        confidence="high",
+        raw_block="x",
+        log_relpath="error.log",
+        line_number=1,
+    )
+    d2 = IssueDraft(
+        category="script_system",
+        error_type="syntax_error",
+        tags=[],
+        engine_source="script_system.cpp:1234",
+        sample_message='[14:25:59][E][script_system.cpp:1234]: Script system error in "common/traits/zzz_patch.txt" near line 99.',
+        primary_file="common/traits/zzz_patch.txt",
+        primary_line=99,
+        referenced_symbols=[],
+        referenced_objects=[],
+        extra_json={},
+        severity="error",
+        confidence="high",
+        raw_block="y",
+        log_relpath="error.log",
+        line_number=2,
+    )
+
+    n1 = normalize(d1)
+    n2 = normalize(d2)
+
+    assert n1.signature == n2.signature
+    assert '"<FILE>"' in n1.message_template
+
+
 # ===========================================================================
 # AT-2 — iter_log_blocks returns empty iterator for an empty file
 # ===========================================================================
@@ -459,3 +524,396 @@ def test_per_extractor_coverage():
         f"These extractor categories claim no block in multi_block.txt: {missing}\n"
         "Add blocks to multi_block.txt or fix the extractor's match() logic."
     )
+
+# ===========================================================================
+# AT-16 — 50 identical localization errors cluster to 1 issue, occurrence_count=50
+# ===========================================================================
+
+def test_clustering_50_identical_localization_errors():
+    """Fixture with 50 identical localization errors must cluster to 1 canonical issue row."""
+    import json
+    import sqlite3
+
+    from ck3chronicle.db.migrations import apply_migrations
+    from ck3chronicle.parser.extractors import extract_block
+    from ck3chronicle.parser.log_blocks import iter_log_blocks
+    from ck3chronicle.parser.normalize import normalize
+
+    fixture = (
+        Path(__file__).parent
+        / "fixtures"
+        / "logs"
+        / "noisy_localization"
+        / "error.log"
+    )
+    assert fixture.exists(), f"Fixture not found: {fixture}"
+
+    # Create in-memory DB and apply migrations.
+    conn = sqlite3.connect(":memory:")
+    conn.row_factory = sqlite3.Row
+    apply_migrations(conn)
+
+    # Insert a minimal session row so session_id=1 exists.
+    conn.execute(
+        "INSERT INTO sessions "
+        "(evidence_bundle_hash, created_at, log_count, crash_present, total_bytes) "
+        "VALUES (?, ?, ?, ?, ?)",
+        ("test_noisy_loc", "2026-06-14T00:00:00", 1, 0, 1024),
+    )
+    conn.commit()
+    session_id: int = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+
+    # Run the parse pipeline (mirrors cmd_parse INSERT/UPDATE logic).
+    rel_path = "error.log"
+    log_type = "error"
+    for block in iter_log_blocks(fixture):
+        block.log_relpath = rel_path
+        draft = extract_block(block)
+        if draft is None:
+            continue
+        result = normalize(draft)
+
+        existing = conn.execute(
+            "SELECT issue_id, occurrence_count FROM issues "
+            "WHERE session_id = ? AND signature = ?",
+            (session_id, result.signature),
+        ).fetchone()
+        if existing is None:
+            conn.execute(
+                """
+                INSERT INTO issues (
+                    session_id, signature, category, error_type,
+                    tags_json, engine_source, severity, confidence,
+                    message_template, sample_message, primary_file, primary_line,
+                    referenced_symbols_json, referenced_objects_json,
+                    extra_json, occurrence_count, log_type
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    session_id,
+                    result.signature,
+                    result.category,
+                    result.error_type,
+                    json.dumps(result.tags),
+                    result.engine_source,
+                    result.severity,
+                    result.confidence,
+                    result.message_template,
+                    result.sample_message,
+                    result.primary_file,
+                    result.primary_line,
+                    json.dumps(result.referenced_symbols),
+                    json.dumps(result.referenced_objects),
+                    json.dumps(result.extra_json),
+                    1,
+                    log_type,
+                ),
+            )
+        else:
+            conn.execute(
+                "UPDATE issues SET occurrence_count = occurrence_count + 1, "
+                "log_type = ? WHERE issue_id = ?",
+                (log_type, existing["issue_id"]),
+            )
+
+        existing_occ = conn.execute(
+            "SELECT issue_occurrence_id FROM issue_occurrences "
+            "WHERE session_id = ? AND signature = ? AND log_relpath = ?",
+            (session_id, result.signature, result.log_relpath),
+        ).fetchone()
+        if existing_occ is None:
+            conn.execute(
+                """
+                INSERT INTO issue_occurrences (
+                    session_id, signature, log_relpath, line_number,
+                    raw_block, occurrence_count,
+                    referenced_symbols_json, extra_json, log_type
+                ) VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?)
+                """,
+                (
+                    session_id,
+                    result.signature,
+                    result.log_relpath,
+                    result.line_number,
+                    result.raw_block,
+                    json.dumps(result.referenced_symbols),
+                    json.dumps(result.extra_json),
+                    log_type,
+                ),
+            )
+        else:
+            conn.execute(
+                "UPDATE issue_occurrences "
+                "SET occurrence_count = occurrence_count + 1, log_type = ? "
+                "WHERE issue_occurrence_id = ?",
+                (log_type, existing_occ["issue_occurrence_id"]),
+            )
+
+    conn.commit()
+
+    rows = conn.execute(
+        "SELECT category, occurrence_count FROM issues WHERE session_id = ?",
+        (session_id,),
+    ).fetchall()
+    conn.close()
+
+    assert len(rows) == 1, (
+        f"Expected exactly 1 issue row (all 50 errors must cluster), got {len(rows)}"
+    )
+    assert rows[0]["category"] == "localization", (
+        f"Expected category='localization', got {rows[0]['category']!r}"
+    )
+    assert rows[0]["occurrence_count"] == 50, (
+        f"Expected occurrence_count=50, got {rows[0]['occurrence_count']}"
+    )
+
+
+# ===========================================================================
+# AT-17 — debug_log extractor: pdx_localize.cpp duplicate key
+# ===========================================================================
+
+def test_debug_log_matches_pdx_localize():
+    """debug_log.match() returns True for pdx_localize.cpp source tags."""
+    from ck3chronicle.parser.extractors import debug_log
+    from ck3chronicle.parser.log_blocks import TimestampedLogBlock
+
+    block = TimestampedLogBlock(
+        timestamp="10:00:01",
+        source_tag="pdx_localize.cpp:300",
+        header_line="Localization key 'TRAIT_FOO_NAME' is present in both 'base/english/traits_l_english.yml' and 'mod/english/traits_l_english.yml'.",
+        continuation_lines=[],
+        raw_block="[10:00:01][pdx_localize.cpp:300]: ...",
+        log_relpath="debug.log",
+        line_number=1,
+    )
+
+    assert debug_log.match(block) is True
+
+    draft = debug_log.extract(block)
+    assert draft.category == "localization"
+    assert draft.error_type == "duplicate_key"
+    # Volatile key and file should be templated out
+    assert "'TRAIT_FOO_NAME'" not in draft.sample_message
+    assert "'<KEY>'" in draft.sample_message
+    assert "TRAIT_FOO_NAME" in draft.referenced_symbols
+
+
+def test_debug_log_50_identical_duplicate_keys_cluster():
+    """50 identical pdx_localize duplicate-key blocks → same signature every time."""
+    from ck3chronicle.parser.extractors import debug_log
+    from ck3chronicle.parser.log_blocks import TimestampedLogBlock
+    from ck3chronicle.parser.normalize import normalize
+
+    def _make_block(ts: str) -> TimestampedLogBlock:
+        return TimestampedLogBlock(
+            timestamp=ts,
+            source_tag="pdx_localize.cpp:300",
+            header_line="Localization key 'MY_LOC_KEY' is present in both 'file1.yml' and 'file2.yml'.",
+            continuation_lines=[],
+            raw_block=f"[{ts}][pdx_localize.cpp:300]: ...",
+            log_relpath="debug.log",
+            line_number=1,
+        )
+
+    sigs = set()
+    for i in range(50):
+        block = _make_block(f"10:00:{i:02d}")
+        draft = debug_log.extract(block)
+        result = normalize(draft)
+        sigs.add(result.signature)
+
+    assert len(sigs) == 1, (
+        f"Expected 1 unique signature for 50 identical duplicate_key blocks, got {len(sigs)}"
+    )
+
+
+# ===========================================================================
+# AT-18 — debug_log extractor: gamedatabase.h database_override
+# ===========================================================================
+
+def test_debug_log_matches_gamedatabase():
+    """debug_log.match() returns True for gamedatabase.h source tags."""
+    from ck3chronicle.parser.extractors import debug_log
+    from ck3chronicle.parser.log_blocks import TimestampedLogBlock
+
+    block = TimestampedLogBlock(
+        timestamp="10:00:01",
+        source_tag="gamedatabase.h:512",
+        header_line="[Trait brave] is being overridden in [mod A], using [mod B] instead.",
+        continuation_lines=[],
+        raw_block="[10:00:01][gamedatabase.h:512]: ...",
+        log_relpath="debug.log",
+        line_number=1,
+    )
+
+    assert debug_log.match(block) is True
+
+    draft = debug_log.extract(block)
+    assert draft.category == "database_reference"
+    assert draft.error_type == "database_override"
+    assert "[Trait brave]" not in draft.sample_message
+    assert "[<OBJECT>]" in draft.sample_message
+    # Bracketed tokens preserved in referenced_objects
+    assert any("Trait brave" in obj or "brave" in obj for obj in draft.referenced_objects)
+
+
+# ===========================================================================
+# AT-19 — log-type dispatch: debug.log → DEBUG_EXTRACTORS (debug_log first)
+# ===========================================================================
+
+def test_log_type_dispatch_debug_routes_to_debug_extractors():
+    """extract_block_for_log_type with log_type='debug' routes pdx_localize block to debug_log."""
+    from ck3chronicle.parser.extractors import extract_block_for_log_type
+    from ck3chronicle.parser.log_blocks import TimestampedLogBlock
+
+    block = TimestampedLogBlock(
+        timestamp="10:00:01",
+        source_tag="pdx_localize.cpp:300",
+        header_line="Localization key 'FOO_KEY' is present in both 'a.yml' and 'b.yml'.",
+        continuation_lines=[],
+        raw_block="...",
+        log_relpath="debug.log",
+        line_number=1,
+    )
+
+    draft = extract_block_for_log_type(block, "debug")
+    assert draft.category == "localization"
+    assert draft.error_type == "duplicate_key"
+    assert "debug_log" in draft.tags
+
+
+def test_log_type_dispatch_error_does_not_route_to_debug_log():
+    """extract_block_for_log_type with log_type='error' does NOT match debug_log for script_system block."""
+    from ck3chronicle.parser.extractors import extract_block_for_log_type
+    from ck3chronicle.parser.log_blocks import TimestampedLogBlock
+
+    block = TimestampedLogBlock(
+        timestamp="10:00:01",
+        source_tag="script_system.cpp:100",
+        header_line="Wrong scope for trigger 'is_alive' in 'common/decisions/foo.txt' near line 5.",
+        continuation_lines=[],
+        raw_block="...",
+        log_relpath="error.log",
+        line_number=1,
+    )
+
+    draft = extract_block_for_log_type(block, "error")
+    assert draft.category == "script_system"
+    assert "debug_log" not in draft.tags
+
+
+def test_log_type_dispatch_unknown_falls_back_to_error_extractors():
+    """extract_block_for_log_type with log_type='unknown' uses ERROR_EXTRACTORS."""
+    from ck3chronicle.parser.extractors import extract_block_for_log_type
+    from ck3chronicle.parser.log_blocks import TimestampedLogBlock
+
+    block = TimestampedLogBlock(
+        timestamp="10:00:01",
+        source_tag="script_system.cpp:100",
+        header_line="Some script error.",
+        continuation_lines=[],
+        raw_block="...",
+        log_relpath="some_other.log",
+        line_number=1,
+    )
+
+    draft = extract_block_for_log_type(block, "unknown")
+    # Should still classify script_system (not fall to unclassified)
+    assert draft.category == "script_system"
+
+
+# ===========================================================================
+# AT-20 — Heritage error_type taxonomy in script_system extractor
+# ===========================================================================
+
+def test_script_system_heritage_wrong_scope():
+    """script_system extractor assigns error_type='wrong_scope' for Wrong scope messages."""
+    from ck3chronicle.parser.extractors import script_system
+    from ck3chronicle.parser.log_blocks import TimestampedLogBlock
+
+    block = TimestampedLogBlock(
+        timestamp="10:00:01",
+        source_tag="script_system.cpp:100",
+        header_line="Wrong scope for trigger 'is_alive' in 'common/decisions/foo.txt' near line 5.",
+        continuation_lines=[],
+        raw_block="...",
+        log_relpath="error.log",
+        line_number=1,
+    )
+    draft = script_system.extract(block)
+    assert draft.category == "script_system"
+    assert draft.error_type == "wrong_scope"
+
+
+def test_script_system_heritage_duplicate_definition():
+    """script_system extractor assigns error_type='duplicate_definition' for duplicate messages."""
+    from ck3chronicle.parser.extractors import script_system
+    from ck3chronicle.parser.log_blocks import TimestampedLogBlock
+
+    block = TimestampedLogBlock(
+        timestamp="10:00:01",
+        source_tag="script_system.cpp:100",
+        header_line="Duplicate definition for trait 'brave' in 'common/traits/00_traits.txt' near line 12.",
+        continuation_lines=[],
+        raw_block="...",
+        log_relpath="error.log",
+        line_number=1,
+    )
+    draft = script_system.extract(block)
+    assert draft.error_type == "duplicate_definition"
+
+
+def test_script_system_heritage_unknown_effect():
+    """script_system extractor assigns error_type='unknown_effect'."""
+    from ck3chronicle.parser.extractors import script_system
+    from ck3chronicle.parser.log_blocks import TimestampedLogBlock
+
+    block = TimestampedLogBlock(
+        timestamp="10:00:01",
+        source_tag="script_system.cpp:100",
+        header_line="Unknown effect 'my_broken_effect' in 'events/foo.txt' near line 42.",
+        continuation_lines=[],
+        raw_block="...",
+        log_relpath="error.log",
+        line_number=1,
+    )
+    draft = script_system.extract(block)
+    assert draft.error_type == "unknown_effect"
+
+
+def test_script_system_heritage_syntax_error_default():
+    """script_system extractor falls back to error_type='syntax_error' for unrecognized messages."""
+    from ck3chronicle.parser.extractors import script_system
+    from ck3chronicle.parser.log_blocks import TimestampedLogBlock
+
+    block = TimestampedLogBlock(
+        timestamp="10:00:01",
+        source_tag="script_system.cpp:100",
+        header_line="Something weird and unrecognised happened here.",
+        continuation_lines=[],
+        raw_block="...",
+        log_relpath="error.log",
+        line_number=1,
+    )
+    draft = script_system.extract(block)
+    assert draft.error_type == "syntax_error"
+
+
+# ===========================================================================
+# AT-21 — _log_type_from_relpath: database_conflicts mapping
+# ===========================================================================
+
+def test_log_type_from_relpath_database_conflicts():
+    """_log_type_from_relpath maps database_conflicts.log → 'database_conflicts'."""
+    import pathlib
+    import importlib
+    import sys
+
+    # Import cli._log_type_from_relpath
+    import ck3chronicle.cli as cli
+
+    assert cli._log_type_from_relpath("database_conflicts.log") == "database_conflicts"
+    assert cli._log_type_from_relpath("error.log") == "error"
+    assert cli._log_type_from_relpath("debug.log") == "debug"
+    assert cli._log_type_from_relpath("game.log") == "game"
+    assert cli._log_type_from_relpath("crash_dump.log") == "unknown"

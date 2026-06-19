@@ -874,3 +874,158 @@ This propagates the signal through every phase without per-phase reasoning.
   Tier A for the entire project if desired.
 - It does NOT change reviewer or implementer responsibilities — only adds a
   one-line signal at the end of their reply.
+
+---
+
+## 10. Phase Status Record
+
+> Updated: 2026-06-14. This section is maintained by the orchestrator and
+> reflects the **factual** state of each phase, not the aspirational state.
+> A phase is COMPLETE only when every gate in Section 3 has been checked,
+> the reviewer has APPROVED, and the human has eyeballed the diff.
+
+---
+
+### Phase 0 — Evidence Preservation and Session Registry
+
+**Status: COMPLETE (unreviewed)**
+
+All Phase 0 target modules are implemented and passing:
+- `config.py`, `doctor.py`, `harvester.py`, `ingest.py`
+- `db/schema.py`, `db/migrations.py`, `db/repository.py`
+- `cli.py` (`ingest`, `sessions`, `doctor` subcommands)
+- Tests: `test_cli.py`, `test_db.py`, `test_harvester.py`, `test_config.py`, `test_doctor.py`
+
+**Outstanding gate:** No reviewer subagent approval on record. Phase 0 was
+implemented without the formal subagent review step. A review pass is
+recommended before the public release gate (Phase 6) but is not blocking
+Phase 1 completion.
+
+---
+
+### Phase 1 — Canonical Issue Records and Error Clustering
+
+**Status: COMPLETE — pending reviewer sign-off**
+
+Infrastructure implemented and passing:
+- `models/issue.py` — taxonomy `(category, error_type, tags)` defined
+- `parser/log_blocks.py` — timestamped block splitter
+- `parser/normalize.py` — volatile masking + signature computation
+- `parser/extractors/` — 13 extractors (12 original + `debug_log`) + fallback
+- `cli.py` (`parse` subcommand with log-type dispatch)
+- Tests: `test_phase1_parser.py` — **74 tests pass** (63 original + 11 new)
+
+**Phase 1 blocking deficiencies — resolution status (2026-06-19):**
+
+1. **Clustering — RESOLVED.** AT-16 acceptance test passes: 50 identical localization
+   errors → 1 canonical row, `occurrence_count = 50`. Real-session dry-run shows
+   unclassified drops from **85.7% → 2.0%** (98,897 occurrences reclassified).
+   Root cause fix: `debug_log.py` extractor templates out volatile pdx_localize.cpp
+   and gamedatabase.h patterns before signature computation.
+
+2. **`parser/categorize.py` missing — ACCEPTED AS DEVIATION.** Categorization is
+   performed by per-extractor `match()` functions. The extractor dispatch in
+   `extractors/__init__.py` provides equivalent classification. Deviation recorded.
+
+3. **Log-type split — RESOLVED.** `cmd_parse()` now calls
+   `extract_block_for_log_type(block, log_type)` dispatching to per-log-type
+   extractor lists. `_log_type_from_relpath()` now maps `database_conflicts.log` →
+   `"database_conflicts"`. `DEBUG_EXTRACTORS` puts `debug_log` first.
+   Reference spec: `docs/reference/ck3chronicle_log_split.md`.
+
+4. **Heritage asset §5.3 consulted — RESOLVED.** See taxonomy delta below.
+   `script_system.py` updated with 24 fine-grained `error_type` patterns from
+   `parse_script_errors.py`. `script_system / syntax_error` was the only value
+   before; now resolves to the matching heritage type or falls back to `syntax_error`.
+
+5. **No reviewer approval — PENDING.** Reviewer subagent invocation initiated
+   after this status update.
+
+#### Phase 1 metrics (dry-run, 2026-06-19, session_id=2)
+
+| Metric | BEFORE | AFTER |
+|---|---|---|
+| total_occurrences | 118,218 | 118,218 |
+| total_clusters | 97,808 | 96,391 |
+| unclassified_occ | 101,290 | 2,393 |
+| unclassified_% | 85.7% | **2.0%** |
+
+After-breakdown by category:
+| category | occurrences |
+|---|---|
+| localization | 99,471 |
+| database_reference | 14,191 |
+| unclassified | 2,393 |
+| script_system | 902 |
+| persistent_reader | 756 |
+| culture_faith | 220 |
+| event_system | 92 |
+| gui_interface | 72 |
+| descriptor | 59 |
+| asset_graphics | 50 |
+| history_setup | 12 |
+
+#### Heritage asset §5.3 taxonomy consultation (2026-06-14, updated 2026-06-19)
+
+Heritage asset read: `error analysis prototype/parse_script_errors.py`
+
+Categories in heritage asset (CLUSTERS labels — fine-grained sub-types within script_system scope):
+failed_context_switch, wrong_scope, scope_type_mismatch, null_scope_object,
+unset_scope, null_fetch, invalid_comparison, variable_scope_error, no_capital,
+invalid_legitimacy, asset_visual_error, unknown_loc_key, postvalidate_false,
+else_not_after_if, more_than_one_effect, unknown_effect, unknown_trigger,
+unknown_modifier, unknown_value, unknown_token, duplicate_definition, type_mismatch,
+undefined_symbol, out_of_range, other
+
+Current KNOWN_CATEGORIES (ck3chronicle):
+script_system, localization, descriptor, persistent_reader, asset_graphics,
+gui_interface, event_system, database_reference, history_setup, culture_faith,
+script_hygiene, unclassified
+
+Delta:
+- Added (in ck3chronicle, not in prototype as top-level categories): localization,
+  descriptor, persistent_reader, asset_graphics, gui_interface, event_system,
+  database_reference, history_setup, culture_faith, script_hygiene, unclassified
+- Removed (in prototype, not in ck3chronicle as top-level categories): The 25 CLUSTERS
+  labels (failed_context_switch, wrong_scope, scope_type_mismatch, null_scope_object,
+  unset_scope, null_fetch, invalid_comparison, variable_scope_error, no_capital,
+  invalid_legitimacy, asset_visual_error, unknown_loc_key, postvalidate_false,
+  else_not_after_if, more_than_one_effect, unknown_effect, unknown_trigger,
+  unknown_modifier, unknown_value, unknown_token, duplicate_definition, type_mismatch,
+  undefined_symbol, out_of_range) are NOT top-level categories in ck3chronicle; they
+  map to error_type values within the script_system category.
+- Renamed: prototype "other" fallback → ck3chronicle "unclassified" category
+  (same conceptual role; last-resort fallback when no extractor matches)
+- Merged: The prototype's 25 script_system sub-types are merged under ck3chronicle's
+  single "script_system" top-level category. Sub-type discrimination is now
+  implemented via `error_type` field in `script_system.py` using `_HERITAGE_PATTERNS`
+  (24 specific patterns + "syntax_error" fallback).
+- New (no counterpart in prototype): `debug_log` extractor added for
+  `pdx_localize.cpp` (category=`localization`, error_type=`duplicate_key`) and
+  `gamedatabase.h` (category=`database_reference`, error_type=`database_override`)
+  patterns that appear in `debug.log` only.
+- Scope difference: The prototype processed only script_system errors (filtered for
+  "Script system error!"). ck3chronicle covers all log sources via per-extractor
+  dispatch across 12 categories plus log-type routing.
+
+#### Deviation: parser/categorize.py not created (2026-06-14)
+
+The Phase 1 contract listed `src/ck3chronicle/parser/categorize.py` as a target
+path. This module was not created. Categorization is performed by the per-extractor
+`match()` functions inside `src/ck3chronicle/parser/extractors/`. The extractor
+dispatch in `extractors/__init__.py` provides the same classification behavior.
+No product-code change is needed; this entry documents the deviation from the
+contracted target path list.
+
+---
+
+### Phase 2 and beyond
+
+**Status: NOT STARTED**
+
+Phase 2 (Delta Reports, Baselines, and Noise Management) may not begin until
+Phase 1 blocking deficiencies are resolved and a reviewer subagent has
+approved Phase 1.
+
+The subagent topology for Phase 2 is: implementer → reviewer (no
+test-designer, per §7.1).

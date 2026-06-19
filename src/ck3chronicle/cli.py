@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+import pathlib
 from pathlib import Path
 
 
@@ -66,12 +67,26 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     return 0
 
 
+def _log_type_from_relpath(rel_path: str) -> str:
+    """Detect log type from filename. Returns 'error', 'debug', 'game', 'database_conflicts', or 'unknown'."""
+    name = pathlib.Path(rel_path).name.lower()
+    if name.startswith("error"):
+        return "error"
+    if name.startswith("debug"):
+        return "debug"
+    if name.startswith("game"):
+        return "game"
+    if name.startswith("database_conflicts") or name.startswith("database"):
+        return "database_conflicts"
+    return "unknown"
+
+
 def cmd_parse(args: argparse.Namespace) -> int:
     """Parse a previously-ingested session: extract issues + normalize + persist."""
     import json
     from . import config
     from .db import repository
-    from .parser.extractors import extract_block
+    from .parser.extractors import extract_block_for_log_type
     from .parser.log_blocks import iter_log_blocks
     from .parser.normalize import normalize
 
@@ -111,9 +126,10 @@ def cmd_parse(args: argparse.Namespace) -> int:
         log_path = snapshot_dir / rel_path
         if not log_path.exists():
             continue
+        log_type = _log_type_from_relpath(rel_path)
         for block in iter_log_blocks(log_path):
             block.log_relpath = rel_path
-            draft = extract_block(block)
+            draft = extract_block_for_log_type(block, log_type)
             if draft is None:
                 continue
             result = normalize(draft)
@@ -131,8 +147,8 @@ def cmd_parse(args: argparse.Namespace) -> int:
                         tags_json, engine_source, severity, confidence,
                         message_template, sample_message, primary_file, primary_line,
                         referenced_symbols_json, referenced_objects_json,
-                        extra_json, occurrence_count
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        extra_json, occurrence_count, log_type
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
                         session_id,
@@ -151,34 +167,50 @@ def cmd_parse(args: argparse.Namespace) -> int:
                         json.dumps(result.referenced_objects),
                         json.dumps(result.extra_json),
                         1,
+                        log_type,
                     ),
                 )
                 issues_written += 1
             else:
                 conn.execute(
-                    "UPDATE issues SET occurrence_count = occurrence_count + 1 "
-                    "WHERE issue_id = ?",
-                    (existing["issue_id"],),
+                    "UPDATE issues SET occurrence_count = occurrence_count + 1, "
+                    "log_type = ? WHERE issue_id = ?",
+                    (log_type, existing["issue_id"]),
                 )
 
-            conn.execute(
-                """
-                INSERT INTO issue_occurrences (
-                    session_id, signature, log_relpath, line_number,
-                    raw_block, referenced_symbols_json, extra_json
-                ) VALUES (?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    session_id,
-                    result.signature,
-                    result.log_relpath,
-                    result.line_number,
-                    result.raw_block,
-                    json.dumps(result.referenced_symbols),
-                    json.dumps(result.extra_json),
-                ),
-            )
-            occurrences_written += 1
+            existing_occ = conn.execute(
+                "SELECT issue_occurrence_id FROM issue_occurrences "
+                "WHERE session_id = ? AND signature = ? AND log_relpath = ?",
+                (session_id, result.signature, result.log_relpath),
+            ).fetchone()
+            if existing_occ is None:
+                conn.execute(
+                    """
+                    INSERT INTO issue_occurrences (
+                        session_id, signature, log_relpath, line_number,
+                        raw_block, occurrence_count,
+                        referenced_symbols_json, extra_json, log_type
+                    ) VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?)
+                    """,
+                    (
+                        session_id,
+                        result.signature,
+                        result.log_relpath,
+                        result.line_number,
+                        result.raw_block,
+                        json.dumps(result.referenced_symbols),
+                        json.dumps(result.extra_json),
+                        log_type,
+                    ),
+                )
+                occurrences_written += 1
+            else:
+                conn.execute(
+                    "UPDATE issue_occurrences "
+                    "SET occurrence_count = occurrence_count + 1, log_type = ? "
+                    "WHERE issue_occurrence_id = ?",
+                    (log_type, existing_occ["issue_occurrence_id"]),
+                )
 
     conn.commit()
     conn.close()
