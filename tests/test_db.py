@@ -18,10 +18,162 @@ def test_schema_creation(tmp_path: Path):
     conn = open_db(tmp_path / "test.db")
     cur = conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
     tables = {row[0] for row in cur.fetchall()}
+    session_columns = {
+        row[1] for row in conn.execute("PRAGMA table_info(sessions)").fetchall()
+    }
+    occurrence_columns = {
+        row[1]
+        for row in conn.execute("PRAGMA table_info(issue_occurrences)").fetchall()
+    }
     conn.close()
-    assert "sessions" in tables
-    assert "session_files" in tables
-    assert "schema_versions" in tables
+    assert {
+        "sessions",
+        "session_files",
+        "schema_versions",
+        "source_blocks",
+        "issues",
+        "issue_occurrences",
+    } <= tables
+    assert "session_contexts" not in tables
+    assert "session_mod_entries" not in tables
+    assert {
+        "parse_status",
+        "parser_contract_version",
+        "parse_source_blocks",
+        "parse_silently_dropped_blocks",
+    } <= session_columns
+    assert {"source_block_id", "issue_ordinal"} <= occurrence_columns
+
+
+def test_migration_preserves_legacy_context_table_without_creating_it_fresh(
+    tmp_path: Path,
+):
+    """Legacy user tables survive C1 migration but do not imply parse success."""
+    import sqlite3
+
+    db_path = tmp_path / "legacy.db"
+    legacy = sqlite3.connect(db_path)
+    legacy.executescript(
+        """
+        CREATE TABLE sessions (
+            session_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            evidence_bundle_hash TEXT NOT NULL UNIQUE,
+            created_at TEXT NOT NULL,
+            log_count INTEGER NOT NULL,
+            crash_present INTEGER NOT NULL,
+            total_bytes INTEGER NOT NULL,
+            forced_duplicate_of INTEGER
+        );
+        CREATE TABLE session_contexts (
+            session_id INTEGER PRIMARY KEY,
+            captured_at TEXT NOT NULL,
+            status TEXT NOT NULL,
+            confidence TEXT NOT NULL,
+            game_version TEXT,
+            in_game_date TEXT,
+            save_path TEXT,
+            save_modified_at TEXT,
+            save_metadata_sha256 TEXT,
+            save_source_format TEXT,
+            save_delta_seconds REAL,
+            mod_membership_hash TEXT NOT NULL,
+            mod_count INTEGER NOT NULL,
+            load_order_known INTEGER NOT NULL DEFAULT 0,
+            session_state_path TEXT,
+            session_state_written_at TEXT,
+            source_name TEXT,
+            save_only_refs_json TEXT NOT NULL DEFAULT '[]',
+            session_only_refs_json TEXT NOT NULL DEFAULT '[]'
+        );
+        INSERT INTO sessions (
+            evidence_bundle_hash, created_at, log_count, crash_present,
+            total_bytes, forced_duplicate_of
+        ) VALUES ('legacy', '2026-01-01T00:00:00Z', 1, 0, 10, NULL);
+        INSERT INTO session_contexts (
+            session_id, captured_at, status, confidence, mod_membership_hash,
+            mod_count
+        ) VALUES (1, '2026-01-01T00:00:00Z', 'legacy', 'low', 'hash', 1);
+        """
+    )
+    legacy.commit()
+    legacy.close()
+
+    conn = open_db(db_path)
+    context = conn.execute(
+        "SELECT status FROM session_contexts WHERE session_id = 1"
+    ).fetchone()
+    session = conn.execute("SELECT * FROM sessions WHERE session_id = 1").fetchone()
+    conn.close()
+
+    assert context[0] == "legacy"
+    assert session["parse_status"] == "not_started"
+    assert session["parser_contract_version"] is None
+    assert session["parse_source_blocks"] is None
+
+
+def test_migration_failure_rolls_back_all_schema_changes(tmp_path: Path):
+    """A late unique-index failure cannot leave a half-migrated database."""
+    import sqlite3
+
+    from ck3chronicle.db.migrations import apply_migrations
+
+    db_path = tmp_path / "broken-legacy.db"
+    conn = sqlite3.connect(db_path)
+    conn.executescript(
+        """
+        CREATE TABLE sessions (
+            session_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            evidence_bundle_hash TEXT NOT NULL UNIQUE,
+            created_at TEXT NOT NULL,
+            log_count INTEGER NOT NULL,
+            crash_present INTEGER NOT NULL,
+            total_bytes INTEGER NOT NULL,
+            forced_duplicate_of INTEGER
+        );
+        CREATE TABLE issue_occurrences (
+            issue_occurrence_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id INTEGER NOT NULL,
+            signature TEXT NOT NULL,
+            source_block_id TEXT,
+            issue_ordinal INTEGER,
+            log_relpath TEXT NOT NULL,
+            line_number INTEGER NOT NULL,
+            raw_block TEXT NOT NULL,
+            occurrence_count INTEGER NOT NULL DEFAULT 1,
+            referenced_symbols_json TEXT NOT NULL DEFAULT '[]',
+            extra_json TEXT NOT NULL DEFAULT '{}',
+            log_type TEXT NOT NULL DEFAULT 'error'
+        );
+        INSERT INTO sessions (
+            evidence_bundle_hash, created_at, log_count, crash_present,
+            total_bytes, forced_duplicate_of
+        ) VALUES ('legacy-broken', '2026-01-01T00:00:00Z', 1, 0, 10, NULL);
+        INSERT INTO issue_occurrences (
+            session_id, signature, source_block_id, issue_ordinal,
+            log_relpath, line_number, raw_block
+        ) VALUES
+            (1, 'a', 'duplicate', 0, 'error.log', 1, 'first'),
+            (1, 'b', 'duplicate', 0, 'error.log', 2, 'second');
+        """
+    )
+    conn.commit()
+
+    with pytest.raises(sqlite3.IntegrityError):
+        apply_migrations(conn)
+
+    session_columns = {
+        row[1] for row in conn.execute("PRAGMA table_info(sessions)").fetchall()
+    }
+    tables = {
+        row[0]
+        for row in conn.execute(
+            "SELECT name FROM sqlite_master WHERE type = 'table'"
+        ).fetchall()
+    }
+    conn.close()
+    assert "parse_status" not in session_columns
+    assert "source_blocks" not in tables
+    assert "schema_versions" not in tables
 
 
 def test_schema_version_recorded(tmp_path: Path):

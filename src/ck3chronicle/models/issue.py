@@ -23,6 +23,9 @@ KNOWN_CATEGORIES: frozenset[str] = frozenset({
     "history_setup",
     "culture_faith",
     "script_hygiene",
+    "encoding",
+    "symbol_resolution",
+    "syntax_parse",
     "unclassified",
 })
 
@@ -114,7 +117,7 @@ class Issue:
 
 @dataclass
 class IssueOccurrence:
-    """One row per raw timestamped block in a parsed session."""
+    """One row per canonical raw block in a parsed session."""
 
     issue_occurrence_id: int | None
     session_id: int
@@ -122,5 +125,6 @@ class IssueOccurrence:
     log_relpath: str
     line_number: int
     raw_block: str
-    referenced_symbols: list[str]
-    extra_json: dict[str, Any]
+    occurrence_count: int = 1
+    referenced_symbols: list[str] = field(default_factory=list)
+    extra_json: dict[str, Any] = field(default_factory=dict)

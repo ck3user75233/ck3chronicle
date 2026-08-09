@@ -6,8 +6,7 @@ Signature formula (deterministic across processes and platforms):
         category + "\\n" +
         error_type + "\\n" +
         ",".join(sorted(tags)) + "\\n" +
-        message_template + "\\n" +
-        (primary_file or "")
+        message_template
     )
     signature = hashlib.sha256(sig_input.encode("utf-8")).hexdigest()[:16]
 
@@ -28,16 +27,26 @@ from ck3chronicle.models.issue import IssueDraft, NormalizedIssue
 # Order matters: more specific patterns first.
 _WINDOWS_PATH_RE = re.compile(r"[A-Za-z]:\\[^\s\"']+")
 _NEAR_LINE_RE = re.compile(r"\b(?:near|at)\s+line\s+\d+", re.IGNORECASE)
+_LINE_COLON_RE = re.compile(r"\bline:\s*\d+\b", re.IGNORECASE)
 _AT_POS_RE = re.compile(r"\bat\s+position\s+\d+", re.IGNORECASE)
 _HEX_ADDR_RE = re.compile(r"0x[0-9A-Fa-f]+")
 _DATE_TOKEN_RE = re.compile(r"\b\d{4}\.\d+\.\d+\b")
 _ARGS_REF_RE = re.compile(r"\bargs#\d+\b")
+_UNQUOTED_RELPATH_RE = re.compile(r"\b(?:common|events|history|localization|map_data|gfx|gui|interface|mod)/[^\s,;:]+")
+# Real CK3 headers include timestamp/level/source and should not affect signatures.
+_LOG_HEADER_RE = re.compile(r"^\[\d{2}:\d{2}:\d{2}\](?:\[[A-Z]\])?\[[^\]]+\]:\s*")
+# Mask quoted relative asset/script paths such as "common/traits/00_traits.txt".
+_QUOTED_RELPATH_RE = re.compile(r'"(?![A-Za-z]:)[^"\n]*(?:/|\\\\)[^"\n]*"')
 
 
 def _mask_generic(text: str) -> str:
     """Apply whitelist-only volatile masking to *text*."""
+    text = _LOG_HEADER_RE.sub("", text, count=1)
+    text = _QUOTED_RELPATH_RE.sub('"<FILE>"', text)
     text = _WINDOWS_PATH_RE.sub("<TOKEN>", text)
+    text = _UNQUOTED_RELPATH_RE.sub("<FILE>", text)
     text = _NEAR_LINE_RE.sub("<TOKEN>", text)
+    text = _LINE_COLON_RE.sub("line:<N>", text)
     text = _AT_POS_RE.sub("<TOKEN>", text)
     text = _HEX_ADDR_RE.sub("<TOKEN>", text)
     text = _DATE_TOKEN_RE.sub("<TOKEN>", text)
@@ -56,12 +65,12 @@ def normalize(draft: IssueDraft) -> NormalizedIssue:
     text = _mask_generic(text)
 
     tags_sorted = sorted(draft.tags)
+    # Keep signature focused on issue semantics, not file location.
     sig_input = (
         draft.category + "\n" +
         draft.error_type + "\n" +
         ",".join(tags_sorted) + "\n" +
-        text + "\n" +
-        (draft.primary_file or "")
+        text
     )
     signature = hashlib.sha256(sig_input.encode("utf-8")).hexdigest()[:16]
 

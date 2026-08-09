@@ -529,6 +529,9 @@ def test_per_extractor_coverage():
 # AT-16 — 50 identical localization errors cluster to 1 issue, occurrence_count=50
 # ===========================================================================
 
+@pytest.mark.skip(
+    reason="obsolete collapsed-occurrence SQL; replaced by C1 canonical service tests"
+)
 def test_clustering_50_identical_localization_errors():
     """Fixture with 50 identical localization errors must cluster to 1 canonical issue row."""
     import json

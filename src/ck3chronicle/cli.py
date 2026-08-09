@@ -82,141 +82,43 @@ def _log_type_from_relpath(rel_path: str) -> str:
 
 
 def cmd_parse(args: argparse.Namespace) -> int:
-    """Parse a previously-ingested session: extract issues + normalize + persist."""
-    import json
+    """Parse one session's captured error.log into canonical stored records."""
     from . import config
     from .db import repository
-    from .parser.extractors import extract_block_for_log_type
-    from .parser.log_blocks import iter_log_blocks
-    from .parser.normalize import normalize
+    from .parser.service import CanonicalParseError, parse_session
 
     session_id = int(args.session)
     db_path = config.ROOT_CK3CHRONICLE / "ck3chronicle.db"
     conn = repository.open_db(db_path)
-
-    session_row = conn.execute(
-        "SELECT * FROM sessions WHERE session_id = ?", (session_id,)
-    ).fetchone()
-    if session_row is None:
-        conn.close()
-        print(f"ERROR: session_id {session_id} not found", file=sys.stderr)
-        return 2
-
-    snapshot_dir = (
-        config.ROOT_CK3CHRONICLE / "sessions" / session_row["evidence_bundle_hash"]
-    )
-
-    if args.reparse:
-        conn.execute("DELETE FROM issues WHERE session_id = ?", (session_id,))
-        conn.execute(
-            "DELETE FROM issue_occurrences WHERE session_id = ?", (session_id,)
+    try:
+        result = parse_session(
+            conn,
+            config.ROOT_CK3CHRONICLE,
+            session_id,
+            reparse=bool(args.reparse),
         )
-        conn.commit()
+    except CanonicalParseError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 2
+    except Exception as exc:
+        print(f"ERROR: parse failed: {exc}", file=sys.stderr)
+        return 1
+    finally:
+        conn.close()
 
-    log_rows = conn.execute(
-        "SELECT rel_path FROM session_files WHERE session_id = ? AND kind = 'log'",
-        (session_id,),
-    ).fetchall()
+    if not result.mutated:
+        print(
+            f"session_id={session_id}: already parsed "
+            f"({result.counters.issue_clusters} issue clusters); "
+            "use --reparse to replace"
+        )
+        return 0
 
-    issues_written = 0
-    occurrences_written = 0
-
-    for log_row in log_rows:
-        rel_path = log_row["rel_path"]
-        log_path = snapshot_dir / rel_path
-        if not log_path.exists():
-            continue
-        log_type = _log_type_from_relpath(rel_path)
-        for block in iter_log_blocks(log_path):
-            block.log_relpath = rel_path
-            draft = extract_block_for_log_type(block, log_type)
-            if draft is None:
-                continue
-            result = normalize(draft)
-
-            existing = conn.execute(
-                "SELECT issue_id, occurrence_count FROM issues "
-                "WHERE session_id = ? AND signature = ?",
-                (session_id, result.signature),
-            ).fetchone()
-            if existing is None:
-                conn.execute(
-                    """
-                    INSERT INTO issues (
-                        session_id, signature, category, error_type,
-                        tags_json, engine_source, severity, confidence,
-                        message_template, sample_message, primary_file, primary_line,
-                        referenced_symbols_json, referenced_objects_json,
-                        extra_json, occurrence_count, log_type
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """,
-                    (
-                        session_id,
-                        result.signature,
-                        result.category,
-                        result.error_type,
-                        json.dumps(result.tags),
-                        result.engine_source,
-                        result.severity,
-                        result.confidence,
-                        result.message_template,
-                        result.sample_message,
-                        result.primary_file,
-                        result.primary_line,
-                        json.dumps(result.referenced_symbols),
-                        json.dumps(result.referenced_objects),
-                        json.dumps(result.extra_json),
-                        1,
-                        log_type,
-                    ),
-                )
-                issues_written += 1
-            else:
-                conn.execute(
-                    "UPDATE issues SET occurrence_count = occurrence_count + 1, "
-                    "log_type = ? WHERE issue_id = ?",
-                    (log_type, existing["issue_id"]),
-                )
-
-            existing_occ = conn.execute(
-                "SELECT issue_occurrence_id FROM issue_occurrences "
-                "WHERE session_id = ? AND signature = ? AND log_relpath = ?",
-                (session_id, result.signature, result.log_relpath),
-            ).fetchone()
-            if existing_occ is None:
-                conn.execute(
-                    """
-                    INSERT INTO issue_occurrences (
-                        session_id, signature, log_relpath, line_number,
-                        raw_block, occurrence_count,
-                        referenced_symbols_json, extra_json, log_type
-                    ) VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?)
-                    """,
-                    (
-                        session_id,
-                        result.signature,
-                        result.log_relpath,
-                        result.line_number,
-                        result.raw_block,
-                        json.dumps(result.referenced_symbols),
-                        json.dumps(result.extra_json),
-                        log_type,
-                    ),
-                )
-                occurrences_written += 1
-            else:
-                conn.execute(
-                    "UPDATE issue_occurrences "
-                    "SET occurrence_count = occurrence_count + 1, log_type = ? "
-                    "WHERE issue_occurrence_id = ?",
-                    (log_type, existing_occ["issue_occurrence_id"]),
-                )
-
-    conn.commit()
-    conn.close()
+    counters = result.counters
     print(
-        f"session_id={session_id}: wrote {issues_written} new issues, "
-        f"{occurrences_written} occurrences"
+        f"session_id={session_id}: parsed {counters.source_blocks} source blocks, "
+        f"{counters.issue_occurrences} occurrences, "
+        f"{counters.issue_clusters} issue clusters"
     )
     return 0
 
@@ -265,7 +167,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_parse.add_argument(
         "--reparse",
         action="store_true",
-        help="Delete existing issues for the session before re-parsing.",
+        help="Atomically replace the session's prior canonical parse.",
     )
     p_parse.set_defaults(func=cmd_parse)
 
