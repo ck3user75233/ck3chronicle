@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from .schema import (
     ALL_DDL,
     CANONICAL_ISSUES_VERSION,
+    CAPTURE_VERSION,
     CURRENT_VERSION,
     SESSION_CONTEXT_VERSION,
 )
@@ -45,6 +46,10 @@ def _apply_migrations(conn: sqlite3.Connection) -> None:
         row[1] for row in cur.execute("PRAGMA table_info(sessions)").fetchall()
     }
     session_additions = {
+        "capture_status": "TEXT NOT NULL DEFAULT 'legacy_unverified'",
+        "capture_manifest_version": "INTEGER",
+        "capture_manifest_sha256": "TEXT",
+        "evidence_completeness": "TEXT NOT NULL DEFAULT 'complete'",
         "parse_status": "TEXT NOT NULL DEFAULT 'not_started'",
         "parser_contract_version": "TEXT",
         "parse_source_blocks": "INTEGER",
@@ -58,6 +63,16 @@ def _apply_migrations(conn: sqlite3.Connection) -> None:
     for column, declaration in session_additions.items():
         if column not in session_cols:
             cur.execute(f"ALTER TABLE sessions ADD COLUMN {column} {declaration}")
+
+    # A migrated database must enforce the same per-session manifest identity
+    # as a fresh database. Legacy duplicates are corruption and intentionally
+    # make this atomic migration fail for explicit repair.
+    cur.execute(
+        """
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_session_files_identity
+        ON session_files(session_id, kind, rel_path)
+        """
+    )
 
     # Backfill newer columns on existing DBs created before occurrence clustering.
     cols = {
@@ -145,6 +160,13 @@ def _apply_migrations(conn: sqlite3.Connection) -> None:
         VALUES (?, ?, ?)
         """,
         ("canonical_issues", CANONICAL_ISSUES_VERSION, now),
+    )
+    cur.execute(
+        """
+        INSERT OR REPLACE INTO schema_versions (component, version, migrated_at)
+        VALUES (?, ?, ?)
+        """,
+        ("capture", CAPTURE_VERSION, now),
     )
     if has_legacy_context:
         cur.execute(

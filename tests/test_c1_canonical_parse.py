@@ -58,6 +58,19 @@ def _make_session(
         )
         if rel_path not in missing_from_snapshot:
             (snapshot / rel_path).write_bytes(data)
+    # This is a parser-only fixture seam. Product code can reach finalized only
+    # through verified capture registration.
+    conn.execute(
+        """
+        UPDATE sessions
+        SET capture_status='finalized',
+            capture_manifest_version=1,
+            capture_manifest_sha256=?
+        WHERE session_id=?
+        """,
+        ("f" * 64, session_id),
+    )
+    conn.commit()
     return conn, session_id
 
 

@@ -53,6 +53,10 @@ def parse_session(
     session = repository.get_session(conn, session_id)
     if session is None:
         raise SessionNotFoundError(f"session_id {session_id} not found")
+    if session["capture_status"] != "finalized":
+        raise ErrorLogEvidenceError(
+            "session evidence has not passed finalized capture verification"
+        )
 
     existing = repository.get_successful_parse_result(conn, session_id)
     if existing is not None and not reparse:

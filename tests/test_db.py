@@ -107,6 +107,7 @@ def test_migration_preserves_legacy_context_table_without_creating_it_fresh(
 
     assert context[0] == "legacy"
     assert session["parse_status"] == "not_started"
+    assert session["capture_status"] == "legacy_unverified"
     assert session["parser_contract_version"] is None
     assert session["parse_source_blocks"] is None
 
@@ -252,3 +253,46 @@ def test_open_db_idempotent(tmp_path: Path):
     c1.close()
     c2 = open_db(db_path)
     c2.close()
+
+
+def test_open_db_releases_handle_after_duplicate_manifest_migration_failure(
+    tmp_path: Path,
+):
+    import sqlite3
+
+    db_path = tmp_path / "duplicate-files.db"
+    legacy = sqlite3.connect(db_path)
+    legacy.executescript(
+        """
+        CREATE TABLE sessions (
+            session_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            evidence_bundle_hash TEXT NOT NULL UNIQUE,
+            created_at TEXT NOT NULL,
+            log_count INTEGER NOT NULL,
+            crash_present INTEGER NOT NULL,
+            total_bytes INTEGER NOT NULL,
+            forced_duplicate_of INTEGER
+        );
+        CREATE TABLE session_files (
+            session_file_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id INTEGER NOT NULL,
+            rel_path TEXT NOT NULL,
+            sha256 TEXT NOT NULL,
+            bytes INTEGER NOT NULL,
+            kind TEXT NOT NULL
+        );
+        INSERT INTO sessions VALUES (1, 'hash', 'now', 1, 0, 1, NULL);
+        INSERT INTO session_files (session_id, rel_path, sha256, bytes, kind)
+        VALUES (1, 'error.log', 'a', 1, 'log'),
+               (1, 'error.log', 'a', 1, 'log');
+        """
+    )
+    legacy.commit()
+    legacy.close()
+
+    with pytest.raises(sqlite3.IntegrityError):
+        open_db(db_path)
+
+    renamed = tmp_path / "released.db"
+    db_path.rename(renamed)
+    assert renamed.is_file()

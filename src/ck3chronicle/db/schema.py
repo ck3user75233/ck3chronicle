@@ -9,6 +9,12 @@ CREATE TABLE IF NOT EXISTS sessions (
     crash_present        INTEGER NOT NULL,
     total_bytes          INTEGER NOT NULL,
     forced_duplicate_of  INTEGER REFERENCES sessions(session_id),
+    capture_status       TEXT NOT NULL DEFAULT 'legacy_unverified'
+                         CHECK (capture_status IN ('legacy_unverified', 'finalized')),
+    capture_manifest_version INTEGER,
+    capture_manifest_sha256  TEXT,
+    evidence_completeness    TEXT NOT NULL DEFAULT 'complete'
+                             CHECK (evidence_completeness IN ('complete', 'partial')),
     parse_status         TEXT NOT NULL DEFAULT 'not_started'
                          CHECK (parse_status IN ('not_started', 'succeeded')),
     parser_contract_version          TEXT,
@@ -19,6 +25,15 @@ CREATE TABLE IF NOT EXISTS sessions (
     parse_unclassified_occurrences   INTEGER CHECK (parse_unclassified_occurrences >= 0),
     parse_multi_issue_blocks         INTEGER CHECK (parse_multi_issue_blocks >= 0),
     parse_silently_dropped_blocks    INTEGER CHECK (parse_silently_dropped_blocks = 0)
+    ,CHECK (
+        (capture_status = 'legacy_unverified'
+         AND capture_manifest_version IS NULL
+         AND capture_manifest_sha256 IS NULL)
+        OR
+        (capture_status = 'finalized'
+         AND capture_manifest_version IS NOT NULL
+         AND length(capture_manifest_sha256) = 64)
+    )
 );
 """
 
@@ -29,7 +44,18 @@ CREATE TABLE IF NOT EXISTS session_files (
     rel_path        TEXT NOT NULL,
     sha256          TEXT NOT NULL,
     bytes           INTEGER NOT NULL,
-    kind            TEXT NOT NULL
+    kind            TEXT NOT NULL,
+    UNIQUE(session_id, kind, rel_path)
+);
+"""
+
+CAPTURE_OBSERVATIONS_DDL = """
+CREATE TABLE IF NOT EXISTS capture_observations (
+    observation_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id     INTEGER NOT NULL REFERENCES sessions(session_id),
+    observed_at    TEXT NOT NULL,
+    trigger        TEXT NOT NULL,
+    process_name   TEXT
 );
 """
 
@@ -132,6 +158,7 @@ CREATE INDEX IF NOT EXISTS idx_source_blocks_session_line
 ALL_DDL = [
     SESSIONS_DDL,
     SESSION_FILES_DDL,
+    CAPTURE_OBSERVATIONS_DDL,
     SCHEMA_VERSIONS_DDL,
     ISSUES_DDL,
     ISSUES_IDX_SESSION_SIG_DDL,
@@ -145,3 +172,4 @@ ALL_DDL = [
 CURRENT_VERSION = 1
 CANONICAL_ISSUES_VERSION = 4
 SESSION_CONTEXT_VERSION = 1
+CAPTURE_VERSION = 1

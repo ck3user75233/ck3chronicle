@@ -24,7 +24,11 @@ def open_db(path: Path) -> sqlite3.Connection:
     conn = sqlite3.connect(str(path))
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
-    apply_migrations(conn)
+    try:
+        apply_migrations(conn)
+    except Exception:
+        conn.close()
+        raise
     return conn
 
 
@@ -86,6 +90,199 @@ def add_session_file(
     conn.commit()
     assert cur.lastrowid is not None
     return cur.lastrowid
+
+
+def register_finalized_session(
+    conn: sqlite3.Connection,
+    *,
+    evidence_bundle_hash: str,
+    captured_at: str,
+    manifest_version: int,
+    manifest_sha256: str,
+    evidence_completeness: str,
+    files: Sequence[Any],
+) -> tuple[int, bool]:
+    """Atomically register a finalized archive and its exact file manifest.
+
+    Returns ``(session_id, was_existing)``. An existing row is accepted only
+    when every registered file agrees with the supplied finalized manifest.
+    """
+    log_count = sum(item.kind == "log" for item in files)
+    crash_present = any(item.kind == "crash" for item in files)
+    total_bytes = sum(int(item.bytes) for item in files)
+    expected_rows = sorted(
+        (item.rel_path, item.sha256, int(item.bytes), item.kind) for item in files
+    )
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        existing = get_session_by_hash(conn, evidence_bundle_hash)
+        if existing is not None:
+            raw_rows = sorted(
+                tuple(row)
+                for row in conn.execute(
+                    """
+                    SELECT rel_path, sha256, bytes, kind
+                    FROM session_files
+                    WHERE session_id = ?
+                    """,
+                    (existing["session_id"],),
+                ).fetchall()
+            )
+            normalized_rows = sorted(
+                (
+                    (
+                        (
+                            rel_path
+                            if rel_path.replace("\\", "/").startswith("crash/")
+                            else f"crash/{rel_path.replace('\\', '/')}"
+                        ),
+                        sha256,
+                        bytes_,
+                        "crash",
+                    )
+                    if kind == "crash_artifact"
+                    else (rel_path.replace("\\", "/"), sha256, bytes_, kind)
+                )
+                for rel_path, sha256, bytes_, kind in raw_rows
+            )
+            if normalized_rows != expected_rows:
+                raise ValueError(
+                    "registered session manifest disagrees with finalized archive"
+                )
+            if existing["capture_status"] not in {"legacy_unverified", "finalized"}:
+                raise ValueError("existing session is not finalized")
+            existing_version = existing["capture_manifest_version"]
+            existing_manifest_hash = existing["capture_manifest_sha256"]
+            legacy = (
+                existing["capture_status"] == "legacy_unverified"
+                or existing_version is None
+                or existing_manifest_hash is None
+            )
+            if not legacy and existing_version != manifest_version:
+                raise ValueError("registered capture manifest version disagrees")
+            if (
+                not legacy and existing_manifest_hash != manifest_sha256
+            ):
+                raise ValueError("registered capture manifest hash disagrees")
+            expected_aggregates = (log_count, int(crash_present), total_bytes)
+            actual_aggregates = (
+                int(existing["log_count"]),
+                int(existing["crash_present"]),
+                int(existing["total_bytes"]),
+            )
+            if not legacy and actual_aggregates != expected_aggregates:
+                raise ValueError("registered session aggregates disagree with manifest")
+            if (
+                not legacy
+                and existing["evidence_completeness"] != evidence_completeness
+            ):
+                raise ValueError("registered evidence completeness disagrees")
+
+            # Normalize pre-P1 crash rows only after their byte manifest has
+            # independently validated against the archive.
+            if raw_rows != expected_rows:
+                conn.execute(
+                    "DELETE FROM session_files WHERE session_id = ?",
+                    (existing["session_id"],),
+                )
+                conn.executemany(
+                    """
+                    INSERT INTO session_files (
+                        session_id, rel_path, sha256, bytes, kind
+                    ) VALUES (?, ?, ?, ?, ?)
+                    """,
+                    [
+                        (existing["session_id"], rel_path, sha256, bytes_, kind)
+                        for rel_path, sha256, bytes_, kind in expected_rows
+                    ],
+                )
+            # Non-destructively promote a verified pre-manifest row. Evidence
+            # identity and original created_at do not change.
+            conn.execute(
+                """
+                UPDATE sessions
+                SET capture_status = 'finalized',
+                    capture_manifest_version = ?,
+                    capture_manifest_sha256 = ?,
+                    evidence_completeness = ?,
+                    log_count = ?,
+                    crash_present = ?,
+                    total_bytes = ?
+                WHERE session_id = ?
+                """,
+                (
+                    manifest_version,
+                    manifest_sha256,
+                    evidence_completeness,
+                    log_count,
+                    int(crash_present),
+                    total_bytes,
+                    existing["session_id"],
+                ),
+            )
+            conn.commit()
+            return int(existing["session_id"]), True
+
+        cur = conn.execute(
+            """
+            INSERT INTO sessions (
+                evidence_bundle_hash, created_at, log_count, crash_present,
+                total_bytes, capture_status, capture_manifest_version,
+                capture_manifest_sha256, evidence_completeness
+            ) VALUES (?, ?, ?, ?, ?, 'finalized', ?, ?, ?)
+            """,
+            (
+                evidence_bundle_hash,
+                captured_at,
+                log_count,
+                int(crash_present),
+                total_bytes,
+                manifest_version,
+                manifest_sha256,
+                evidence_completeness,
+            ),
+        )
+        assert cur.lastrowid is not None
+        session_id = int(cur.lastrowid)
+        conn.executemany(
+            """
+            INSERT INTO session_files (
+                session_id, rel_path, sha256, bytes, kind
+            ) VALUES (?, ?, ?, ?, ?)
+            """,
+            [
+                (session_id, rel_path, sha256, bytes_, kind)
+                for rel_path, sha256, bytes_, kind in expected_rows
+            ],
+        )
+        conn.commit()
+        return session_id, False
+    except Exception:
+        conn.rollback()
+        raise
+
+
+def record_capture_observation(
+    conn: sqlite3.Connection,
+    *,
+    session_id: int,
+    trigger: str,
+    process_name: str | None = None,
+    observed_at: str | None = None,
+) -> int:
+    """Record a run observation separately from deduplicated evidence bytes."""
+    timestamp = observed_at or datetime.now(timezone.utc).isoformat()
+    cur = conn.execute(
+        """
+        INSERT INTO capture_observations (
+            session_id, observed_at, trigger, process_name
+        ) VALUES (?, ?, ?, ?)
+        """,
+        (session_id, timestamp, trigger, process_name),
+    )
+    conn.commit()
+    assert cur.lastrowid is not None
+    return int(cur.lastrowid)
 
 
 def list_sessions(
