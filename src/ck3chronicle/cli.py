@@ -89,7 +89,8 @@ def cmd_ingest(args: argparse.Namespace) -> int:
 
 def cmd_capture(args: argparse.Namespace) -> int:
     """Immediately protect logs without hashing, parsing, or SQLite."""
-    from .watcher import is_process_running
+    from . import config
+    from .watcher import is_process_running, write_capture_receipt
 
     try:
         if is_process_running("ck3.exe"):
@@ -99,6 +100,11 @@ def cmd_capture(args: argparse.Namespace) -> int:
             )
             return 3
         result = _spool_once(args, abort_if=lambda: is_process_running("ck3.exe"))
+        write_capture_receipt(
+            config.ROOT_CK3CHRONICLE,
+            result,
+            trigger="manual_capture",
+        )
     except Exception as exc:
         return _capture_error(exc)
     _print_pending_result(result)
@@ -106,9 +112,17 @@ def cmd_capture(args: argparse.Namespace) -> int:
 
 
 def cmd_watch(args: argparse.Namespace) -> int:
-    """Copy logs now and immediately after each observed CK3 process exit."""
+    """Observe exact CK3 lifecycles and protect logs after process exit."""
     from . import config
-    from .watcher import is_process_running, watch_sessions
+    from .watcher import (
+        EventJournal,
+        WatcherLease,
+        ensure_existing_logs_receipted,
+        find_process,
+        is_process_running,
+        watch_sessions,
+        write_capture_receipt,
+    )
 
     logs_root = Path(args.logs) if args.logs else config.ROOT_LOGS
     if args.once:
@@ -123,35 +137,59 @@ def cmd_watch(args: argparse.Namespace) -> int:
                 args,
                 abort_if=lambda: is_process_running(args.process_name),
             )
+            write_capture_receipt(
+                config.ROOT_CK3CHRONICLE,
+                result,
+                trigger="manual_capture",
+            )
         except Exception as exc:
             return _capture_error(exc)
         _print_pending_result(result)
         return 0
 
-    print(
-        f"watching {args.process_name}; logs are copied immediately on process exit "
-        "(Ctrl+C to stop)"
-    )
+    def perform_capture(trigger: str, process):
+        result = _spool_once(
+            args,
+            abort_if=lambda: find_process(args.process_name) is not None,
+        )
+        write_capture_receipt(
+            config.ROOT_CK3CHRONICLE,
+            result,
+            trigger=trigger,
+            process=process,
+        )
+        return result
 
     def on_capture(result, trigger: str) -> None:
-        print(f"capture trigger: {trigger}")
+        print(f"capture trigger: {trigger}", flush=True)
         _print_pending_result(result)
 
     def on_error(exc: Exception, trigger: str) -> None:
         print(f"WARNING: {trigger} capture deferred: {exc}", file=sys.stderr)
 
     try:
-        watch_sessions(
-            logs_root=logs_root,
-            capture=lambda trigger: _spool_once(
-                args,
-                abort_if=lambda: is_process_running(args.process_name),
-            ),
-            process_probe=lambda: is_process_running(args.process_name),
-            on_capture=on_capture,
-            on_error=on_error,
-            poll_seconds=args.poll_seconds,
-        )
+        with WatcherLease(config.ROOT_CK3CHRONICLE), EventJournal(
+            config.ROOT_CK3CHRONICLE
+        ) as journal:
+            print(
+                f"watching {args.process_name}; event journal: {journal.path} "
+                "(Ctrl+C to stop)",
+                flush=True,
+            )
+            watch_sessions(
+                logs_root=logs_root,
+                capture=perform_capture,
+                process_probe=lambda: find_process(args.process_name),
+                startup_recovery_needed=lambda: not ensure_existing_logs_receipted(
+                    logs_root,
+                    config.ROOT_CK3CHRONICLE,
+                ),
+                event_sink=journal.emit,
+                on_capture=on_capture,
+                on_error=on_error,
+                poll_seconds=args.poll_seconds,
+                heartbeat_seconds=args.heartbeat_seconds,
+            )
     except KeyboardInterrupt:
         print("watch stopped")
     except Exception as exc:
@@ -310,6 +348,13 @@ def build_parser() -> argparse.ArgumentParser:
         "--process-name", default="ck3.exe", help="Exact CK3 process name."
     )
     p_watch.add_argument("--poll-seconds", type=float, default=0.5, metavar="N")
+    p_watch.add_argument(
+        "--heartbeat-seconds",
+        type=float,
+        default=30.0,
+        metavar="N",
+        help="Write an auditable watcher heartbeat every N seconds.",
+    )
     p_watch.add_argument(
         "--once",
         action="store_true",

@@ -64,6 +64,7 @@ def test_capture_command_only_creates_pending_copy(
     assert exc.value.code == 0
     assert "protected pending capture" in capsys.readouterr().out
     assert len(list((tmp_path / "pending").iterdir())) == 1
+    assert (tmp_path / "watch" / "last_capture.json").is_file()
     assert not (tmp_path / "sessions").exists()
     assert not (tmp_path / "ck3chronicle.db").exists()
 

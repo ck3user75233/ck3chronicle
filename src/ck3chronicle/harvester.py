@@ -99,6 +99,15 @@ class SnapshotResult:
 
 
 @dataclass(frozen=True)
+class PendingFileStat:
+    """Metadata captured from a protected copy without reading its contents."""
+
+    name: str
+    bytes: int
+    source_mtime_ns: int
+
+
+@dataclass(frozen=True)
 class PendingCapture:
     """A complete private copy awaiting hashes, manifest, and registration."""
 
@@ -106,6 +115,7 @@ class PendingCapture:
     captured_at: str
     files_copied: int
     file_names: tuple[str, ...]
+    file_stats: tuple[PendingFileStat, ...]
 
 
 def discover_logs(root: Path) -> list[Path]:
@@ -148,11 +158,20 @@ def spool_logs(
     copying = Path(tempfile.mkdtemp(prefix=".copying-", dir=pending_root))
     captured_at_dt = datetime.now(timezone.utc)
     copied_names: list[str] = []
+    copied_stats: list[PendingFileStat] = []
 
     for source in log_files:
         target = copying / source.name
         shutil.copy2(source, target)
         copied_names.append(source.name)
+        target_stat = target.stat()
+        copied_stats.append(
+            PendingFileStat(
+                name=source.name,
+                bytes=target_stat.st_size,
+                source_mtime_ns=target_stat.st_mtime_ns,
+            )
+        )
 
     if abort_if is not None and abort_if():
         raise UnstableCapture(
@@ -171,6 +190,7 @@ def spool_logs(
         captured_at=captured_at_dt.isoformat(),
         files_copied=len(copied_names),
         file_names=tuple(copied_names),
+        file_stats=tuple(copied_stats),
     )
 
 
