@@ -3,14 +3,13 @@ from __future__ import annotations
 
 import ctypes
 import platform
-import sqlite3
 import subprocess
 import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, TypeVar
 
-from .harvester import CaptureError, InvalidCaptureInput, LOG_NAMES, UnstableCapture
+from .harvester import InvalidCaptureInput, UnstableCapture
 
 T = TypeVar("T")
 
@@ -34,53 +33,6 @@ class WatchState:
         if previous and not running:
             return "process_exit"
         return None
-
-
-def evidence_fingerprint(logs_root: Path) -> tuple[tuple[str, int, int], ...]:
-    """Return the approved live file set's name/size/high-resolution mtime."""
-    records: list[tuple[str, int, int]] = []
-    for name in LOG_NAMES:
-        path = logs_root / name
-        if path.exists():
-            if path.is_symlink() or not path.is_file():
-                raise InvalidCaptureInput(f"evidence source is not a regular file: {name}")
-            stat = path.stat()
-            records.append((name, stat.st_size, stat.st_mtime_ns))
-    if not any(name == "error.log" for name, _, _ in records):
-        raise InvalidCaptureInput("mandatory error.log is missing")
-    return tuple(records)
-
-
-def wait_for_stable_evidence(
-    logs_root: Path,
-    *,
-    stable_seconds: float = 2.0,
-    poll_seconds: float = 0.5,
-    timeout_seconds: float = 30.0,
-    monotonic: Callable[[], float] = time.monotonic,
-    sleep: Callable[[float], None] = time.sleep,
-    abort_if: Callable[[], bool] | None = None,
-) -> tuple[tuple[str, int, int], ...]:
-    """Wait until the complete approved log inventory remains unchanged."""
-    if stable_seconds < 0 or poll_seconds <= 0 or timeout_seconds <= 0:
-        raise ValueError("watch timing values must be positive")
-    deadline = monotonic() + timeout_seconds
-    previous: tuple[tuple[str, int, int], ...] | None = None
-    unchanged_since: float | None = None
-    while True:
-        if abort_if is not None and abort_if():
-            raise UnstableCapture("CK3 restarted before evidence capture settled")
-        now = monotonic()
-        current = evidence_fingerprint(logs_root)
-        if current == previous:
-            if unchanged_since is not None and now - unchanged_since >= stable_seconds:
-                return current
-        else:
-            previous = current
-            unchanged_since = now
-        if now >= deadline:
-            raise UnstableCapture("evidence did not settle before capture timeout")
-        sleep(min(poll_seconds, max(0.0, deadline - now)))
 
 
 def _windows_process_names() -> tuple[str, ...]:
@@ -178,12 +130,10 @@ def watch_sessions(
     on_capture: Callable[[T, str], None] | None = None,
     on_error: Callable[[Exception, str], None] | None = None,
     poll_seconds: float = 1.0,
-    stable_seconds: float = 2.0,
-    timeout_seconds: float = 30.0,
     stop_requested: Callable[[], bool] = lambda: False,
     sleep: Callable[[float], None] = time.sleep,
 ) -> int:
-    """Capture existing logs once, then each observed CK3 process exit."""
+    """Copy existing logs once, then immediately on each CK3 process exit."""
     if poll_seconds <= 0:
         raise ValueError("poll_seconds must be positive")
     state = WatchState()
@@ -196,14 +146,6 @@ def watch_sessions(
             pending_trigger = trigger
         if pending_trigger is not None and not running:
             try:
-                wait_for_stable_evidence(
-                    logs_root,
-                    stable_seconds=stable_seconds,
-                    poll_seconds=min(poll_seconds, 0.5),
-                    timeout_seconds=timeout_seconds,
-                    sleep=sleep,
-                    abort_if=process_probe,
-                )
                 result = capture(pending_trigger)
                 captures += 1
                 if on_capture is not None:
@@ -214,10 +156,10 @@ def watch_sessions(
                     raise
                 if on_error is not None:
                     on_error(exc, pending_trigger)
-                # Missing mandatory input will not become valid without a new
-                # run. Instability is retried while the process stays absent.
-                if isinstance(exc, InvalidCaptureInput):
-                    pending_trigger = None
+                # Missing input and a rapid restart both require a new exit
+                # transition.  Incomplete ``.copying`` directories are never
+                # finalized automatically.
+                pending_trigger = None
         if not stop_requested():
             sleep(poll_seconds)
     return captures

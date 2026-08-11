@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-import shutil
 from unittest import mock
 
 import pytest
@@ -55,27 +54,26 @@ def test_force_identity_option_is_removed(
     assert "unrecognized arguments" in capsys.readouterr().err
 
 
-def test_capture_command_is_parser_independent(
+def test_capture_command_only_creates_pending_copy(
     fixture_logs_minimal: Path, tmp_path: Path, capsys
 ):
-    from ck3chronicle.db.repository import open_db
-
-    with mock.patch.object(cfg, "ROOT_CK3CHRONICLE", tmp_path):
+    with mock.patch.object(cfg, "ROOT_CK3CHRONICLE", tmp_path), \
+         mock.patch("ck3chronicle.watcher.is_process_running", return_value=False):
         with pytest.raises(SystemExit) as exc:
             main(["capture", "--logs", str(fixture_logs_minimal)])
     assert exc.value.code == 0
-    assert "finalized evidence_bundle_hash" in capsys.readouterr().out
-    conn = open_db(tmp_path / "ck3chronicle.db")
-    row = conn.execute("SELECT capture_status, parse_status FROM sessions").fetchone()
-    conn.close()
-    assert tuple(row) == ("finalized", "not_started")
+    assert "protected pending capture" in capsys.readouterr().out
+    assert len(list((tmp_path / "pending").iterdir())) == 1
+    assert not (tmp_path / "sessions").exists()
+    assert not (tmp_path / "ck3chronicle.db").exists()
 
 
 def test_capture_missing_error_exits_2(tmp_path: Path, capsys):
     logs = tmp_path / "logs"
     logs.mkdir()
     (logs / "debug.log").write_bytes(b"debug")
-    with mock.patch.object(cfg, "ROOT_CK3CHRONICLE", tmp_path / "archive"):
+    with mock.patch.object(cfg, "ROOT_CK3CHRONICLE", tmp_path / "archive"), \
+         mock.patch("ck3chronicle.watcher.is_process_running", return_value=False):
         with pytest.raises(SystemExit) as exc:
             main(["capture", "--logs", str(logs)])
     assert exc.value.code == 2
@@ -94,14 +92,12 @@ def test_watch_once_captures_current_stable_logs(
                     "--once",
                     "--logs",
                     str(fixture_logs_minimal),
-                    "--stable-seconds",
-                    "0",
                     "--poll-seconds",
                     "0.01",
                 ]
             )
     assert exc.value.code == 0
-    assert "preserved" in capsys.readouterr().out
+    assert "protected pending capture" in capsys.readouterr().out
 
 
 def test_sessions_no_db(tmp_path: Path, capsys):
@@ -123,36 +119,18 @@ def test_sessions_after_ingest(fixture_logs_with_crash: Path, tmp_path: Path, ca
     assert "id" in capsys.readouterr().out.lower()
 
 
-def test_capture_source_mutation_exits_3_rejected_unstable(
-    fixture_logs_minimal: Path,
-    tmp_path: Path,
-    capsys,
-    monkeypatch: pytest.MonkeyPatch,
+def test_capture_refuses_to_copy_while_ck3_is_running(
+    fixture_logs_minimal: Path, tmp_path: Path, capsys
 ):
-    import ck3chronicle.harvester as harvester
-
-    logs = tmp_path / "logs"
-    shutil.copytree(fixture_logs_minimal, logs)
-    real_copy = harvester._copy_exact
-    mutated = False
-
-    def copy_then_mutate(src: Path, dst: Path) -> None:
-        nonlocal mutated
-        real_copy(src, dst)
-        if src.name == "error.log" and not mutated:
-            mutated = True
-            with src.open("ab") as stream:
-                stream.write(b"changed")
-
-    monkeypatch.setattr(harvester, "_copy_exact", copy_then_mutate)
-    with mock.patch.object(cfg, "ROOT_CK3CHRONICLE", tmp_path / "archive"):
+    with mock.patch.object(cfg, "ROOT_CK3CHRONICLE", tmp_path / "archive"), \
+         mock.patch("ck3chronicle.watcher.is_process_running", return_value=True):
         with pytest.raises(SystemExit) as exc:
-            main(["capture", "--logs", str(logs)])
+            main(["capture", "--logs", str(fixture_logs_minimal)])
     assert exc.value.code == 3
-    assert "rejected_unstable" in capsys.readouterr().err
+    assert "refusing to copy a live session" in capsys.readouterr().err
 
 
-def test_capture_database_failure_exits_5(
+def test_ingest_database_failure_exits_5(
     fixture_logs_minimal: Path, tmp_path: Path, capsys
 ):
     from ck3chronicle.db.repository import open_db
@@ -170,7 +148,7 @@ def test_capture_database_failure_exits_5(
     conn.close()
     with mock.patch.object(cfg, "ROOT_CK3CHRONICLE", archive):
         with pytest.raises(SystemExit) as exc:
-            main(["capture", "--logs", str(fixture_logs_minimal)])
+            main(["ingest", "--logs", str(fixture_logs_minimal)])
     assert exc.value.code == 5
     assert "database_failed" in capsys.readouterr().err
 
@@ -178,7 +156,8 @@ def test_capture_database_failure_exits_5(
 def test_reconcile_command_runs_full_archive_verification(
     fixture_logs_minimal: Path, tmp_path: Path, capsys
 ):
-    with mock.patch.object(cfg, "ROOT_CK3CHRONICLE", tmp_path):
+    with mock.patch.object(cfg, "ROOT_CK3CHRONICLE", tmp_path), \
+         mock.patch("ck3chronicle.watcher.is_process_running", return_value=False):
         with pytest.raises(SystemExit):
             main(["capture", "--logs", str(fixture_logs_minimal)])
         capsys.readouterr()

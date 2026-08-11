@@ -7,7 +7,15 @@ from pathlib import Path
 
 import pytest
 
-from ck3chronicle.harvester import LOG_NAMES, build_bundle, snapshot, validate_snapshot
+import ck3chronicle.harvester as harvester
+from ck3chronicle.harvester import (
+    LOG_NAMES,
+    build_bundle,
+    finalize_pending,
+    snapshot,
+    spool_logs,
+    validate_snapshot,
+)
 
 
 ORACLE_BUNDLE_HASH = "63e97b752bb362308f09baa019515fdb84fe05f5e39dcc84089ae499474180f1"
@@ -64,3 +72,27 @@ def test_p1_cap_03_each_real_file_mutation_changes_bundle_identity(tmp_path: Pat
         mutated = build_bundle(mutated_root)
         assert mutated.identities[f"log:{name}"].sha256 != ORACLE_HASHES[name]
         assert mutated.evidence_bundle_hash != ORACLE_BUNDLE_HASH
+
+
+def test_p1_1_real_session_is_copied_before_any_hashing(tmp_path: Path, monkeypatch):
+    root = _oracle_root()
+    archive = tmp_path / "archive"
+    real_hash = harvester.hash_file
+    monkeypatch.setattr(
+        harvester,
+        "hash_file",
+        lambda path: pytest.fail(f"urgent copy hashed {path}"),
+    )
+
+    pending = spool_logs(root, archive, abort_if=lambda: False)
+
+    assert pending.files_copied == 6
+    assert sum((pending.dest_dir / name).stat().st_size for name in LOG_NAMES) == (
+        ORACLE_TOTAL_BYTES
+    )
+    assert not (archive / "sessions").exists()
+    assert not (archive / "ck3chronicle.db").exists()
+
+    monkeypatch.setattr(harvester, "hash_file", real_hash)
+    result = finalize_pending(pending, archive)
+    assert result.evidence_bundle_hash == ORACLE_BUNDLE_HASH

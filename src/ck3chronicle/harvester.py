@@ -9,12 +9,12 @@ import tempfile
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Callable, Iterable
 
 LOG_NAMES = (
     "error.log",
-    "game.log",
     "debug.log",
+    "game.log",
     "database_conflicts.log",
     "setup.log",
     "text.log",
@@ -98,6 +98,16 @@ class SnapshotResult:
     manifest_sha256: str
 
 
+@dataclass(frozen=True)
+class PendingCapture:
+    """A complete private copy awaiting hashes, manifest, and registration."""
+
+    dest_dir: Path
+    captured_at: str
+    files_copied: int
+    file_names: tuple[str, ...]
+
+
 def discover_logs(root: Path) -> list[Path]:
     """Return regular, non-symlink approved log files in canonical order."""
     found: list[Path] = []
@@ -108,6 +118,60 @@ def discover_logs(root: Path) -> list[Path]:
                 raise InvalidCaptureInput(f"evidence source is not a regular file: {name}")
             found.append(candidate)
     return found
+
+
+def spool_logs(
+    logs_root: Path,
+    dest_root: Path,
+    *,
+    abort_if: Callable[[], bool] | None = None,
+) -> PendingCapture:
+    """Immediately protect a completed CK3 session without hashing or SQLite.
+
+    Files are copied in priority order into a private ``.copying-*`` directory.
+    Only a complete copy set is renamed into the durable pending queue.  An
+    interrupted directory remains visibly incomplete and is never treated as a
+    finalized archive.
+    """
+    root = Path(logs_root)
+    if not root.is_dir():
+        raise InvalidCaptureInput(f"logs directory does not exist: {root}")
+    if abort_if is not None and abort_if():
+        raise UnstableCapture("CK3 is running; refusing to copy live logs")
+
+    log_files = discover_logs(root)
+    if not any(path.name.casefold() == "error.log" for path in log_files):
+        raise InvalidCaptureInput("mandatory error.log is missing")
+
+    pending_root = Path(dest_root) / "pending"
+    pending_root.mkdir(parents=True, exist_ok=True)
+    copying = Path(tempfile.mkdtemp(prefix=".copying-", dir=pending_root))
+    captured_at_dt = datetime.now(timezone.utc)
+    copied_names: list[str] = []
+
+    for source in log_files:
+        target = copying / source.name
+        shutil.copy2(source, target)
+        copied_names.append(source.name)
+
+    if abort_if is not None and abort_if():
+        raise UnstableCapture(
+            f"CK3 restarted while copying logs; incomplete copy retained at {copying}"
+        )
+
+    ready_name = (
+        captured_at_dt.strftime("%Y%m%dT%H%M%S.%fZ")
+        + "-"
+        + copying.name.removeprefix(".copying-")
+    )
+    ready = pending_root / ready_name
+    os.rename(copying, ready)
+    return PendingCapture(
+        dest_dir=ready,
+        captured_at=captured_at_dt.isoformat(),
+        files_copied=len(copied_names),
+        file_names=tuple(copied_names),
+    )
 
 
 def discover_crash_folder(root: Path) -> Path | None:
@@ -472,6 +536,145 @@ def read_snapshot(directory: Path) -> SnapshotResult:
         ),
         manifest_sha256=manifest_sha256,
     )
+
+
+def _pending_captured_at(directory: Path) -> str:
+    try:
+        timestamp = directory.name.split("-", 1)[0]
+        parsed = datetime.strptime(timestamp, "%Y%m%dT%H%M%S.%fZ")
+    except (ValueError, IndexError) as exc:
+        raise ArchiveIntegrityError(
+            f"pending capture has an invalid directory name: {directory.name}"
+        ) from exc
+    return parsed.replace(tzinfo=timezone.utc).isoformat()
+
+
+def finalize_pending(
+    pending: PendingCapture | Path,
+    dest_root: Path,
+) -> SnapshotResult:
+    """Hash a protected copy and promote it without reading live CK3 logs."""
+    directory = pending.dest_dir if isinstance(pending, PendingCapture) else Path(pending)
+    captured_at = (
+        pending.captured_at
+        if isinstance(pending, PendingCapture)
+        else _pending_captured_at(directory)
+    )
+    if not directory.is_dir() or directory.name.startswith("."):
+        raise ArchiveIntegrityError(f"pending capture is not complete: {directory}")
+
+    allowed_names = set(LOG_NAMES)
+    actual_names = {
+        path.name
+        for path in directory.iterdir()
+        if path.is_file() and path.name != MANIFEST_NAME
+    }
+    unexpected = actual_names - allowed_names
+    if unexpected:
+        raise ArchiveIntegrityError(
+            "pending capture contains unsupported files: "
+            + ", ".join(sorted(unexpected))
+        )
+    if "error.log" not in actual_names:
+        raise ArchiveIntegrityError("pending capture is missing mandatory error.log")
+
+    files: list[CapturedFile] = []
+    for name in LOG_NAMES:
+        path = directory / name
+        if not path.exists():
+            continue
+        if path.is_symlink() or not path.is_file():
+            raise ArchiveIntegrityError(f"pending evidence is not regular: {name}")
+        stat = path.stat()
+        files.append(
+            CapturedFile(
+                kind="log",
+                identity_path=name,
+                rel_path=name,
+                sha256=hash_file(path),
+                bytes=stat.st_size,
+                source_mtime_ns=stat.st_mtime_ns,
+            )
+        )
+
+    captured_files = tuple(files)
+    bundle_hash = _bundle_hash(
+        (item.kind, item.identity_path, item.sha256) for item in captured_files
+    )
+    payload = _manifest_payload(
+        bundle_hash=bundle_hash,
+        captured_at=captured_at,
+        files=captured_files,
+    )
+    manifest_path = directory / MANIFEST_NAME
+    if manifest_path.exists():
+        existing_payload, manifest_sha256 = _load_manifest(directory)
+        if existing_payload != payload:
+            raise ArchiveIntegrityError(
+                "pending manifest disagrees with the protected copies"
+            )
+    else:
+        manifest_sha256 = _write_manifest(directory, payload)
+
+    sessions_root = Path(dest_root) / "sessions"
+    sessions_root.mkdir(parents=True, exist_ok=True)
+    final = sessions_root / bundle_hash
+    if final.exists():
+        if not final.is_dir():
+            raise ArchiveIntegrityError("bundle destination is not a directory")
+        existing_payload, existing_manifest_sha256 = _load_manifest(final)
+        existing_files = _files_from_manifest(existing_payload)
+        if (
+            existing_payload.get("evidence_bundle_hash") != bundle_hash
+            or _evidence_descriptor(existing_files)
+            != _evidence_descriptor(captured_files)
+        ):
+            raise ArchiveIntegrityError(
+                "existing archive manifest disagrees with the pending capture"
+            )
+        shutil.rmtree(directory)
+        principal = existing_payload["principal_logs"]
+        return SnapshotResult(
+            evidence_bundle_hash=bundle_hash,
+            dest_dir=final,
+            files_copied=len(captured_files),
+            was_existing=True,
+            captured_at=existing_payload["captured_at"],
+            files=existing_files,
+            missing_principal_logs=tuple(
+                name
+                for name in PRINCIPAL_LOG_NAMES
+                if principal[name] == "missing"
+            ),
+            manifest_sha256=existing_manifest_sha256,
+        )
+
+    os.rename(directory, final)
+    present_logs = {item.identity_path for item in captured_files}
+    return SnapshotResult(
+        evidence_bundle_hash=bundle_hash,
+        dest_dir=final,
+        files_copied=len(captured_files),
+        was_existing=False,
+        captured_at=captured_at,
+        files=captured_files,
+        missing_principal_logs=tuple(
+            name for name in PRINCIPAL_LOG_NAMES if name not in present_logs
+        ),
+        manifest_sha256=manifest_sha256,
+    )
+
+
+def finalize_pending_captures(dest_root: Path) -> tuple[SnapshotResult, ...]:
+    """Finalize every complete pending copy; ignore interrupted ``.copying`` dirs."""
+    pending_root = Path(dest_root) / "pending"
+    if not pending_root.is_dir():
+        return ()
+    results: list[SnapshotResult] = []
+    for directory in sorted(pending_root.iterdir()):
+        if directory.is_dir() and not directory.name.startswith("."):
+            results.append(finalize_pending(directory, dest_root))
+    return tuple(results)
 
 
 def adopt_legacy_archive(directory: Path) -> SnapshotResult:

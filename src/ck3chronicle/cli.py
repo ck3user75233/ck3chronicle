@@ -18,6 +18,19 @@ def _capture_once(args: argparse.Namespace, observation_trigger: str | None = No
     )
 
 
+def _spool_once(args: argparse.Namespace, abort_if=None):
+    from . import config
+    from .harvester import spool_logs
+
+    logs_root = Path(args.logs) if args.logs else config.ROOT_LOGS
+    return spool_logs(logs_root, config.ROOT_CK3CHRONICLE, abort_if=abort_if)
+
+
+def _print_pending_result(result) -> None:
+    print(f"protected pending capture: {result.dest_dir}")
+    print(f"copied {result.files_copied} logs; hashing and SQLite deferred")
+
+
 def _print_capture_result(result) -> None:
     if result.was_duplicate:
         print(f"already captured; existing session_id: {result.session_id}")
@@ -75,18 +88,27 @@ def cmd_ingest(args: argparse.Namespace) -> int:
 
 
 def cmd_capture(args: argparse.Namespace) -> int:
-    """Capture and register evidence without parsing it."""
-    return cmd_ingest(args)
+    """Immediately protect logs without hashing, parsing, or SQLite."""
+    from .watcher import is_process_running
+
+    try:
+        if is_process_running("ck3.exe"):
+            print(
+                "ERROR: ck3.exe is running; refusing to copy a live session",
+                file=sys.stderr,
+            )
+            return 3
+        result = _spool_once(args, abort_if=lambda: is_process_running("ck3.exe"))
+    except Exception as exc:
+        return _capture_error(exc)
+    _print_pending_result(result)
+    return 0
 
 
 def cmd_watch(args: argparse.Namespace) -> int:
-    """Capture stable logs now and after each observed CK3 process exit."""
+    """Copy logs now and immediately after each observed CK3 process exit."""
     from . import config
-    from .watcher import (
-        is_process_running,
-        wait_for_stable_evidence,
-        watch_sessions,
-    )
+    from .watcher import is_process_running, watch_sessions
 
     logs_root = Path(args.logs) if args.logs else config.ROOT_LOGS
     if args.once:
@@ -97,27 +119,23 @@ def cmd_watch(args: argparse.Namespace) -> int:
                     file=sys.stderr,
                 )
                 return 3
-            wait_for_stable_evidence(
-                logs_root,
-                stable_seconds=args.stable_seconds,
-                poll_seconds=min(args.poll_seconds, 0.5),
-                timeout_seconds=args.timeout_seconds,
+            result = _spool_once(
+                args,
                 abort_if=lambda: is_process_running(args.process_name),
             )
-            result = _capture_once(args)
         except Exception as exc:
             return _capture_error(exc)
-        _print_capture_result(result)
+        _print_pending_result(result)
         return 0
 
     print(
-        f"watching {args.process_name}; stable logs are captured on process exit "
+        f"watching {args.process_name}; logs are copied immediately on process exit "
         "(Ctrl+C to stop)"
     )
 
     def on_capture(result, trigger: str) -> None:
         print(f"capture trigger: {trigger}")
-        _print_capture_result(result)
+        _print_pending_result(result)
 
     def on_error(exc: Exception, trigger: str) -> None:
         print(f"WARNING: {trigger} capture deferred: {exc}", file=sys.stderr)
@@ -125,13 +143,14 @@ def cmd_watch(args: argparse.Namespace) -> int:
     try:
         watch_sessions(
             logs_root=logs_root,
-            capture=lambda trigger: _capture_once(args, trigger),
+            capture=lambda trigger: _spool_once(
+                args,
+                abort_if=lambda: is_process_running(args.process_name),
+            ),
             process_probe=lambda: is_process_running(args.process_name),
             on_capture=on_capture,
             on_error=on_error,
             poll_seconds=args.poll_seconds,
-            stable_seconds=args.stable_seconds,
-            timeout_seconds=args.timeout_seconds,
         )
     except KeyboardInterrupt:
         print("watch stopped")
@@ -144,8 +163,10 @@ def cmd_reconcile(args: argparse.Namespace) -> int:
     """Register complete orphan archives and verify/adopt legacy bundles."""
     from . import config
     from .archive_registry import reconcile_archives
+    from .harvester import finalize_pending_captures
 
     try:
+        finalized = finalize_pending_captures(config.ROOT_CK3CHRONICLE)
         summary = reconcile_archives(
             config.ROOT_CK3CHRONICLE,
             config.ROOT_CK3CHRONICLE / "ck3chronicle.db",
@@ -154,6 +175,7 @@ def cmd_reconcile(args: argparse.Namespace) -> int:
     except Exception as exc:
         return _capture_error(exc)
     print(
+        f"finalized {len(finalized)} pending; "
         f"scanned {summary.scanned} archives; "
         f"adopted {summary.adopted_legacy} legacy; "
         f"registered {summary.registered} orphaned"
@@ -264,36 +286,34 @@ def build_parser() -> argparse.ArgumentParser:
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
-    # capture / legacy ingest alias
+    # urgent copy / legacy archive-and-register command
     p_capture = sub.add_parser(
         "capture",
-        help="Atomically preserve and register CK3 logs without parsing them.",
+        help="Immediately copy CK3 logs to the pending queue; defer hashing and SQLite.",
     )
     p_capture.add_argument("--logs", metavar="PATH", help="Path to CK3 logs folder.")
     p_capture.set_defaults(func=cmd_capture)
 
     p_ingest = sub.add_parser(
         "ingest",
-        help="Alias for `capture` (preserves compatibility).",
+        help="Legacy command: finalize and register logs immediately.",
     )
     p_ingest.add_argument("--logs", metavar="PATH", help="Path to CK3 logs folder.")
     p_ingest.set_defaults(func=cmd_ingest)
 
     p_watch = sub.add_parser(
         "watch",
-        help="Capture existing logs and each future CK3 run in the foreground.",
+        help="Immediately copy logs after each CK3 exit; defer hashing and SQLite.",
     )
     p_watch.add_argument("--logs", metavar="PATH", help="Path to CK3 logs folder.")
     p_watch.add_argument(
         "--process-name", default="ck3.exe", help="Exact CK3 process name."
     )
-    p_watch.add_argument("--poll-seconds", type=float, default=1.0, metavar="N")
-    p_watch.add_argument("--stable-seconds", type=float, default=2.0, metavar="N")
-    p_watch.add_argument("--timeout-seconds", type=float, default=30.0, metavar="N")
+    p_watch.add_argument("--poll-seconds", type=float, default=0.5, metavar="N")
     p_watch.add_argument(
         "--once",
         action="store_true",
-        help="Capture the current stable logs once, then exit.",
+        help="Copy the current completed-session logs once, then exit.",
     )
     p_watch.set_defaults(func=cmd_watch)
 
