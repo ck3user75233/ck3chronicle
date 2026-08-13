@@ -60,7 +60,11 @@ The suite currently covers:
 - same-model idempotence and atomic reclassification rollback;
 - rejection of unparsed sessions;
 - deterministic classify JSON and stored-record review-queue output;
-- explicit empty filtered review queues.
+- explicit empty filtered review queues;
+- database-only executive report structure and readable contract templates;
+- capture-time latest ordering independent of session registration ID;
+- bounded report/error JSON projections;
+- end-to-end and second-run idempotence for `process-pending`.
 
 ## Protected-corpus compatibility gate
 

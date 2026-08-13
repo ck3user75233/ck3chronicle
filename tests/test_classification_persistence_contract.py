@@ -105,6 +105,10 @@ def test_rclassdb_001_one_row_per_semantic_unit_with_exact_provenance(
         (3, 2, "pdx_persistent_reader.cpp", "full", "21b477c6e94b1681"),
     ]
     assert [row[5] for row in rows[2:]] == ["Unknown trigger: <KEY>"] * 3
+    assert conn.execute(
+        "SELECT COUNT(*) FROM classification_contracts WHERE model_sha256 = ?",
+        (MODEL_SHA256,),
+    ).fetchone()[0] == 822
     conn.close()
 
 

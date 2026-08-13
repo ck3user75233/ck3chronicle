@@ -69,6 +69,8 @@ def classify_session(
             "session must be successfully parsed before classification"
         )
 
+    repository.ensure_classification_model(conn, classifier.model)
+
     existing = repository.get_classification_run(
         conn, session_id, classifier.model.sha256
     )

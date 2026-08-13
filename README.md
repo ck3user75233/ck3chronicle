@@ -35,6 +35,10 @@ classification do not occur in the process-exit path.
 .\.venv\Scripts\ck3chronicle.exe parse --session <ID>
 .\.venv\Scripts\ck3chronicle.exe classify --session <ID>
 .\.venv\Scripts\ck3chronicle.exe review-queue --session <ID>
+.\.venv\Scripts\ck3chronicle.exe report --session <ID>
+.\.venv\Scripts\ck3chronicle.exe latest
+.\.venv\Scripts\ck3chronicle.exe errors --session <ID>
+.\.venv\Scripts\ck3chronicle.exe process-pending
 ```
 
 `watch` is a foreground process and must currently be started again after a PC
@@ -42,9 +46,10 @@ restart. Automatic login startup has not yet been released.
 
 ## Current development checkpoint
 
-The next checkpoint unifies finalization, parse, classification, and the first
-useful stored-record report behind `process-pending`. It will not rewrite
-captured evidence.
+`process-pending` is the normal deferred workflow after the copy-only watcher:
+it finalizes protected pending copies, reconciles archives, parses canonical
+blocks, classifies them with the approved model, and prints the latest report.
+It is idempotent and never rewrites captured evidence.
 
 Read these documents in order:
 

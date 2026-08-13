@@ -467,6 +467,185 @@ def cmd_review_queue(args: argparse.Namespace) -> int:
     return 0
 
 
+def _report_for_args(args: argparse.Namespace, *, latest: bool = False):
+    import sqlite3
+
+    from . import config
+    from .db import repository
+    from .reporting import ReportError, build_session_report, latest_session_id
+
+    conn = None
+    try:
+        conn = repository.open_db(
+            config.ROOT_CK3CHRONICLE / "ck3chronicle.db"
+        )
+        session_id = latest_session_id(conn) if latest else int(args.session)
+        if session_id is None:
+            raise ReportError("no captured sessions exist")
+        return build_session_report(
+            conn,
+            session_id,
+            model_sha256=getattr(args, "model_sha256", None),
+            limit=int(args.limit),
+        )
+    finally:
+        if conn is not None:
+            conn.close()
+
+
+def _print_executive_report(report: dict[str, object]) -> None:
+    session = report["session"]
+    classification = report["classification"]
+    parse = report["parse"]
+    counts = classification["counts"]
+    print(
+        f"Session {session['session_id']} — captured {session['captured_at']} — "
+        f"{session['total_bytes']:,} bytes"
+    )
+    print(
+        f"Evidence: {session['log_count']} logs; completeness="
+        f"{session['evidence_completeness']}; crash={session['crash_present']}"
+    )
+    print(
+        f"Parsed: {parse['source_blocks']:,} blocks; "
+        f"{parse['canonical_occurrences']:,} canonical occurrences"
+    )
+    print(
+        f"Classified: {classification['semantic_occurrences']:,} semantic occurrences; "
+        f"full={counts['full']:,}, l1+l2={counts['l1_l2']:,}, "
+        f"l1={counts['l1']:,}, unknown={counts['unknown']:,}; "
+        f"model={classification['model_revision_id']}"
+    )
+    print("\nTop patterns")
+    for pattern in report["top_patterns"]:
+        label = pattern["template"] or pattern["sample"]
+        print(
+            f"{pattern['occurrences']:>8,}  {pattern['assignment_level']:<7}  "
+            f"{pattern['source_family']}  {label}"
+        )
+    print(f"\nReview required: {classification['review_required']:,} occurrences")
+    for item in report["review_queue"]:
+        print(
+            f"{item['occurrences']:>8,}  {item['assignment_level']:<7}  "
+            f"{item['source_family']}:{item['first_line']}  {item['sample']}"
+        )
+
+
+def _cmd_report(args: argparse.Namespace, *, latest: bool) -> int:
+    import sqlite3
+
+    from .reporting import ReportError
+
+    try:
+        report = _report_for_args(args, latest=latest)
+    except ReportError as exc:
+        print(f"ERROR: report unavailable: {exc}", file=sys.stderr)
+        return 2
+    except sqlite3.Error as exc:
+        print(f"ERROR [database_failed]: {exc}", file=sys.stderr)
+        return 5
+    if args.json:
+        print(json.dumps(report, sort_keys=True))
+    else:
+        _print_executive_report(report)
+    return 0
+
+
+def cmd_report(args: argparse.Namespace) -> int:
+    return _cmd_report(args, latest=False)
+
+
+def cmd_latest(args: argparse.Namespace) -> int:
+    return _cmd_report(args, latest=True)
+
+
+def cmd_errors(args: argparse.Namespace) -> int:
+    import sqlite3
+
+    from .reporting import ReportError
+
+    try:
+        report = _report_for_args(args, latest=not bool(args.session))
+    except ReportError as exc:
+        print(f"ERROR: errors unavailable: {exc}", file=sys.stderr)
+        return 2
+    except sqlite3.Error as exc:
+        print(f"ERROR [database_failed]: {exc}", file=sys.stderr)
+        return 5
+    payload = {
+        "schema": "ck3chronicle.errors",
+        "schema_version": 1,
+        "session_id": report["session"]["session_id"],
+        "captured_at": report["session"]["captured_at"],
+        "model_revision_id": report["classification"]["model_revision_id"],
+        "total_occurrences": report["classification"]["semantic_occurrences"],
+        "patterns": report["top_patterns"],
+    }
+    if args.json:
+        print(json.dumps(payload, sort_keys=True))
+    else:
+        print(
+            f"Session {payload['session_id']} errors — "
+            f"{payload['total_occurrences']:,} semantic occurrences"
+        )
+        for pattern in payload["patterns"]:
+            label = pattern["template"] or pattern["sample"]
+            print(
+                f"{pattern['occurrences']:>8,}  {pattern['source_family']}  {label}"
+            )
+    return 0
+
+
+def cmd_process_pending(args: argparse.Namespace) -> int:
+    """Finalize protected copies and bring every session to report-ready state."""
+    import sqlite3
+
+    from . import config
+    from .classification.catalog import load_approved_classifier
+    from .harvester import ArchiveIntegrityError
+    from .processing import process_pending
+
+    try:
+        result = process_pending(
+            config.ROOT_CK3CHRONICLE, load_approved_classifier()
+        )
+    except ArchiveIntegrityError as exc:
+        print(f"ERROR [archive_integrity]: {exc}", file=sys.stderr)
+        return 3
+    except sqlite3.Error as exc:
+        print(f"ERROR [database_failed]: {exc}", file=sys.stderr)
+        return 5
+    except Exception as exc:
+        print(f"ERROR: processing failed: {exc}", file=sys.stderr)
+        return 1
+
+    payload = {
+        "schema": "ck3chronicle.processing-result",
+        "schema_version": 1,
+        "finalized_pending": result.finalized_pending,
+        "registered_archives": result.registered_archives,
+        "parsed_sessions": result.parsed_sessions,
+        "classified_sessions": result.classified_sessions,
+        "reconciliation_errors": list(result.reconciliation_errors),
+        "latest_report": result.latest_report,
+    }
+    if args.json:
+        print(json.dumps(payload, sort_keys=True))
+    else:
+        print(
+            f"finalized={result.finalized_pending}; "
+            f"registered={result.registered_archives}; "
+            f"parsed={result.parsed_sessions}; "
+            f"classified={result.classified_sessions}"
+        )
+        for error in result.reconciliation_errors:
+            print(f"WARNING: {error}", file=sys.stderr)
+        if result.latest_report is not None:
+            print()
+            _print_executive_report(result.latest_report)
+    return 1 if result.reconciliation_errors else 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="ck3chronicle",
@@ -576,6 +755,39 @@ def build_parser() -> argparse.ArgumentParser:
     p_review.add_argument("--model-sha256", metavar="SHA256")
     p_review.add_argument("--json", action="store_true")
     p_review.set_defaults(func=cmd_review_queue)
+
+    p_report = sub.add_parser(
+        "report", help="Executive report for one stored classified session."
+    )
+    p_report.add_argument("--session", type=int, required=True, metavar="SESSION_ID")
+    p_report.add_argument("--limit", type=int, default=20, metavar="N")
+    p_report.add_argument("--model-sha256", metavar="SHA256")
+    p_report.add_argument("--json", action="store_true")
+    p_report.set_defaults(func=cmd_report)
+
+    p_latest = sub.add_parser(
+        "latest", help="Executive report for the latest captured session."
+    )
+    p_latest.add_argument("--limit", type=int, default=20, metavar="N")
+    p_latest.add_argument("--model-sha256", metavar="SHA256")
+    p_latest.add_argument("--json", action="store_true")
+    p_latest.set_defaults(func=cmd_latest)
+
+    p_errors = sub.add_parser(
+        "errors", help="List the most frequent stored semantic error patterns."
+    )
+    p_errors.add_argument("--session", type=int, metavar="SESSION_ID")
+    p_errors.add_argument("--limit", type=int, default=20, metavar="N")
+    p_errors.add_argument("--model-sha256", metavar="SHA256")
+    p_errors.add_argument("--json", action="store_true")
+    p_errors.set_defaults(func=cmd_errors)
+
+    p_process = sub.add_parser(
+        "process-pending",
+        help="Finalize, register, parse, classify, and report protected captures.",
+    )
+    p_process.add_argument("--json", action="store_true")
+    p_process.set_defaults(func=cmd_process_pending)
 
     return parser
 

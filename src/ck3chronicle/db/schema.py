@@ -166,6 +166,20 @@ CREATE TABLE IF NOT EXISTS classification_runs (
 );
 """
 
+CLASSIFICATION_CONTRACTS_DDL = """
+CREATE TABLE IF NOT EXISTS classification_contracts (
+    model_sha256       TEXT NOT NULL REFERENCES classification_models(model_sha256),
+    contract_id        TEXT NOT NULL CHECK (length(contract_id) = 16),
+    source_family      TEXT NOT NULL,
+    template           TEXT NOT NULL,
+    l1_template        TEXT,
+    l2_template        TEXT,
+    support_occurrences INTEGER NOT NULL CHECK (support_occurrences >= 0),
+    support_evidence_count INTEGER NOT NULL CHECK (support_evidence_count >= 0),
+    PRIMARY KEY (model_sha256, contract_id)
+);
+"""
+
 CLASSIFICATION_ASSIGNMENTS_DDL = """
 CREATE TABLE IF NOT EXISTS classification_assignments (
     classification_assignment_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -239,6 +253,7 @@ ALL_DDL = [
     ISSUE_OCCURRENCES_DDL,
     ISSUE_OCCURRENCES_IDX_DDL,
     CLASSIFICATION_MODELS_DDL,
+    CLASSIFICATION_CONTRACTS_DDL,
     CLASSIFICATION_RUNS_DDL,
     CLASSIFICATION_ASSIGNMENTS_DDL,
     CLASSIFICATION_ASSIGNMENTS_IDX_DDL,
@@ -248,4 +263,4 @@ CURRENT_VERSION = 1
 CANONICAL_ISSUES_VERSION = 4
 SESSION_CONTEXT_VERSION = 1
 CAPTURE_VERSION = 1
-CLASSIFICATION_VERSION = 1
+CLASSIFICATION_VERSION = 2

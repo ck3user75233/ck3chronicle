@@ -25,16 +25,20 @@ Status: runtime inference complete; persistence and CLI in progress.
 
 ## 3. First useful report
 
-- implement `report`, `latest`, `latest --json`, and `errors`;
-- report only from stored records;
-- show model identity and classification coverage;
-- expose unresolved and L1-only review queues;
-- produce deterministic schema-versioned JSON.
+Status: complete.
+
+- [x] implement `report`, `latest`, `latest --json`, and `errors`;
+- [x] report only from stored records;
+- [x] show model identity and classification coverage;
+- [x] expose unresolved and L1-only review queues;
+- [x] produce deterministic schema-versioned JSON.
 
 ## 4. Processing workflow
 
-- add `process-pending` to finalize, reconcile, parse, classify, and report;
-- keep the watcher copy-only;
+Status: foreground workflow complete.
+
+- [x] add `process-pending` to finalize, reconcile, parse, classify, and report;
+- [x] keep the watcher copy-only;
 - evaluate safe login-start automation after the foreground workflow is proven.
 
 ## 5. Session intelligence

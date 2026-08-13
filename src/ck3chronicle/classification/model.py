@@ -44,6 +44,8 @@ class ModelCluster:
     semantic_lead: tuple[str, ...]
     template_tokens: tuple[str, ...]
     layers: LayerContracts | None
+    support_occurrences: int
+    support_evidence_count: int
 
     @property
     def template(self) -> str:
@@ -100,6 +102,14 @@ def _load_cluster(raw: Any, index: int) -> ModelCluster:
         raise ModelIntegrityError(
             f"clusters[{index}].cluster_id does not match its source/template contract"
         )
+    support_occurrences = item.get("support_occurrences")
+    support_evidence_count = item.get("support_evidence_count")
+    if not isinstance(support_occurrences, int) or support_occurrences < 0:
+        raise ModelIntegrityError(f"clusters[{index}].support_occurrences is invalid")
+    if not isinstance(support_evidence_count, int) or support_evidence_count < 0:
+        raise ModelIntegrityError(
+            f"clusters[{index}].support_evidence_count is invalid"
+        )
 
     layers: LayerContracts | None = None
     raw_layers = item.get("layer_contracts")
@@ -123,6 +133,8 @@ def _load_cluster(raw: Any, index: int) -> ModelCluster:
         semantic_lead=lead,
         template_tokens=template_tokens,
         layers=layers,
+        support_occurrences=support_occurrences,
+        support_evidence_count=support_evidence_count,
     )
 
 

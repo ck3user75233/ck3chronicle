@@ -289,7 +289,7 @@ def list_sessions(
     conn: sqlite3.Connection, limit: int = 100
 ) -> list[sqlite3.Row]:
     cur = conn.execute(
-        "SELECT * FROM sessions ORDER BY session_id DESC LIMIT ?",
+        "SELECT * FROM sessions ORDER BY created_at DESC, session_id DESC LIMIT ?",
         (limit,),
     )
     return cur.fetchall()
@@ -659,6 +659,125 @@ def _validate_classification_replacement(
             raise ValueError("classification unit ordinals are not contiguous")
 
 
+def _ensure_classification_model(conn: sqlite3.Connection, model: Any) -> None:
+    registered_at = datetime.now(timezone.utc).isoformat()
+    registered = conn.execute(
+        "SELECT * FROM classification_models WHERE model_sha256 = ?",
+        (model.sha256,),
+    ).fetchone()
+    expected_model = (
+        model.revision_id,
+        model.schema_version,
+        model.normalizer_version,
+        model.clusterer_version,
+        float(model.threshold),
+        len(model.clusters),
+    )
+    if registered is None:
+        conn.execute(
+            """
+            INSERT INTO classification_models (
+                model_sha256, revision_id, schema_version,
+                normalizer_version, clusterer_version, threshold,
+                cluster_count, registered_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (model.sha256, *expected_model, registered_at),
+        )
+    else:
+        actual_model = (
+            registered["revision_id"],
+            registered["schema_version"],
+            registered["normalizer_version"],
+            registered["clusterer_version"],
+            float(registered["threshold"]),
+            registered["cluster_count"],
+        )
+        if actual_model != expected_model:
+            raise ValueError("registered classification model metadata disagrees")
+
+    expected_ids = {cluster.cluster_id for cluster in model.clusters}
+    registered_ids = {
+        row[0]
+        for row in conn.execute(
+            "SELECT contract_id FROM classification_contracts WHERE model_sha256 = ?",
+            (model.sha256,),
+        ).fetchall()
+    }
+    if registered_ids - expected_ids:
+        raise ValueError("registered classification contracts disagree with model")
+    missing = [
+        cluster for cluster in model.clusters if cluster.cluster_id not in registered_ids
+    ]
+    conn.executemany(
+        """
+        INSERT INTO classification_contracts (
+            model_sha256, contract_id, source_family, template,
+            l1_template, l2_template, support_occurrences,
+            support_evidence_count
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        [
+            (
+                model.sha256,
+                cluster.cluster_id,
+                cluster.source_family,
+                cluster.template,
+                cluster.layers.l1_template if cluster.layers else None,
+                cluster.layers.l2_template if cluster.layers else None,
+                cluster.support_occurrences,
+                cluster.support_evidence_count,
+            )
+            for cluster in missing
+        ],
+    )
+
+    rows = conn.execute(
+        """
+        SELECT contract_id, source_family, template, l1_template, l2_template,
+               support_occurrences, support_evidence_count
+        FROM classification_contracts
+        WHERE model_sha256 = ?
+        """,
+        (model.sha256,),
+    ).fetchall()
+    actual = {
+        row["contract_id"]: (
+            row["source_family"],
+            row["template"],
+            row["l1_template"],
+            row["l2_template"],
+            row["support_occurrences"],
+            row["support_evidence_count"],
+        )
+        for row in rows
+    }
+    expected = {
+        cluster.cluster_id: (
+            cluster.source_family,
+            cluster.template,
+            cluster.layers.l1_template if cluster.layers else None,
+            cluster.layers.l2_template if cluster.layers else None,
+            cluster.support_occurrences,
+            cluster.support_evidence_count,
+        )
+        for cluster in model.clusters
+    }
+    if actual != expected:
+        raise ValueError("registered classification contract metadata disagrees")
+
+
+def ensure_classification_model(conn: sqlite3.Connection, model: Any) -> None:
+    """Idempotently register exact model metadata and its compact contract catalog."""
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        _ensure_classification_model(conn, model)
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+
+
 def replace_classification_run(
     conn: sqlite3.Connection,
     *,
@@ -673,40 +792,7 @@ def replace_classification_run(
     registered_at = datetime.now(timezone.utc).isoformat()
     try:
         conn.execute("BEGIN IMMEDIATE")
-        registered = conn.execute(
-            "SELECT * FROM classification_models WHERE model_sha256 = ?",
-            (model.sha256,),
-        ).fetchone()
-        expected_model = (
-            model.revision_id,
-            model.schema_version,
-            model.normalizer_version,
-            model.clusterer_version,
-            float(model.threshold),
-            len(model.clusters),
-        )
-        if registered is None:
-            conn.execute(
-                """
-                INSERT INTO classification_models (
-                    model_sha256, revision_id, schema_version,
-                    normalizer_version, clusterer_version, threshold,
-                    cluster_count, registered_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (model.sha256, *expected_model, registered_at),
-            )
-        else:
-            actual_model = (
-                registered["revision_id"],
-                registered["schema_version"],
-                registered["normalizer_version"],
-                registered["clusterer_version"],
-                float(registered["threshold"]),
-                registered["cluster_count"],
-            )
-            if actual_model != expected_model:
-                raise ValueError("registered classification model metadata disagrees")
+        _ensure_classification_model(conn, model)
 
         conn.execute(
             "DELETE FROM classification_runs WHERE session_id = ? AND model_sha256 = ?",
