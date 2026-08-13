@@ -32,7 +32,7 @@ DEBUG_CONTEXT = (
     b"[12:00:00][D][virtualfilesystem_physfs.cpp:813]: Mounted Data: "
     b"C:/Steam/workshop/content/1158310/222\n"
     b"[12:00:00][D][virtualfilesystem_physfs.cpp:813]: Mounted Data: "
-    b"C:/Users/test/CK3/mod/Local Patch\n"
+    b"C:/Users/test/CK3/mod/LocalPatch\n"
     b"[12:00:01][D][virtualfilesystem.cpp:339]: Startup continues\n"
 )
 
@@ -77,7 +77,7 @@ def test_rcontext_001_mounted_data_is_authoritative_membership_and_order(
         "dlc001_alpha",
     ]
     assert [item.display_name for item in result.dlcs] == ["Beta Pack", "Alpha Pack"]
-    assert [item.mod_key for item in result.mods] == ["222", "local:local patch"]
+    assert [item.mod_key for item in result.mods] == ["222", "local:localpatch"]
     assert [item.display_name for item in result.mods] == [
         "Active | Workshop",
         "Local Patch",
@@ -109,7 +109,7 @@ def test_rcontext_002_inventory_mismatch_is_visible_but_cannot_add_a_mod(
 
     assert result.status == "partial"
     assert result.inventory_enabled_mod_count == 3
-    assert [item.mod_key for item in result.mods] == ["222", "local:local patch"]
+    assert [item.mod_key for item in result.mods] == ["222", "local:localpatch"]
     assert all(item.mod_key != "333" for item in result.mods)
     assert "enabled_only=['333']" in result.warnings[0]
     conn.close()
@@ -165,5 +165,5 @@ def test_rcontext_005_cli_json_exposes_complete_ordered_context(
     ]
     assert [item["mod_key"] for item in payload["active_mods"]] == [
         "222",
-        "local:local patch",
+        "local:localpatch",
     ]

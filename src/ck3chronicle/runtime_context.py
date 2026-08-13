@@ -15,7 +15,7 @@ from typing import Iterable
 from .db import repository
 
 
-CONTEXT_CONTRACT_VERSION = "1.0.0"
+CONTEXT_CONTRACT_VERSION = "1.1.0"
 
 
 class RuntimeContextError(RuntimeError):
@@ -85,6 +85,11 @@ def _dlc_descriptor_key(path: str) -> str | None:
     return match.group("key").casefold() if match else None
 
 
+def _local_key(value: str) -> str:
+    folded = "".join(character for character in value.casefold() if character.isalnum())
+    return "local:" + (folded or hashlib.sha256(value.encode("utf-8")).hexdigest()[:16])
+
+
 def _mod_descriptor_key(path: str) -> tuple[str, str] | None:
     normalized = _normalized_path(path)
     workshop = _WORKSHOP_DESCRIPTOR.search(normalized)
@@ -92,7 +97,7 @@ def _mod_descriptor_key(path: str) -> tuple[str, str] | None:
         return "workshop", workshop.group("key")
     local = _LOCAL_DESCRIPTOR.search(normalized)
     if local:
-        return "local", "local:" + local.group("name").casefold()
+        return "local", _local_key(local.group("name"))
     return None
 
 
@@ -175,7 +180,7 @@ def parse_debug_context(lines: Iterable[str]) -> tuple[
                 mod_order += 1
             else:
                 leaf = path.rsplit("/", 1)[-1]
-                local_key = "local:" + leaf.casefold()
+                local_key = _local_key(leaf)
                 inventory = enabled_mod_inventory.get(local_key)
                 source_kind = "local" if inventory is not None or "/mod/" in path.casefold() else "unknown"
                 if source_kind == "unknown":
