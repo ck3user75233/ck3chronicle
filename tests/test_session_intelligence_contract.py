@@ -104,6 +104,9 @@ def test_rdelta_001_contracts_ignore_changed_keys_locators_and_line_numbers(
         "previous_occurrences": 5,
         "current_occurrences": 4,
         "net_change": -1,
+        "previous_rate_per_observed_hour": 9000.0,
+        "current_rate_per_observed_hour": 4800.0,
+        "rate_delta_per_observed_hour": -4200.0,
         "pattern_counts": {
             "new": 1,
             "fixed": 1,
@@ -130,6 +133,25 @@ def test_rdelta_001_contracts_ignore_changed_keys_locators_and_line_numbers(
     assert changed["improved"]["current_occurrences"] == 1
     assert result["unchanged_patterns_total"] == 1
     assert result["unchanged_patterns"][0]["assignment_level"] == "l1"
+    assert result["evidence_quality"] == {
+        "previous": {
+            "source_blocks": 3,
+            "first_error_time": "12:00:00",
+            "last_error_time": "12:00:02",
+            "observed_error_span_seconds": 2,
+            "semantic_occurrences_per_observed_hour": 9000.0,
+            "exact_100000_source_blocks": False,
+        },
+        "current": {
+            "source_blocks": 4,
+            "first_error_time": "12:00:00",
+            "last_error_time": "12:00:03",
+            "observed_error_span_seconds": 3,
+            "semantic_occurrences_per_observed_hour": 4800.0,
+            "exact_100000_source_blocks": False,
+        },
+        "warnings": [],
+    }
     conn.close()
 
 

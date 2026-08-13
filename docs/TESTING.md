@@ -67,7 +67,8 @@ The suite currently covers:
 - end-to-end and second-run idempotence for `process-pending`;
 - cross-session semantic deltas despite changed keys, locators, and line
   numbers;
-- chronological CLI selection and bounded deterministic comparison JSON.
+- chronological CLI selection and bounded deterministic comparison JSON;
+- observed error-window rates and quality metadata.
 
 ## Protected-corpus compatibility gate
 

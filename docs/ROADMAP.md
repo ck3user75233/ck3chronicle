@@ -46,9 +46,11 @@ Status: foreground workflow complete.
 - [x] compare runs as new, fixed, worse, improved, or unchanged;
 - [x] exclude keys, locators, timestamps, and lines from delta identity;
 - [x] ensure both sides use a common classification model revision;
+- [x] add observed-error-window rates and exact-100,000-block quality flags;
 - support named baselines and reasoned ignore rules;
 - add `report --since` as a convenience projection;
-- add duration/exposure normalization and explicit capped-log quality flags;
+- add true gameplay-duration exposure when authoritative lifecycle timing is
+  available;
 - persist durable run chronology independently of archive deduplication.
 
 ## 6. Runtime DLC/mod context

@@ -188,6 +188,54 @@ def _session_identity(session: sqlite3.Row) -> dict[str, object]:
     }
 
 
+def _clock_seconds(value: str) -> int:
+    try:
+        hours, minutes, seconds = (int(part) for part in value.split(":"))
+    except (TypeError, ValueError) as exc:
+        raise ComparisonError(f"stored source-block timestamp is invalid: {value}") from exc
+    if not (0 <= hours <= 23 and 0 <= minutes <= 59 and 0 <= seconds <= 59):
+        raise ComparisonError(f"stored source-block timestamp is invalid: {value}")
+    return hours * 3600 + minutes * 60 + seconds
+
+
+def _evidence_quality(
+    conn: sqlite3.Connection,
+    session: sqlite3.Row,
+    run: sqlite3.Row,
+) -> dict[str, object]:
+    row = conn.execute(
+        """
+        SELECT COUNT(*) AS source_blocks,
+               MIN(timestamp) AS first_error_time,
+               MAX(timestamp) AS last_error_time
+        FROM source_blocks
+        WHERE session_id = ?
+        """,
+        (session["session_id"],),
+    ).fetchone()
+    source_blocks = int(row["source_blocks"])
+    first = row["first_error_time"]
+    last = row["last_error_time"]
+    span: int | None = None
+    rate: float | None = None
+    if first is not None and last is not None:
+        first_seconds = _clock_seconds(str(first))
+        last_seconds = _clock_seconds(str(last))
+        if last_seconds < first_seconds:
+            last_seconds += 24 * 60 * 60
+        span = last_seconds - first_seconds
+        if span > 0:
+            rate = int(run["semantic_occurrence_count"]) * 3600.0 / span
+    return {
+        "source_blocks": source_blocks,
+        "first_error_time": first,
+        "last_error_time": last,
+        "observed_error_span_seconds": span,
+        "semantic_occurrences_per_observed_hour": rate,
+        "exact_100000_source_blocks": source_blocks == 100_000,
+    }
+
+
 def compare_sessions(
     conn: sqlite3.Connection,
     current_session_id: int,
@@ -227,6 +275,20 @@ def compare_sessions(
             f"session_id {against_session_id} has no run for model {exact_model}"
         )
 
+    previous_quality = _evidence_quality(conn, against_session, against_run)
+    current_quality = _evidence_quality(conn, current_session, current_run)
+    previous_span = previous_quality["observed_error_span_seconds"]
+    current_span = current_quality["observed_error_span_seconds"]
+    previous_hours = (
+        float(previous_span) / 3600.0
+        if previous_span is not None and int(previous_span) > 0
+        else None
+    )
+    current_hours = (
+        float(current_span) / 3600.0
+        if current_span is not None and int(current_span) > 0
+        else None
+    )
     before = _patterns(conn, against_run)
     after = _patterns(conn, current_run)
     changed: list[dict[str, object]] = []
@@ -284,7 +346,22 @@ def compare_sessions(
                 "previous_occurrences": previous_count,
                 "current_occurrences": current_count,
                 "delta": delta,
+                "previous_rate_per_observed_hour": (
+                    previous_count / previous_hours
+                    if previous_hours is not None
+                    else None
+                ),
+                "current_rate_per_observed_hour": (
+                    current_count / current_hours if current_hours is not None else None
+                ),
             }
+        )
+        previous_rate = comparison["previous_rate_per_observed_hour"]
+        current_rate = comparison["current_rate_per_observed_hour"]
+        comparison["rate_delta_per_observed_hour"] = (
+            float(current_rate) - float(previous_rate)
+            if previous_rate is not None and current_rate is not None
+            else None
         )
         (unchanged if status == "unchanged" else changed).append(comparison)
 
@@ -306,6 +383,21 @@ def compare_sessions(
     )
     previous_total = int(against_run["semantic_occurrence_count"])
     current_total = int(current_run["semantic_occurrence_count"])
+    quality_warnings: list[str] = []
+    for label, session, quality in (
+        ("previous", against_session, previous_quality),
+        ("current", current_session, current_quality),
+    ):
+        if quality["exact_100000_source_blocks"]:
+            quality_warnings.append(
+                f"{label} session {session['session_id']} contains exactly 100,000 "
+                "source blocks; totals and rates may be censored"
+            )
+        if not quality["observed_error_span_seconds"]:
+            quality_warnings.append(
+                f"{label} session {session['session_id']} has no measurable error "
+                "timestamp span; rate comparison is unavailable"
+            )
     return {
         "schema": "ck3chronicle.session-comparison",
         "schema_version": 1,
@@ -313,10 +405,28 @@ def compare_sessions(
         "model_sha256": exact_model,
         "previous_session": _session_identity(against_session),
         "current_session": _session_identity(current_session),
+        "evidence_quality": {
+            "previous": previous_quality,
+            "current": current_quality,
+            "warnings": quality_warnings,
+        },
         "summary": {
             "previous_occurrences": previous_total,
             "current_occurrences": current_total,
             "net_change": current_total - previous_total,
+            "previous_rate_per_observed_hour": previous_quality[
+                "semantic_occurrences_per_observed_hour"
+            ],
+            "current_rate_per_observed_hour": current_quality[
+                "semantic_occurrences_per_observed_hour"
+            ],
+            "rate_delta_per_observed_hour": (
+                float(current_quality["semantic_occurrences_per_observed_hour"])
+                - float(previous_quality["semantic_occurrences_per_observed_hour"])
+                if current_quality["semantic_occurrences_per_observed_hour"] is not None
+                and previous_quality["semantic_occurrences_per_observed_hour"] is not None
+                else None
+            ),
             "pattern_counts": pattern_counts,
             "occurrence_movement": occurrence_movement,
         },

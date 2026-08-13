@@ -57,6 +57,9 @@ It reports observed new, fixed, worse, improved, and unchanged semantic
 patterns. Known patterns use stable contract IDs; residuals use normalized slot
 structure, so keys, locators, timestamps, and line numbers do not create false
 changes. Use `--session` and `--against` to choose an explicit pair.
+Raw counts are accompanied by rates over the stored first-to-last error window
+and evidence-quality warnings; these are observational diagnostics, not causal
+claims about a patch or mod.
 
 Read these documents in order:
 

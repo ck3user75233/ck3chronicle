@@ -661,6 +661,13 @@ def _print_session_comparison(comparison: dict[str, object]) -> None:
         f"{summary['current_occurrences']:,} "
         f"(net {summary['net_change']:+,})"
     )
+    if summary["previous_rate_per_observed_hour"] is not None:
+        print(
+            "Rate per observed error hour: "
+            f"{summary['previous_rate_per_observed_hour']:,.1f} -> "
+            f"{summary['current_rate_per_observed_hour']:,.1f} "
+            f"(net {summary['rate_delta_per_observed_hour']:+,.1f})"
+        )
     print(
         "Patterns: "
         f"new={pattern_counts['new']}, fixed={pattern_counts['fixed']}, "
@@ -672,6 +679,8 @@ def _print_session_comparison(comparison: dict[str, object]) -> None:
         f"introduced={movement['introduced']:,}, eliminated={movement['eliminated']:,}, "
         f"increased={movement['increased']:,}, reduced={movement['reduced']:,}"
     )
+    for warning in comparison["evidence_quality"]["warnings"]:
+        print(f"WARNING: {warning}")
     print("\nLargest observed changes")
     for item in comparison["changed_patterns"]:
         label = item["template"] or item["sample"]

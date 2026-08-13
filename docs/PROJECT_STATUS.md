@@ -55,6 +55,8 @@ contributes to that number.
   → latest-report workflow.
 - chronological `compare` with stable model-bound pattern identities and
   observed new/fixed/worse/improved/unchanged occurrence deltas.
+- first-to-last error-window rates plus an explicit exact-100,000-block
+  possible-censoring warning.
 
 The production runtime has also been compared with the frozen release
 evaluator across all five training-excluded logs: 194,022 semantic
