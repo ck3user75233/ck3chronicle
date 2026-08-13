@@ -33,6 +33,8 @@ classification do not occur in the process-exit path.
 .\.venv\Scripts\ck3chronicle.exe reconcile
 .\.venv\Scripts\ck3chronicle.exe sessions
 .\.venv\Scripts\ck3chronicle.exe parse --session <ID>
+.\.venv\Scripts\ck3chronicle.exe classify --session <ID>
+.\.venv\Scripts\ck3chronicle.exe review-queue --session <ID>
 ```
 
 `watch` is a foreground process and must currently be started again after a PC
@@ -40,9 +42,9 @@ restart. Automatic login startup has not yet been released.
 
 ## Current development checkpoint
 
-The next checkpoint persists classifier runs and assignments as a versioned
-derived layer over stored source blocks, then exposes the unresolved review
-queue. It will not rewrite captured evidence.
+The next checkpoint unifies finalization, parse, classification, and the first
+useful stored-record report behind `process-pending`. It will not rewrite
+captured evidence.
 
 Read these documents in order:
 

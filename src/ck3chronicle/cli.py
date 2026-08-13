@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 import pathlib
 from pathlib import Path
@@ -314,6 +315,158 @@ def cmd_parse(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_classify(args: argparse.Namespace) -> int:
+    """Classify one session from its stored canonical source blocks."""
+    import sqlite3
+
+    from . import config
+    from .classification import (
+        ClassificationError,
+        Classifier,
+        ModelIntegrityError,
+        classify_session,
+        load_model,
+    )
+    from .classification.catalog import (
+        APPROVED_MODEL_SHA256,
+        approved_model_path,
+    )
+    from .db import repository
+
+    if args.model and not args.model_sha256:
+        print("ERROR: --model requires --model-sha256", file=sys.stderr)
+        return 2
+    model_path = Path(args.model) if args.model else approved_model_path()
+    model_sha256 = args.model_sha256 or APPROVED_MODEL_SHA256
+    conn = None
+    try:
+        classifier = Classifier(
+            load_model(model_path, expected_sha256=model_sha256)
+        )
+        conn = repository.open_db(
+            config.ROOT_CK3CHRONICLE / "ck3chronicle.db"
+        )
+        result = classify_session(
+            conn,
+            int(args.session),
+            classifier,
+            reclassify=bool(args.reclassify),
+        )
+    except (ClassificationError, ModelIntegrityError, FileNotFoundError) as exc:
+        print(f"ERROR: classification rejected: {exc}", file=sys.stderr)
+        return 2
+    except sqlite3.Error as exc:
+        print(f"ERROR [database_failed]: {exc}", file=sys.stderr)
+        return 5
+    except Exception as exc:
+        print(f"ERROR: classification failed: {exc}", file=sys.stderr)
+        return 1
+    finally:
+        if conn is not None:
+            conn.close()
+
+    payload = {
+        "schema": "ck3chronicle.classification-run",
+        "schema_version": 1,
+        "session_id": result.session_id,
+        "run_id": result.run_id,
+        "model_revision_id": result.model_revision_id,
+        "model_sha256": result.model_sha256,
+        "classification_contract_version": result.classification_contract_version,
+        "counts": result.counts,
+        "mutated": result.mutated,
+    }
+    if args.json:
+        print(json.dumps(payload, sort_keys=True))
+    else:
+        counts = result.counts
+        action = "classified" if result.mutated else "already classified"
+        print(
+            f"session_id={result.session_id}: {action} "
+            f"{counts['semantic_occurrences']} semantic occurrences from "
+            f"{counts['source_blocks']} blocks "
+            f"(full={counts['full']}, l1_l2={counts['l1_l2']}, "
+            f"l1={counts['l1']}, unknown={counts['unknown']}); "
+            f"model={result.model_revision_id}"
+        )
+    return 0
+
+
+def cmd_review_queue(args: argparse.Namespace) -> int:
+    """Show stored L1-only and unknown assignments for human adjudication."""
+    import sqlite3
+
+    from . import config
+    from .classification.catalog import APPROVED_MODEL_SHA256
+    from .db import repository
+
+    model_sha256 = args.model_sha256 or APPROVED_MODEL_SHA256
+    conn = None
+    try:
+        conn = repository.open_db(
+            config.ROOT_CK3CHRONICLE / "ck3chronicle.db"
+        )
+        run = repository.get_classification_run(
+            conn, int(args.session), model_sha256
+        )
+        model = repository.get_classification_model(conn, model_sha256)
+        if run is None or model is None:
+            print(
+                "ERROR: no stored classification run for this session/model",
+                file=sys.stderr,
+            )
+            return 2
+        rows = repository.list_classification_review_items(
+            conn,
+            session_id=int(args.session),
+            model_sha256=model_sha256,
+            level=args.level,
+            limit=int(args.limit),
+        )
+    except sqlite3.Error as exc:
+        print(f"ERROR [database_failed]: {exc}", file=sys.stderr)
+        return 5
+    finally:
+        if conn is not None:
+            conn.close()
+
+    items = [
+        {
+            "assignment_level": row["assignment_level"],
+            "source_family": row["source_family"],
+            "occurrences": int(row["occurrences"]),
+            "first_line": int(row["first_line"]),
+            "l1_template": row["l1_template"],
+            "l2_template": row["l2_template"],
+            "sample": row["sample"],
+        }
+        for row in rows
+    ]
+    payload = {
+        "schema": "ck3chronicle.classification-review-queue",
+        "schema_version": 1,
+        "session_id": int(args.session),
+        "model_revision_id": model["revision_id"],
+        "model_sha256": model_sha256,
+        "level": args.level,
+        "returned": len(items),
+        "items": items,
+    }
+    if args.json:
+        print(json.dumps(payload, sort_keys=True))
+    else:
+        print(
+            f"session_id={args.session}: {len(items)} review patterns "
+            f"(model={model['revision_id']})"
+        )
+        for item in items:
+            print(
+                f"{item['occurrences']:>7}  {item['assignment_level']:<7}  "
+                f"{item['source_family']}:{item['first_line']}  {item['sample']}"
+            )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="ck3chronicle",
@@ -395,6 +548,34 @@ def build_parser() -> argparse.ArgumentParser:
         help="Atomically replace the session's prior canonical parse.",
     )
     p_parse.set_defaults(func=cmd_parse)
+
+    p_classify = sub.add_parser(
+        "classify",
+        help="Classify one parsed session with a hash-pinned empirical model.",
+    )
+    p_classify.add_argument("--session", type=int, required=True, metavar="SESSION_ID")
+    p_classify.add_argument("--model", metavar="PATH")
+    p_classify.add_argument("--model-sha256", metavar="SHA256")
+    p_classify.add_argument(
+        "--reclassify",
+        action="store_true",
+        help="Atomically replace this session/model classification run.",
+    )
+    p_classify.add_argument("--json", action="store_true")
+    p_classify.set_defaults(func=cmd_classify)
+
+    p_review = sub.add_parser(
+        "review-queue",
+        help="List stored L1-only and unknown patterns for human review.",
+    )
+    p_review.add_argument("--session", type=int, required=True, metavar="SESSION_ID")
+    p_review.add_argument(
+        "--level", choices=("all", "l1", "unknown"), default="all"
+    )
+    p_review.add_argument("--limit", type=int, default=100, metavar="N")
+    p_review.add_argument("--model-sha256", metavar="SHA256")
+    p_review.add_argument("--json", action="store_true")
+    p_review.set_defaults(func=cmd_review_queue)
 
     return parser
 

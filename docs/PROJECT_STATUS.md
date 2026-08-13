@@ -28,7 +28,7 @@ Historical material is recoverable from:
 - atomic parse and reparse persistence.
 
 The accepted foundation and production classifier seam are covered by the new
-reboot-owned suite: 35 tests as of this status record. No inherited test
+reboot-owned suite: 38 tests as of this status record. No inherited test
 contributes to that number.
 
 ## Accepted classifier runtime
@@ -45,6 +45,8 @@ contributes to that number.
 - one assignment row per semantic unit with source-block and ordinal identity;
 - database-only classification after canonical parse;
 - atomic same-model reclassification with prior-run rollback on failure.
+- schema-versioned `classify --json` with same-model idempotence;
+- bounded stored-record `review-queue` for L1-only and unknown patterns.
 
 The production runtime has also been compared with the frozen release
 evaluator across all five training-excluded logs: 194,022 semantic
@@ -54,7 +56,6 @@ separate human-authored contract tests remain the semantic authority.
 
 ## Not yet released
 
-- unknown/L1-only review queue;
 - `report`, `latest`, and `errors` commands;
 - pending-to-report processing command;
 - session deltas, baselines, and ignore rules;

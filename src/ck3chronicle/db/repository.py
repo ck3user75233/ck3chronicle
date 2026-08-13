@@ -769,3 +769,57 @@ def replace_classification_run(
     except Exception:
         conn.rollback()
         raise
+
+
+def get_classification_model(
+    conn: sqlite3.Connection, model_sha256: str
+) -> sqlite3.Row | None:
+    return conn.execute(
+        "SELECT * FROM classification_models WHERE model_sha256 = ?",
+        (model_sha256,),
+    ).fetchone()
+
+
+def list_classification_review_items(
+    conn: sqlite3.Connection,
+    *,
+    session_id: int,
+    model_sha256: str,
+    level: str,
+    limit: int,
+) -> list[sqlite3.Row]:
+    if level not in {"all", "l1", "unknown"}:
+        raise ValueError("review level is invalid")
+    if limit < 1:
+        raise ValueError("review limit must be positive")
+    levels = ("l1", "unknown") if level == "all" else (level,)
+    placeholders = ",".join("?" for _ in levels)
+    return conn.execute(
+        f"""
+        SELECT ca.assignment_level,
+               ca.source_family,
+               ca.l1_template,
+               ca.l2_template,
+               MIN(ca.semantic_text) AS sample,
+               COUNT(*) AS occurrences,
+               MIN(sb.start_line) AS first_line
+        FROM classification_assignments ca
+        JOIN classification_runs cr ON cr.run_id = ca.run_id
+        JOIN source_blocks sb
+          ON sb.session_id = ca.session_id
+         AND sb.source_block_id = ca.source_block_id
+        WHERE cr.session_id = ?
+          AND cr.model_sha256 = ?
+          AND ca.assignment_level IN ({placeholders})
+        GROUP BY ca.assignment_level,
+                 ca.source_family,
+                 ca.l1_template,
+                 ca.l2_template,
+                 ca.normalized_tokens_json
+        ORDER BY occurrences DESC,
+                 ca.source_family,
+                 first_line
+        LIMIT ?
+        """,
+        (session_id, model_sha256, *levels, limit),
+    ).fetchall()

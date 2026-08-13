@@ -19,7 +19,7 @@ Status: runtime inference complete; persistence and CLI in progress.
 - [x] persist versioned classification runs;
 - [x] store semantic-unit occurrences linked to raw source blocks;
 - [x] store full, L1+L2, L1-only, and unknown assignments;
-- expose `classify` and `review-queue` commands;
+- [x] expose `classify` and `review-queue` commands;
 - [x] pass protected holdout and untouched-candidate compatibility gates;
 - add semantic adjudication samples as new source families are approved.
 

@@ -58,7 +58,9 @@ The suite currently covers:
 - one-row-per-semantic-unit database provenance;
 - classification from stored source blocks without reopening archives;
 - same-model idempotence and atomic reclassification rollback;
-- rejection of unparsed sessions.
+- rejection of unparsed sessions;
+- deterministic classify JSON and stored-record review-queue output;
+- explicit empty filtered review queues.
 
 ## Protected-corpus compatibility gate
 
