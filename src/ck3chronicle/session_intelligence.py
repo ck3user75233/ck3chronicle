@@ -450,6 +450,89 @@ def _evidence_quality(
     }
 
 
+def _runtime_context_delta(
+    conn: sqlite3.Connection,
+    previous_session_id: int,
+    current_session_id: int,
+) -> dict[str, object]:
+    previous_context = repository.get_runtime_context(conn, previous_session_id)
+    current_context = repository.get_runtime_context(conn, current_session_id)
+    if previous_context is None or current_context is None:
+        return {
+            "available": False,
+            "runtime_changed": None,
+            "reason": "runtime context has not been processed for both sessions",
+        }
+
+    def entry(row: sqlite3.Row, order_column: str, key_column: str) -> dict[str, object]:
+        return {
+            "key": row[key_column],
+            "display_name": row["display_name"],
+            "order": int(row[order_column]),
+            "mount_path": row["mount_path"],
+        }
+
+    def difference(
+        previous_rows: list[sqlite3.Row],
+        current_rows: list[sqlite3.Row],
+        *,
+        order_column: str,
+        key_column: str,
+    ) -> dict[str, object]:
+        previous = {str(row[key_column]): row for row in previous_rows}
+        current = {str(row[key_column]): row for row in current_rows}
+        added = [
+            entry(current[key], order_column, key_column)
+            for key in sorted(current.keys() - previous.keys())
+        ]
+        removed = [
+            entry(previous[key], order_column, key_column)
+            for key in sorted(previous.keys() - current.keys())
+        ]
+        moved = [
+            {
+                "key": key,
+                "display_name": current[key]["display_name"],
+                "previous_order": int(previous[key][order_column]),
+                "current_order": int(current[key][order_column]),
+            }
+            for key in sorted(previous.keys() & current.keys())
+            if int(previous[key][order_column]) != int(current[key][order_column])
+        ]
+        previous_sequence = [str(row[key_column]) for row in previous_rows]
+        current_sequence = [str(row[key_column]) for row in current_rows]
+        return {
+            "previous_count": len(previous_rows),
+            "current_count": len(current_rows),
+            "added": added,
+            "removed": removed,
+            "moved": moved,
+            "order_changed": previous_sequence != current_sequence,
+        }
+
+    dlcs = difference(
+        repository.get_mounted_dlcs(conn, previous_session_id),
+        repository.get_mounted_dlcs(conn, current_session_id),
+        order_column="dlc_order",
+        key_column="dlc_key",
+    )
+    mods = difference(
+        repository.get_mounted_mods(conn, previous_session_id),
+        repository.get_mounted_mods(conn, current_session_id),
+        order_column="load_order",
+        key_column="mod_key",
+    )
+    return {
+        "available": True,
+        "runtime_changed": bool(dlcs["order_changed"] or mods["order_changed"]),
+        "previous_status": previous_context["status"],
+        "current_status": current_context["status"],
+        "dlcs": dlcs,
+        "active_mods": mods,
+        "scope": "mounted identities and order; content updates are not fingerprinted",
+    }
+
+
 def compare_sessions(
     conn: sqlite3.Connection,
     current_session_id: int,
@@ -639,6 +722,11 @@ def compare_sessions(
             "current": current_quality,
             "warnings": quality_warnings,
         },
+        "runtime_context_delta": _runtime_context_delta(
+            conn,
+            against_session_id,
+            current_session_id,
+        ),
         "summary": {
             "previous_occurrences": previous_total,
             "current_occurrences": current_total,

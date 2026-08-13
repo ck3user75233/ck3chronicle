@@ -74,7 +74,8 @@ The suite currently covers:
 - compatible report-plus-comparison envelopes for `report --since`;
 - Mounted Data authority over inventory membership and order;
 - disabled-mod exclusion, Workshop/local identity, mismatch visibility,
-  missing-debug state, reparse rollback, and context CLI JSON.
+  missing-debug state, reparse rollback, and context CLI JSON;
+- mounted mod addition/removal/load-order movement in session deltas.
 
 ## Protected-corpus compatibility gate
 

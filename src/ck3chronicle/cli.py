@@ -729,6 +729,29 @@ def _print_session_comparison(comparison: dict[str, object]) -> None:
     )
     for warning in comparison["evidence_quality"]["warnings"]:
         print(f"WARNING: {warning}")
+    runtime_delta = comparison["runtime_context_delta"]
+    if not runtime_delta["available"]:
+        print(f"Runtime mount comparison unavailable: {runtime_delta['reason']}")
+    elif not runtime_delta["runtime_changed"]:
+        print(
+            "Runtime mounts unchanged: "
+            f"{runtime_delta['dlcs']['current_count']} DLCs; "
+            f"{runtime_delta['active_mods']['current_count']} active mods"
+        )
+    else:
+        mods = runtime_delta["active_mods"]
+        dlcs = runtime_delta["dlcs"]
+        print(
+            "Runtime mounts changed: "
+            f"mods +{len(mods['added'])}/-{len(mods['removed'])}/"
+            f"moved {len(mods['moved'])}; "
+            f"DLCs +{len(dlcs['added'])}/-{len(dlcs['removed'])}/"
+            f"moved {len(dlcs['moved'])}"
+        )
+        for item in mods["added"]:
+            print(f"  added mod: {item['display_name'] or item['key']}")
+        for item in mods["removed"]:
+            print(f"  removed mod: {item['display_name'] or item['key']}")
     print("\nLargest observed changes")
     for item in comparison["changed_patterns"]:
         label = item["template"] or item["sample"]

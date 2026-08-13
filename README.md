@@ -78,6 +78,9 @@ both human-readable sections) under the same exact model revision.
 the earlier DLC/Mod inventory only supplies names and descriptor paths and is
 used for exact-set validation. Disabled inventory entries are never promoted
 into the active mod list.
+Session comparisons report mounted DLC/mod additions, removals, and load-order
+moves. They deliberately do not infer that mod contents are unchanged when a
+Workshop/local mount identity remains the same.
 
 Read these documents in order:
 

@@ -63,6 +63,7 @@ Status: first production contract complete.
 - [x] enrich from inventory only after authoritative membership is known;
 - [x] exactly validate mounted membership against enabled inventory;
 - [x] explicitly represent complete, partial, and absent runtime context.
+- [x] include mounted identity/order changes in session comparisons.
 
 ## 7. Source resolution and triage
 

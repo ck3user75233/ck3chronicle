@@ -28,7 +28,7 @@ Historical material is recoverable from:
 - atomic parse and reparse persistence.
 
 The accepted foundation and production classifier seam are covered by the new
-reboot-owned suite: 58 tests as of this status record. No inherited test
+reboot-owned suite: 59 tests as of this status record. No inherited test
 contributes to that number.
 
 ## Accepted classifier runtime
@@ -63,6 +63,8 @@ contributes to that number.
 - archived-debug `Mounted Data:` parsing with ordered DLCs and active mods,
   inventory enrichment, and exact-set validation;
 - runtime context integrated into `process-pending`, `context`, and report v2.
+- session comparisons include mounted DLC/mod additions, removals, and
+  load-order moves while explicitly deferring content-update fingerprints.
 
 The production runtime has also been compared with the frozen release
 evaluator across all five training-excluded logs: 194,022 semantic

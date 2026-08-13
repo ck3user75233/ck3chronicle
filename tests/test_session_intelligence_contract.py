@@ -12,6 +12,7 @@ from ck3chronicle.cli import build_parser
 from ck3chronicle.db import repository
 from ck3chronicle.harvester import MANIFEST_VERSION, finalize_pending, spool_logs
 from ck3chronicle.parser.service import parse_session
+from ck3chronicle.runtime_context import parse_runtime_context
 from ck3chronicle.session_intelligence import (
     PolicyError,
     compare_against_baseline,
@@ -47,10 +48,32 @@ DIV_ZERO_NEW = (
     b"(contract_assistance_interaction:ai_accept:add)\n"
 )
 
+RUNTIME_A = (
+    b"[12:00:00][D][jomini_game_setup.cpp:130]: DLC:\n"
+    b"Core Pack|dlc/dlc001_core/dlc001.dlc\nMod:\n"
+    b"Alpha Mod|mod/ugc_111.mod|Enabled\n"
+    b"Local Patch|mod/Local Patch.mod|Enabled\n\n"
+    b"[12:00:00][D][virtualfilesystem_physfs.cpp:813]: Mounted Data: C:/CK3/game/dlc/dlc001_core\n"
+    b"[12:00:00][D][virtualfilesystem_physfs.cpp:813]: Mounted Data: C:/Steam/workshop/content/1158310/111\n"
+    b"[12:00:00][D][virtualfilesystem_physfs.cpp:813]: Mounted Data: C:/User/CK3/mod/LocalPatch\n"
+    b"[12:00:01][D][virtualfilesystem.cpp:1]: Continue\n"
+)
+RUNTIME_B = (
+    b"[12:00:00][D][jomini_game_setup.cpp:130]: DLC:\n"
+    b"Core Pack|dlc/dlc001_core/dlc001.dlc\nMod:\n"
+    b"Beta Mod|mod/ugc_222.mod|Enabled\n"
+    b"Local Patch|mod/Local Patch.mod|Enabled\n\n"
+    b"[12:00:00][D][virtualfilesystem_physfs.cpp:813]: Mounted Data: C:/CK3/game/dlc/dlc001_core\n"
+    b"[12:00:00][D][virtualfilesystem_physfs.cpp:813]: Mounted Data: C:/User/CK3/mod/LocalPatch\n"
+    b"[12:00:00][D][virtualfilesystem_physfs.cpp:813]: Mounted Data: C:/Steam/workshop/content/1158310/222\n"
+    b"[12:00:01][D][virtualfilesystem.cpp:1]: Continue\n"
+)
+
 
 def _two_sessions(tmp_path):
     runtime, _captured, conn, previous_id = _session(tmp_path)
     classify_session(conn, previous_id, _classifier())
+    parse_runtime_context(conn, runtime, previous_id)
 
     logs = tmp_path / "live-logs"
     files = dict(SIX_LOG_BYTES)
@@ -68,6 +91,7 @@ def _two_sessions(tmp_path):
     )
     parse_session(conn, runtime, current_id)
     classify_session(conn, current_id, _classifier())
+    parse_runtime_context(conn, runtime, current_id)
     return runtime, conn, previous_id, current_id
 
 
@@ -78,10 +102,13 @@ def _capture_classified(
     name: str,
     error_log: bytes,
     captured_at: str,
+    debug_log: bytes | None = None,
 ) -> int:
     logs = tmp_path / name
     files = dict(SIX_LOG_BYTES)
     files["error.log"] = error_log
+    if debug_log is not None:
+        files["debug.log"] = debug_log
     write_logs(logs, files)
     captured = finalize_pending(spool_logs(logs, runtime), runtime)
     session_id, _duplicate = repository.register_finalized_session(
@@ -95,6 +122,7 @@ def _capture_classified(
     )
     parse_session(conn, runtime, session_id)
     classify_session(conn, session_id, _classifier())
+    parse_runtime_context(conn, runtime, session_id)
     return session_id
 
 
@@ -393,3 +421,54 @@ def test_rdelta_004_report_since_wraps_report_and_compatible_comparison(
     assert payload["report"]["session"]["session_id"] == current_id
     assert payload["comparison"]["previous_session"]["session_id"] == previous_id
     assert payload["comparison"]["current_session"]["session_id"] == current_id
+
+
+def test_rdelta_005_comparison_exposes_authoritative_mount_changes(tmp_path) -> None:
+    runtime = tmp_path / "runtime"
+    runtime.mkdir()
+    conn = repository.open_db(runtime / "ck3chronicle.db")
+    previous_id = _capture_classified(
+        tmp_path,
+        runtime,
+        conn,
+        "runtime-a",
+        DIV_ZERO_OLD,
+        "2026-08-13T00:00:00+00:00",
+        RUNTIME_A,
+    )
+    current_id = _capture_classified(
+        tmp_path,
+        runtime,
+        conn,
+        "runtime-b",
+        DIV_ZERO_NEW,
+        "2026-08-13T01:00:00+00:00",
+        RUNTIME_B,
+    )
+
+    delta = compare_sessions(conn, current_id, previous_id)["runtime_context_delta"]
+
+    assert delta["available"] is True
+    assert delta["runtime_changed"] is True
+    assert delta["dlcs"] == {
+        "previous_count": 1,
+        "current_count": 1,
+        "added": [],
+        "removed": [],
+        "moved": [],
+        "order_changed": False,
+    }
+    assert [item["key"] for item in delta["active_mods"]["added"]] == ["222"]
+    assert [item["key"] for item in delta["active_mods"]["removed"]] == ["111"]
+    assert delta["active_mods"]["moved"] == [
+        {
+            "key": "local:localpatch",
+            "display_name": "Local Patch",
+            "previous_order": 1,
+            "current_order": 0,
+        }
+    ]
+    assert delta["scope"] == (
+        "mounted identities and order; content updates are not fingerprinted"
+    )
+    conn.close()
