@@ -1167,6 +1167,53 @@ def cmd_context(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_resolve_file(args: argparse.Namespace) -> int:
+    import sqlite3
+
+    from . import config
+    from .db import repository
+    from .source_resolution import SourceResolutionError, resolve_file_instances
+
+    conn = None
+    try:
+        conn = repository.open_db(config.ROOT_CK3CHRONICLE / "ck3chronicle.db")
+        resolution = resolve_file_instances(conn, args.session, args.path)
+    except SourceResolutionError as exc:
+        print(f"ERROR [source_resolution]: {exc}", file=sys.stderr)
+        return 2
+    except sqlite3.Error as exc:
+        print(f"ERROR [database_failed]: {exc}", file=sys.stderr)
+        return 5
+    finally:
+        if conn is not None:
+            conn.close()
+    if args.json:
+        print(json.dumps(resolution, sort_keys=True))
+    else:
+        print(
+            f"Session {resolution['session_id']} — {resolution['relative_path']} — "
+            f"{resolution['status']}"
+        )
+        scope = resolution["scope"]
+        print(
+            f"Recorded roots={scope['recorded_roots']}; "
+            f"missing now={scope['missing_current_roots']}; inactive searched=0"
+        )
+        for item in resolution["instances"]:
+            print(
+                f"{item['mount_order']:>3}  {item['source_kind']:<9}  "
+                f"{item['display_name'] or item['source_key']}  {item['path']}"
+            )
+        if resolution["last_mounted_candidate"] is not None:
+            winner = resolution["last_mounted_candidate"]
+            print(
+                "Last-mounted candidate: "
+                f"{winner['display_name'] or winner['source_key']}"
+            )
+        print(f"Caveat: {resolution['caveat']}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="ck3chronicle",
@@ -1410,6 +1457,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_context.add_argument("--json", action="store_true")
     p_context.set_defaults(func=cmd_context)
+
+    p_resolve = sub.add_parser(
+        "resolve-file",
+        help="Find a relative file only in one session's recorded active roots.",
+    )
+    p_resolve.add_argument("--session", type=int, required=True, metavar="SESSION_ID")
+    p_resolve.add_argument("--path", required=True, metavar="RELATIVE_PATH")
+    p_resolve.add_argument("--json", action="store_true")
+    p_resolve.set_defaults(func=cmd_resolve_file)
 
     return parser
 

@@ -76,6 +76,8 @@ The suite currently covers:
 - disabled-mod exclusion, Workshop/local identity, mismatch visibility,
   missing-debug state, reparse rollback, and context CLI JSON;
 - mounted mod addition/removal/load-order movement in session deltas.
+- active-root-only file resolution with ordered base/DLC/mod instances;
+- explicit inactive-root exclusion, path-traversal rejection, and CLI JSON.
 
 ## Protected-corpus compatibility gate
 

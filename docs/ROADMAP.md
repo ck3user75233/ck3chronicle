@@ -67,7 +67,9 @@ Status: first production contract complete.
 
 ## 7. Source resolution and triage
 
-- restrict source searches to the recorded active runtime mod list;
-- identify winning files and override chains;
+- [x] restrict exact-file resolution to recorded active runtime roots;
+- [x] list current base/DLC/mod instances in mount order;
+- identify merge-aware winning files and override chains;
+- preserve historical content/update fingerprints;
 - correlate mod/patch changes with error deltas;
 - rank investigation targets with explicit confidence.

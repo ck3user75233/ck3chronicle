@@ -46,6 +46,7 @@ classification do not occur in the process-exit path.
 .\.venv\Scripts\ck3chronicle.exe ignore add <PATTERN_ID> --reason <TEXT>
 .\.venv\Scripts\ck3chronicle.exe ignore list
 .\.venv\Scripts\ck3chronicle.exe context --session <ID>
+.\.venv\Scripts\ck3chronicle.exe resolve-file --session <ID> --path <RELATIVE_PATH>
 ```
 
 `watch` is a foreground process and must currently be started again after a PC
@@ -81,6 +82,11 @@ into the active mod list.
 Session comparisons report mounted DLC/mod additions, removals, and load-order
 moves. They deliberately do not infer that mod contents are unchanged when a
 Workshop/local mount identity remains the same.
+
+`resolve-file` projects one session's recorded active roots onto the current
+filesystem. It checks base game, mounted DLCs, and active mods in order, never
+searches inactive mod roots, and reports a cautiously worded last-mounted
+candidate. It does not yet claim historical contents or full CK3 merge rules.
 
 Read these documents in order:
 
