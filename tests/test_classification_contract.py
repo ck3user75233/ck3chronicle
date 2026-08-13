@@ -151,3 +151,23 @@ def test_rclass_008_symbol_suffix_does_not_invent_a_contract(
 
     assert result.assignment_level == "unknown"
     assert result.contract_id is None
+
+
+def test_rclass_009_token_bound_drops_l2_but_preserves_proven_l1(
+    classifier: Classifier,
+) -> None:
+    """Human oracle: a truncated reason cannot erase or overclaim the L1 contract."""
+    result = classifier.classify(
+        "jomini_script_system.cpp",
+        "Script system error! Error: scope:actor.target trigger [ "
+        + " ".join(f"novel_{index}" for index in range(500))
+        + " ]",
+    )
+
+    assert result.assignment_level == "l1"
+    assert result.contract_id is None
+    assert result.l1_template == (
+        "Script system error ! Error : scope : <KEY> . <KEY> trigger"
+    )
+    assert result.l2_template is not None
+    assert result.l2_template.endswith("<TRUNCATED_REASON>")

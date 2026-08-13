@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from .normalize import tokenize
+
 
 MODEL_SCHEMA = "ck3chronicle-empirical-template-calibration"
 MODEL_SCHEMA_VERSION = 3
@@ -38,6 +40,7 @@ class ModelCluster:
     cluster_id: str
     source_family: str
     medoid: str
+    medoid_tokens: tuple[str, ...]
     semantic_lead: tuple[str, ...]
     template_tokens: tuple[str, ...]
     layers: LayerContracts | None
@@ -113,6 +116,7 @@ def _load_cluster(raw: Any, index: int) -> ModelCluster:
         cluster_id=cluster_id,
         source_family=source_family,
         medoid=medoid,
+        medoid_tokens=tokenize(medoid),
         semantic_lead=lead,
         template_tokens=template_tokens,
         layers=layers,

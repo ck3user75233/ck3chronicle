@@ -28,7 +28,7 @@ Historical material is recoverable from:
 - atomic parse and reparse persistence.
 
 The accepted foundation and production classifier seam are covered by the new
-reboot-owned suite: 25 tests as of this status record. No inherited test
+reboot-owned suite: 29 tests as of this status record. No inherited test
 contributes to that number.
 
 ## Accepted classifier runtime
@@ -41,6 +41,12 @@ contributes to that number.
 - optional historical identity retained as `<OPTIONAL_KEY>` extraction data;
 - full, independently composed L1+L2, L1-only, and unknown outcomes;
 - location chains retained separately and excluded from template identity.
+
+The production runtime has also been compared with the frozen release
+evaluator across all five training-excluded logs: 194,022 semantic
+occurrences. Every file reconciles exactly by full, L1+L2, L1-only, and
+unknown assignment count. This is an implementation-equivalence gate; the
+separate human-authored contract tests remain the semantic authority.
 
 ## Not yet released
 

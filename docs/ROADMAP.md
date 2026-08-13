@@ -20,7 +20,8 @@ Status: runtime inference complete; persistence and CLI in progress.
 - store semantic-unit occurrences linked to raw source blocks;
 - store full, L1+L2, L1-only, and unknown assignments;
 - expose `classify` and `review-queue` commands;
-- pass protected holdout and untouched-candidate gates.
+- [x] pass protected holdout and untouched-candidate compatibility gates;
+- add semantic adjudication samples as new source families are approved.
 
 ## 3. First useful report
 

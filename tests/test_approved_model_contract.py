@@ -67,3 +67,21 @@ def test_rmodel_004_unseen_source_cannot_borrow_a_known_phrase() -> None:
 
     assert result.assignment_level == "unknown"
     assert result.contract_id is None
+
+
+def test_rmodel_005_repeated_persistent_clauses_are_occurrences_not_templates() -> None:
+    """Human oracle: repetition count changes cardinality, never base identity."""
+    raw_block = (
+        "[12:00:00][E][pdx_persistent_reader.cpp:7]: Error: \""
+        "Unknown trigger: first_key, near line: 10 "
+        "Unknown trigger: second_key, near line: 20 "
+        "Unknown trigger: third_key, near line: 30"
+        "\" in file: events/example.txt line: 40\n"
+    )
+
+    results = _classifier().classify_block("pdx_persistent_reader.cpp", raw_block)
+
+    assert len(results) == 3
+    assert {result.assignment_level for result in results} == {"full"}
+    assert {result.contract_id for result in results} == {"21b477c6e94b1681"}
+    assert {result.semantic_text for result in results} == {"Unknown trigger: <KEY>"}

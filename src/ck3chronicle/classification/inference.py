@@ -11,9 +11,13 @@ from .model import EmpiricalModel, ModelCluster
 from .normalize import (
     LOCATOR,
     PUNCTUATION,
+    TRUNCATED_REASON,
     diagnostic_lead,
+    block_message,
     extract_structured_slots,
+    legacy_diagnostic_lead,
     reason_lead,
+    semantic_units,
     script_system_layers,
     split_location_evidence,
     tokenize,
@@ -81,15 +85,15 @@ class Classifier:
         slots = extract_structured_slots(semantic)
         tokens = tokenize(semantic)
         candidates = self._by_source.get(source_family.casefold(), ())
-        lead = diagnostic_lead(semantic)
+        leads = {diagnostic_lead(semantic), legacy_diagnostic_lead(semantic)}
 
         best: tuple[float, ModelCluster] | None = None
         for cluster in candidates:
-            if tuple(item.casefold() for item in cluster.semantic_lead) != lead:
+            if tuple(item.casefold() for item in cluster.semantic_lead) not in leads:
                 continue
-            if not _ordered_anchor_overlap(tokens, cluster.template_tokens):
+            if not _ordered_anchor_overlap(tokens, cluster.medoid_tokens):
                 continue
-            score = _similarity(tokens, cluster.template_tokens)
+            score = _similarity(tokens, cluster.medoid_tokens)
             if score >= self.model.threshold and (best is None or score > best[0]):
                 best = score, cluster
         if best is not None:
@@ -117,6 +121,19 @@ class Classifier:
                 if cluster.layers is not None
             }.get(outer)
             if exact_outer is not None:
+                if TRUNCATED_REASON in reason:
+                    return self._result(
+                        source_family,
+                        "l1",
+                        None,
+                        1.0,
+                        semantic,
+                        location,
+                        tokens,
+                        " ".join(outer),
+                        " ".join(reason),
+                        slots,
+                    )
                 reason_candidates = [
                     cluster.layers
                     for cluster in candidates
@@ -166,6 +183,16 @@ class Classifier:
             None,
             None,
             slots,
+        )
+
+    def classify_block(
+        self, source_family: str, raw_block: str
+    ) -> tuple[ClassificationResult, ...]:
+        """Classify every semantic occurrence represented by one stored block."""
+        message = block_message(raw_block)
+        return tuple(
+            self.classify(source_family, unit)
+            for unit in semantic_units(source_family, message)
         )
 
     def _result(

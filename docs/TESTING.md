@@ -55,3 +55,19 @@ The suite currently covers:
 - grammar-preserving two-key scope normalization;
 - optional-key extraction;
 - full, L1+L2, L1-only, and unknown classification behavior.
+
+## Protected-corpus compatibility gate
+
+`tools/evaluate_classifier.py` is a read-only coverage utility. It was run
+against the three reviewed holdouts and two untouched candidates excluded from
+training. The production runtime exactly reproduced the frozen release
+evaluator's assignment counts across 194,022 semantic occurrences:
+
+| Evidence | Full | L1+L2 | L1-only | Unknown |
+|---|---:|---:|---:|---:|
+| 3 reviewed holdouts | 67,115 | 6 | 49 | 275 |
+| 2 untouched candidates | 126,505 | 48 | 15 | 9 |
+
+This proves compatibility with the reviewed model/evaluator pair. It does not
+turn the old evaluator into a semantic oracle; human-authored normalization
+and assignment tests provide that authority.
