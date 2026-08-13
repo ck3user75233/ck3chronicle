@@ -646,6 +646,86 @@ def cmd_process_pending(args: argparse.Namespace) -> int:
     return 1 if result.reconciliation_errors else 0
 
 
+def _print_session_comparison(comparison: dict[str, object]) -> None:
+    previous = comparison["previous_session"]
+    current = comparison["current_session"]
+    summary = comparison["summary"]
+    pattern_counts = summary["pattern_counts"]
+    movement = summary["occurrence_movement"]
+    print(
+        f"Session {current['session_id']} ({current['captured_at']}) vs "
+        f"session {previous['session_id']} ({previous['captured_at']})"
+    )
+    print(
+        f"Observed semantic occurrences: {summary['previous_occurrences']:,} -> "
+        f"{summary['current_occurrences']:,} "
+        f"(net {summary['net_change']:+,})"
+    )
+    print(
+        "Patterns: "
+        f"new={pattern_counts['new']}, fixed={pattern_counts['fixed']}, "
+        f"worse={pattern_counts['worse']}, improved={pattern_counts['improved']}, "
+        f"unchanged={pattern_counts['unchanged']}"
+    )
+    print(
+        "Occurrence movement: "
+        f"introduced={movement['introduced']:,}, eliminated={movement['eliminated']:,}, "
+        f"increased={movement['increased']:,}, reduced={movement['reduced']:,}"
+    )
+    print("\nLargest observed changes")
+    for item in comparison["changed_patterns"]:
+        label = item["template"] or item["sample"]
+        print(
+            f"{item['status']:<8} {item['previous_occurrences']:>8,} -> "
+            f"{item['current_occurrences']:<8,} {item['source_family']}  {label}"
+        )
+
+
+def cmd_compare(args: argparse.Namespace) -> int:
+    import sqlite3
+
+    from . import config
+    from .db import repository
+    from .session_intelligence import (
+        ComparisonError,
+        compare_latest,
+        compare_sessions,
+    )
+
+    conn = None
+    try:
+        conn = repository.open_db(config.ROOT_CK3CHRONICLE / "ck3chronicle.db")
+        if args.session is None:
+            comparison = compare_latest(
+                conn,
+                against_session_id=args.against,
+                model_sha256=args.model_sha256,
+                limit=args.limit,
+            )
+        else:
+            comparison = compare_sessions(
+                conn,
+                args.session,
+                args.against,
+                model_sha256=args.model_sha256,
+                limit=args.limit,
+            )
+    except (ComparisonError, ValueError) as exc:
+        print(f"ERROR: comparison unavailable: {exc}", file=sys.stderr)
+        return 2
+    except sqlite3.Error as exc:
+        print(f"ERROR [database_failed]: {exc}", file=sys.stderr)
+        return 5
+    finally:
+        if conn is not None:
+            conn.close()
+    if args.json:
+        print(json.dumps(comparison, sort_keys=True))
+    else:
+        _print_session_comparison(comparison)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="ck3chronicle",
@@ -788,6 +868,27 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_process.add_argument("--json", action="store_true")
     p_process.set_defaults(func=cmd_process_pending)
+
+    p_compare = sub.add_parser(
+        "compare",
+        help="Compare semantic error patterns between classified sessions.",
+    )
+    p_compare.add_argument(
+        "--session",
+        type=int,
+        metavar="SESSION_ID",
+        help="Current session; defaults to the latest captured session.",
+    )
+    p_compare.add_argument(
+        "--against",
+        type=int,
+        metavar="SESSION_ID",
+        help="Prior session; defaults to the preceding compatible capture.",
+    )
+    p_compare.add_argument("--limit", type=int, default=50, metavar="N")
+    p_compare.add_argument("--model-sha256", metavar="SHA256")
+    p_compare.add_argument("--json", action="store_true")
+    p_compare.set_defaults(func=cmd_compare)
 
     return parser
 

@@ -28,7 +28,7 @@ Historical material is recoverable from:
 - atomic parse and reparse persistence.
 
 The accepted foundation and production classifier seam are covered by the new
-reboot-owned suite: 45 tests as of this status record. No inherited test
+reboot-owned suite: 48 tests as of this status record. No inherited test
 contributes to that number.
 
 ## Accepted classifier runtime
@@ -53,6 +53,8 @@ contributes to that number.
   duplicating template text per occurrence;
 - idempotent `process-pending` finalization → registration → parse → classify
   → latest-report workflow.
+- chronological `compare` with stable model-bound pattern identities and
+  observed new/fixed/worse/improved/unchanged occurrence deltas.
 
 The production runtime has also been compared with the frozen release
 evaluator across all five training-excluded logs: 194,022 semantic
@@ -62,7 +64,7 @@ separate human-authored contract tests remain the semantic authority.
 
 ## Not yet released
 
-- session deltas, baselines, and ignore rules;
+- named baselines and ignore rules;
 - same-run DLC and ordered active-mod persistence;
 - source/override resolution and action triage;
 - automatic watcher startup on user login.

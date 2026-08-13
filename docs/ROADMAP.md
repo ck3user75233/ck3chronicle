@@ -43,9 +43,12 @@ Status: foreground workflow complete.
 
 ## 5. Session intelligence
 
-- compare runs as new, fixed, worse, improved, or unchanged;
+- [x] compare runs as new, fixed, worse, improved, or unchanged;
+- [x] exclude keys, locators, timestamps, and lines from delta identity;
+- [x] ensure both sides use a common classification model revision;
 - support named baselines and reasoned ignore rules;
-- ensure both sides use a common classification model revision;
+- add `report --since` as a convenience projection;
+- add duration/exposure normalization and explicit capped-log quality flags;
 - persist durable run chronology independently of archive deduplication.
 
 ## 6. Runtime DLC/mod context

@@ -39,6 +39,7 @@ classification do not occur in the process-exit path.
 .\.venv\Scripts\ck3chronicle.exe latest
 .\.venv\Scripts\ck3chronicle.exe errors --session <ID>
 .\.venv\Scripts\ck3chronicle.exe process-pending
+.\.venv\Scripts\ck3chronicle.exe compare
 ```
 
 `watch` is a foreground process and must currently be started again after a PC
@@ -50,6 +51,12 @@ restart. Automatic login startup has not yet been released.
 it finalizes protected pending copies, reconciles archives, parses canonical
 blocks, classifies them with the approved model, and prints the latest report.
 It is idempotent and never rewrites captured evidence.
+
+`compare` selects the latest and preceding compatible captures by capture time.
+It reports observed new, fixed, worse, improved, and unchanged semantic
+patterns. Known patterns use stable contract IDs; residuals use normalized slot
+structure, so keys, locators, timestamps, and line numbers do not create false
+changes. Use `--session` and `--against` to choose an explicit pair.
 
 Read these documents in order:
 

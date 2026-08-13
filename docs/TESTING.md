@@ -64,7 +64,10 @@ The suite currently covers:
 - database-only executive report structure and readable contract templates;
 - capture-time latest ordering independent of session registration ID;
 - bounded report/error JSON projections;
-- end-to-end and second-run idempotence for `process-pending`.
+- end-to-end and second-run idempotence for `process-pending`;
+- cross-session semantic deltas despite changed keys, locators, and line
+  numbers;
+- chronological CLI selection and bounded deterministic comparison JSON.
 
 ## Protected-corpus compatibility gate
 
