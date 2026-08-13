@@ -1214,6 +1214,77 @@ def cmd_resolve_file(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_triage(args: argparse.Namespace) -> int:
+    import sqlite3
+
+    from . import config
+    from .db import repository
+    from .triage import TriageError, build_triage
+
+    conn = None
+    try:
+        conn = repository.open_db(config.ROOT_CK3CHRONICLE / "ck3chronicle.db")
+        triage = build_triage(
+            conn,
+            session_id=args.session,
+            against_session_id=args.against,
+            limit=args.limit,
+        )
+    except (TriageError, ValueError) as exc:
+        print(f"ERROR [triage]: {exc}", file=sys.stderr)
+        return 2
+    except sqlite3.Error as exc:
+        print(f"ERROR [database_failed]: {exc}", file=sys.stderr)
+        return 5
+    finally:
+        if conn is not None:
+            conn.close()
+    if args.json:
+        print(json.dumps(triage, sort_keys=True))
+    else:
+        current = triage["current_session"]
+        previous = triage["previous_session"]
+        summary = triage["summary"]
+        print(
+            f"Action triage: session {current['session_id']} vs "
+            f"{previous['session_id']} — {summary['regression_patterns_total']} "
+            "new/worse patterns"
+        )
+        print(
+            f"Returned={summary['returned_regressions']}; "
+            f"source-resolved={summary['source_resolved_regressions']}; "
+            f"classification-review={summary['classification_review_occurrences']}"
+        )
+        for index, item in enumerate(triage["regressions"], 1):
+            label = item["template"] or item["sample"]
+            print(
+                f"\n{index}. {item['status']} {item['previous_occurrences']:,} -> "
+                f"{item['current_occurrences']:,}: {label}"
+            )
+            location = item["location_evidence"]
+            if location["dominant_file"]:
+                print(
+                    f"   dominant file ({location['dominant_file_occurrences']:,}): "
+                    f"{location['dominant_file']}"
+                )
+            resolution = item["source_resolution"]
+            if resolution and resolution["last_mounted_candidate"]:
+                winner = resolution["last_mounted_candidate"]
+                print(
+                    "   current last-mounted candidate: "
+                    f"{winner['display_name'] or winner['source_key']}"
+                )
+        if triage["classification_review"]:
+            print("\nClassification review remains")
+            for item in triage["classification_review"]:
+                print(
+                    f"{item['occurrences']:>8,} {item['assignment_level']} "
+                    f"{item['source_family']}:{item['first_line']} {item['sample']}"
+                )
+        print(f"\nCaveat: {triage['caveat']}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="ck3chronicle",
@@ -1466,6 +1537,16 @@ def build_parser() -> argparse.ArgumentParser:
     p_resolve.add_argument("--path", required=True, metavar="RELATIVE_PATH")
     p_resolve.add_argument("--json", action="store_true")
     p_resolve.set_defaults(func=cmd_resolve_file)
+
+    p_triage = sub.add_parser(
+        "triage",
+        help="Rank new/worse patterns and attach current active-source evidence.",
+    )
+    p_triage.add_argument("--session", type=int, metavar="SESSION_ID")
+    p_triage.add_argument("--against", type=int, metavar="SESSION_ID")
+    p_triage.add_argument("--limit", type=int, default=20, metavar="N")
+    p_triage.add_argument("--json", action="store_true")
+    p_triage.set_defaults(func=cmd_triage)
 
     return parser
 

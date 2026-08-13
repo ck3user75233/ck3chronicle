@@ -77,7 +77,9 @@ The suite currently covers:
   missing-debug state, reparse rollback, and context CLI JSON;
 - mounted mod addition/removal/load-order movement in session deltas.
 - active-root-only file resolution with ordered base/DLC/mod instances;
-- explicit inactive-root exclusion, path-traversal rejection, and CLI JSON.
+- explicit inactive-root exclusion, path-traversal rejection, and CLI JSON;
+- new/worse action triage, stored raw-block locator fallback, malformed locator
+  rejection, active-source links, bounded CLI JSON, and review separation.
 
 ## Protected-corpus compatibility gate
 

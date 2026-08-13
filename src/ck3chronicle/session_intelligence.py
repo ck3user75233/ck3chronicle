@@ -197,6 +197,15 @@ def _pattern_id(contract_id: str | None, source: str, tokens_json: str) -> str:
     return "r_" + sha256(material.encode("utf-8")).hexdigest()[:16]
 
 
+def assignment_pattern_id(
+    contract_id: str | None,
+    source_family: str,
+    normalized_tokens_json: str,
+) -> str:
+    """Return the same stable identity used by reports, policy, and triage."""
+    return _pattern_id(contract_id, source_family, normalized_tokens_json)
+
+
 def _known_pattern_id(
     conn: sqlite3.Connection,
     model_sha256: str,

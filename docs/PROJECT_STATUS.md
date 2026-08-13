@@ -28,7 +28,7 @@ Historical material is recoverable from:
 - atomic parse and reparse persistence.
 
 The accepted foundation and production classifier seam are covered by the new
-reboot-owned suite: 64 tests as of this status record. No inherited test
+reboot-owned suite: 67 tests as of this status record. No inherited test
 contributes to that number.
 
 ## Accepted classifier runtime
@@ -67,6 +67,8 @@ contributes to that number.
   load-order moves while explicitly deferring content-update fingerprints.
 - active-runtime-only `resolve-file` projection with base/DLC/mod order,
   inactive-root exclusion, and cautious last-mounted candidate wording.
+- action `triage` for new/worse contracts, dominant stored file evidence,
+  active-source candidates, and separate classifier-review items.
 
 The production runtime has also been compared with the frozen release
 evaluator across all five training-excluded logs: 194,022 semantic
@@ -76,8 +78,8 @@ separate human-authored contract tests remain the semantic authority.
 
 ## Not yet released
 
-- content/update fingerprints, historical file snapshots/diffs, and action
-  triage;
+- content/update fingerprints, historical file snapshots/diffs, and richer
+  confidence/merge-aware triage;
 - automatic watcher startup on user login.
 
 ## Approved production model

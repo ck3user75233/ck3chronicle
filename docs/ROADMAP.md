@@ -72,4 +72,5 @@ Status: first production contract complete.
 - identify merge-aware winning files and override chains;
 - preserve historical content/update fingerprints;
 - correlate mod/patch changes with error deltas;
-- rank investigation targets with explicit confidence.
+- [x] first action triage over new/worse patterns and current source candidates;
+- rank investigation targets with richer explicit confidence and merge rules.
