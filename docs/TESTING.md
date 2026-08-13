@@ -48,4 +48,10 @@ The suite currently covers:
 - archived-byte corruption detection;
 - exact lexical block spans, hashes, and identities;
 - `error.log`-only canonical storage;
-- explicit empty-log success and missing-evidence failure.
+- explicit empty-log success and missing-evidence failure;
+- exact approved-model hash and contract validation;
+- source-family isolation and semantic-change rejection;
+- key and locator invariance;
+- grammar-preserving two-key scope normalization;
+- optional-key extraction;
+- full, L1+L2, L1-only, and unknown classification behavior.

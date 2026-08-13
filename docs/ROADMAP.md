@@ -2,7 +2,7 @@
 
 ## 1. Reboot foundation
 
-Status: in progress.
+Status: complete at commit `3ef8151`.
 
 - replace inherited tests with independent takeover tests;
 - revalidate lifecycle capture, archive finalization, and canonical parsing;
@@ -11,12 +11,15 @@ Status: in progress.
 
 ## 2. Empirical classification
 
-- register and hash-verify approved model artifacts;
+Status: runtime inference complete; persistence and CLI in progress.
+
+- [x] register and hash-verify approved model artifacts;
+- [x] implement full, L1+L2, L1-only, and unknown inference;
+- [x] pass key/locator/source/semantic-order contract tests;
 - persist versioned classification runs;
 - store semantic-unit occurrences linked to raw source blocks;
 - store full, L1+L2, L1-only, and unknown assignments;
 - expose `classify` and `review-queue` commands;
-- pass key/locator/timestamp invariance and semantic-order mutation gates;
 - pass protected holdout and untouched-candidate gates.
 
 ## 3. First useful report

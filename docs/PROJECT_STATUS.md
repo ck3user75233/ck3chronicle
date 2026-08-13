@@ -27,8 +27,20 @@ Historical material is recoverable from:
 - immutable source blocks plus one-row-per-occurrence provenance;
 - atomic parse and reparse persistence.
 
-The accepted foundation is covered by the new reboot-owned suite: 13 tests as
-of this status record. No inherited test contributes to that number.
+The accepted foundation and production classifier seam are covered by the new
+reboot-owned suite: 25 tests as of this status record. No inherited test
+contributes to that number.
+
+## Accepted classifier runtime
+
+- exact reviewed model artifact promoted under `models/93196794a7e0115d`;
+- whole-file SHA-256 and internal cluster-contract validation before use;
+- source family is a hard classification boundary;
+- ordered-token matching with conservative semantic-lead gating;
+- grammar-preserving `scope:<KEY>.<KEY>` normalization;
+- optional historical identity retained as `<OPTIONAL_KEY>` extraction data;
+- full, independently composed L1+L2, L1-only, and unknown outcomes;
+- location chains retained separately and excluded from template identity.
 
 ## Not yet released
 
@@ -41,12 +53,13 @@ of this status record. No inherited test contributes to that number.
 - source/override resolution and action triage;
 - automatic watcher startup on user login.
 
-## Approved learner candidate
+## Approved production model
 
 - revision: `93196794a7e0115d`;
 - SHA-256: `3bd189b4c93ad260e925d1a1ac3ece7c79cc63217480b79a939f6f7f5d034db3`;
 - normalizer: `ck3-empirical-template-normalizer-v4.6`;
 - clusterer: `ordered-token-clusterer-v4-bounded-script-layers`.
 
-The model is approved for versioned, revisable classification. It is not
+The artifact is now hash-pinned and loadable by production inference. Database
+persistence and CLI processing remain the next checkpoint. The model is not
 authority to discard raw evidence or perform automatic mod edits.

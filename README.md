@@ -14,7 +14,10 @@ active source tree because they described a different or failed design.
 - finalize protected copies into content-addressed archives;
 - verify archive manifests and reconcile finalized archives with SQLite;
 - split archived `error.log` into immutable source blocks;
-- persist canonical occurrence and cluster rows transactionally.
+- persist canonical occurrence and cluster rows transactionally;
+- load the exact approved empirical model after whole-file SHA-256 validation;
+- classify diagnostics as full, independently composed L1+L2, L1-only, or
+  unknown while retaining key, locator, and structured-slot evidence.
 
 The watcher is deliberately copy-only. Hashing, SQLite work, parsing, and
 classification do not occur in the process-exit path.
@@ -35,9 +38,9 @@ restart. Automatic login startup has not yet been released.
 
 ## Current development checkpoint
 
-The next checkpoint integrates the approved empirical L1/L2 template learner
-as a versioned derived classification layer over stored source blocks. It will
-not rewrite captured evidence.
+The next checkpoint persists classifier runs and assignments as a versioned
+derived layer over stored source blocks, then exposes the unresolved review
+queue. It will not rewrite captured evidence.
 
 Read these documents in order:
 
