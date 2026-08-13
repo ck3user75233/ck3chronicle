@@ -1,16 +1,13 @@
-"""Shared pytest fixtures for ck3chronicle."""
+"""Test bootstrap for the ck3chronicle reboot suite.
+
+This directory was created from scratch on 2026-08-13. No test body from the
+pre-reboot repository is imported or copied into this suite.
+"""
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
-import pytest
 
-
-@pytest.fixture
-def fixture_logs_minimal() -> Path:
-    return Path(__file__).parent / "fixtures" / "logs" / "minimal"
-
-
-@pytest.fixture
-def fixture_logs_with_crash() -> Path:
-    return Path(__file__).parent / "fixtures" / "logs" / "with_crash"
+SOURCE_ROOT = Path(__file__).resolve().parents[1] / "src"
+sys.path.insert(0, str(SOURCE_ROOT))

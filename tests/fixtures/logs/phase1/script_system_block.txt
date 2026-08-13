@@ -1,3 +1,0 @@
-[14:22:15][script_system.cpp:1234]: Script system error in "common/traits/00_traits.txt" near line 42.
-Invalid token: foo_trait_invalid
-Expected: trait name or block terminator

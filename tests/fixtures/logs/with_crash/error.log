@@ -1,3 +1,0 @@
-# Crash fixture — error.log
-[14:55:01][data_loader.cpp:511]: Broken history for [char_id:9999]
-[14:55:02][crash_reporter.cpp:88]: Fatal exception — writing crash dump.

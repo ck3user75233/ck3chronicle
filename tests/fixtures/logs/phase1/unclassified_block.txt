@@ -1,1 +1,0 @@
-[12:34:56][unknown_subsystem.cpp:999]: XR749 quantum fluctuation in matrix 7-B at address 0xDEADBEEF.
