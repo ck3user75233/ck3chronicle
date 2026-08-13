@@ -131,6 +131,77 @@ CREATE INDEX IF NOT EXISTS idx_issue_occurrences_session_sig
     ON issue_occurrences(session_id, signature);
 """
 
+CLASSIFICATION_MODELS_DDL = """
+CREATE TABLE IF NOT EXISTS classification_models (
+    model_sha256       TEXT PRIMARY KEY CHECK (length(model_sha256) = 64),
+    revision_id        TEXT NOT NULL UNIQUE,
+    schema_version     INTEGER NOT NULL,
+    normalizer_version TEXT NOT NULL,
+    clusterer_version  TEXT NOT NULL,
+    threshold          REAL NOT NULL CHECK (threshold > 0.0 AND threshold <= 1.0),
+    cluster_count      INTEGER NOT NULL CHECK (cluster_count > 0),
+    registered_at      TEXT NOT NULL
+);
+"""
+
+CLASSIFICATION_RUNS_DDL = """
+CREATE TABLE IF NOT EXISTS classification_runs (
+    run_id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id              INTEGER NOT NULL REFERENCES sessions(session_id),
+    model_sha256            TEXT NOT NULL REFERENCES classification_models(model_sha256),
+    classification_contract_version TEXT NOT NULL,
+    classified_at           TEXT NOT NULL,
+    source_block_count      INTEGER NOT NULL CHECK (source_block_count >= 0),
+    semantic_occurrence_count INTEGER NOT NULL CHECK (semantic_occurrence_count >= 0),
+    full_count              INTEGER NOT NULL CHECK (full_count >= 0),
+    l1_l2_count             INTEGER NOT NULL CHECK (l1_l2_count >= 0),
+    l1_count                INTEGER NOT NULL CHECK (l1_count >= 0),
+    unknown_count           INTEGER NOT NULL CHECK (unknown_count >= 0),
+    UNIQUE(session_id, model_sha256),
+    UNIQUE(run_id, session_id),
+    CHECK (
+        semantic_occurrence_count =
+        full_count + l1_l2_count + l1_count + unknown_count
+    )
+);
+"""
+
+CLASSIFICATION_ASSIGNMENTS_DDL = """
+CREATE TABLE IF NOT EXISTS classification_assignments (
+    classification_assignment_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    run_id              INTEGER NOT NULL,
+    session_id          INTEGER NOT NULL,
+    source_block_id     TEXT NOT NULL,
+    unit_ordinal        INTEGER NOT NULL CHECK (unit_ordinal >= 0),
+    source_family       TEXT NOT NULL,
+    assignment_level    TEXT NOT NULL
+                        CHECK (assignment_level IN ('full', 'l1_l2', 'l1', 'unknown')),
+    contract_id         TEXT,
+    confidence          REAL NOT NULL CHECK (confidence >= 0.0 AND confidence <= 1.0),
+    semantic_text       TEXT NOT NULL,
+    location_evidence   TEXT,
+    normalized_tokens_json TEXT NOT NULL,
+    l1_template         TEXT,
+    l2_template         TEXT,
+    structured_slots_json TEXT NOT NULL DEFAULT '[]',
+    FOREIGN KEY (run_id, session_id)
+        REFERENCES classification_runs(run_id, session_id) ON DELETE CASCADE,
+    FOREIGN KEY (session_id, source_block_id)
+        REFERENCES source_blocks(session_id, source_block_id),
+    UNIQUE(run_id, source_block_id, unit_ordinal),
+    CHECK (
+        (assignment_level IN ('full', 'l1_l2') AND length(contract_id) = 16)
+        OR
+        (assignment_level IN ('l1', 'unknown') AND contract_id IS NULL)
+    )
+);
+"""
+
+CLASSIFICATION_ASSIGNMENTS_IDX_DDL = """
+CREATE INDEX IF NOT EXISTS idx_classification_assignments_session_level
+    ON classification_assignments(session_id, assignment_level);
+"""
+
 SOURCE_BLOCKS_DDL = """
 CREATE TABLE IF NOT EXISTS source_blocks (
     session_id          INTEGER NOT NULL REFERENCES sessions(session_id),
@@ -167,9 +238,14 @@ ALL_DDL = [
     SOURCE_BLOCKS_IDX_DDL,
     ISSUE_OCCURRENCES_DDL,
     ISSUE_OCCURRENCES_IDX_DDL,
+    CLASSIFICATION_MODELS_DDL,
+    CLASSIFICATION_RUNS_DDL,
+    CLASSIFICATION_ASSIGNMENTS_DDL,
+    CLASSIFICATION_ASSIGNMENTS_IDX_DDL,
 ]
 
 CURRENT_VERSION = 1
 CANONICAL_ISSUES_VERSION = 4
 SESSION_CONTEXT_VERSION = 1
 CAPTURE_VERSION = 1
+CLASSIFICATION_VERSION = 1

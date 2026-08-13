@@ -16,9 +16,9 @@ Status: runtime inference complete; persistence and CLI in progress.
 - [x] register and hash-verify approved model artifacts;
 - [x] implement full, L1+L2, L1-only, and unknown inference;
 - [x] pass key/locator/source/semantic-order contract tests;
-- persist versioned classification runs;
-- store semantic-unit occurrences linked to raw source blocks;
-- store full, L1+L2, L1-only, and unknown assignments;
+- [x] persist versioned classification runs;
+- [x] store semantic-unit occurrences linked to raw source blocks;
+- [x] store full, L1+L2, L1-only, and unknown assignments;
 - expose `classify` and `review-queue` commands;
 - [x] pass protected holdout and untouched-candidate compatibility gates;
 - add semantic adjudication samples as new source families are approved.

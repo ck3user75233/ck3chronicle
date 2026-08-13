@@ -55,6 +55,9 @@ class EmpiricalModel:
     path: Path
     sha256: str
     revision_id: str
+    schema_version: int
+    normalizer_version: str
+    clusterer_version: str
     threshold: float
     clusters: tuple[ModelCluster, ...]
 
@@ -168,6 +171,9 @@ def load_model(path: Path | str, *, expected_sha256: str) -> EmpiricalModel:
         path=model_path,
         sha256=actual_sha256,
         revision_id=revision_id,
+        schema_version=MODEL_SCHEMA_VERSION,
+        normalizer_version=normalizer,
+        clusterer_version=clusterer,
         threshold=float(threshold),
         clusters=clusters,
     )

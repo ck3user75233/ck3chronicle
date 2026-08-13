@@ -54,7 +54,11 @@ The suite currently covers:
 - key and locator invariance;
 - grammar-preserving two-key scope normalization;
 - optional-key extraction;
-- full, L1+L2, L1-only, and unknown classification behavior.
+- full, L1+L2, L1-only, and unknown classification behavior;
+- one-row-per-semantic-unit database provenance;
+- classification from stored source blocks without reopening archives;
+- same-model idempotence and atomic reclassification rollback;
+- rejection of unparsed sessions.
 
 ## Protected-corpus compatibility gate
 

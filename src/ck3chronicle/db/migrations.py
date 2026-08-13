@@ -12,6 +12,7 @@ from .schema import (
     ALL_DDL,
     CANONICAL_ISSUES_VERSION,
     CAPTURE_VERSION,
+    CLASSIFICATION_VERSION,
     CURRENT_VERSION,
     SESSION_CONTEXT_VERSION,
 )
@@ -167,6 +168,13 @@ def _apply_migrations(conn: sqlite3.Connection) -> None:
         VALUES (?, ?, ?)
         """,
         ("capture", CAPTURE_VERSION, now),
+    )
+    cur.execute(
+        """
+        INSERT OR REPLACE INTO schema_versions (component, version, migrated_at)
+        VALUES (?, ?, ?)
+        """,
+        ("classification", CLASSIFICATION_VERSION, now),
     )
     if has_legacy_context:
         cur.execute(

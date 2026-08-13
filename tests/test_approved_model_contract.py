@@ -85,3 +85,19 @@ def test_rmodel_005_repeated_persistent_clauses_are_occurrences_not_templates() 
     assert {result.assignment_level for result in results} == {"full"}
     assert {result.contract_id for result in results} == {"21b477c6e94b1681"}
     assert {result.semantic_text for result in results} == {"Unknown trigger: <KEY>"}
+
+
+def test_rmodel_006_single_persistent_clause_uses_the_same_base_contract() -> None:
+    """Human oracle: cardinality one and cardinality three share identity."""
+    raw_block = (
+        "[12:00:00][E][pdx_persistent_reader.cpp:7]: Error: \""
+        "Unknown trigger: only_key, near line: 10"
+        "\" in file: events/example.txt line: 40\n"
+    )
+
+    results = _classifier().classify_block("pdx_persistent_reader.cpp", raw_block)
+
+    assert len(results) == 1
+    assert results[0].assignment_level == "full"
+    assert results[0].contract_id == "21b477c6e94b1681"
+    assert results[0].semantic_text == "Unknown trigger: <KEY>"

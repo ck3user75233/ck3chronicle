@@ -190,10 +190,19 @@ class Classifier:
     ) -> tuple[ClassificationResult, ...]:
         """Classify every semantic occurrence represented by one stored block."""
         message = block_message(raw_block)
-        return tuple(
-            self.classify(source_family, unit)
-            for unit in semantic_units(source_family, message)
-        )
+        units = semantic_units(source_family, message)
+        if len(units) <= 1:
+            if not message:
+                return ()
+            candidate = (
+                units[0]
+                if units
+                and source_family.casefold() == "pdx_persistent_reader.cpp"
+                and units[0] != message
+                else message
+            )
+            return (self.classify(source_family, candidate),)
+        return tuple(self.classify(source_family, unit) for unit in units)
 
     def _result(
         self,

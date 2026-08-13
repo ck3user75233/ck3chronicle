@@ -593,3 +593,179 @@ def replace_canonical_parse(
     except Exception:
         conn.rollback()
         raise
+
+
+def get_classification_run(
+    conn: sqlite3.Connection, session_id: int, model_sha256: str
+) -> sqlite3.Row | None:
+    return conn.execute(
+        """
+        SELECT *
+        FROM classification_runs
+        WHERE session_id = ? AND model_sha256 = ?
+        """,
+        (session_id, model_sha256),
+    ).fetchone()
+
+
+def get_classification_source_blocks(
+    conn: sqlite3.Connection, session_id: int
+) -> list[sqlite3.Row]:
+    return conn.execute(
+        """
+        SELECT source_block_id, source_family, raw_block, start_line
+        FROM source_blocks
+        WHERE session_id = ?
+        ORDER BY start_line, source_block_id
+        """,
+        (session_id,),
+    ).fetchall()
+
+
+def _validate_classification_replacement(
+    assignments: Sequence[Any], counts: dict[str, int]
+) -> None:
+    required = {
+        "source_blocks",
+        "semantic_occurrences",
+        "full",
+        "l1_l2",
+        "l1",
+        "unknown",
+    }
+    if set(counts) != required or any(
+        not isinstance(value, int) or value < 0 for value in counts.values()
+    ):
+        raise ValueError("classification counters are invalid")
+    if counts["semantic_occurrences"] != len(assignments):
+        raise ValueError("classification occurrence counter does not reconcile")
+    levels = Counter(item.result.assignment_level for item in assignments)
+    if any(level not in {"full", "l1_l2", "l1", "unknown"} for level in levels):
+        raise ValueError("classification assignment level is invalid")
+    for level in ("full", "l1_l2", "l1", "unknown"):
+        if levels[level] != counts[level]:
+            raise ValueError(f"classification {level} counter does not reconcile")
+
+    by_block: dict[str, list[int]] = defaultdict(list)
+    for item in assignments:
+        by_block[item.source_block_id].append(item.unit_ordinal)
+        has_contract = item.result.contract_id is not None
+        if has_contract != (item.result.assignment_level in {"full", "l1_l2"}):
+            raise ValueError("classification contract ID disagrees with assignment level")
+    if len(by_block) != counts["source_blocks"]:
+        raise ValueError("classification source-block counter does not reconcile")
+    for ordinals in by_block.values():
+        if sorted(ordinals) != list(range(len(ordinals))):
+            raise ValueError("classification unit ordinals are not contiguous")
+
+
+def replace_classification_run(
+    conn: sqlite3.Connection,
+    *,
+    session_id: int,
+    model: Any,
+    assignments: Sequence[Any],
+    counts: dict[str, int],
+    classification_contract_version: str,
+) -> int:
+    """Atomically replace one session/model classification projection."""
+    _validate_classification_replacement(assignments, counts)
+    registered_at = datetime.now(timezone.utc).isoformat()
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        registered = conn.execute(
+            "SELECT * FROM classification_models WHERE model_sha256 = ?",
+            (model.sha256,),
+        ).fetchone()
+        expected_model = (
+            model.revision_id,
+            model.schema_version,
+            model.normalizer_version,
+            model.clusterer_version,
+            float(model.threshold),
+            len(model.clusters),
+        )
+        if registered is None:
+            conn.execute(
+                """
+                INSERT INTO classification_models (
+                    model_sha256, revision_id, schema_version,
+                    normalizer_version, clusterer_version, threshold,
+                    cluster_count, registered_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (model.sha256, *expected_model, registered_at),
+            )
+        else:
+            actual_model = (
+                registered["revision_id"],
+                registered["schema_version"],
+                registered["normalizer_version"],
+                registered["clusterer_version"],
+                float(registered["threshold"]),
+                registered["cluster_count"],
+            )
+            if actual_model != expected_model:
+                raise ValueError("registered classification model metadata disagrees")
+
+        conn.execute(
+            "DELETE FROM classification_runs WHERE session_id = ? AND model_sha256 = ?",
+            (session_id, model.sha256),
+        )
+        cursor = conn.execute(
+            """
+            INSERT INTO classification_runs (
+                session_id, model_sha256, classification_contract_version,
+                classified_at, source_block_count, semantic_occurrence_count,
+                full_count, l1_l2_count, l1_count, unknown_count
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                session_id,
+                model.sha256,
+                classification_contract_version,
+                registered_at,
+                counts["source_blocks"],
+                counts["semantic_occurrences"],
+                counts["full"],
+                counts["l1_l2"],
+                counts["l1"],
+                counts["unknown"],
+            ),
+        )
+        assert cursor.lastrowid is not None
+        run_id = int(cursor.lastrowid)
+        conn.executemany(
+            """
+            INSERT INTO classification_assignments (
+                run_id, session_id, source_block_id, unit_ordinal,
+                source_family, assignment_level, contract_id, confidence,
+                semantic_text, location_evidence, normalized_tokens_json,
+                l1_template, l2_template, structured_slots_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            [
+                (
+                    run_id,
+                    session_id,
+                    item.source_block_id,
+                    item.unit_ordinal,
+                    item.result.source_family,
+                    item.result.assignment_level,
+                    item.result.contract_id,
+                    item.result.confidence,
+                    item.result.semantic_text,
+                    item.result.location_evidence,
+                    _json(item.result.normalized_tokens),
+                    item.result.l1_template,
+                    item.result.l2_template,
+                    _json(item.result.structured_slots),
+                )
+                for item in assignments
+            ],
+        )
+        conn.commit()
+        return run_id
+    except Exception:
+        conn.rollback()
+        raise

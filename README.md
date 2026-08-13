@@ -17,7 +17,9 @@ active source tree because they described a different or failed design.
 - persist canonical occurrence and cluster rows transactionally;
 - load the exact approved empirical model after whole-file SHA-256 validation;
 - classify diagnostics as full, independently composed L1+L2, L1-only, or
-  unknown while retaining key, locator, and structured-slot evidence.
+  unknown while retaining key, locator, and structured-slot evidence;
+- atomically persist versioned model registrations, classification runs, and
+  one provenance row per semantic unit.
 
 The watcher is deliberately copy-only. Hashing, SQLite work, parsing, and
 classification do not occur in the process-exit path.
