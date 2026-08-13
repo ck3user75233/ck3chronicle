@@ -47,7 +47,7 @@ Status: foreground workflow complete.
 - [x] exclude keys, locators, timestamps, and lines from delta identity;
 - [x] ensure both sides use a common classification model revision;
 - [x] add observed-error-window rates and exact-100,000-block quality flags;
-- support named baselines and reasoned ignore rules;
+- [x] support named baselines and reasoned ignore rules;
 - add `report --since` as a convenience projection;
 - add true gameplay-duration exposure when authoritative lifecycle timing is
   available;

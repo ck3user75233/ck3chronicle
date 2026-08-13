@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from hashlib import sha256
 import json
 import sqlite3
@@ -12,6 +13,10 @@ from .reporting import latest_session_id
 
 class ComparisonError(RuntimeError):
     """A requested comparison cannot be made from compatible stored evidence."""
+
+
+class PolicyError(RuntimeError):
+    """A baseline or ignore policy request is invalid or conflicts with state."""
 
 
 def _classification_run(
@@ -31,6 +36,95 @@ def _classification_run(
         """,
         (session_id,),
     ).fetchone()
+
+
+def _clean_text(value: str, label: str, *, maximum: int) -> str:
+    cleaned = value.strip()
+    if not cleaned:
+        raise PolicyError(f"{label} must not be empty")
+    if len(cleaned) > maximum:
+        raise PolicyError(f"{label} must be at most {maximum} characters")
+    return cleaned
+
+
+def create_baseline(
+    conn: sqlite3.Connection,
+    baseline_name: str,
+    session_id: int,
+    *,
+    model_sha256: str | None = None,
+    note: str | None = None,
+) -> dict[str, object]:
+    """Create an immutable named pointer to one session/model interpretation."""
+    name = _clean_text(baseline_name, "baseline name", maximum=80)
+    clean_note = _clean_text(note, "baseline note", maximum=500) if note else None
+    session = repository.get_session(conn, session_id)
+    if session is None:
+        raise PolicyError(f"session_id {session_id} not found")
+    run = _classification_run(conn, session_id, model_sha256)
+    if run is None:
+        raise PolicyError(f"session_id {session_id} has no compatible classification run")
+    created_at = datetime.now(timezone.utc).isoformat()
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        conn.execute(
+            """
+            INSERT INTO session_baselines (
+                baseline_name, session_id, model_sha256, created_at, note
+            ) VALUES (?, ?, ?, ?, ?)
+            """,
+            (name, session_id, run["model_sha256"], created_at, clean_note),
+        )
+        conn.commit()
+    except sqlite3.IntegrityError as exc:
+        conn.rollback()
+        raise PolicyError(f"baseline already exists: {name}") from exc
+    except Exception:
+        conn.rollback()
+        raise
+    return {
+        "baseline_name": name,
+        "session_id": session_id,
+        "model_sha256": run["model_sha256"],
+        "created_at": created_at,
+        "note": clean_note,
+    }
+
+
+def get_baseline(conn: sqlite3.Connection, baseline_name: str) -> sqlite3.Row | None:
+    return conn.execute(
+        "SELECT * FROM session_baselines WHERE baseline_name = ?",
+        (baseline_name,),
+    ).fetchone()
+
+
+def list_baselines(conn: sqlite3.Connection) -> list[dict[str, object]]:
+    return [
+        dict(row)
+        for row in conn.execute(
+            """
+            SELECT b.baseline_name, b.session_id, s.created_at AS captured_at,
+                   b.model_sha256, b.created_at, b.note
+            FROM session_baselines b
+            JOIN sessions s ON s.session_id = b.session_id
+            ORDER BY lower(b.baseline_name), b.baseline_name
+            """
+        ).fetchall()
+    ]
+
+
+def delete_baseline(conn: sqlite3.Connection, baseline_name: str) -> bool:
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        deleted = conn.execute(
+            "DELETE FROM session_baselines WHERE baseline_name = ?",
+            (baseline_name,),
+        ).rowcount
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    return bool(deleted)
 
 
 def previous_session_id(
@@ -101,6 +195,126 @@ def _pattern_id(contract_id: str | None, source: str, tokens_json: str) -> str:
     )
     material = f"residual\0{source.casefold()}\0{tokens}"
     return "r_" + sha256(material.encode("utf-8")).hexdigest()[:16]
+
+
+def _known_pattern_id(
+    conn: sqlite3.Connection,
+    model_sha256: str,
+    pattern_id: str,
+) -> bool:
+    if conn.execute(
+        """
+        SELECT 1
+        FROM classification_assignments ca
+        JOIN classification_runs cr ON cr.run_id = ca.run_id
+        WHERE cr.model_sha256 = ? AND ca.contract_id = ?
+        LIMIT 1
+        """,
+        (model_sha256, pattern_id),
+    ).fetchone():
+        return True
+    if not pattern_id.startswith("r_"):
+        return False
+    rows = conn.execute(
+        """
+        SELECT DISTINCT ca.source_family, ca.normalized_tokens_json
+        FROM classification_assignments ca
+        JOIN classification_runs cr ON cr.run_id = ca.run_id
+        WHERE cr.model_sha256 = ? AND ca.contract_id IS NULL
+        """,
+        (model_sha256,),
+    ).fetchall()
+    return any(
+        _pattern_id(None, row["source_family"], row["normalized_tokens_json"])
+        == pattern_id
+        for row in rows
+    )
+
+
+def ignore_pattern(
+    conn: sqlite3.Connection,
+    model_sha256: str,
+    pattern_id: str,
+    reason: str,
+) -> dict[str, object]:
+    """Attach a required human reason to a known model-bound pattern."""
+    clean_pattern = _clean_text(pattern_id, "pattern ID", maximum=64)
+    clean_reason = _clean_text(reason, "ignore reason", maximum=500)
+    if repository.get_classification_model(conn, model_sha256) is None:
+        raise PolicyError(f"classification model not found: {model_sha256}")
+    if not _known_pattern_id(conn, model_sha256, clean_pattern):
+        raise PolicyError(
+            f"pattern {clean_pattern} is not present under model {model_sha256}"
+        )
+    created_at = datetime.now(timezone.utc).isoformat()
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        conn.execute(
+            """
+            INSERT INTO ignored_patterns (
+                model_sha256, pattern_id, reason, created_at
+            ) VALUES (?, ?, ?, ?)
+            """,
+            (model_sha256, clean_pattern, clean_reason, created_at),
+        )
+        conn.commit()
+    except sqlite3.IntegrityError as exc:
+        conn.rollback()
+        raise PolicyError(f"pattern is already ignored: {clean_pattern}") from exc
+    except Exception:
+        conn.rollback()
+        raise
+    return {
+        "model_sha256": model_sha256,
+        "pattern_id": clean_pattern,
+        "reason": clean_reason,
+        "created_at": created_at,
+    }
+
+
+def list_ignored_patterns(
+    conn: sqlite3.Connection,
+    *,
+    model_sha256: str | None = None,
+) -> list[dict[str, object]]:
+    if model_sha256 is None:
+        rows = conn.execute(
+            """
+            SELECT * FROM ignored_patterns
+            ORDER BY created_at, model_sha256, pattern_id
+            """
+        ).fetchall()
+    else:
+        rows = conn.execute(
+            """
+            SELECT * FROM ignored_patterns
+            WHERE model_sha256 = ?
+            ORDER BY created_at, pattern_id
+            """,
+            (model_sha256,),
+        ).fetchall()
+    return [dict(row) for row in rows]
+
+
+def unignore_pattern(
+    conn: sqlite3.Connection,
+    model_sha256: str,
+    pattern_id: str,
+) -> bool:
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        deleted = conn.execute(
+            """
+            DELETE FROM ignored_patterns
+            WHERE model_sha256 = ? AND pattern_id = ?
+            """,
+            (model_sha256, pattern_id),
+        ).rowcount
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    return bool(deleted)
 
 
 def _template(row: sqlite3.Row) -> str | None:
@@ -289,6 +503,17 @@ def compare_sessions(
         if current_span is not None and int(current_span) > 0
         else None
     )
+    ignored = {
+        str(row["pattern_id"]): str(row["reason"])
+        for row in conn.execute(
+            """
+            SELECT pattern_id, reason
+            FROM ignored_patterns
+            WHERE model_sha256 = ?
+            """,
+            (exact_model,),
+        ).fetchall()
+    }
     before = _patterns(conn, against_run)
     after = _patterns(conn, current_run)
     changed: list[dict[str, object]] = []
@@ -346,6 +571,8 @@ def compare_sessions(
                 "previous_occurrences": previous_count,
                 "current_occurrences": current_count,
                 "delta": delta,
+                "ignored": pattern_id in ignored,
+                "ignore_reason": ignored.get(pattern_id),
                 "previous_rate_per_observed_hour": (
                     previous_count / previous_hours
                     if previous_hours is not None
@@ -368,6 +595,7 @@ def compare_sessions(
     priority = {"new": 0, "fixed": 1, "worse": 2, "improved": 3}
     changed.sort(
         key=lambda item: (
+            bool(item["ignored"]),
             -abs(int(item["delta"])),
             priority[str(item["status"])],
             str(item["source_family"]),
@@ -383,6 +611,7 @@ def compare_sessions(
     )
     previous_total = int(against_run["semantic_occurrence_count"])
     current_total = int(current_run["semantic_occurrence_count"])
+    ignored_changed = [item for item in changed if item["ignored"]]
     quality_warnings: list[str] = []
     for label, session, quality in (
         ("previous", against_session, previous_quality),
@@ -429,6 +658,13 @@ def compare_sessions(
             ),
             "pattern_counts": pattern_counts,
             "occurrence_movement": occurrence_movement,
+            "policy": {
+                "ignored_changed_patterns": len(ignored_changed),
+                "actionable_changed_patterns": len(changed) - len(ignored_changed),
+                "ignored_current_occurrences": sum(
+                    int(item["current_occurrences"]) for item in ignored_changed
+                ),
+            },
         },
         "changed_patterns": changed[:limit],
         "unchanged_patterns": unchanged[:limit],
@@ -454,3 +690,35 @@ def compare_latest(
         model_sha256=model_sha256,
         limit=limit,
     )
+
+
+def compare_against_baseline(
+    conn: sqlite3.Connection,
+    baseline_name: str,
+    *,
+    current_session_id: int | None = None,
+    limit: int = 50,
+) -> dict[str, object]:
+    baseline = get_baseline(conn, baseline_name)
+    if baseline is None:
+        raise ComparisonError(f"baseline not found: {baseline_name}")
+    current = current_session_id
+    if current is None:
+        current = latest_session_id(conn)
+    if current is None:
+        raise ComparisonError("no captured sessions exist")
+    comparison = compare_sessions(
+        conn,
+        current,
+        int(baseline["session_id"]),
+        model_sha256=str(baseline["model_sha256"]),
+        limit=limit,
+    )
+    comparison["baseline"] = {
+        "baseline_name": baseline["baseline_name"],
+        "session_id": int(baseline["session_id"]),
+        "model_sha256": baseline["model_sha256"],
+        "created_at": baseline["created_at"],
+        "note": baseline["note"],
+    }
+    return comparison

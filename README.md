@@ -40,6 +40,10 @@ classification do not occur in the process-exit path.
 .\.venv\Scripts\ck3chronicle.exe errors --session <ID>
 .\.venv\Scripts\ck3chronicle.exe process-pending
 .\.venv\Scripts\ck3chronicle.exe compare
+.\.venv\Scripts\ck3chronicle.exe baseline create <NAME>
+.\.venv\Scripts\ck3chronicle.exe baseline list
+.\.venv\Scripts\ck3chronicle.exe ignore add <PATTERN_ID> --reason <TEXT>
+.\.venv\Scripts\ck3chronicle.exe ignore list
 ```
 
 `watch` is a foreground process and must currently be started again after a PC
@@ -60,6 +64,10 @@ changes. Use `--session` and `--against` to choose an explicit pair.
 Raw counts are accompanied by rates over the stored first-to-last error window
 and evidence-quality warnings; these are observational diagnostics, not causal
 claims about a patch or mod.
+
+Baselines pin both a session and the exact classification model used to
+interpret it. Ignore rules are model-bound annotations with mandatory reasons;
+ignored patterns remain visible in comparisons and retain their counts.
 
 Read these documents in order:
 

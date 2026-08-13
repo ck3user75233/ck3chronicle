@@ -652,6 +652,7 @@ def _print_session_comparison(comparison: dict[str, object]) -> None:
     summary = comparison["summary"]
     pattern_counts = summary["pattern_counts"]
     movement = summary["occurrence_movement"]
+    policy = summary["policy"]
     print(
         f"Session {current['session_id']} ({current['captured_at']}) vs "
         f"session {previous['session_id']} ({previous['captured_at']})"
@@ -679,14 +680,22 @@ def _print_session_comparison(comparison: dict[str, object]) -> None:
         f"introduced={movement['introduced']:,}, eliminated={movement['eliminated']:,}, "
         f"increased={movement['increased']:,}, reduced={movement['reduced']:,}"
     )
+    print(
+        f"Actionable changed patterns={policy['actionable_changed_patterns']}; "
+        f"ignored annotations={policy['ignored_changed_patterns']}"
+    )
     for warning in comparison["evidence_quality"]["warnings"]:
         print(f"WARNING: {warning}")
     print("\nLargest observed changes")
     for item in comparison["changed_patterns"]:
         label = item["template"] or item["sample"]
+        ignored = (
+            f" [ignored: {item['ignore_reason']}]" if item["ignored"] else ""
+        )
         print(
             f"{item['status']:<8} {item['previous_occurrences']:>8,} -> "
-            f"{item['current_occurrences']:<8,} {item['source_family']}  {label}"
+            f"{item['current_occurrences']:<8,} {item['source_family']}  "
+            f"{label}{ignored}"
         )
 
 
@@ -697,14 +706,26 @@ def cmd_compare(args: argparse.Namespace) -> int:
     from .db import repository
     from .session_intelligence import (
         ComparisonError,
+        compare_against_baseline,
         compare_latest,
         compare_sessions,
     )
 
     conn = None
     try:
+        if args.baseline is not None and args.model_sha256 is not None:
+            raise ComparisonError(
+                "--model-sha256 cannot override a baseline's pinned model"
+            )
         conn = repository.open_db(config.ROOT_CK3CHRONICLE / "ck3chronicle.db")
-        if args.session is None:
+        if args.baseline is not None:
+            comparison = compare_against_baseline(
+                conn,
+                args.baseline,
+                current_session_id=args.session,
+                limit=args.limit,
+            )
+        elif args.session is None:
             comparison = compare_latest(
                 conn,
                 against_session_id=args.against,
@@ -732,6 +753,266 @@ def cmd_compare(args: argparse.Namespace) -> int:
         print(json.dumps(comparison, sort_keys=True))
     else:
         _print_session_comparison(comparison)
+    return 0
+
+
+def _latest_session_and_model(conn) -> tuple[int, str]:
+    from .reporting import latest_session_id
+
+    session_id = latest_session_id(conn)
+    if session_id is None:
+        raise ValueError("no captured sessions exist")
+    run = conn.execute(
+        """
+        SELECT model_sha256
+        FROM classification_runs
+        WHERE session_id = ?
+        ORDER BY classified_at DESC, run_id DESC
+        LIMIT 1
+        """,
+        (session_id,),
+    ).fetchone()
+    if run is None:
+        raise ValueError(f"latest session {session_id} has not been classified")
+    return session_id, str(run["model_sha256"])
+
+
+def cmd_baseline_create(args: argparse.Namespace) -> int:
+    import sqlite3
+
+    from . import config
+    from .db import repository
+    from .session_intelligence import PolicyError, create_baseline
+
+    conn = None
+    try:
+        conn = repository.open_db(config.ROOT_CK3CHRONICLE / "ck3chronicle.db")
+        session_id = args.session
+        if session_id is None:
+            session_id, _latest_model = _latest_session_and_model(conn)
+        baseline = create_baseline(
+            conn,
+            args.name,
+            session_id,
+            model_sha256=args.model_sha256,
+            note=args.note,
+        )
+    except (PolicyError, ValueError) as exc:
+        print(f"ERROR: baseline unavailable: {exc}", file=sys.stderr)
+        return 2
+    except sqlite3.Error as exc:
+        print(f"ERROR [database_failed]: {exc}", file=sys.stderr)
+        return 5
+    finally:
+        if conn is not None:
+            conn.close()
+    payload = {
+        "schema": "ck3chronicle.baseline",
+        "schema_version": 1,
+        **baseline,
+    }
+    if args.json:
+        print(json.dumps(payload, sort_keys=True))
+    else:
+        print(
+            f"created baseline {baseline['baseline_name']}: "
+            f"session {baseline['session_id']}"
+        )
+    return 0
+
+
+def cmd_baseline_list(args: argparse.Namespace) -> int:
+    import sqlite3
+
+    from . import config
+    from .db import repository
+    from .session_intelligence import list_baselines
+
+    conn = None
+    try:
+        conn = repository.open_db(config.ROOT_CK3CHRONICLE / "ck3chronicle.db")
+        baselines = list_baselines(conn)
+    except sqlite3.Error as exc:
+        print(f"ERROR [database_failed]: {exc}", file=sys.stderr)
+        return 5
+    finally:
+        if conn is not None:
+            conn.close()
+    if args.json:
+        print(
+            json.dumps(
+                {
+                    "schema": "ck3chronicle.baseline-list",
+                    "schema_version": 1,
+                    "baselines": baselines,
+                },
+                sort_keys=True,
+            )
+        )
+    else:
+        for baseline in baselines:
+            note = f" — {baseline['note']}" if baseline["note"] else ""
+            print(
+                f"{baseline['baseline_name']}: session {baseline['session_id']} "
+                f"({baseline['captured_at']}){note}"
+            )
+    return 0
+
+
+def cmd_baseline_delete(args: argparse.Namespace) -> int:
+    import sqlite3
+
+    from . import config
+    from .db import repository
+    from .session_intelligence import delete_baseline
+
+    conn = None
+    try:
+        conn = repository.open_db(config.ROOT_CK3CHRONICLE / "ck3chronicle.db")
+        deleted = delete_baseline(conn, args.name)
+    except sqlite3.Error as exc:
+        print(f"ERROR [database_failed]: {exc}", file=sys.stderr)
+        return 5
+    finally:
+        if conn is not None:
+            conn.close()
+    if not deleted:
+        print(f"ERROR: baseline not found: {args.name}", file=sys.stderr)
+        return 2
+    if args.json:
+        print(
+            json.dumps(
+                {
+                    "schema": "ck3chronicle.baseline-deletion",
+                    "schema_version": 1,
+                    "baseline_name": args.name,
+                    "deleted": True,
+                },
+                sort_keys=True,
+            )
+        )
+    else:
+        print(f"deleted baseline: {args.name}")
+    return 0
+
+
+def _policy_model(conn, requested: str | None) -> str:
+    if requested is not None:
+        return requested
+    _session_id, model_sha256 = _latest_session_and_model(conn)
+    return model_sha256
+
+
+def cmd_ignore_add(args: argparse.Namespace) -> int:
+    import sqlite3
+
+    from . import config
+    from .db import repository
+    from .session_intelligence import PolicyError, ignore_pattern
+
+    conn = None
+    try:
+        conn = repository.open_db(config.ROOT_CK3CHRONICLE / "ck3chronicle.db")
+        ignored = ignore_pattern(
+            conn,
+            _policy_model(conn, args.model_sha256),
+            args.pattern_id,
+            args.reason,
+        )
+    except (PolicyError, ValueError) as exc:
+        print(f"ERROR: ignore unavailable: {exc}", file=sys.stderr)
+        return 2
+    except sqlite3.Error as exc:
+        print(f"ERROR [database_failed]: {exc}", file=sys.stderr)
+        return 5
+    finally:
+        if conn is not None:
+            conn.close()
+    payload = {
+        "schema": "ck3chronicle.pattern-ignore",
+        "schema_version": 1,
+        **ignored,
+    }
+    if args.json:
+        print(json.dumps(payload, sort_keys=True))
+    else:
+        print(f"ignored {ignored['pattern_id']}: {ignored['reason']}")
+    return 0
+
+
+def cmd_ignore_list(args: argparse.Namespace) -> int:
+    import sqlite3
+
+    from . import config
+    from .db import repository
+    from .session_intelligence import list_ignored_patterns
+
+    conn = None
+    try:
+        conn = repository.open_db(config.ROOT_CK3CHRONICLE / "ck3chronicle.db")
+        ignored = list_ignored_patterns(conn, model_sha256=args.model_sha256)
+    except sqlite3.Error as exc:
+        print(f"ERROR [database_failed]: {exc}", file=sys.stderr)
+        return 5
+    finally:
+        if conn is not None:
+            conn.close()
+    if args.json:
+        print(
+            json.dumps(
+                {
+                    "schema": "ck3chronicle.pattern-ignore-list",
+                    "schema_version": 1,
+                    "ignored_patterns": ignored,
+                },
+                sort_keys=True,
+            )
+        )
+    else:
+        for item in ignored:
+            print(f"{item['pattern_id']}: {item['reason']}")
+    return 0
+
+
+def cmd_ignore_remove(args: argparse.Namespace) -> int:
+    import sqlite3
+
+    from . import config
+    from .db import repository
+    from .session_intelligence import unignore_pattern
+
+    conn = None
+    try:
+        conn = repository.open_db(config.ROOT_CK3CHRONICLE / "ck3chronicle.db")
+        model_sha256 = _policy_model(conn, args.model_sha256)
+        deleted = unignore_pattern(conn, model_sha256, args.pattern_id)
+    except ValueError as exc:
+        print(f"ERROR: ignore unavailable: {exc}", file=sys.stderr)
+        return 2
+    except sqlite3.Error as exc:
+        print(f"ERROR [database_failed]: {exc}", file=sys.stderr)
+        return 5
+    finally:
+        if conn is not None:
+            conn.close()
+    if not deleted:
+        print(f"ERROR: ignored pattern not found: {args.pattern_id}", file=sys.stderr)
+        return 2
+    if args.json:
+        print(
+            json.dumps(
+                {
+                    "schema": "ck3chronicle.pattern-ignore-deletion",
+                    "schema_version": 1,
+                    "model_sha256": model_sha256,
+                    "pattern_id": args.pattern_id,
+                    "deleted": True,
+                },
+                sort_keys=True,
+            )
+        )
+    else:
+        print(f"removed ignore: {args.pattern_id}")
     return 0
 
 
@@ -888,16 +1169,71 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="SESSION_ID",
         help="Current session; defaults to the latest captured session.",
     )
-    p_compare.add_argument(
+    compare_target = p_compare.add_mutually_exclusive_group()
+    compare_target.add_argument(
         "--against",
         type=int,
         metavar="SESSION_ID",
         help="Prior session; defaults to the preceding compatible capture.",
     )
+    compare_target.add_argument(
+        "--baseline",
+        metavar="NAME",
+        help="Compare against a named baseline and its pinned model.",
+    )
     p_compare.add_argument("--limit", type=int, default=50, metavar="N")
     p_compare.add_argument("--model-sha256", metavar="SHA256")
     p_compare.add_argument("--json", action="store_true")
     p_compare.set_defaults(func=cmd_compare)
+
+    p_baseline = sub.add_parser(
+        "baseline",
+        help="Create, list, or delete named session baselines.",
+    )
+    baseline_sub = p_baseline.add_subparsers(dest="baseline_command", required=True)
+    p_baseline_create = baseline_sub.add_parser(
+        "create", help="Create an immutable named session/model baseline."
+    )
+    p_baseline_create.add_argument("name", metavar="NAME")
+    p_baseline_create.add_argument("--session", type=int, metavar="SESSION_ID")
+    p_baseline_create.add_argument("--model-sha256", metavar="SHA256")
+    p_baseline_create.add_argument("--note")
+    p_baseline_create.add_argument("--json", action="store_true")
+    p_baseline_create.set_defaults(func=cmd_baseline_create)
+    p_baseline_list = baseline_sub.add_parser("list", help="List named baselines.")
+    p_baseline_list.add_argument("--json", action="store_true")
+    p_baseline_list.set_defaults(func=cmd_baseline_list)
+    p_baseline_delete = baseline_sub.add_parser(
+        "delete", help="Delete a named baseline pointer; evidence is untouched."
+    )
+    p_baseline_delete.add_argument("name", metavar="NAME")
+    p_baseline_delete.add_argument("--json", action="store_true")
+    p_baseline_delete.set_defaults(func=cmd_baseline_delete)
+
+    p_ignore = sub.add_parser(
+        "ignore",
+        help="Add, list, or remove reasoned model-bound pattern annotations.",
+    )
+    ignore_sub = p_ignore.add_subparsers(dest="ignore_command", required=True)
+    p_ignore_add = ignore_sub.add_parser(
+        "add", help="Mark a known pattern ignored while retaining it in reports."
+    )
+    p_ignore_add.add_argument("pattern_id", metavar="PATTERN_ID")
+    p_ignore_add.add_argument("--reason", required=True)
+    p_ignore_add.add_argument("--model-sha256", metavar="SHA256")
+    p_ignore_add.add_argument("--json", action="store_true")
+    p_ignore_add.set_defaults(func=cmd_ignore_add)
+    p_ignore_list = ignore_sub.add_parser("list", help="List ignored patterns.")
+    p_ignore_list.add_argument("--model-sha256", metavar="SHA256")
+    p_ignore_list.add_argument("--json", action="store_true")
+    p_ignore_list.set_defaults(func=cmd_ignore_list)
+    p_ignore_remove = ignore_sub.add_parser(
+        "remove", help="Remove an ignore annotation."
+    )
+    p_ignore_remove.add_argument("pattern_id", metavar="PATTERN_ID")
+    p_ignore_remove.add_argument("--model-sha256", metavar="SHA256")
+    p_ignore_remove.add_argument("--json", action="store_true")
+    p_ignore_remove.set_defaults(func=cmd_ignore_remove)
 
     return parser
 

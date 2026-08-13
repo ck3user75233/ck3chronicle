@@ -216,6 +216,30 @@ CREATE INDEX IF NOT EXISTS idx_classification_assignments_session_level
     ON classification_assignments(session_id, assignment_level);
 """
 
+SESSION_BASELINES_DDL = """
+CREATE TABLE IF NOT EXISTS session_baselines (
+    baseline_name      TEXT PRIMARY KEY COLLATE NOCASE,
+    session_id         INTEGER NOT NULL REFERENCES sessions(session_id),
+    model_sha256       TEXT NOT NULL REFERENCES classification_models(model_sha256),
+    created_at         TEXT NOT NULL,
+    note               TEXT,
+    CHECK (length(trim(baseline_name)) > 0),
+    CHECK (note IS NULL OR length(trim(note)) > 0)
+);
+"""
+
+IGNORED_PATTERNS_DDL = """
+CREATE TABLE IF NOT EXISTS ignored_patterns (
+    model_sha256       TEXT NOT NULL REFERENCES classification_models(model_sha256),
+    pattern_id         TEXT NOT NULL,
+    reason             TEXT NOT NULL,
+    created_at         TEXT NOT NULL,
+    PRIMARY KEY (model_sha256, pattern_id),
+    CHECK (length(pattern_id) >= 16),
+    CHECK (length(trim(reason)) > 0)
+);
+"""
+
 SOURCE_BLOCKS_DDL = """
 CREATE TABLE IF NOT EXISTS source_blocks (
     session_id          INTEGER NOT NULL REFERENCES sessions(session_id),
@@ -257,6 +281,8 @@ ALL_DDL = [
     CLASSIFICATION_RUNS_DDL,
     CLASSIFICATION_ASSIGNMENTS_DDL,
     CLASSIFICATION_ASSIGNMENTS_IDX_DDL,
+    SESSION_BASELINES_DDL,
+    IGNORED_PATTERNS_DDL,
 ]
 
 CURRENT_VERSION = 1
@@ -264,3 +290,4 @@ CANONICAL_ISSUES_VERSION = 4
 SESSION_CONTEXT_VERSION = 1
 CAPTURE_VERSION = 1
 CLASSIFICATION_VERSION = 2
+SESSION_INTELLIGENCE_VERSION = 1

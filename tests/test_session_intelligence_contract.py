@@ -4,13 +4,23 @@ from __future__ import annotations
 
 import json
 
+import pytest
+
 from ck3chronicle import config
 from ck3chronicle.classification import classify_session
 from ck3chronicle.cli import build_parser
 from ck3chronicle.db import repository
 from ck3chronicle.harvester import MANIFEST_VERSION, finalize_pending, spool_logs
 from ck3chronicle.parser.service import parse_session
-from ck3chronicle.session_intelligence import compare_sessions
+from ck3chronicle.session_intelligence import (
+    PolicyError,
+    compare_against_baseline,
+    compare_sessions,
+    create_baseline,
+    ignore_pattern,
+    list_baselines,
+    list_ignored_patterns,
+)
 
 from foundation_oracle import SIX_LOG_BYTES, write_logs
 from test_classification_persistence_contract import _classifier, _session
@@ -120,6 +130,11 @@ def test_rdelta_001_contracts_ignore_changed_keys_locators_and_line_numbers(
             "increased": 0,
             "reduced": 2,
         },
+        "policy": {
+            "ignored_changed_patterns": 0,
+            "actionable_changed_patterns": 3,
+            "ignored_current_occurrences": 0,
+        },
     }
     changed = {item["status"]: item for item in result["changed_patterns"]}
     assert changed["new"]["template"] == "Key poet not found at Database : <LOCATOR>"
@@ -207,3 +222,148 @@ def test_rdelta_003_trailing_script_location_cannot_split_a_residual(
     }
     assert result["unchanged_patterns"][0]["assignment_level"] == "unknown"
     conn.close()
+
+
+def test_rpolicy_001_named_baseline_pins_session_and_exact_model(tmp_path) -> None:
+    _runtime, conn, previous_id, current_id = _two_sessions(tmp_path)
+
+    baseline = create_baseline(
+        conn,
+        "before_patch",
+        previous_id,
+        note="Before the localization repair",
+    )
+    comparison = compare_against_baseline(
+        conn,
+        "BEFORE_PATCH",
+        current_session_id=current_id,
+    )
+
+    assert baseline["session_id"] == previous_id
+    assert list_baselines(conn)[0]["captured_at"] == "2026-08-13T00:00:00+00:00"
+    assert comparison["baseline"]["baseline_name"] == "before_patch"
+    assert comparison["baseline"]["note"] == "Before the localization repair"
+    assert comparison["previous_session"]["session_id"] == previous_id
+    with pytest.raises(PolicyError, match="already exists"):
+        create_baseline(conn, "Before_Patch", current_id)
+    conn.close()
+
+
+def test_rpolicy_002_reasoned_ignore_is_visible_not_removed(tmp_path) -> None:
+    _runtime, conn, previous_id, current_id = _two_sessions(tmp_path)
+    initial = compare_sessions(conn, current_id, previous_id)
+    target = next(
+        item for item in initial["changed_patterns"] if item["status"] == "improved"
+    )
+
+    ignored = ignore_pattern(
+        conn,
+        initial["model_sha256"],
+        target["pattern_id"],
+        "Known vanilla noise during this investigation",
+    )
+    annotated = compare_sessions(conn, current_id, previous_id)
+    visible = next(
+        item
+        for item in annotated["changed_patterns"]
+        if item["pattern_id"] == target["pattern_id"]
+    )
+
+    assert ignored["reason"] == "Known vanilla noise during this investigation"
+    assert visible["ignored"] is True
+    assert visible["ignore_reason"] == ignored["reason"]
+    assert visible["previous_occurrences"] == 3
+    assert visible["current_occurrences"] == 1
+    assert annotated["changed_patterns_total"] == 3
+    assert annotated["summary"]["policy"] == {
+        "ignored_changed_patterns": 1,
+        "actionable_changed_patterns": 2,
+        "ignored_current_occurrences": 1,
+    }
+    assert list_ignored_patterns(conn) == [ignored]
+    with pytest.raises(PolicyError, match="already ignored"):
+        ignore_pattern(
+            conn,
+            initial["model_sha256"],
+            target["pattern_id"],
+            "A conflicting second reason",
+        )
+    conn.close()
+
+
+def test_rpolicy_003_cli_creates_baseline_and_compares_against_it(
+    tmp_path, monkeypatch, capsys
+) -> None:
+    runtime, conn, previous_id, current_id = _two_sessions(tmp_path)
+    conn.close()
+    monkeypatch.setattr(config, "ROOT_CK3CHRONICLE", runtime)
+    parser = build_parser()
+    create_args = parser.parse_args(
+        [
+            "baseline",
+            "create",
+            "before_patch",
+            "--session",
+            str(previous_id),
+            "--note",
+            "Known starting point",
+            "--json",
+        ]
+    )
+
+    assert create_args.func(create_args) == 0
+    created = json.loads(capsys.readouterr().out)
+    assert created["session_id"] == previous_id
+
+    compare_args = parser.parse_args(
+        [
+            "compare",
+            "--session",
+            str(current_id),
+            "--baseline",
+            "before_patch",
+            "--json",
+        ]
+    )
+    assert compare_args.func(compare_args) == 0
+    comparison = json.loads(capsys.readouterr().out)
+    assert comparison["baseline"]["baseline_name"] == "before_patch"
+    assert comparison["summary"]["pattern_counts"]["fixed"] == 1
+
+
+def test_rpolicy_004_cli_requires_and_preserves_ignore_reason(
+    tmp_path, monkeypatch, capsys
+) -> None:
+    runtime, conn, previous_id, current_id = _two_sessions(tmp_path)
+    comparison = compare_sessions(conn, current_id, previous_id)
+    target = next(
+        item for item in comparison["changed_patterns"] if item["status"] == "new"
+    )
+    model_sha256 = comparison["model_sha256"]
+    conn.close()
+    monkeypatch.setattr(config, "ROOT_CK3CHRONICLE", runtime)
+    parser = build_parser()
+    args = parser.parse_args(
+        [
+            "ignore",
+            "add",
+            target["pattern_id"],
+            "--reason",
+            "Out of scope for the current patch",
+            "--model-sha256",
+            model_sha256,
+            "--json",
+        ]
+    )
+
+    assert args.func(args) == 0
+    added = json.loads(capsys.readouterr().out)
+    assert added["pattern_id"] == target["pattern_id"]
+    assert added["reason"] == "Out of scope for the current patch"
+
+    list_args = parser.parse_args(
+        ["ignore", "list", "--model-sha256", model_sha256, "--json"]
+    )
+    assert list_args.func(list_args) == 0
+    listed = json.loads(capsys.readouterr().out)
+    assert listed["ignored_patterns"][0]["reason"] == added["reason"]

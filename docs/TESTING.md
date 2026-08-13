@@ -68,7 +68,9 @@ The suite currently covers:
 - cross-session semantic deltas despite changed keys, locators, and line
   numbers;
 - chronological CLI selection and bounded deterministic comparison JSON;
-- observed error-window rates and quality metadata.
+- observed error-window rates and quality metadata;
+- immutable, case-insensitive named baselines pinned to a model revision;
+- mandatory-reason ignore annotations that remain visible in comparisons.
 
 ## Protected-corpus compatibility gate
 
