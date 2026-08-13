@@ -334,6 +334,175 @@ def get_error_log_manifest_row(
     return rows[0]
 
 
+def get_log_manifest_row(
+    conn: sqlite3.Connection,
+    session_id: int,
+    rel_path: str,
+) -> sqlite3.Row | None:
+    """Return one exact captured log row, or None when absent/ambiguous."""
+    rows = conn.execute(
+        """
+        SELECT *
+        FROM session_files
+        WHERE session_id = ? AND kind = 'log' AND rel_path = ?
+        ORDER BY session_file_id
+        """,
+        (session_id, rel_path),
+    ).fetchall()
+    return rows[0] if len(rows) == 1 else None
+
+
+def get_runtime_context(
+    conn: sqlite3.Connection,
+    session_id: int,
+) -> sqlite3.Row | None:
+    return conn.execute(
+        "SELECT * FROM session_runtime_contexts WHERE session_id = ?",
+        (session_id,),
+    ).fetchone()
+
+
+def get_mounted_dlcs(
+    conn: sqlite3.Connection,
+    session_id: int,
+) -> list[sqlite3.Row]:
+    return conn.execute(
+        """
+        SELECT * FROM session_mounted_dlcs
+        WHERE session_id = ?
+        ORDER BY dlc_order
+        """,
+        (session_id,),
+    ).fetchall()
+
+
+def get_mounted_mods(
+    conn: sqlite3.Connection,
+    session_id: int,
+) -> list[sqlite3.Row]:
+    return conn.execute(
+        """
+        SELECT * FROM session_mounted_mods
+        WHERE session_id = ?
+        ORDER BY load_order
+        """,
+        (session_id,),
+    ).fetchall()
+
+
+def replace_runtime_context(
+    conn: sqlite3.Connection,
+    *,
+    session_id: int,
+    contract_version: str,
+    parsed_at: str,
+    status: str,
+    debug_log_sha256: str | None,
+    mounted_entry_count: int,
+    dlcs: Sequence[Any],
+    mods: Sequence[Any],
+    unknown_mount_count: int,
+    inventory_enabled_mod_count: int,
+    inventory_dlc_count: int,
+    warnings: Sequence[str],
+) -> None:
+    """Atomically replace one session's derived Mounted Data interpretation."""
+    if status not in {"complete", "partial", "absent"}:
+        raise ValueError("runtime context status is invalid")
+    if [item.dlc_order for item in dlcs] != list(range(len(dlcs))):
+        raise ValueError("DLC ordinals are not contiguous")
+    if [item.load_order for item in mods] != list(range(len(mods))):
+        raise ValueError("mod load ordinals are not contiguous")
+    mount_ordinals = [item.mount_ordinal for item in (*dlcs, *mods)]
+    if len(mount_ordinals) != len(set(mount_ordinals)):
+        raise ValueError("mounted entry ordinals are not unique")
+    if mounted_entry_count != len(dlcs) + len(mods):
+        raise ValueError("mounted entry count disagrees with derived rows")
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        conn.execute(
+            "DELETE FROM session_mounted_dlcs WHERE session_id = ?",
+            (session_id,),
+        )
+        conn.execute(
+            "DELETE FROM session_mounted_mods WHERE session_id = ?",
+            (session_id,),
+        )
+        conn.execute(
+            "DELETE FROM session_runtime_contexts WHERE session_id = ?",
+            (session_id,),
+        )
+        conn.execute(
+            """
+            INSERT INTO session_runtime_contexts (
+                session_id, context_contract_version, parsed_at, status,
+                debug_log_sha256, mounted_entry_count, dlc_count, mod_count,
+                unknown_mount_count, inventory_enabled_mod_count,
+                inventory_dlc_count, warnings_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                session_id,
+                contract_version,
+                parsed_at,
+                status,
+                debug_log_sha256,
+                mounted_entry_count,
+                len(dlcs),
+                len(mods),
+                unknown_mount_count,
+                inventory_enabled_mod_count,
+                inventory_dlc_count,
+                _json(list(warnings)),
+            ),
+        )
+        conn.executemany(
+            """
+            INSERT INTO session_mounted_dlcs (
+                session_id, mount_ordinal, dlc_order, dlc_key,
+                display_name, descriptor_path, mount_path
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            [
+                (
+                    session_id,
+                    item.mount_ordinal,
+                    item.dlc_order,
+                    item.dlc_key,
+                    item.display_name,
+                    item.descriptor_path,
+                    item.mount_path,
+                )
+                for item in dlcs
+            ],
+        )
+        conn.executemany(
+            """
+            INSERT INTO session_mounted_mods (
+                session_id, mount_ordinal, load_order, mod_key,
+                display_name, descriptor_path, mount_path, source_kind
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            [
+                (
+                    session_id,
+                    item.mount_ordinal,
+                    item.load_order,
+                    item.mod_key,
+                    item.display_name,
+                    item.descriptor_path,
+                    item.mount_path,
+                    item.source_kind,
+                )
+                for item in mods
+            ],
+        )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+
+
 def get_successful_parse_result(
     conn: sqlite3.Connection,
     session_id: int,

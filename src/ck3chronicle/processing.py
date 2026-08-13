@@ -11,12 +11,14 @@ from .db import repository
 from .harvester import finalize_pending_captures
 from .parser.service import parse_session
 from .reporting import build_session_report, latest_session_id
+from .runtime_context import parse_runtime_context
 
 
 @dataclass(frozen=True)
 class ProcessingResult:
     finalized_pending: int
     registered_archives: int
+    context_sessions: int
     parsed_sessions: int
     classified_sessions: int
     reconciliation_errors: tuple[str, ...]
@@ -36,6 +38,7 @@ def process_pending(root: Path, classifier: Classifier) -> ProcessingResult:
 
     parsed = 0
     classified = 0
+    context_sessions = 0
     conn = repository.open_db(db_path)
     try:
         # Chronology controls presentation, not processing correctness. Every
@@ -43,6 +46,10 @@ def process_pending(root: Path, classifier: Classifier) -> ProcessingResult:
         for session in repository.list_sessions(conn, limit=1_000_000):
             if session["capture_status"] != "finalized":
                 continue
+            context = parse_runtime_context(
+                conn, evidence_root, int(session["session_id"])
+            )
+            context_sessions += int(context.mutated)
             if session["parse_status"] != "succeeded":
                 parse_result = parse_session(
                     conn, evidence_root, int(session["session_id"])
@@ -69,6 +76,7 @@ def process_pending(root: Path, classifier: Classifier) -> ProcessingResult:
     return ProcessingResult(
         finalized_pending=len(finalized),
         registered_archives=reconciliation.registered,
+        context_sessions=context_sessions,
         parsed_sessions=parsed,
         classified_sessions=classified,
         reconciliation_errors=reconciliation.errors,

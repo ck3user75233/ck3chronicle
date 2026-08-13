@@ -240,6 +240,56 @@ CREATE TABLE IF NOT EXISTS ignored_patterns (
 );
 """
 
+SESSION_RUNTIME_CONTEXTS_DDL = """
+CREATE TABLE IF NOT EXISTS session_runtime_contexts (
+    session_id             INTEGER PRIMARY KEY REFERENCES sessions(session_id),
+    context_contract_version TEXT NOT NULL,
+    parsed_at              TEXT NOT NULL,
+    status                 TEXT NOT NULL
+                           CHECK (status IN ('complete', 'partial', 'absent')),
+    debug_log_sha256       TEXT,
+    mounted_entry_count    INTEGER NOT NULL CHECK (mounted_entry_count >= 0),
+    dlc_count              INTEGER NOT NULL CHECK (dlc_count >= 0),
+    mod_count              INTEGER NOT NULL CHECK (mod_count >= 0),
+    unknown_mount_count    INTEGER NOT NULL CHECK (unknown_mount_count >= 0),
+    inventory_enabled_mod_count INTEGER NOT NULL CHECK (inventory_enabled_mod_count >= 0),
+    inventory_dlc_count    INTEGER NOT NULL CHECK (inventory_dlc_count >= 0),
+    warnings_json          TEXT NOT NULL DEFAULT '[]'
+);
+"""
+
+SESSION_MOUNTED_DLCS_DDL = """
+CREATE TABLE IF NOT EXISTS session_mounted_dlcs (
+    session_id             INTEGER NOT NULL REFERENCES sessions(session_id)
+                           ON DELETE CASCADE,
+    mount_ordinal          INTEGER NOT NULL CHECK (mount_ordinal >= 0),
+    dlc_order              INTEGER NOT NULL CHECK (dlc_order >= 0),
+    dlc_key                TEXT NOT NULL,
+    display_name           TEXT,
+    descriptor_path        TEXT,
+    mount_path             TEXT NOT NULL,
+    PRIMARY KEY (session_id, mount_ordinal),
+    UNIQUE (session_id, dlc_order)
+);
+"""
+
+SESSION_MOUNTED_MODS_DDL = """
+CREATE TABLE IF NOT EXISTS session_mounted_mods (
+    session_id             INTEGER NOT NULL REFERENCES sessions(session_id)
+                           ON DELETE CASCADE,
+    mount_ordinal          INTEGER NOT NULL CHECK (mount_ordinal >= 0),
+    load_order             INTEGER NOT NULL CHECK (load_order >= 0),
+    mod_key                TEXT NOT NULL,
+    display_name           TEXT,
+    descriptor_path        TEXT,
+    mount_path             TEXT NOT NULL,
+    source_kind            TEXT NOT NULL
+                           CHECK (source_kind IN ('workshop', 'local', 'unknown')),
+    PRIMARY KEY (session_id, mount_ordinal),
+    UNIQUE (session_id, load_order)
+);
+"""
+
 SOURCE_BLOCKS_DDL = """
 CREATE TABLE IF NOT EXISTS source_blocks (
     session_id          INTEGER NOT NULL REFERENCES sessions(session_id),
@@ -283,6 +333,9 @@ ALL_DDL = [
     CLASSIFICATION_ASSIGNMENTS_IDX_DDL,
     SESSION_BASELINES_DDL,
     IGNORED_PATTERNS_DDL,
+    SESSION_RUNTIME_CONTEXTS_DDL,
+    SESSION_MOUNTED_DLCS_DDL,
+    SESSION_MOUNTED_MODS_DDL,
 ]
 
 CURRENT_VERSION = 1
@@ -291,3 +344,4 @@ SESSION_CONTEXT_VERSION = 1
 CAPTURE_VERSION = 1
 CLASSIFICATION_VERSION = 2
 SESSION_INTELLIGENCE_VERSION = 1
+RUNTIME_CONTEXT_VERSION = 1

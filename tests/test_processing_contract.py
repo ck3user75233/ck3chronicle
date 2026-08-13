@@ -23,17 +23,20 @@ def test_rprocess_001_pending_to_report_is_complete_and_idempotent(tmp_path) -> 
 
     assert first.finalized_pending == 1
     assert first.registered_archives == 1
+    assert first.context_sessions == 1
     assert first.parsed_sessions == 1
     assert first.classified_sessions == 1
     assert first.reconciliation_errors == ()
     assert first.latest_report is not None
     assert first.latest_report["session"]["session_id"] == 1
     assert first.latest_report["classification"]["semantic_occurrences"] == 1
+    assert first.latest_report["runtime_context"]["status"] == "absent"
 
     second = process_pending(runtime, _classifier())
 
     assert second.finalized_pending == 0
     assert second.registered_archives == 0
+    assert second.context_sessions == 0
     assert second.parsed_sessions == 0
     assert second.classified_sessions == 0
     assert second.reconciliation_errors == ()
@@ -56,6 +59,7 @@ def test_rprocess_002_cli_json_reports_each_completed_stage(
     assert payload["schema_version"] == 1
     assert payload["finalized_pending"] == 1
     assert payload["registered_archives"] == 1
+    assert payload["context_sessions"] == 1
     assert payload["parsed_sessions"] == 1
     assert payload["classified_sessions"] == 1
     assert payload["reconciliation_errors"] == []

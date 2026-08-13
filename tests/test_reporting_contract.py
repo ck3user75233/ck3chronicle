@@ -20,7 +20,7 @@ def test_rreport_001_executive_report_uses_stored_classification_rows(
     report = build_session_report(conn, session_id, limit=10)
 
     assert report["schema"] == "ck3chronicle.session-report"
-    assert report["schema_version"] == 1
+    assert report["schema_version"] == 2
     assert report["session"]["session_id"] == session_id
     assert report["session"]["captured_at"] == "2026-08-13T00:00:00+00:00"
     assert report["parse"]["source_blocks"] == 3

@@ -516,6 +516,15 @@ def _print_executive_report(report: dict[str, object]) -> None:
         f"l1={counts['l1']:,}, unknown={counts['unknown']:,}; "
         f"model={classification['model_revision_id']}"
     )
+    runtime = report["runtime_context"]
+    if runtime is None:
+        print("Runtime context: not processed")
+    else:
+        print(
+            f"Runtime context: {runtime['status']}; {runtime['dlc_count']} DLCs; "
+            f"{runtime['mod_count']} active mods; "
+            f"unknown mounts={runtime['unknown_mount_count']}"
+        )
     print("\nTop patterns")
     for pattern in report["top_patterns"]:
         label = pattern["template"] or pattern["sample"]
@@ -656,6 +665,7 @@ def cmd_process_pending(args: argparse.Namespace) -> int:
         "schema_version": 1,
         "finalized_pending": result.finalized_pending,
         "registered_archives": result.registered_archives,
+        "context_sessions": result.context_sessions,
         "parsed_sessions": result.parsed_sessions,
         "classified_sessions": result.classified_sessions,
         "reconciliation_errors": list(result.reconciliation_errors),
@@ -667,6 +677,7 @@ def cmd_process_pending(args: argparse.Namespace) -> int:
         print(
             f"finalized={result.finalized_pending}; "
             f"registered={result.registered_archives}; "
+            f"context={result.context_sessions}; "
             f"parsed={result.parsed_sessions}; "
             f"classified={result.classified_sessions}"
         )
@@ -1048,6 +1059,91 @@ def cmd_ignore_remove(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_context(args: argparse.Namespace) -> int:
+    import sqlite3
+
+    from . import config
+    from .db import repository
+    from .runtime_context import RuntimeContextError, parse_runtime_context
+
+    conn = None
+    try:
+        conn = repository.open_db(config.ROOT_CK3CHRONICLE / "ck3chronicle.db")
+        result = parse_runtime_context(
+            conn,
+            config.ROOT_CK3CHRONICLE,
+            args.session,
+            reparse=args.reparse,
+        )
+    except RuntimeContextError as exc:
+        print(f"ERROR [runtime_context]: {exc}", file=sys.stderr)
+        return 3
+    except sqlite3.Error as exc:
+        print(f"ERROR [database_failed]: {exc}", file=sys.stderr)
+        return 5
+    finally:
+        if conn is not None:
+            conn.close()
+    payload = {
+        "schema": "ck3chronicle.runtime-context",
+        "schema_version": 1,
+        "session_id": result.session_id,
+        "contract_version": result.context_contract_version,
+        "status": result.status,
+        "debug_log_sha256": result.debug_log_sha256,
+        "mutated": result.mutated,
+        "unknown_mount_count": result.unknown_mount_count,
+        "inventory_enabled_mod_count": result.inventory_enabled_mod_count,
+        "inventory_dlc_count": result.inventory_dlc_count,
+        "warnings": list(result.warnings),
+        "dlcs": [
+            {
+                "mount_ordinal": item.mount_ordinal,
+                "dlc_order": item.dlc_order,
+                "dlc_key": item.dlc_key,
+                "display_name": item.display_name,
+                "descriptor_path": item.descriptor_path,
+                "mount_path": item.mount_path,
+            }
+            for item in result.dlcs
+        ],
+        "active_mods": [
+            {
+                "mount_ordinal": item.mount_ordinal,
+                "load_order": item.load_order,
+                "mod_key": item.mod_key,
+                "display_name": item.display_name,
+                "descriptor_path": item.descriptor_path,
+                "mount_path": item.mount_path,
+                "source_kind": item.source_kind,
+            }
+            for item in result.mods
+        ],
+    }
+    if args.json:
+        print(json.dumps(payload, sort_keys=True))
+    else:
+        print(
+            f"Session {result.session_id} runtime context: {result.status}; "
+            f"{len(result.dlcs)} DLCs; {len(result.mods)} active mods"
+        )
+        for warning in result.warnings:
+            print(f"WARNING: {warning}")
+        print("\nMounted DLCs")
+        for item in result.dlcs:
+            print(
+                f"{item.dlc_order:>3}  {item.dlc_key}  "
+                f"{item.display_name or item.mount_path}"
+            )
+        print("\nActive mod load order")
+        for item in result.mods:
+            print(
+                f"{item.load_order:>3}  {item.source_kind:<8}  {item.mod_key}  "
+                f"{item.display_name or item.mount_path}"
+            )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="ck3chronicle",
@@ -1278,6 +1374,19 @@ def build_parser() -> argparse.ArgumentParser:
     p_ignore_remove.add_argument("--model-sha256", metavar="SHA256")
     p_ignore_remove.add_argument("--json", action="store_true")
     p_ignore_remove.set_defaults(func=cmd_ignore_remove)
+
+    p_context = sub.add_parser(
+        "context",
+        help="Parse and show same-run mounted DLC and active-mod order.",
+    )
+    p_context.add_argument("--session", type=int, required=True, metavar="SESSION_ID")
+    p_context.add_argument(
+        "--reparse",
+        action="store_true",
+        help="Atomically replace the stored interpretation from archived debug.log.",
+    )
+    p_context.add_argument("--json", action="store_true")
+    p_context.set_defaults(func=cmd_context)
 
     return parser
 

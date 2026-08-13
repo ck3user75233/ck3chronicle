@@ -45,6 +45,7 @@ classification do not occur in the process-exit path.
 .\.venv\Scripts\ck3chronicle.exe baseline list
 .\.venv\Scripts\ck3chronicle.exe ignore add <PATTERN_ID> --reason <TEXT>
 .\.venv\Scripts\ck3chronicle.exe ignore list
+.\.venv\Scripts\ck3chronicle.exe context --session <ID>
 ```
 
 `watch` is a foreground process and must currently be started again after a PC
@@ -71,6 +72,12 @@ interpret it. Ignore rules are model-bound annotations with mandatory reasons;
 ignored patterns remain visible in comparisons and retain their counts.
 `report --since` returns a versioned report-plus-comparison JSON envelope (or
 both human-readable sections) under the same exact model revision.
+
+`context` reads only the session's archived `debug.log`. The contiguous
+`Mounted Data:` sequence is authoritative for DLC/mod membership and order;
+the earlier DLC/Mod inventory only supplies names and descriptor paths and is
+used for exact-set validation. Disabled inventory entries are never promoted
+into the active mod list.
 
 Read these documents in order:
 

@@ -14,6 +14,7 @@ from .schema import (
     CAPTURE_VERSION,
     CLASSIFICATION_VERSION,
     CURRENT_VERSION,
+    RUNTIME_CONTEXT_VERSION,
     SESSION_CONTEXT_VERSION,
     SESSION_INTELLIGENCE_VERSION,
 )
@@ -183,6 +184,13 @@ def _apply_migrations(conn: sqlite3.Connection) -> None:
         VALUES (?, ?, ?)
         """,
         ("session_intelligence", SESSION_INTELLIGENCE_VERSION, now),
+    )
+    cur.execute(
+        """
+        INSERT OR REPLACE INTO schema_versions (component, version, migrated_at)
+        VALUES (?, ?, ?)
+        """,
+        ("runtime_context", RUNTIME_CONTEXT_VERSION, now),
     )
     if has_legacy_context:
         cur.execute(

@@ -55,10 +55,14 @@ Status: foreground workflow complete.
 
 ## 6. Runtime DLC/mod context
 
-- parse the same-run `debug.log` `Mounted Data:` sequence;
-- persist DLCs and active mods in exact order;
-- distinguish Workshop and local descriptors;
-- explicitly represent absent or malformed runtime context.
+Status: first production contract complete.
+
+- [x] parse the same-run archived `debug.log` `Mounted Data:` sequence;
+- [x] persist DLCs and active mods in exact order;
+- [x] distinguish Workshop, local, and unknown mounted roots;
+- [x] enrich from inventory only after authoritative membership is known;
+- [x] exactly validate mounted membership against enabled inventory;
+- [x] explicitly represent complete, partial, and absent runtime context.
 
 ## 7. Source resolution and triage
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import sqlite3
 
 from .db import repository
@@ -215,9 +216,43 @@ def build_session_report(
         ),
         "review_required": l1 + unknown,
     }
+    runtime_row = repository.get_runtime_context(conn, session_id)
+    runtime_context = None
+    if runtime_row is not None:
+        runtime_context = {
+            "contract_version": runtime_row["context_contract_version"],
+            "status": runtime_row["status"],
+            "debug_log_sha256": runtime_row["debug_log_sha256"],
+            "mounted_entry_count": int(runtime_row["mounted_entry_count"]),
+            "dlc_count": int(runtime_row["dlc_count"]),
+            "mod_count": int(runtime_row["mod_count"]),
+            "unknown_mount_count": int(runtime_row["unknown_mount_count"]),
+            "warnings": json.loads(runtime_row["warnings_json"]),
+            "dlcs": [
+                {
+                    "dlc_order": int(row["dlc_order"]),
+                    "dlc_key": row["dlc_key"],
+                    "display_name": row["display_name"],
+                    "descriptor_path": row["descriptor_path"],
+                    "mount_path": row["mount_path"],
+                }
+                for row in repository.get_mounted_dlcs(conn, session_id)
+            ],
+            "active_mods": [
+                {
+                    "load_order": int(row["load_order"]),
+                    "mod_key": row["mod_key"],
+                    "display_name": row["display_name"],
+                    "descriptor_path": row["descriptor_path"],
+                    "mount_path": row["mount_path"],
+                    "source_kind": row["source_kind"],
+                }
+                for row in repository.get_mounted_mods(conn, session_id)
+            ],
+        }
     return {
         "schema": "ck3chronicle.session-report",
-        "schema_version": 1,
+        "schema_version": 2,
         "session": {
             "session_id": int(session["session_id"]),
             "captured_at": session["created_at"],
@@ -229,6 +264,7 @@ def build_session_report(
         },
         "parse": parse,
         "classification": classification,
+        "runtime_context": runtime_context,
         "category_summary": category_summary,
         "source_summary": source_summary,
         "file_summary": file_summary,

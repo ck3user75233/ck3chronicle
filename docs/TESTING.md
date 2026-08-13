@@ -71,7 +71,10 @@ The suite currently covers:
 - observed error-window rates and quality metadata;
 - immutable, case-insensitive named baselines pinned to a model revision;
 - mandatory-reason ignore annotations that remain visible in comparisons;
-- compatible report-plus-comparison envelopes for `report --since`.
+- compatible report-plus-comparison envelopes for `report --since`;
+- Mounted Data authority over inventory membership and order;
+- disabled-mod exclusion, Workshop/local identity, mismatch visibility,
+  missing-debug state, reparse rollback, and context CLI JSON.
 
 ## Protected-corpus compatibility gate
 
