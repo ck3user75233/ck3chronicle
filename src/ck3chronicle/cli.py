@@ -535,19 +535,51 @@ def _cmd_report(args: argparse.Namespace, *, latest: bool) -> int:
     import sqlite3
 
     from .reporting import ReportError
+    from .session_intelligence import ComparisonError, compare_sessions
 
     try:
         report = _report_for_args(args, latest=latest)
-    except ReportError as exc:
+        comparison = None
+        if args.since is not None:
+            from . import config
+            from .db import repository
+
+            conn = repository.open_db(
+                config.ROOT_CK3CHRONICLE / "ck3chronicle.db"
+            )
+            try:
+                comparison = compare_sessions(
+                    conn,
+                    int(report["session"]["session_id"]),
+                    args.since,
+                    model_sha256=str(report["classification"]["model_sha256"]),
+                    limit=int(args.limit),
+                )
+            finally:
+                conn.close()
+    except (ReportError, ComparisonError, ValueError) as exc:
         print(f"ERROR: report unavailable: {exc}", file=sys.stderr)
         return 2
     except sqlite3.Error as exc:
         print(f"ERROR [database_failed]: {exc}", file=sys.stderr)
         return 5
     if args.json:
-        print(json.dumps(report, sort_keys=True))
+        payload = (
+            {
+                "schema": "ck3chronicle.report-with-comparison",
+                "schema_version": 1,
+                "report": report,
+                "comparison": comparison,
+            }
+            if comparison is not None
+            else report
+        )
+        print(json.dumps(payload, sort_keys=True))
     else:
         _print_executive_report(report)
+        if comparison is not None:
+            print()
+            _print_session_comparison(comparison)
     return 0
 
 
@@ -1131,6 +1163,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_report.add_argument("--session", type=int, required=True, metavar="SESSION_ID")
     p_report.add_argument("--limit", type=int, default=20, metavar="N")
+    p_report.add_argument(
+        "--since",
+        type=int,
+        metavar="SESSION_ID",
+        help="Append a comparison against this earlier session.",
+    )
     p_report.add_argument("--model-sha256", metavar="SHA256")
     p_report.add_argument("--json", action="store_true")
     p_report.set_defaults(func=cmd_report)
@@ -1139,6 +1177,12 @@ def build_parser() -> argparse.ArgumentParser:
         "latest", help="Executive report for the latest captured session."
     )
     p_latest.add_argument("--limit", type=int, default=20, metavar="N")
+    p_latest.add_argument(
+        "--since",
+        type=int,
+        metavar="SESSION_ID",
+        help="Append a comparison against this earlier session.",
+    )
     p_latest.add_argument("--model-sha256", metavar="SHA256")
     p_latest.add_argument("--json", action="store_true")
     p_latest.set_defaults(func=cmd_latest)

@@ -367,3 +367,29 @@ def test_rpolicy_004_cli_requires_and_preserves_ignore_reason(
     assert list_args.func(list_args) == 0
     listed = json.loads(capsys.readouterr().out)
     assert listed["ignored_patterns"][0]["reason"] == added["reason"]
+
+
+def test_rdelta_004_report_since_wraps_report_and_compatible_comparison(
+    tmp_path, monkeypatch, capsys
+) -> None:
+    runtime, conn, previous_id, current_id = _two_sessions(tmp_path)
+    conn.close()
+    monkeypatch.setattr(config, "ROOT_CK3CHRONICLE", runtime)
+    args = build_parser().parse_args(
+        [
+            "report",
+            "--session",
+            str(current_id),
+            "--since",
+            str(previous_id),
+            "--json",
+        ]
+    )
+
+    assert args.func(args) == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["schema"] == "ck3chronicle.report-with-comparison"
+    assert payload["schema_version"] == 1
+    assert payload["report"]["session"]["session_id"] == current_id
+    assert payload["comparison"]["previous_session"]["session_id"] == previous_id
+    assert payload["comparison"]["current_session"]["session_id"] == current_id

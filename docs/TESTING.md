@@ -70,7 +70,8 @@ The suite currently covers:
 - chronological CLI selection and bounded deterministic comparison JSON;
 - observed error-window rates and quality metadata;
 - immutable, case-insensitive named baselines pinned to a model revision;
-- mandatory-reason ignore annotations that remain visible in comparisons.
+- mandatory-reason ignore annotations that remain visible in comparisons;
+- compatible report-plus-comparison envelopes for `report --since`.
 
 ## Protected-corpus compatibility gate
 

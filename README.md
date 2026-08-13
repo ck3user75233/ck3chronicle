@@ -36,6 +36,7 @@ classification do not occur in the process-exit path.
 .\.venv\Scripts\ck3chronicle.exe classify --session <ID>
 .\.venv\Scripts\ck3chronicle.exe review-queue --session <ID>
 .\.venv\Scripts\ck3chronicle.exe report --session <ID>
+.\.venv\Scripts\ck3chronicle.exe report --session <ID> --since <EARLIER_ID>
 .\.venv\Scripts\ck3chronicle.exe latest
 .\.venv\Scripts\ck3chronicle.exe errors --session <ID>
 .\.venv\Scripts\ck3chronicle.exe process-pending
@@ -68,6 +69,8 @@ claims about a patch or mod.
 Baselines pin both a session and the exact classification model used to
 interpret it. Ignore rules are model-bound annotations with mandatory reasons;
 ignored patterns remain visible in comparisons and retain their counts.
+`report --since` returns a versioned report-plus-comparison JSON envelope (or
+both human-readable sections) under the same exact model revision.
 
 Read these documents in order:
 
