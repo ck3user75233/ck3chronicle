@@ -30,7 +30,6 @@ classification do not occur in the process-exit path.
 .\.venv\Scripts\ck3chronicle.exe doctor
 .\.venv\Scripts\ck3chronicle.exe audit-db
 .\.venv\Scripts\ck3chronicle.exe audit-db --deep
-.\.venv\Scripts\ck3chronicle.exe compact-db
 .\.venv\Scripts\ck3chronicle.exe observe-logging
 .\.venv\Scripts\ck3chronicle.exe watch
 .\.venv\Scripts\ck3chronicle.exe capture
@@ -59,6 +58,11 @@ restart. Automatic login startup has not yet been released.
 
 ## Current development checkpoint
 
+The project is in **Phase 1: first useful vertical slice**. Substantial
+capabilities work, but Phase 1 has not passed its complete exit gate. A green
+fast suite or an implemented capability is not a phase-completion claim. See
+`docs/PROJECT_PLAN.md` and `docs/PHASE1_EXIT_PROTOCOL.md`.
+
 `process-pending` is the normal deferred workflow after the copy-only watcher:
 it finalizes protected pending copies, reconciles archives, parses canonical
 blocks, classifies them with the approved model, and prints the latest report.
@@ -70,15 +74,16 @@ runtime context, and source-block provenance. The standard audit is intended
 for routine use. `--deep` adds full per-block and per-signature distribution
 checks and can take several minutes on a gigabyte-scale database.
 
-`compact-db` losslessly normalizes repeated decoded raw blocks and complete
-classification payloads, keeps one lightweight relationship row per actual
-occurrence, runs SQLite integrity checks, and vacuums reclaimable pages. On the
-15-session real-index oracle it reduced SQLite from 1.584 GB to 289.6 MB without
-changing any executive report, comparison, or triage JSON hash.
+Compact storage is the default schema and requires no normal user action. An
+older database is migrated, integrity-checked, and physically reclaimed once
+when it is first opened. A consistent disposable copy of the live 15-session
+index was reclaimed from 1.584 GB to 289.6 MB without changing any executive
+report, comparison, or triage JSON hash.
 
 `observe-logging` is an opt-in empirical diagnostic for one CK3 lifecycle. It
 scans `error.log` and `game.log` once, then reads appended bytes only, writing a
-30-second JSONL heartbeat. It records the suspected boundary only when
+replaceable 30-second current-health heartbeat and retaining only lifecycle or
+decisive-result events. It records the suspected boundary only when
 `error.log` remains at exactly 100,000 timestamp headers for the configured
 stall interval while the same running CK3 process continues advancing
 `game.log`. It does not copy, hash, parse, classify, or write SQLite.
@@ -124,11 +129,14 @@ database workflow.
 
 Read these documents in order:
 
-1. [Project status](docs/PROJECT_STATUS.md)
-2. [Product contract](docs/PRODUCT_CONTRACT.md)
-3. [Testing authority](docs/TESTING.md)
-4. [Roadmap](docs/ROADMAP.md)
-5. [Resolver input audit](docs/RESOLVER_INPUT_AUDIT.md)
+1. [Project phase plan](docs/PROJECT_PLAN.md)
+2. [Phase 1 exit matrix](docs/PHASE1_EXIT_MATRIX.md)
+3. [Phase 1 exit protocol](docs/PHASE1_EXIT_PROTOCOL.md)
+4. [Project status](docs/PROJECT_STATUS.md)
+5. [Product contract](docs/PRODUCT_CONTRACT.md)
+6. [Testing authority](docs/TESTING.md)
+7. [Capability inventory](docs/ROADMAP.md)
+8. [Resolver input audit](docs/RESOLVER_INPUT_AUDIT.md)
 
 ## Configuration
 

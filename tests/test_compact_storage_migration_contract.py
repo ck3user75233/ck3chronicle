@@ -3,15 +3,13 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 import hashlib
-import json
 from pathlib import Path
 import sqlite3
 
 import pytest
 
 from ck3chronicle.db import repository
-from ck3chronicle import config
-from ck3chronicle.cli import build_parser
+from ck3chronicle.db.migrations import apply_migrations
 
 
 MODEL_HASH = "a" * 64
@@ -197,31 +195,50 @@ def test_rstorage_001_legacy_rows_migrate_to_lossless_dictionaries(
     conn.close()
 
 
-def test_rstorage_002_compact_command_reports_verified_post_vacuum_state(
-    tmp_path: Path, monkeypatch, capsys
+def test_rstorage_002_opening_legacy_db_automatically_reclaims_pages(
+    tmp_path: Path,
 ) -> None:
-    """Oracle: maintenance output reports the retained independent row counts."""
-    root = tmp_path / "runtime"
-    root.mkdir()
-    db = root / "ck3chronicle.db"
+    """Oracle: lossless migration is default and returns freed pages to the OS."""
+    db = tmp_path / "legacy.db"
     _legacy_database(db)
-    monkeypatch.setattr(config, "ROOT_CK3CHRONICLE", root)
-    args = build_parser().parse_args(["compact-db", "--json"])
+    # Make physical reclamation observable even for this deliberately tiny
+    # logical fixture. These free pages are not part of the expected data.
+    conn = sqlite3.connect(db)
+    conn.execute("CREATE TABLE discarded_pages (payload BLOB)")
+    conn.executemany(
+        "INSERT INTO discarded_pages VALUES (zeroblob(1048576))",
+        [() for _ in range(4)],
+    )
+    conn.execute("DROP TABLE discarded_pages")
+    conn.commit()
+    assert conn.execute("PRAGMA freelist_count").fetchone()[0] > 0
+    conn.close()
+    before = db.stat().st_size
 
-    assert args.func(args) == 0
-    result = json.loads(capsys.readouterr().out)
-    assert result["schema"] == "ck3chronicle.database-compaction"
-    assert result["schema_version"] == 1
-    assert result["quick_check"] == "ok"
-    assert result["foreign_key_errors"] == 0
-    assert result["bytes_after"] == db.stat().st_size
-    assert result["counts"] == {
+    conn = repository.open_db(db)
+
+    assert db.stat().st_size < before
+    assert conn.execute("PRAGMA freelist_count").fetchone()[0] == 0
+    assert conn.execute("PRAGMA quick_check").fetchone()[0] == "ok"
+    assert conn.execute("PRAGMA foreign_key_check").fetchall() == []
+    assert conn.execute(
+        "SELECT version FROM schema_versions WHERE component = 'storage_reclaimed'"
+    ).fetchone()[0] == 1
+    counts = {
         "source_blocks": 2,
         "raw_block_contents": 1,
         "issue_occurrences": 2,
         "classification_assignments": 2,
         "classification_payloads": 1,
     }
+    for table, expected in counts.items():
+        assert conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0] == expected
+    conn.close()
+
+    reclaimed_size = db.stat().st_size
+    conn = repository.open_db(db)
+    conn.close()
+    assert db.stat().st_size == reclaimed_size
 
 
 def test_rstorage_003_conflicting_hash_content_rolls_back_legacy_schema(
@@ -249,4 +266,39 @@ def test_rstorage_003_conflicting_hash_content_rolls_back_legacy_schema(
         row[1] for row in conn.execute("PRAGMA table_info(source_blocks)")
     }
     assert conn.execute("SELECT COUNT(*) FROM source_blocks").fetchone()[0] == 2
+    conn.close()
+
+
+def test_rstorage_004_unreceipted_compact_db_retries_reclamation(
+    tmp_path: Path,
+) -> None:
+    """Oracle: a crash after logical migration cannot permanently skip reclaim."""
+    db = tmp_path / "interrupted-reclaim.db"
+    _legacy_database(db)
+    conn = sqlite3.connect(db)
+    conn.execute(
+        "DELETE FROM schema_versions WHERE component = 'storage_reclaimed'"
+    )
+    conn.commit()
+    apply_migrations(conn)
+    conn.execute("CREATE TABLE discarded_after_migration (payload BLOB)")
+    conn.execute(
+        "INSERT INTO discarded_after_migration VALUES (zeroblob(4194304))"
+    )
+    conn.execute("DROP TABLE discarded_after_migration")
+    conn.commit()
+    assert conn.execute(
+        "SELECT COUNT(*) FROM schema_versions WHERE component = 'storage_reclaimed'"
+    ).fetchone()[0] == 0
+    assert conn.execute("PRAGMA freelist_count").fetchone()[0] > 0
+    conn.close()
+    before = db.stat().st_size
+
+    conn = repository.open_db(db)
+
+    assert db.stat().st_size < before
+    assert conn.execute("PRAGMA freelist_count").fetchone()[0] == 0
+    assert conn.execute(
+        "SELECT version FROM schema_versions WHERE component = 'storage_reclaimed'"
+    ).fetchone()[0] == 1
     conn.close()

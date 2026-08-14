@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import re
+import tempfile
 import time
 from typing import Callable
 
@@ -15,6 +16,21 @@ from .watcher import ProcessIdentity
 
 _TIMESTAMP_HEADER = re.compile(br"^\[(\d{2}:\d{2}:\d{2})\]")
 OBSERVATION_SCHEMA_VERSION = 1
+
+
+def _replace_json(path: Path, record: dict[str, object]) -> None:
+    """Atomically replace one bounded current-health record."""
+    fd, temporary_name = tempfile.mkstemp(prefix=f".{path.name}-", dir=path.parent)
+    temporary = Path(temporary_name)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as stream:
+            json.dump(record, stream, sort_keys=True, separators=(",", ":"))
+            stream.write("\n")
+            stream.flush()
+        os.replace(temporary, path)
+    finally:
+        if temporary.exists():
+            temporary.unlink()
 
 
 @dataclass(frozen=True)
@@ -137,6 +153,7 @@ def observe_logging_progress(
     journal_root.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
     journal_path = journal_root / f"log-progress-{stamp}-{os.getpid()}.jsonl"
+    heartbeat_path = journal_root / f"log-progress-heartbeat-{os.getpid()}.json"
     error_log = IncrementalTimestampLog(Path(logs_root) / "error.log")
     game_log = IncrementalTimestampLog(Path(logs_root) / "game.log")
     detector = ExactBoundaryDetector(stall_seconds)
@@ -144,60 +161,71 @@ def observe_logging_progress(
     last_heartbeat = monotonic()
     boundary_observed = False
 
-    with journal_path.open("x", encoding="utf-8", newline="\n") as journal:
-        def emit(event: str, **fields: object) -> None:
-            record = {
-                "schema_version": OBSERVATION_SCHEMA_VERSION,
-                "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-                "event": event,
-                **fields,
-            }
-            journal.write(json.dumps(record, sort_keys=True, separators=(",", ":")))
-            journal.write("\n")
-            journal.flush()
+    try:
+        with journal_path.open("x", encoding="utf-8", newline="\n") as journal:
+            def emit(event: str, **fields: object) -> None:
+                record = {
+                    "schema_version": OBSERVATION_SCHEMA_VERSION,
+                    "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+                    "event": event,
+                    **fields,
+                }
+                if event == "heartbeat":
+                    _replace_json(heartbeat_path, record)
+                    return
+                journal.write(
+                    json.dumps(record, sort_keys=True, separators=(",", ":"))
+                )
+                journal.write("\n")
+                journal.flush()
 
-        emit("observer_started", state="awaiting_ck3")
-        while not stop_requested():
-            process = process_probe()
-            if active is None:
-                if process is None:
-                    sleep(poll_seconds)
-                    continue
-                active = process
-                emit("game_started", process=active.as_dict())
-                error_log.poll()
-                game_log.poll()
-                last_heartbeat = monotonic()
-            elif process != active:
-                emit(
-                    "game_exited" if process is None else "process_replaced",
-                    process=active.as_dict(),
-                    replacement=process.as_dict() if process is not None else None,
-                )
-                break
+            emit("observer_started", state="awaiting_ck3")
+            while not stop_requested():
+                process = process_probe()
+                if active is None:
+                    if process is None:
+                        sleep(poll_seconds)
+                        continue
+                    active = process
+                    emit("game_started", process=active.as_dict())
+                    error_log.poll()
+                    game_log.poll()
+                    last_heartbeat = monotonic()
+                elif process != active:
+                    emit(
+                        "game_exited" if process is None else "process_replaced",
+                        process=active.as_dict(),
+                        replacement=process.as_dict() if process is not None else None,
+                    )
+                    break
 
-            now = monotonic()
-            error = error_log.poll()
-            game = game_log.poll()
-            if detector.observe(error, game, now):
-                boundary_observed = True
-                emit(
-                    "exact_100000_error_boundary_with_game_progress",
-                    process=active.as_dict(),
-                    error=error.__dict__,
-                    game=game.__dict__,
-                    stall_seconds=stall_seconds,
-                )
-            if now - last_heartbeat >= heartbeat_seconds:
-                emit(
-                    "heartbeat",
-                    state="running",
-                    process=active.as_dict(),
-                    error=error.__dict__,
-                    game=game.__dict__,
-                    exact_boundary_observed=boundary_observed,
-                )
-                last_heartbeat = now
-            sleep(poll_seconds)
-        emit("observer_stopped", exact_boundary_observed=boundary_observed)
+                now = monotonic()
+                error = error_log.poll()
+                game = game_log.poll()
+                if detector.observe(error, game, now):
+                    boundary_observed = True
+                    emit(
+                        "exact_100000_error_boundary_with_game_progress",
+                        process=active.as_dict(),
+                        error=error.__dict__,
+                        game=game.__dict__,
+                        stall_seconds=stall_seconds,
+                    )
+                if now - last_heartbeat >= heartbeat_seconds:
+                    emit(
+                        "heartbeat",
+                        state="running",
+                        process=active.as_dict(),
+                        error=error.__dict__,
+                        game=game.__dict__,
+                        exact_boundary_observed=boundary_observed,
+                    )
+                    last_heartbeat = now
+                sleep(poll_seconds)
+            emit("observer_stopped", exact_boundary_observed=boundary_observed)
+    finally:
+        try:
+            heartbeat_path.unlink()
+        except FileNotFoundError:
+            pass
     return journal_path, boundary_observed

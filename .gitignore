@@ -34,6 +34,7 @@ ck3chronicle.db-shm
 *.sqlite3
 reports/
 tmp/
+.phase1-exit/
 
 # Archives (accidentally committed during Phase 1 deploy)
 *.zip

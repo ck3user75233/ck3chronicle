@@ -6,6 +6,14 @@ Branch: `codex/ck3chronicle-reboot`
 
 Takeover baseline: `99f98e3`
 
+Project phase: **Phase 1 active; not exited**.
+
+The numbered sections formerly published in `ROADMAP.md` were capability
+areas, not project phases. Implemented checkpoints and the passing reboot fast
+suite do not constitute Phase 1 acceptance. Phase authority now lives in
+`PROJECT_PLAN.md`; the role-separated release process lives in
+`PHASE1_EXIT_PROTOCOL.md`.
+
 ## Authority
 
 Source behavior and the documents in this directory are authoritative. Old
@@ -16,7 +24,7 @@ Historical material is recoverable from:
 
 `C:\Users\nateb\.ck3raven\wip\ck3chronicle\codex_reboot\takeover_archive_20260813`
 
-## Accepted foundation
+## Implemented Phase 1 foundation
 
 - exact CK3 lifecycle observation with an event journal and heartbeat;
 - copy-first pending protection after an observed process exit;
@@ -27,11 +35,15 @@ Historical material is recoverable from:
 - immutable source blocks plus one-row-per-occurrence provenance;
 - atomic parse and reparse persistence.
 
-The accepted foundation and production classifier seam are covered by the new
-reboot-owned suite: 82 tests as of this status record. No inherited test
+The implemented foundation and production classifier seam are covered by the new
+reboot-owned suite: 89 tests as of this status record. No inherited test
 contributes to that number.
 
-## Accepted classifier runtime
+These are fast regression tests. The complete protected-real-evidence,
+holdout, mutation, command-envelope, and performance exit gates have not run
+against one frozen current-tip candidate.
+
+## Implemented classifier runtime
 
 - exact reviewed model artifact promoted under `models/93196794a7e0115d`;
 - whole-file SHA-256 and internal cluster-contract validation before use;
@@ -84,8 +96,16 @@ occurrences. Every file reconciles exactly by full, L1+L2, L1-only, and
 unknown assignment count. This is an implementation-equivalence gate; the
 separate human-authored contract tests remain the semantic authority.
 
+This compatibility result is not Phase 1 semantic exit evidence. At least one
+current full-assignment template has failed subsequent human plausibility
+review, and the private holdout must be selected and scored only after the
+release candidate is frozen.
+
 ## Not yet released
 
+- the complete Phase 1 public vertical slice and common command envelope;
+- independently frozen complete report output;
+- the Phase 1 mutation, private-holdout, and performance exit runs;
 - on-action container-merge and culture symbol-LIOS adapters;
 - historical source-byte snapshots/diffs, broad mod/update fingerprints, and
   richer confidence/merge-aware triage;
@@ -123,9 +143,10 @@ the current triage hash were byte-identical before and after; canonical row
 counts, `foreign_key_check`, and `quick_check` also reconciled exactly.
 
 Full per-block/per-signature distribution reconciliation remains available
-through `audit-db --deep`. A standard `compact-db` command now performs the
-versioned migration, refuses vacuum after a failed integrity check, reclaims
-free pages, and reports the retained row counts and byte reduction.
+through `audit-db --deep`. Compact storage is the default and older schemas
+migrate automatically. The first post-migration database open verifies
+integrity and reclaims the freed pages automatically; this is not a recurring
+user workflow.
 
 ## Approved production model
 

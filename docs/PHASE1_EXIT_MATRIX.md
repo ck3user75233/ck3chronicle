@@ -1,0 +1,98 @@
+# Phase 1 exit matrix
+
+Audit candidate: `52a43254f847555a871833ef4a43bd97f3613bf6`
+
+Status: **Phase 1 not exited**.
+
+This matrix distinguishes implemented behavior, fast regression coverage, and
+formal candidate-bound release evidence. `Partially covered` is not a pass.
+
+## Summary
+
+| Status | Gates |
+|---|---:|
+| Proven on audited candidate | 1 |
+| Partially covered | 13 |
+| Untested | 14 |
+| Missing or contract-incompatible public surface | 7 |
+| Total | 35 |
+
+The audited candidate has one separated real-evidence component calibration,
+`P1-PAR-01-LEXICAL`; it is not the complete persistence gate. The remaining
+frozen Phase 0 real-evidence oracles are not yet executed by the current gate
+harness. The fast reboot suite remains useful regression coverage.
+
+## Capture
+
+| Gate | Current status | Evidence and gap |
+|---|---|---|
+| `P1-CAP-01` | Partially covered | Tiny independent six-file fixture verifies finalization; the frozen real capture oracle has not run for the audited candidate. |
+| `P1-CAP-02` | Partially covered | Duplicate archive/session reuse is tested; no formal gate record. |
+| `P1-CAP-03` | Untested | Archive corruption is detected, but each single-byte source mutation has not been recaptured and compared. |
+| `P1-CAP-04` | Partially covered | Rapid relaunch rejection is tested; the exact source-mutation command result/envelope is not. |
+| `P1-CAP-05` | Missing/contract drift | Failure matrix and command envelopes are absent. Current recovery intentionally permits a finalized orphan archive after DB failure, while the old contract forbids any promoted evidence. The contract must be reconciled without losing recoverability. |
+| `P1-CAP-06` | Partially covered | Missing debug and zero-byte error paths are tested separately; complete public-command outcomes are not. |
+
+## Runtime context
+
+| Gate | Current status | Evidence and gap |
+|---|---|---|
+| `P1-RUN-01` | Missing surface | Parser exists, but current output lacks the frozen line-range/block-hash shape and the 27-DLC/94-mod oracle has not run. |
+| `P1-RUN-02` | Partially covered | One Workshop and one local mount are tested, not the complete frozen sequence. |
+| `P1-RUN-03` | Untested | No independent swap-order metamorphic gate. |
+| `P1-RUN-04` | Missing surface | Current `absent/partial/complete` behavior does not implement all frozen malformed/truncated/ambiguous states. |
+| `P1-RUN-05` | Missing/contract drift | Mounted membership is authoritative, but inventory enrichment changes warnings/names. Exact output-independence from inventory is not satisfied. |
+
+## Parsing and persistence
+
+| Gate | Current status | Evidence and gap |
+|---|---|---|
+| `P1-PAR-01` | Partially covered | `P1-PAR-01-LEXICAL` passed a separated blind-runner/read-only-scorer comparison of all 28,131 frozen blocks with zero field mismatches. Persistence against the compact current schema is not yet independently scored. See `PHASE1_LEXICAL_CALIBRATION_2026-08-14.md`. |
+| `P1-PAR-02` | Untested | No audited-candidate exact comparison with the independently approved semantic records. The later human-reviewed empirical contracts must first be reconciled with the older 252-item oracle. |
+| `P1-PAR-03` | Partially covered | Duplicate blocks retain separate occurrences and shared raw content; the complete cluster/signature relation is not asserted. |
+| `P1-PAR-04` | Partially covered | Several key/locator/line invariants are tested, not the complete provenance/absolute-root mutation matrix. |
+| `P1-PAR-05` | Partially covered | Conservative semantic rejection examples exist, not every required independent family mutation. |
+| `P1-PAR-06` | Untested | No authentic positive/near-miss gate for every extractor and no 33-versus-20,156 PostValidate gate. |
+| `P1-PAR-07` | Partially covered | Mixed line endings and final-newline behavior are tested; the full malformed/BOM/long-line/replacement/truncation matrix is not. |
+| `P1-PAR-08` | Untested | Transactional code exists, but no current test proves byte-equivalent failed reparse rollback after partial replacement work. |
+| `P1-PAR-09` | Partially covered | Missing evidence leaves `not_started`; generic injected first-parse failure and public exit behavior remain untested. |
+| `P1-PAR-10` | **Proven on audited candidate** | Present zero-byte `error.log` commits succeeded state with every required counter exactly zero. |
+| `P1-PAR-11` | Partially covered | Repository/audit invariants and real-session totals reconcile; the frozen reference and future holdout executions are absent. |
+
+## Reporting and public workflow
+
+| Gate | Current status | Evidence and gap |
+|---|---|---|
+| `P1-REP-01` | Missing surface/contract drift | `process-pending` composes the implemented workflow, but the old contract requires absent `analyze --logs`; no complete independent report oracle exists. The operator contract must be deliberately updated or the command implemented. |
+| `P1-REP-02` | Untested | Text and JSON share data in implementation, but no independent field-equivalence gate exists. |
+| `P1-REP-03` | Partially covered | Stored report works after `error.log` removal; `latest` and `errors` have not been proven unchanged in the same gate. |
+| `P1-REP-04` | Untested | No before/after database and evidence hashes for every report command. |
+| `P1-REP-05` | Partially covered | Repeat processing is deterministic; randomized insertion-order equivalence is absent. |
+| `P1-REP-06` | Missing surface | `latest` currently orders sessions but does not implement the frozen successfully-parsed eligibility rule. |
+| `P1-REP-07` | Missing surface | There is no common success/failure command envelope and no all-command black-box gate. |
+
+## Release gates
+
+| Gate | Current status | Evidence and gap |
+|---|---|---|
+| `P1-HOLD-01` | Untested | The 194,022-occurrence run proves evaluator/runtime compatibility only. No post-freeze private holdout has run. |
+| `P1-MUT-01` | Untested | No mutation campaign or mutant-kill ledger. |
+| `P1-PERF-01` | Untested | No prescribed parser warmup + five-run timing/RSS record. |
+| `P1-PERF-02` | Untested | No prescribed runtime-extraction performance record. |
+| `P1-PERF-03` | Untested | No prescribed stored text/JSON reporting performance record. |
+| `P1-PERF-04` | Untested | No prescribed end-to-end performance record. |
+
+## Required order of work
+
+1. Reconcile old contract clauses with the approved copy-first watcher,
+   recoverable archive, empirical-classifier, and deferred-processing design.
+   Record each change; do not silently redefine a failed gate.
+2. Freeze the updated public Phase 1 contract and complete output schemas.
+3. Adapt the independent real capture/runtime/lexical runners to current storage
+   without importing production expectation logic.
+4. Reconcile and re-freeze semantic authority from the later human reviews.
+5. Implement missing public/report eligibility and envelope behavior.
+6. Run calibration, failure, rollback, mutation, and performance gates.
+7. Freeze a candidate, select a new private holdout, and use the separated
+   runner/scorer process in `PHASE1_EXIT_PROTOCOL.md`.
+8. Publish a single candidate-bound exit report.

@@ -29,20 +29,21 @@ from .schema import (
 # Phase 1 note: migrations are intentionally idempotent and non-destructive.
 # We use CREATE TABLE IF NOT EXISTS and record canonical issue schema version so
 # migration runs are safe to re-run while preserving existing data.
-def apply_migrations(conn: sqlite3.Connection) -> None:
-    """Apply all schema changes atomically and record component versions."""
+def apply_migrations(conn: sqlite3.Connection) -> bool:
+    """Apply schema changes and report whether compact storage was migrated."""
     if conn.in_transaction:
         raise RuntimeError("schema migration requires a connection without a transaction")
     try:
         conn.execute("BEGIN IMMEDIATE")
-        _apply_migrations(conn)
+        compact_storage_migrated = _apply_migrations(conn)
         conn.commit()
+        return compact_storage_migrated
     except Exception:
         conn.rollback()
         raise
 
 
-def _apply_migrations(conn: sqlite3.Connection) -> None:
+def _apply_migrations(conn: sqlite3.Connection) -> bool:
     cur = conn.cursor()
     for ddl in ALL_DDL:
         # Every schema constant is one statement. ``execute`` keeps SQLite DDL
@@ -121,7 +122,7 @@ def _apply_migrations(conn: sqlite3.Connection) -> None:
         """
     )
 
-    _migrate_compact_storage(conn)
+    compact_storage_migrated = _migrate_compact_storage(conn)
 
     # The mutable session-context model is rejected for fresh databases.  If a
     # user's legacy database already has it, keep it readable and non-destructively
@@ -225,9 +226,10 @@ def _apply_migrations(conn: sqlite3.Connection) -> None:
             """,
             ("session_context", SESSION_CONTEXT_VERSION, now),
         )
+    return compact_storage_migrated
 
 
-def _migrate_compact_storage(conn: sqlite3.Connection) -> None:
+def _migrate_compact_storage(conn: sqlite3.Connection) -> bool:
     """Normalize repeated evidence/payload text without losing any projection.
 
     Captured archives remain primary evidence. SQLite retains the same decoded
@@ -256,7 +258,7 @@ def _migrate_compact_storage(conn: sqlite3.Connection) -> None:
         or "source_block_pk" not in assignment_columns
     )
     if not (needs_source or needs_occurrence or needs_assignment):
-        return
+        return False
     if needs_source != needs_occurrence or needs_source != needs_assignment:
         raise sqlite3.DatabaseError(
             "storage is partially compacted; refusing ambiguous migration"
@@ -523,3 +525,4 @@ def _migrate_compact_storage(conn: sqlite3.Connection) -> None:
         raise sqlite3.DatabaseError(
             "compact-storage migration changed canonical row counts"
         )
+    return True

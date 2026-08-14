@@ -29,6 +29,11 @@ and semantic assignments retain separate ordered provenance. Compact integer
 keys never replace the manifest SHA-256, raw-block SHA-256, line span, or
 session identity used to verify evidence.
 
+Compact storage is the default implementation and requires no user-directed
+workflow. Migration of an older schema is automatic. Physical page reclamation
+follows the committed migration and integrity checks on its first safe database
+open; it is not a product capability or recurring operator obligation.
+
 ## Capture boundary
 
 The watcher observes exact `ck3.exe` process identities. A normal capture
@@ -92,6 +97,11 @@ alive and `game.log` advances. Process existence or a 100,000-count archived
 file alone is insufficient. The observation does not prove that CK3 attempted
 to emit additional errors; it establishes that the game session and another
 log stream continued beyond the stable error boundary.
+
+Per-poll progress and heartbeat journals are temporary diagnostics. They are
+not canonical evidence or database records. After an observation closes, only
+the bounded lifecycle/result summary is eligible for normal retention; verbose
+diagnostics use bounded retention and may be discarded.
 
 ## Source-observation boundary
 

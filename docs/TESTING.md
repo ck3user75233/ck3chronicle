@@ -14,6 +14,29 @@ Every acceptance test must state or document:
 - irrelevant mutations that must not change it;
 - whether its evidence was excluded from learner training.
 
+The fast suite is checkpoint regression coverage. Phase exit requires the
+separate role-bound process in `PHASE1_EXIT_PROTOCOL.md` and a gate-by-gate exit
+record against one frozen candidate.
+
+## Exit-test separation of duties
+
+- The implementer freezes the candidate before private holdout designation and
+  cannot access private inputs, expected answers, or answer-level scorer output.
+- The blind runner receives the candidate, input package, and public command
+  manifest, but no expected answers.
+- The oracle custodian freezes expected answers independently of production
+  output.
+- The read-only scorer receives immutable runner outputs and the private oracle
+  but cannot execute or import the candidate or modify its outputs.
+- A release adjudicator verifies artifact hashes, role separation, every named
+  gate, and the final decision.
+
+Subagents inside one Codex task share filesystem and tool authority, so prompt
+separation alone is procedural, not a hard security boundary. A release-grade
+blind holdout requires user custody, separate OS identities/ACLs, or external
+CI jobs with isolated secrets. The exit report must state the actual isolation
+level.
+
 ## Permitted oracles
 
 - literal expected records derived from the approved product contract;
@@ -61,7 +84,7 @@ The suite currently covers:
 - repeated complete classifier results retaining independent assignments but
   one lossless payload row;
 - legacy-schema migration preserving every relationship with clean foreign
-  keys and a verified post-vacuum command envelope;
+  keys, followed by automatic verified physical page reclamation;
 - forged raw-hash/content disagreement rolling the entire migration back;
 - incremental timestamp counting that reads appended bytes once and resets on
   truncation;
@@ -99,6 +122,13 @@ The suite currently covers:
 - new/worse action triage, stored raw-block locator fallback, malformed locator
   rejection, active-source links, bounded CLI JSON, and review separation.
 
+The current suite does **not** constitute Phase 1 exit testing. Its foundation
+oracles are intentionally small (including a three-block lexical fixture and a
+two-DLC/two-mod runtime fixture), it does not contain a complete independently
+frozen report result, and it has not executed the full protected-real-evidence,
+mutation, private-holdout, or five-run performance gates against one frozen
+candidate.
+
 ## Protected-corpus compatibility gate
 
 `tools/evaluate_classifier.py` is a read-only coverage utility. It was run
@@ -112,5 +142,7 @@ evaluator's assignment counts across 194,022 semantic occurrences:
 | 2 untouched candidates | 126,505 | 48 | 15 | 9 |
 
 This proves compatibility with the reviewed model/evaluator pair. It does not
-turn the old evaluator into a semantic oracle; human-authored normalization
-and assignment tests provide that authority.
+turn the old evaluator into a semantic oracle or satisfy `P1-HOLD-01`;
+human-authored normalization and assignment tests provide development
+authority, while the release holdout must remain private until candidate
+freeze.

@@ -26,7 +26,37 @@ def open_db(path: Path) -> sqlite3.Connection:
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     try:
-        apply_migrations(conn)
+        compact_storage_migrated = apply_migrations(conn)
+        reclaim_receipt = conn.execute(
+            "SELECT version FROM schema_versions WHERE component = ?",
+            ("storage_reclaimed",),
+        ).fetchone()
+        if compact_storage_migrated or reclaim_receipt is None:
+            quick_check = str(conn.execute("PRAGMA quick_check").fetchone()[0])
+            foreign_key_errors = conn.execute("PRAGMA foreign_key_check").fetchall()
+            if quick_check != "ok" or foreign_key_errors:
+                raise sqlite3.DatabaseError(
+                    "refusing automatic page reclamation after failed integrity check"
+                )
+            # The logical migration has already committed. VACUUM changes no
+            # logical content; it returns now-unreferenced legacy pages to the
+            # OS. Record success only afterwards so an interrupted/failed
+            # reclaim is retried on the next ordinary database open.
+            if int(conn.execute("PRAGMA freelist_count").fetchone()[0]) > 0:
+                conn.execute("VACUUM")
+            conn.execute(
+                """
+                INSERT OR REPLACE INTO schema_versions
+                    (component, version, migrated_at)
+                VALUES (?, ?, ?)
+                """,
+                (
+                    "storage_reclaimed",
+                    1,
+                    datetime.now(timezone.utc).isoformat(),
+                ),
+            )
+            conn.commit()
     except Exception:
         conn.close()
         raise

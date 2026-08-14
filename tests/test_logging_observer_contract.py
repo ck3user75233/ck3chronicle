@@ -2,13 +2,18 @@
 from __future__ import annotations
 
 from pathlib import Path
+import json
+
+import pytest
 
 from ck3chronicle.cli import build_parser
 from ck3chronicle.logging_observer import (
     ExactBoundaryDetector,
     IncrementalTimestampLog,
     LogProgress,
+    observe_logging_progress,
 )
+from ck3chronicle.watcher import ProcessIdentity
 
 
 def _progress(*, count: int, bytes_: int) -> LogProgress:
@@ -71,3 +76,70 @@ def test_rlogobs_003_cli_defaults_are_low_frequency_and_separate_from_watch() ->
     assert args.heartbeat_seconds == 30.0
     assert args.stall_seconds == 60.0
 
+
+def test_rlogobs_004_heartbeats_are_temporary_current_health(
+    tmp_path: Path,
+) -> None:
+    """Oracle: a completed observation retains lifecycle, not polling history."""
+    logs = tmp_path / "logs"
+    runtime = tmp_path / "runtime"
+    logs.mkdir()
+    (logs / "error.log").write_bytes(b"[12:00:00][E][a.cpp:1]: first\n")
+    (logs / "game.log").write_bytes(b"[12:00:01][D][game.cpp:1]: running\n")
+    game = ProcessIdentity(42, "ck3.exe", 123)
+    observations = iter([None, game, game, None])
+
+    journal, observed = observe_logging_progress(
+        logs_root=logs,
+        runtime_root=runtime,
+        process_probe=observations.__next__,
+        poll_seconds=1.0,
+        heartbeat_seconds=1.0,
+        stall_seconds=60.0,
+        sleep=lambda _seconds: None,
+        monotonic=iter([0.0, 1.0, 3.0, 5.0]).__next__,
+    )
+
+    assert observed is False
+    events = [json.loads(line) for line in journal.read_text("utf-8").splitlines()]
+    assert [item["event"] for item in events] == [
+        "observer_started",
+        "game_started",
+        "game_exited",
+        "observer_stopped",
+    ]
+    assert list((runtime / "watch").glob("log-progress-heartbeat-*.json")) == []
+
+
+def test_rlogobs_005_exception_cannot_strand_heartbeat_history(
+    tmp_path: Path,
+) -> None:
+    """Mutation: probe failure still removes the replaceable health snapshot."""
+    logs = tmp_path / "logs"
+    runtime = tmp_path / "runtime"
+    logs.mkdir()
+    (logs / "error.log").write_bytes(b"[12:00:00][E][a.cpp:1]: first\n")
+    (logs / "game.log").write_bytes(b"[12:00:01][D][game.cpp:1]: running\n")
+    game = ProcessIdentity(42, "ck3.exe", 123)
+    calls = 0
+
+    def failing_probe() -> ProcessIdentity | None:
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            return game
+        raise RuntimeError("probe failed")
+
+    with pytest.raises(RuntimeError, match="probe failed"):
+        observe_logging_progress(
+            logs_root=logs,
+            runtime_root=runtime,
+            process_probe=failing_probe,
+            poll_seconds=1.0,
+            heartbeat_seconds=1.0,
+            stall_seconds=60.0,
+            sleep=lambda _seconds: None,
+            monotonic=iter([0.0, 0.0, 2.0]).__next__,
+        )
+
+    assert list((runtime / "watch").glob("log-progress-heartbeat-*.json")) == []

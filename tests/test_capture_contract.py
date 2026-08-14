@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from collections import deque
+import json
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -9,7 +10,7 @@ import pytest
 
 from ck3chronicle import harvester
 from ck3chronicle.harvester import UnstableCapture, spool_logs
-from ck3chronicle.watcher import ProcessIdentity, watch_sessions
+from ck3chronicle.watcher import EventJournal, ProcessIdentity, watch_sessions
 
 from foundation_oracle import SIX_LOG_BYTES, write_logs
 
@@ -120,3 +121,25 @@ def test_rcap_004_restart_during_copy_never_publishes_completed_pending(
     pending_root = runtime / "pending"
     visible = [path for path in pending_root.iterdir() if not path.name.startswith(".")]
     assert visible == []
+
+
+def test_rcap_005_heartbeat_is_current_state_not_unbounded_history(
+    tmp_path: Path,
+) -> None:
+    """Oracle: lifecycle is append-only; repeated health replaces one snapshot."""
+    with EventJournal(tmp_path) as journal:
+        journal.emit("watcher_started", {"state": "absent"})
+        journal.emit("heartbeat", {"state": "absent", "polls": 10})
+        journal.emit("heartbeat", {"state": "running", "polls": 20})
+        heartbeat = json.loads(journal.heartbeat_path.read_text(encoding="utf-8"))
+        assert heartbeat["event"] == "heartbeat"
+        assert heartbeat["state"] == "running"
+        assert heartbeat["polls"] == 20
+        journal.emit("game_started", {"process": {"pid": 42}})
+
+    events = [
+        json.loads(line)
+        for line in journal.path.read_text(encoding="utf-8").splitlines()
+    ]
+    assert [item["event"] for item in events] == ["watcher_started", "game_started"]
+    assert not journal.heartbeat_path.exists()

@@ -1,6 +1,10 @@
-# Roadmap
+# Capability inventory
 
-## 1. Reboot foundation
+This is an implementation/backlog inventory, not the project phase plan. Its
+sections are deliberately unnumbered so they cannot be cited as completed
+phases. See `PROJECT_PLAN.md` for phase authority and exit status.
+
+## Reboot foundation capabilities
 
 Status: complete at commit `3ef8151`.
 
@@ -9,7 +13,7 @@ Status: complete at commit `3ef8151`.
 - repair any failures the new suite reveals;
 - checkpoint the clean takeover baseline.
 
-## 2. Empirical classification
+## Empirical classification capabilities
 
 Status: production runtime, persistence, and CLI complete.
 
@@ -23,7 +27,7 @@ Status: production runtime, persistence, and CLI complete.
 - [x] pass protected holdout and untouched-candidate compatibility gates;
 - add semantic adjudication samples as new source families are approved.
 
-## 3. First useful report
+## Stored-report capabilities
 
 Status: complete.
 
@@ -33,7 +37,7 @@ Status: complete.
 - [x] expose unresolved and L1-only review queues;
 - [x] produce deterministic schema-versioned JSON.
 
-## 4. Processing workflow
+## Processing-workflow capabilities
 
 Status: foreground workflow complete.
 
@@ -41,7 +45,7 @@ Status: foreground workflow complete.
 - [x] keep the watcher copy-only;
 - evaluate safe login-start automation after the foreground workflow is proven.
 
-## 5. Session intelligence
+## Session-intelligence capabilities
 
 - [x] compare runs as new, fixed, worse, improved, or unchanged;
 - [x] exclude keys, locators, timestamps, and lines from delta identity;
@@ -53,7 +57,7 @@ Status: foreground workflow complete.
   available;
 - persist durable run chronology independently of archive deduplication.
 
-## 6. Runtime DLC/mod context
+## Runtime DLC/mod-context capabilities
 
 Status: first production contract complete.
 
@@ -65,7 +69,7 @@ Status: first production contract complete.
 - [x] explicitly represent complete, partial, and absent runtime context.
 - [x] include mounted identity/order changes in session comparisons.
 
-## 7. Database hardening and real-corpus acceptance
+## Database hardening capabilities
 
 Status: active.
 
@@ -85,9 +89,10 @@ Status: active.
 - [x] normalize repeated raw blocks and complete classification payloads without
   collapsing occurrences or changing report/comparison/triage output;
 - [x] replace repeated textual source relationships with compact integer foreign
-  keys and expose verified `compact-db` space reclamation;
-- [x] add a separate append-only `observe-logging` diagnostic that requires
-  stable 100,000 error headers and independently advancing `game.log` evidence;
+  keys, migrate automatically, and verify internal page reclamation;
+- [x] add a separate `observe-logging` diagnostic with an append-only
+  lifecycle/result journal, a replaceable heartbeat, and a requirement for
+  stable 100,000 error headers plus independently advancing `game.log` evidence;
 
 Current real-index compaction oracle: 15 sessions, 858,732 independently
 recounted raw headers/canonical blocks/occurrences, and 887,892 classification
@@ -97,10 +102,10 @@ work is a controlled live-session observation of the exact-100,000 boundary,
 deep-distribution performance, and chronology repair policy for imported
 sessions.
 
-## 8. Source resolution and triage
+## Source-resolution and triage capabilities
 
-Status: groundwork present; further development deferred until section 7 is
-accepted.
+Status: groundwork present; further development deferred until Phase 1 is
+exited.
 
 - [x] restrict exact-file resolution to recorded active runtime roots;
 - [x] list current base/DLC/mod instances in mount order;

@@ -307,89 +307,6 @@ def cmd_audit_db(args: argparse.Namespace) -> int:
     return 2 if result["status"] == "fail" else 0
 
 
-def cmd_compact_db(args: argparse.Namespace) -> int:
-    """Normalize repeated index payloads and reclaim free SQLite pages."""
-    import sqlite3
-
-    from . import config
-    from .db import repository
-
-    db_path = config.ROOT_CK3CHRONICLE / "ck3chronicle.db"
-    if not db_path.is_file():
-        print(f"ERROR [database_failed]: database not found: {db_path}", file=sys.stderr)
-        return 5
-    before = db_path.stat().st_size
-    try:
-        conn = repository.open_db(db_path)
-        precheck = str(conn.execute("PRAGMA quick_check").fetchone()[0])
-        pre_fk = len(conn.execute("PRAGMA foreign_key_check").fetchall())
-        if precheck != "ok" or pre_fk:
-            conn.close()
-            print(
-                "ERROR [database_failed]: refusing VACUUM after failed integrity check",
-                file=sys.stderr,
-            )
-            return 5
-        conn.execute("VACUUM")
-        postcheck = str(conn.execute("PRAGMA quick_check").fetchone()[0])
-        post_fk = len(conn.execute("PRAGMA foreign_key_check").fetchall())
-        counts = {
-            "source_blocks": int(
-                conn.execute("SELECT COUNT(*) FROM source_blocks").fetchone()[0]
-            ),
-            "raw_block_contents": int(
-                conn.execute("SELECT COUNT(*) FROM raw_block_contents").fetchone()[0]
-            ),
-            "issue_occurrences": int(
-                conn.execute("SELECT COUNT(*) FROM issue_occurrences").fetchone()[0]
-            ),
-            "classification_assignments": int(
-                conn.execute(
-                    "SELECT COUNT(*) FROM classification_assignments"
-                ).fetchone()[0]
-            ),
-            "classification_payloads": int(
-                conn.execute("SELECT COUNT(*) FROM classification_payloads").fetchone()[0]
-            ),
-        }
-        conn.close()
-    except (sqlite3.Error, ValueError, RuntimeError) as exc:
-        print(f"ERROR [database_failed]: {exc}", file=sys.stderr)
-        return 5
-    after = db_path.stat().st_size
-    result = {
-        "schema": "ck3chronicle.database-compaction",
-        "schema_version": 1,
-        "database": str(db_path),
-        "bytes_before": before,
-        "bytes_after": after,
-        "bytes_reclaimed": max(0, before - after),
-        "reduction_fraction": (1.0 - after / before) if before else 0.0,
-        "quick_check": postcheck,
-        "foreign_key_errors": post_fk,
-        "counts": counts,
-    }
-    if postcheck != "ok" or post_fk:
-        print(json.dumps(result, sort_keys=True), file=sys.stderr)
-        return 5
-    if args.json:
-        print(json.dumps(result, sort_keys=True))
-    else:
-        print(
-            f"Database compacted: {before:,} -> {after:,} bytes "
-            f"({result['reduction_fraction']:.1%} smaller)"
-        )
-        print(
-            f"blocks={counts['source_blocks']:,}; "
-            f"raw-content rows={counts['raw_block_contents']:,}; "
-            f"occurrences={counts['issue_occurrences']:,}; "
-            f"assignments={counts['classification_assignments']:,}; "
-            f"payload rows={counts['classification_payloads']:,}"
-        )
-        print("SQLite quick-check=ok; foreign-key-errors=0")
-    return 0
-
-
 def cmd_observe_logging(args: argparse.Namespace) -> int:
     """Journal incremental error/game timestamp progress for one CK3 run."""
     from . import config
@@ -1550,13 +1467,6 @@ def build_parser() -> argparse.ArgumentParser:
         help="Also reconcile every block/signature distribution; may take minutes.",
     )
     p_audit_db.set_defaults(func=cmd_audit_db)
-
-    p_compact_db = sub.add_parser(
-        "compact-db",
-        help="Losslessly deduplicate index payloads and reclaim SQLite space.",
-    )
-    p_compact_db.add_argument("--json", action="store_true")
-    p_compact_db.set_defaults(func=cmd_compact_db)
 
     p_observe_logging = sub.add_parser(
         "observe-logging",

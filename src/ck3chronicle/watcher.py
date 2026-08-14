@@ -376,13 +376,14 @@ def ensure_existing_logs_receipted(logs_root: Path, dest_root: Path) -> bool:
 
 
 class EventJournal:
-    """A per-watcher JSONL journal flushed after every event."""
+    """Persist lifecycle events while keeping only the latest heartbeat."""
 
     def __init__(self, dest_root: Path):
         watch_root = Path(dest_root) / "watch"
         watch_root.mkdir(parents=True, exist_ok=True)
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
         self.path = watch_root / f"events-{stamp}-{os.getpid()}.jsonl"
+        self.heartbeat_path = watch_root / "watcher-heartbeat.json"
         self._stream: TextIO | None = None
 
     def __enter__(self) -> EventJournal:
@@ -399,15 +400,36 @@ class EventJournal:
             "watcher_pid": os.getpid(),
             **fields,
         }
+        if event == "heartbeat":
+            self._replace_json(self.heartbeat_path, record)
+            return
         self._stream.write(
             json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n"
         )
         self._stream.flush()
 
+    @staticmethod
+    def _replace_json(path: Path, record: dict[str, Any]) -> None:
+        fd, temporary_name = tempfile.mkstemp(prefix=f".{path.name}-", dir=path.parent)
+        temporary = Path(temporary_name)
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as stream:
+                json.dump(record, stream, sort_keys=True, separators=(",", ":"))
+                stream.write("\n")
+                stream.flush()
+            os.replace(temporary, path)
+        finally:
+            if temporary.exists():
+                temporary.unlink()
+
     def __exit__(self, exc_type, exc, traceback) -> None:
         if self._stream is not None:
             self._stream.close()
             self._stream = None
+        try:
+            self.heartbeat_path.unlink()
+        except FileNotFoundError:
+            pass
 
 
 class WatcherLease:
