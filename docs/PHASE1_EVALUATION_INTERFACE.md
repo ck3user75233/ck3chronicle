@@ -3,6 +3,9 @@
 Status: implementation-side handoff contract. This is not an executable test
 harness and contains no expected answers.
 
+The exact machine-readable schemas and mutation boundaries referenced here are
+frozen in `PHASE1_OUTPUT_CONTRACTS.md`.
+
 ## Authority boundary
 
 The implementation/orchestration authority may publish:
@@ -127,6 +130,7 @@ ck3chronicle.parser.log_blocks.iter_log_blocks(
     path: pathlib.Path,
     *,
     log_relpath: str | None = None,
+    retain_preamble: bool = True,
 ) -> Iterator[TimestampedLogBlock]
 ```
 
@@ -156,6 +160,11 @@ source_block_id
 bytes, including original line endings. `source_block_id` is the SHA-256 of
 `log_relpath + NUL + start_line + NUL + raw_block_sha256` encoded as specified
 by `source_block_id()` in the same module.
+
+Independent lexical evaluation uses the default `retain_preamble=True` so the
+yielded preamble is exact. The product parse service deliberately uses
+`False`: it needs only the preamble cardinality and therefore avoids retaining
+a potentially large malformed headerless prefix in Python memory.
 
 ### Canonical parse and persistence
 
@@ -278,6 +287,55 @@ Its `result` is the session-report v5, report-with-comparison v1, or errors v1
 projection. Readiness/input failures use exit 2 and report-stage error codes;
 database failures use exit 5; unexpected report failures use exit 1. Human text
 mode remains a concise executive projection of the same stored report object.
+
+## Gate-to-interface invocation manifest
+
+This table is the complete implementation-side handoff for the 35 Phase 1
+gates. It identifies callable seams and observable product outputs, but does
+not prescribe runner mechanics, mutations, expected values, scoring rules, or
+private data. Those are independent-evaluator responsibilities.
+
+| Gate | Product seam | Public inputs and observations |
+|---|---|---|
+| `P1-CAP-01` | `spool_logs`; `finalize_pending_captures`; `capture`; `process-pending --json` | A logs directory and evidence root. Observe pending/archive paths, manifest, registry rows, processing envelope, and immutable evidence bytes. Copy/finalize/process mutate evidence and the index. |
+| `P1-CAP-02` | Same capture/finalize/process seams | Re-submit independently selected identical evidence. Observe bundle identity, session rows, durable run receipts/rows, and returned registration counters. |
+| `P1-CAP-03` | `spool_logs`; `read_snapshot`; `reconcile_archives`; `process-pending --json` | The evaluator supplies its own source/evidence mutations. Observe manifest/file verification, bundle identity, command status, and archive/index state. |
+| `P1-CAP-04` | `spool_logs(..., abort_if=...)`; `capture`; watcher receipt path | The evaluator controls restart/source-instability signals. Observe exception or command exit, pending/final archive presence, and receipts. |
+| `P1-CAP-05` | `finalize_pending_captures`; `reconcile_archives`; `process-pending --json` | The evaluator supplies fault points. Observe durable archive recoverability plus the command-result status, exit code, stage, retryability, counters, and database state. |
+| `P1-CAP-06` | `spool_logs`; `process-pending --json`; `build_session_report` | The evaluator supplies missing/zero-byte approved logs. Observe explicit rejection or accepted completeness, zero counters, and report fields. |
+| `P1-RUN-01` | `parse_runtime_context`; `context --json`; stored report `runtime_context` | Finalized archived `debug.log`. Observe status, exact provenance, counts, ordered DLCs/mods, warnings, and persisted projection. |
+| `P1-RUN-02` | Same runtime seams | Evaluator-selected Workshop and local mount forms. Observe `mod_key`, `mount_path`, `source_kind`, and load order. |
+| `P1-RUN-03` | Same runtime seams | Evaluator authors an order mutation and compares only the returned/persisted authoritative sequence. |
+| `P1-RUN-04` | Same runtime seams | Evaluator supplies complete/partial/absent/malformed/truncated/ambiguous shapes. Observe status, termination evidence, absence reason, counts, and warnings. |
+| `P1-RUN-05` | `parse_runtime_context`; `context --json`; `resolve_file_instances` | Evaluator controls optional inventory metadata. Observe that authoritative membership, order, paths, and resolver roots remain separate from enrichment. |
+| `P1-PAR-01` | `iter_log_blocks`; `parse_session`; repository source-block readers | Evaluator-selected archived `error.log`. Observe every lexical field, persisted source-block provenance, counters, and parse state. |
+| `P1-PAR-02` | `extract_block`; `normalize`; `parse_session`; stored occurrences/issues | Evaluator supplies semantic inputs and oracle separately. Observe normalized issue fields, occurrence provenance, clusters, and counters. |
+| `P1-PAR-03` | `parse_session`; stored `source_blocks`, `occurrences`, and `issues` | Evaluator selects duplicates. Observe separate source occurrences, shared signatures/clusters, and per-block/per-signature counts. |
+| `P1-PAR-04` | `tokenize`; `Classifier.classify`; `classify_session` | Evaluator controls locator/path mutations. Observe typed normalized tokens, assignments, templates, and identities. |
+| `P1-PAR-05` | Extractor/classifier seams above | Evaluator authors near-miss families. Observe conservative fallback (`l1` or `unknown`) and absence of a false full assignment. |
+| `P1-PAR-06` | `Classifier.classify`; `classify_session`; `classify --json` | Evaluator supplies authentic positives and near misses. Observe assignment level, contract ID, L1/L2 templates, typed slots, model identity, and aggregate counts. |
+| `P1-PAR-07` | `iter_log_blocks`; `parse_session` | Evaluator supplies encoding, newline, long-line, malformed, replacement-character, and truncation cases. Observe exact byte/line provenance, counters, and explicit failure state. |
+| `P1-PAR-08` | `parse_session(..., reparse=True)` plus repository reads | Evaluator chooses a reparse failure injection. Compare prior and final canonical projections and parse state. |
+| `P1-PAR-09` | `parse_session` plus repository reads | Evaluator chooses a first-parse failure. Observe exception/public exit and absence of a falsely successful or partial projection. |
+| `P1-PAR-10` | `parse_session`; `classify_session`; `build_session_report` | A finalized zero-byte `error.log`. Observe returned counters, stored state, classification counts, and report projection. |
+| `P1-PAR-11` | `audit_database`; `audit-db --deep --json`; repository aggregate reads | Evaluator-selected processed databases. Observe audit output and stored total/per-block/per-signature/provenance invariants. Audit is read-only. |
+| `P1-REP-01` | `process_pending`; `process-pending --json` | Evidence root plus approved classifier. Observe processing-result v2 inside command-result v1 and all documented side effects. |
+| `P1-REP-02` | `report`, `latest`, `errors` in text and `--json` modes | Same stored target and limit. Observe stdout bytes, JSON result, exit status, and stderr; field equivalence is independently scored. |
+| `P1-REP-03` | `build_session_report`; `report`; `latest`; `errors` | Process once, then use stored records. The evaluator controls removal/unavailability of raw inputs and observes report stability. |
+| `P1-REP-04` | Same report seams | Evaluator records database/evidence hashes before and after each read command. Product report functions and commands are read-only. |
+| `P1-REP-05` | `process_pending`; report seams | Evaluator controls repeat calls and insertion order. Observe processing counters, stored projections, JSON bytes, and pattern ordering. |
+| `P1-REP-06` | `latest_report_target`; `report --run`; `errors --run`; `latest` | Evaluator supplies run chronology including repeated evidence. Observe exact run/session selection and file-origin/crash provenance. |
+| `P1-REP-07` | `process-pending --json`; `report --json`; `latest --json`; `errors --json` | Evaluator supplies success/readiness/integrity/model/database/pipeline conditions. Observe one command-result envelope, stdout/stderr, and process exit. |
+| `P1-HOLD-01` | The same capture/runtime/parse/classify/report seams | Oracle custodian supplies a post-freeze unseen package. Runner records outputs only; scorer owns expected values. |
+| `P1-MUT-01` | The same product seams | Independent harness author creates and hashes mutations. Runner records candidate outputs; independent scorer owns kill criteria. |
+| `P1-PERF-01` | `iter_log_blocks`; `parse_session` | Independent runner owns warmup, repetitions, timing, peak RSS, cache policy, and environment capture. |
+| `P1-PERF-02` | `parse_runtime_context` | Independent runner owns runtime extraction performance measurement and resource envelope. |
+| `P1-PERF-03` | `build_session_report`; stored text/JSON commands | Independent runner measures stored reporting without reparsing raw evidence. |
+| `P1-PERF-04` | `process_pending`; `process-pending --json` | Independent runner measures the complete deferred pipeline and captures its command envelope and resource use. |
+
+The evaluator may call lower-level repository readers to observe persisted
+state, but must not use production normalizers, classifiers, or report builders
+to compute expected answers.
 
 ## Independent evaluator deliverables
 

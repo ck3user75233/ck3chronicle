@@ -1,6 +1,6 @@
 # Phase 1 exit matrix
 
-Audit candidate: `52a43254f847555a871833ef4a43bd97f3613bf6`
+Release candidate: **not frozen; no candidate hash assigned**.
 
 Status: **Phase 1 not exited**.
 
@@ -11,16 +11,17 @@ formal candidate-bound release evidence. `Partially covered` is not a pass.
 
 | Status | Gates |
 |---|---:|
-| Proven on audited candidate | 1 |
-| Partially covered | 13 |
-| Untested | 14 |
-| Missing or contract-incompatible public surface | 7 |
+| Historical proof on an older candidate | 1 |
+| Partially covered | 23 |
+| Untested | 11 |
+| Missing or contract-incompatible public surface | 0 |
 | Total | 35 |
 
-The audited candidate has one separated real-evidence component calibration,
-`P1-PAR-01-LEXICAL`; it is not the complete persistence gate. The remaining
-frozen Phase 0 real-evidence oracles are not yet executed by the current gate
-harness. The fast reboot suite remains useful regression coverage.
+The older `52a43254f847555a871833ef4a43bd97f3613bf6` candidate has one separated
+real-evidence lexical calibration and one zero-byte proof. Neither transfers
+automatically to the future frozen candidate. The remaining frozen Phase 0
+real-evidence oracles are not yet executed by an independent current harness.
+The fast reboot suite remains implementation regression coverage only.
 
 ## Capture
 
@@ -30,7 +31,7 @@ harness. The fast reboot suite remains useful regression coverage.
 | `P1-CAP-02` | Partially covered | Duplicate archive/session reuse is tested; no formal gate record. |
 | `P1-CAP-03` | Untested | Archive corruption is detected, but each single-byte source mutation has not been recaptured and compared. |
 | `P1-CAP-04` | Partially covered | Rapid relaunch rejection is tested; the exact source-mutation command result/envelope is not. |
-| `P1-CAP-05` | Missing/contract drift | Failure matrix and command envelopes are absent. Current recovery intentionally permits a finalized orphan archive after DB failure, while the old contract forbids any promoted evidence. The contract must be reconciled without losing recoverability. |
+| `P1-CAP-05` | Partially covered / contract reconciled | The stable public command envelope distinguishes archive, model, database, reconciliation, and pipeline failures. A finalized content-addressed archive may deliberately survive database registration failure and is recovered by reconciliation; this is the frozen recoverability rule, not a partial-success ambiguity. The independent fault matrix has not run. |
 | `P1-CAP-06` | Partially covered | Missing debug and zero-byte error paths are tested separately; complete public-command outcomes are not. |
 
 ## Runtime context
@@ -56,7 +57,7 @@ harness. The fast reboot suite remains useful regression coverage.
 | `P1-PAR-07` | Partially covered | Mixed line endings and final-newline behavior are tested; the full malformed/BOM/long-line/replacement/truncation matrix is not. |
 | `P1-PAR-08` | Partially covered | A development regression injects failure after one streamed replacement block and proves the prior canonical projection is identical; the independent exit gate has not run. |
 | `P1-PAR-09` | Partially covered | Missing evidence leaves `not_started`; generic injected first-parse failure and public exit behavior remain untested. |
-| `P1-PAR-10` | **Proven on audited candidate** | Present zero-byte `error.log` commits succeeded state with every required counter exactly zero. |
+| `P1-PAR-10` | **Historical proof on older candidate** | Present zero-byte `error.log` committed succeeded state with every required counter exactly zero on `52a...`; rerun is required after candidate freeze. |
 | `P1-PAR-11` | Partially covered | Repository/audit invariants and real-session totals reconcile; the frozen reference and future holdout executions are absent. |
 
 ## Reporting and public workflow
@@ -84,18 +85,17 @@ harness. The fast reboot suite remains useful regression coverage.
 
 ## Required order of work
 
-1. Reconcile old contract clauses with the approved copy-first watcher,
-   recoverable archive, empirical-classifier, and deferred-processing design.
-   Record each change; do not silently redefine a failed gate.
-2. Freeze the updated public Phase 1 contract, evaluation-interface handoff,
-   and complete output schemas. Implementation agents stop at that boundary.
-3. Implement missing public/report eligibility and envelope behavior.
+1. Freeze the updated public Phase 1 contract, gate-to-interface handoff,
+   complete output schemas, and exact error taxonomy. Implementation agents
+   stop writing execution logic at that boundary.
+2. Reconcile and freeze semantic authority from the later human reviews.
+3. Freeze a clean candidate commit and record its complete tree/interface
+   hashes.
 4. Have the independent harness authority write the real
    capture/runtime/lexical runners from the published interface, without
    importing production expectation logic.
-5. Reconcile and re-freeze semantic authority from the later human reviews.
-6. Independent evaluator roles run calibration, failure, rollback, mutation,
+5. Independent evaluator roles run calibration, failure, rollback, mutation,
    and performance gates.
-7. Freeze a candidate, select a new private holdout, and use the separated
-   runner/scorer process in `PHASE1_EXIT_PROTOCOL.md`.
-8. Publish a single candidate-bound exit report.
+6. Select a new private holdout and use the separated runner/scorer process in
+   `PHASE1_EXIT_PROTOCOL.md`.
+7. Publish a single candidate-bound exit report.

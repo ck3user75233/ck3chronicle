@@ -98,22 +98,26 @@ formal exit report. No current commit has such an exit record.
 
 ### Immediate work
 
-1. Freeze the implemented process/report command envelopes, complete text/JSON
-   projections, and exact failure taxonomy for independent scoring.
-2. Reconcile the Phase 1 semantic oracle with the PostValidate-protected,
-   user-approved empirical
-   template model, including locator recognition before L1 assignment.
-3. Publish the callable evaluation interface for every gate; an independent
-   harness author maps it to runner code, while a separate oracle authority
-   owns expected artifacts and scorer rules.
-4. Have the independent evaluation authority adapt protected real-evidence
-   harnesses to the current compact schema.
-5. Independently freeze the complete report and command-envelope oracle.
-6. Provide the supported public vertical-slice command and exact failure
-   envelopes.
-7. Freeze the release candidate before the private holdout is scored.
-8. Execute correctness, rollback, mutation, holdout, and performance gates.
-9. Publish and review the Phase 1 exit report.
+The implementation-side public interface freeze is complete: process/report
+command envelopes, text/JSON projections, the failure taxonomy, all 35
+gate-to-call mappings, output schemas, and mutation boundaries are published.
+Implementation agents stop at that boundary and do not supply evaluator runner
+or scorer code.
+
+Remaining work proceeds in this order:
+
+1. Reconcile the Phase 1 semantic oracle with the PostValidate-protected,
+   user-approved empirical template model, including locator recognition before
+   L1 assignment.
+2. Freeze a clean release-candidate commit and record its tree, package,
+   interface, model, and contract hashes.
+3. Have the independent harness authority implement and freeze the protected
+   real-evidence runners from the published interfaces.
+4. Have the independent oracle authority freeze the complete report and
+   command-envelope expected artifacts.
+5. Execute correctness, rollback, mutation, holdout, and performance gates
+   under the separation in `PHASE1_EXIT_PROTOCOL.md`.
+6. Publish and review the single candidate-bound Phase 1 exit report.
 
 ## Phase 2: deltas, baselines, and noise management
 

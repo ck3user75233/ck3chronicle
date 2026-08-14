@@ -181,6 +181,8 @@ status, exit code, result, and error. Exit codes distinguish pipeline failure
 (5); reconciliation warnings return 1 while retaining the partial result.
 The JSON `report`, `latest`, and `errors` surfaces use the same envelope, with
 their schema-versioned report projection nested under `result`.
+Exact fields, versions, exit meanings, and mutation boundaries are frozen in
+`PHASE1_OUTPUT_CONTRACTS.md`.
 
 Chronology is run-based, not evidence-bundle-based. `latest` selects the newest
 reportable observed run. `report --run RUN_ID` selects that exact run even if an

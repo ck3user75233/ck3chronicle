@@ -130,8 +130,9 @@ release candidate is frozen.
 
 ## Not yet released
 
-- an independently frozen complete Phase 1 output contract and any additional
-  non-core command envelopes required by the final all-command gate;
+- candidate-bound independent acceptance of the published Phase 1 evaluation
+  interface/output contract, plus any non-core envelopes the independent
+  all-command gate demonstrates are still required;
 - independently frozen complete report output;
 - the Phase 1 mutation, private-holdout, and performance exit runs;
 - on-action container-merge and culture symbol-LIOS adapters;
