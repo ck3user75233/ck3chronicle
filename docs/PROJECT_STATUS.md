@@ -30,13 +30,18 @@ Historical material is recoverable from:
 - copy-first pending protection after an observed process exit;
 - hashing only protected pending files during finalization;
 - one content-addressed immutable archive per distinct evidence bundle;
+- one immutable receipt and database run row per observed exit, even when
+  several runs share the same evidence bundle;
+- normal/crash/unknown termination provenance and per-run file origins;
+- deferred exact-hash comparison of crash-folder principal logs, with no
+  duplicate copy when they equal the protected live logs;
 - manifest verification and transactional SQLite registration;
 - canonical parsing of archived `error.log` only;
 - immutable source blocks plus one-row-per-occurrence provenance;
 - atomic parse and reparse persistence.
 
 The implemented foundation and production classifier seam are covered by the new
-reboot-owned suite: 86 tests as of this status record. No inherited test
+reboot-owned suite: 91 tests as of this status record. No inherited test
 contributes to that number.
 
 These are fast regression tests. The complete protected-real-evidence,
@@ -137,7 +142,9 @@ the live index found:
 - multiple archived source logs themselves end at exactly 100,000 blocks, so
   ck3chronicle did not truncate them; the repeated boundary is recorded as an
   observation whose cause remains unverified;
-- incomplete durable process-observation chronology for imported sessions;
+- historical imports lacked durable process chronology; capture-schema v2
+  preserves one explicit `unknown` legacy run per otherwise unobserved bundle,
+  without inventing unrecoverable start/exit facts;
 - one protected pending capture not yet processed, reported separately.
 
 The compact-storage migration was exercised on a consistent disposable copy of

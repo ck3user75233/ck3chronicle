@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import hashlib
 from pathlib import Path
 import re
 import sqlite3
@@ -24,6 +25,8 @@ _REQUIRED_TABLES = {
     "session_runtime_contexts",
     "session_mounted_dlcs",
     "session_mounted_mods",
+    "capture_observations",
+    "run_file_origins",
 }
 
 
@@ -515,11 +518,12 @@ def audit_database(root: Path, *, deep: bool = False) -> dict[str, object]:
                 session_ids=capped_sessions,
             )
 
-        observation_count = (
-            int(conn.execute("SELECT COUNT(*) FROM capture_observations").fetchone()[0])
-            if "capture_observations" in tables
-            else 0
+        run_rows = list(
+            conn.execute(
+                "SELECT * FROM capture_observations ORDER BY observation_id"
+            )
         )
+        observation_count = len(run_rows)
         if observation_count < len(session_rows):
             finding(
                 "warning",
@@ -530,6 +534,74 @@ def audit_database(root: Path, *, deep: bool = False) -> dict[str, object]:
                     "capture_observations": observation_count,
                     "sessions": len(session_rows),
                 },
+            )
+
+        receipt_root = evidence_root / "run_receipts" / "finalized"
+        receipt_errors: list[dict[str, object]] = []
+        origin_errors: list[dict[str, object]] = []
+        crash_errors: list[int] = []
+        for run in run_rows:
+            observation_id = int(run["observation_id"])
+            if run["termination_kind"] == "crash" and (
+                not run["crash_folder_name"] or not run["crash_folder_path"]
+            ):
+                crash_errors.append(observation_id)
+            if run["receipt_sha256"] is None:
+                continue
+            receipt_path = receipt_root / f"{run['capture_id']}.json"
+            if not receipt_path.is_file():
+                receipt_errors.append(
+                    {"run_id": observation_id, "error": "receipt_missing"}
+                )
+            else:
+                digest = hashlib.sha256(receipt_path.read_bytes()).hexdigest()
+                if digest != run["receipt_sha256"]:
+                    receipt_errors.append(
+                        {"run_id": observation_id, "error": "receipt_hash_mismatch"}
+                    )
+            expected_files = int(
+                conn.execute(
+                    "SELECT COUNT(*) FROM session_files WHERE session_id = ?",
+                    (run["session_id"],),
+                ).fetchone()[0]
+            )
+            actual_origins = int(
+                conn.execute(
+                    "SELECT COUNT(*) FROM run_file_origins WHERE observation_id = ?",
+                    (observation_id,),
+                ).fetchone()[0]
+            )
+            if actual_origins != expected_files:
+                origin_errors.append(
+                    {
+                        "run_id": observation_id,
+                        "expected": expected_files,
+                        "actual": actual_origins,
+                    }
+                )
+        if receipt_errors:
+            finding(
+                "error",
+                "DB-RUN-001",
+                "evidence_integrity",
+                "indexed run receipts are missing or disagree with their hashes",
+                details={"runs": receipt_errors},
+            )
+        if origin_errors:
+            finding(
+                "error",
+                "DB-RUN-002",
+                "index_integrity",
+                "receipt-backed runs do not have one origin per archived file",
+                details={"runs": origin_errors},
+            )
+        if crash_errors:
+            finding(
+                "error",
+                "DB-RUN-003",
+                "index_integrity",
+                "crash runs are missing crash-folder provenance",
+                details={"run_ids": crash_errors},
             )
 
         aggregates = {
@@ -548,6 +620,10 @@ def audit_database(root: Path, *, deep: bool = False) -> dict[str, object]:
             "classification_assignments": sum(
                 int(summary["classification_assignments"])
                 for summary in session_summaries
+            ),
+            "runs": observation_count,
+            "run_file_origins": int(
+                conn.execute("SELECT COUNT(*) FROM run_file_origins").fetchone()[0]
             ),
         }
         return _result(

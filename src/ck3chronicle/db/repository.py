@@ -3,10 +3,11 @@ from __future__ import annotations
 
 import sqlite3
 import json
+import uuid
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Mapping, Sequence
 
 from .migrations import apply_migrations
 from .payloads import payload_sha256
@@ -293,6 +294,84 @@ def register_finalized_session(
         raise
 
 
+def register_run(
+    conn: sqlite3.Connection,
+    *,
+    session_id: int,
+    capture_id: str,
+    trigger: str,
+    process_name: str | None = None,
+    observed_at: str | None = None,
+    observed_started_at: str | None = None,
+    observed_ended_at: str | None = None,
+    process_pid: int | None = None,
+    process_started_ns: int | None = None,
+    termination_kind: str = "unknown",
+    crash_folder_name: str | None = None,
+    crash_folder_path: str | None = None,
+    crash_detected_at: str | None = None,
+    crash_association_method: str | None = None,
+    crash_association_confidence: str | None = None,
+    receipt_sha256: str | None = None,
+) -> tuple[int, bool]:
+    """Idempotently index one game run separately from evidence bytes."""
+    timestamp = observed_at or datetime.now(timezone.utc).isoformat()
+    ended_at = observed_ended_at or timestamp
+    values = (
+        session_id,
+        capture_id,
+        timestamp,
+        observed_started_at,
+        ended_at,
+        trigger,
+        process_name,
+        process_pid,
+        process_started_ns,
+        termination_kind,
+        crash_folder_name,
+        crash_folder_path,
+        crash_detected_at,
+        crash_association_method,
+        crash_association_confidence,
+        receipt_sha256,
+    )
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        existing = conn.execute(
+            "SELECT * FROM capture_observations WHERE capture_id = ?",
+            (capture_id,),
+        ).fetchone()
+        if existing is not None:
+            if int(existing["session_id"]) != session_id:
+                raise ValueError("run receipt points to a different evidence bundle")
+            if (
+                receipt_sha256 is not None
+                and existing["receipt_sha256"] not in {None, receipt_sha256}
+            ):
+                raise ValueError("run receipt hash disagrees with indexed run")
+            conn.commit()
+            return int(existing["observation_id"]), True
+        cur = conn.execute(
+            """
+            INSERT INTO capture_observations (
+                session_id, capture_id, observed_at, observed_started_at,
+                observed_ended_at, trigger, process_name, process_pid,
+                process_started_ns, termination_kind, crash_folder_name,
+                crash_folder_path, crash_detected_at,
+                crash_association_method, crash_association_confidence,
+                receipt_sha256
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            values,
+        )
+        conn.commit()
+        assert cur.lastrowid is not None
+        return int(cur.lastrowid), False
+    except Exception:
+        conn.rollback()
+        raise
+
+
 def record_capture_observation(
     conn: sqlite3.Connection,
     *,
@@ -301,19 +380,116 @@ def record_capture_observation(
     process_name: str | None = None,
     observed_at: str | None = None,
 ) -> int:
-    """Record a run observation separately from deduplicated evidence bytes."""
-    timestamp = observed_at or datetime.now(timezone.utc).isoformat()
-    cur = conn.execute(
-        """
-        INSERT INTO capture_observations (
-            session_id, observed_at, trigger, process_name
-        ) VALUES (?, ?, ?, ?)
-        """,
-        (session_id, timestamp, trigger, process_name),
+    """Compatibility wrapper for callers without a durable receipt."""
+    run_id, _ = register_run(
+        conn,
+        session_id=session_id,
+        capture_id=f"compat-{uuid.uuid4().hex}",
+        trigger=trigger,
+        process_name=process_name,
+        observed_at=observed_at,
+        observed_ended_at=observed_at,
     )
-    conn.commit()
-    assert cur.lastrowid is not None
-    return int(cur.lastrowid)
+    return run_id
+
+
+def get_run_by_capture_id(
+    conn: sqlite3.Connection, capture_id: str
+) -> sqlite3.Row | None:
+    return conn.execute(
+        "SELECT * FROM capture_observations WHERE capture_id = ?", (capture_id,)
+    ).fetchone()
+
+
+def latest_run(
+    conn: sqlite3.Connection, *, reportable_only: bool = False
+) -> sqlite3.Row | None:
+    readiness = """
+        AND s.parse_status = 'succeeded'
+        AND EXISTS (
+            SELECT 1 FROM classification_runs cr
+            WHERE cr.session_id = s.session_id
+        )
+    """ if reportable_only else ""
+    return conn.execute(
+        f"""
+        SELECT co.*
+        FROM capture_observations co
+        JOIN sessions s ON s.session_id = co.session_id
+        WHERE s.capture_status = 'finalized'
+        {readiness}
+        ORDER BY co.observed_ended_at DESC, co.observation_id DESC
+        LIMIT 1
+        """
+    ).fetchone()
+
+
+def latest_run_for_session(
+    conn: sqlite3.Connection, session_id: int
+) -> sqlite3.Row | None:
+    return conn.execute(
+        """
+        SELECT *
+        FROM capture_observations
+        WHERE session_id = ?
+        ORDER BY observed_ended_at DESC, observation_id DESC
+        LIMIT 1
+        """,
+        (session_id,),
+    ).fetchone()
+
+
+def replace_run_file_origins(
+    conn: sqlite3.Connection,
+    observation_id: int,
+    origins: Sequence[Mapping[str, Any]],
+) -> None:
+    """Atomically replace deterministic file-origin projections for one run."""
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        conn.execute(
+            "DELETE FROM run_file_origins WHERE observation_id = ?",
+            (observation_id,),
+        )
+        conn.executemany(
+            """
+            INSERT INTO run_file_origins (
+                observation_id, session_file_id, origin_kind, crash_rel_path,
+                crash_sha256, crash_equivalence, preserved_crash_rel_path
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            [
+                (
+                    observation_id,
+                    int(item["session_file_id"]),
+                    item["origin_kind"],
+                    item.get("crash_rel_path"),
+                    item.get("crash_sha256"),
+                    item["crash_equivalence"],
+                    item.get("preserved_crash_rel_path"),
+                )
+                for item in origins
+            ],
+        )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+
+
+def get_run_file_origins(
+    conn: sqlite3.Connection, observation_id: int
+) -> list[sqlite3.Row]:
+    return conn.execute(
+        """
+        SELECT rfo.*, sf.rel_path, sf.sha256 AS archived_sha256, sf.bytes
+        FROM run_file_origins rfo
+        JOIN session_files sf ON sf.session_file_id = rfo.session_file_id
+        WHERE rfo.observation_id = ?
+        ORDER BY sf.rel_path
+        """,
+        (observation_id,),
+    ).fetchall()
 
 
 def list_sessions(

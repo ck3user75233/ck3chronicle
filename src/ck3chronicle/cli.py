@@ -114,18 +114,28 @@ def cmd_capture(args: argparse.Namespace) -> int:
 
 def cmd_watch(args: argparse.Namespace) -> int:
     """Observe exact CK3 lifecycles and protect logs after process exit."""
+    from datetime import datetime, timezone
+
     from . import config
     from .watcher import (
         EventJournal,
         WatcherLease,
         ensure_existing_logs_receipted,
         find_process,
+        infer_termination_from_crashes,
         is_process_running,
+        scan_crash_inventory,
         watch_sessions,
         write_capture_receipt,
     )
 
     logs_root = Path(args.logs) if args.logs else config.ROOT_LOGS
+    crashes_root = logs_root.parent / "crashes"
+    crash_baseline = None
+    observed_started_at = None
+    observed_ended_at = None
+    inferred_termination = "unknown"
+    inferred_crash = None
     if args.once:
         try:
             if is_process_running(args.process_name):
@@ -153,11 +163,30 @@ def cmd_watch(args: argparse.Namespace) -> int:
             args,
             abort_if=lambda: find_process(args.process_name) is not None,
         )
+        termination = inferred_termination
+        crash = inferred_crash
+        if trigger == "process_exit":
+            # Copy first. A second directory-only inventory catches a crash
+            # folder that appeared while the live logs were being protected.
+            termination, crash = infer_termination_from_crashes(
+                crash_baseline,
+                scan_crash_inventory(crashes_root),
+            )
         write_capture_receipt(
             config.ROOT_CK3CHRONICLE,
             result,
             trigger=trigger,
             process=process,
+            observed_started_at=(
+                observed_started_at if trigger == "process_exit" else None
+            ),
+            observed_ended_at=(
+                observed_ended_at if trigger == "process_exit" else None
+            ),
+            termination_kind=(
+                termination if trigger == "process_exit" else "unknown"
+            ),
+            crash=crash if trigger == "process_exit" else None,
         )
         return result
 
@@ -172,6 +201,35 @@ def cmd_watch(args: argparse.Namespace) -> int:
         with WatcherLease(config.ROOT_CK3CHRONICLE), EventJournal(
             config.ROOT_CK3CHRONICLE
         ) as journal:
+            def lifecycle_event(event: str, fields: dict) -> None:
+                nonlocal crash_baseline
+                nonlocal observed_started_at, observed_ended_at
+                nonlocal inferred_termination, inferred_crash
+                if event == "game_started" or (
+                    event == "watcher_started"
+                    and fields.get("state") == "attached_to_existing_process"
+                ):
+                    observed_started_at = datetime.now(timezone.utc).isoformat()
+                    observed_ended_at = None
+                    crash_baseline = scan_crash_inventory(crashes_root)
+                    inferred_termination = "unknown"
+                    inferred_crash = None
+                elif event == "game_exited":
+                    observed_ended_at = datetime.now(timezone.utc).isoformat()
+                    inferred_termination, inferred_crash = (
+                        infer_termination_from_crashes(
+                            crash_baseline,
+                            scan_crash_inventory(crashes_root),
+                        )
+                    )
+                elif event == "process_replaced":
+                    observed_started_at = datetime.now(timezone.utc).isoformat()
+                    observed_ended_at = None
+                    crash_baseline = scan_crash_inventory(crashes_root)
+                    inferred_termination = "unknown"
+                    inferred_crash = None
+                journal.emit(event, fields)
+
             print(
                 f"watching {args.process_name}; event journal: {journal.path} "
                 "(Ctrl+C to stop)",
@@ -185,7 +243,7 @@ def cmd_watch(args: argparse.Namespace) -> int:
                     logs_root,
                     config.ROOT_CK3CHRONICLE,
                 ),
-                event_sink=journal.emit,
+                event_sink=lifecycle_event,
                 on_capture=on_capture,
                 on_error=on_error,
                 poll_seconds=args.poll_seconds,
@@ -203,6 +261,7 @@ def cmd_reconcile(args: argparse.Namespace) -> int:
     from . import config
     from .archive_registry import reconcile_archives
     from .harvester import finalize_pending_captures
+    from .run_registry import reconcile_run_receipts
 
     try:
         finalized = finalize_pending_captures(config.ROOT_CK3CHRONICLE)
@@ -211,17 +270,23 @@ def cmd_reconcile(args: argparse.Namespace) -> int:
             config.ROOT_CK3CHRONICLE / "ck3chronicle.db",
             full_verify=True,
         )
+        run_summary = reconcile_run_receipts(
+            config.ROOT_CK3CHRONICLE,
+            config.ROOT_CK3CHRONICLE / "ck3chronicle.db",
+        )
     except Exception as exc:
         return _capture_error(exc)
     print(
         f"finalized {len(finalized)} pending; "
         f"scanned {summary.scanned} archives; "
         f"adopted {summary.adopted_legacy} legacy; "
-        f"registered {summary.registered} orphaned"
+        f"registered {summary.registered} orphaned; "
+        f"registered {run_summary.registered} runs"
     )
-    for error in summary.errors:
+    errors = summary.errors + run_summary.errors
+    for error in errors:
         print(f"ERROR: {error}", file=sys.stderr)
-    return 1 if summary.errors else 0
+    return 1 if errors else 0
 
 
 def cmd_sessions(args: argparse.Namespace) -> int:
@@ -743,9 +808,10 @@ def cmd_process_pending(args: argparse.Namespace) -> int:
 
     payload = {
         "schema": "ck3chronicle.processing-result",
-        "schema_version": 1,
+        "schema_version": 2,
         "finalized_pending": result.finalized_pending,
         "registered_archives": result.registered_archives,
+        "registered_runs": result.registered_runs,
         "context_sessions": result.context_sessions,
         "parsed_sessions": result.parsed_sessions,
         "classified_sessions": result.classified_sessions,
@@ -758,6 +824,7 @@ def cmd_process_pending(args: argparse.Namespace) -> int:
         print(
             f"finalized={result.finalized_pending}; "
             f"registered={result.registered_archives}; "
+            f"runs={result.registered_runs}; "
             f"context={result.context_sessions}; "
             f"parsed={result.parsed_sessions}; "
             f"classified={result.classified_sessions}"

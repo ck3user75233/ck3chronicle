@@ -43,6 +43,27 @@ and copied-file statistics. A successful call creates one visible pending
 directory; a restart signal raises `UnstableCapture` and must not publish a
 completed pending directory.
 
+The public watcher then records the independently durable run identity with:
+
+```python
+ck3chronicle.watcher.write_capture_receipt(
+    dest_root: pathlib.Path,
+    pending: PendingCapture,
+    *,
+    trigger: str,
+    process: ProcessIdentity | None = None,
+    observed_started_at: str | None = None,
+    observed_ended_at: str | None = None,
+    termination_kind: str = "unknown",
+    crash: dict | None = None,
+) -> pathlib.Path
+```
+
+The immutable receipt is separate from evidence bytes. Two receipts may point
+to one content-addressed bundle; they must become two database run rows. Crash
+inventory detection reads directory metadata only on the exit path. Deferred
+processing hashes crash logs and avoids copying an exactly equal crash copy.
+
 Public equivalents:
 
 ```text
@@ -71,6 +92,7 @@ Returned fields:
 ```text
 finalized_pending
 registered_archives
+registered_runs
 context_sessions
 parsed_sessions
 classified_sessions

@@ -5,7 +5,7 @@
 ck3chronicle answers four questions with reproducible evidence:
 
 1. What errors occurred during this CK3 run?
-2. Which repeatable semantic contracts do those occurrences represent?
+2. Which repeatable error templates do those occurrences represent?
 3. What became new, fixed, worse, or improved between runs?
 4. Which active runtime sources are relevant to investigation?
 
@@ -14,9 +14,12 @@ ck3chronicle answers four questions with reproducible evidence:
 1. Protected copied bytes are primary evidence.
 2. The finalized manifest binds retained paths, sizes, timestamps, and SHA-256
    hashes to one content-addressed archive.
-3. Canonical source blocks and occurrence rows are immutable projections of
+3. An immutable run receipt records each observed CK3 lifecycle separately
+   from the deduplicated archive, including normal/crash/unknown termination
+   provenance.
+4. Canonical source blocks and occurrence rows are immutable projections of
    archived `error.log`.
-4. Template classifications, categories, reports, and deltas are derived,
+5. Template classifications, categories, reports, and deltas are derived,
    versioned, and reproducible.
 
 Derived data may be replaced by a newer approved model. Captured bytes and raw
@@ -26,8 +29,8 @@ SQLite normalization may store identical decoded raw blocks or identical full
 classifier payloads once and reference them from many independently countable
 rows. This is storage deduplication only: source blocks, canonical occurrences,
 and semantic assignments retain separate ordered provenance. Compact integer
-keys never replace the manifest SHA-256, raw-block SHA-256, line span, or
-session identity used to verify evidence.
+keys never replace the manifest SHA-256, raw-block SHA-256, line span, run
+identity, or evidence-bundle identity used to verify evidence.
 
 Compact storage is the default implementation and requires no user-directed
 workflow. Migration of an older schema is automatic. Physical page reclamation
@@ -42,6 +45,13 @@ the approved logs once to a private pending directory and publishes that
 pending copy only after the complete file set is protected.
 
 The exit path does not hash, parse, classify, or write SQLite.
+
+The watcher may compare directory names and metadata in the sibling CK3
+`crashes` directory to classify an observed termination as normal, crash, or
+unknown. Crash-log hashes are calculated only during deferred processing.
+Crash-folder `error.log`, `debug.log`, and `game.log` files that exactly match
+the protected live copy are attributed but not copied again. A differing crash
+version is preserved separately and linked to the run.
 
 ## Canonical issue stream
 
@@ -58,16 +68,30 @@ Template identity is based on source family plus ordered semantic content.
 Timestamps, keys, locators, paths, line numbers, and location chains never
 create a new template.
 
-Classification has two layers where applicable:
+Normalization recognizes strong locator grammar before template learning or
+assignment. Explicit file/line forms, script-location chains, and equivalent
+path/line structures are retained as typed `<LOCATOR>` evidence rather than
+left as generic `<SLOT>` candidates that can be confused with keys. Ambiguous
+text remains unresolved and the raw occurrence remains authoritative.
 
-- L1: the stable outer semantic contract;
-- L2: the ordered reason or explanation contract.
+Classification may have two semantic template layers:
+
+- L1: the stable outer error template;
+- L2: an optional stable ordered reason/explanation subtemplate.
 
 Assignments are explicit: full, independently composed L1+L2, L1-only, or
-unknown. A known L1 does not authorize inventing an L2.
+unknown. A known L1 does not authorize inventing an L2. Highly variable
+bracketed detail may remain a structured reason slot on an L1 template rather
+than becoming a large collection of low-value L2 templates.
+
+A template contract is the machine-readable extraction and validation rule
+attached to a template: slot order, `<KEY>`, `<OPTIONAL_KEY>`, `<LOCATOR>`,
+structured relationships such as `<KEY>.<KEY>`, and optional/repeating shape.
+It is not a synonym for the error template itself. A useful L1 template may
+exist while some detailed slot typing remains unresolved.
 
 Key and symbol shapes such as `*_effect` and `*_trigger` may validate a slot
-after contract assignment. They may not discover or choose the contract.
+after template assignment. They may not discover or choose the template.
 
 ## Runtime mod evidence
 

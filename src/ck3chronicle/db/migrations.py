@@ -49,6 +49,13 @@ def _apply_migrations(conn: sqlite3.Connection) -> bool:
         # Every schema constant is one statement. ``execute`` keeps SQLite DDL
         # inside our transaction; ``executescript`` would implicitly commit.
         cur.execute(ddl)
+    capture_version_row = cur.execute(
+        "SELECT version FROM schema_versions WHERE component = 'capture'"
+    ).fetchone()
+    capture_upgrade_needed = (
+        capture_version_row is None
+        or int(capture_version_row[0]) < CAPTURE_VERSION
+    )
 
     # C1 canonical parse state.  Legacy sessions remain explicitly
     # ``not_started`` with NULL version/counters until a successful reparse.
@@ -83,6 +90,79 @@ def _apply_migrations(conn: sqlite3.Connection) -> bool:
         ON session_files(session_id, kind, rel_path)
         """
     )
+
+    # A content-addressed session is an evidence bundle, not a game run.
+    # Extend the original observation table into the durable per-run index
+    # without deleting the historical rows that first established this seam.
+    observation_cols = {
+        row[1]
+        for row in cur.execute(
+            "PRAGMA table_info(capture_observations)"
+        ).fetchall()
+    }
+    observation_additions = {
+        "capture_id": "TEXT",
+        "observed_started_at": "TEXT",
+        "observed_ended_at": "TEXT",
+        "process_pid": "INTEGER",
+        "process_started_ns": "INTEGER",
+        "termination_kind": "TEXT NOT NULL DEFAULT 'unknown'",
+        "crash_folder_name": "TEXT",
+        "crash_folder_path": "TEXT",
+        "crash_detected_at": "TEXT",
+        "crash_association_method": "TEXT",
+        "crash_association_confidence": "TEXT",
+        "receipt_sha256": "TEXT",
+    }
+    for column, declaration in observation_additions.items():
+        if column not in observation_cols:
+            cur.execute(
+                f"ALTER TABLE capture_observations ADD COLUMN {column} {declaration}"
+            )
+    cur.execute(
+        """
+        UPDATE capture_observations
+        SET capture_id = 'legacy-observation-' || observation_id
+        WHERE capture_id IS NULL
+        """
+    )
+    cur.execute(
+        """
+        UPDATE capture_observations
+        SET observed_ended_at = observed_at
+        WHERE observed_ended_at IS NULL
+        """
+    )
+    cur.execute(
+        """
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_capture_observations_capture_id
+        ON capture_observations(capture_id)
+        """
+    )
+    # Imported archives may predate watcher observations. Give each evidence
+    # bundle one explicit unknown legacy run so chronology remains queryable;
+    # never imply that the archive proves whether CK3 exited normally.
+    if capture_upgrade_needed:
+        cur.execute(
+            """
+            INSERT INTO capture_observations (
+                session_id, capture_id, observed_at, observed_ended_at,
+                trigger, termination_kind
+            )
+            SELECT s.session_id,
+                   'legacy-session-' || s.session_id,
+                   s.created_at,
+                   s.created_at,
+                   'legacy_import',
+                   'unknown'
+            FROM sessions s
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM capture_observations co
+                WHERE co.session_id = s.session_id
+            )
+            """
+        )
 
     # Backfill newer columns on existing DBs created before occurrence clustering.
     cols = {

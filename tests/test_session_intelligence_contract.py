@@ -134,7 +134,7 @@ def test_rdelta_001_contracts_ignore_changed_keys_locators_and_line_numbers(
     result = compare_sessions(conn, current_id)
 
     assert result["schema"] == "ck3chronicle.session-comparison"
-    assert result["schema_version"] == 1
+    assert result["schema_version"] == 2
     assert result["comparison_basis"] == "observed_semantic_occurrence_counts"
     assert result["previous_session"]["session_id"] == previous_id
     assert result["current_session"]["session_id"] == current_id

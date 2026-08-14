@@ -133,10 +133,39 @@ def previous_session_id(
     *,
     model_sha256: str,
 ) -> int | None:
-    """Return the preceding capture that has a run for the same exact model."""
+    """Return the preceding run's evidence session for the same exact model."""
     current = repository.get_session(conn, session_id)
     if current is None:
         raise ComparisonError(f"session_id {session_id} not found")
+    observed = repository.latest_run_for_session(conn, session_id)
+    if observed is not None:
+        row = conn.execute(
+            """
+            SELECT co.session_id
+            FROM capture_observations co
+            JOIN classification_runs cr ON cr.session_id = co.session_id
+            WHERE cr.model_sha256 = ?
+              AND (
+                  co.observed_ended_at < ?
+                  OR (
+                      co.observed_ended_at = ?
+                      AND co.observation_id < ?
+                  )
+              )
+            ORDER BY co.observed_ended_at DESC, co.observation_id DESC
+            LIMIT 1
+            """,
+            (
+                model_sha256,
+                observed["observed_ended_at"],
+                observed["observed_ended_at"],
+                observed["observation_id"],
+            ),
+        ).fetchone()
+        return int(row[0]) if row is not None else None
+
+    # Compatibility for direct test/development registrations without a
+    # watcher receipt. Production chronology is always run-based.
     row = conn.execute(
         """
         SELECT s.session_id
@@ -406,12 +435,59 @@ def _patterns(
     return patterns
 
 
-def _session_identity(session: sqlite3.Row) -> dict[str, object]:
-    return {
+def _session_identity(
+    session: sqlite3.Row, observed_run: sqlite3.Row | None = None
+) -> dict[str, object]:
+    identity = {
         "session_id": int(session["session_id"]),
-        "captured_at": session["created_at"],
+        "captured_at": (
+            observed_run["observed_ended_at"]
+            if observed_run is not None
+            else session["created_at"]
+        ),
         "evidence_bundle_hash": session["evidence_bundle_hash"],
     }
+    if observed_run is not None:
+        identity.update(
+            {
+                "run_id": int(observed_run["observation_id"]),
+                "capture_id": observed_run["capture_id"],
+                "observed_started_at": observed_run["observed_started_at"],
+                "observed_ended_at": observed_run["observed_ended_at"],
+                "termination_kind": observed_run["termination_kind"],
+            }
+        )
+    return identity
+
+
+def _previous_observed_run(
+    conn: sqlite3.Connection,
+    current_run: sqlite3.Row,
+    model_sha256: str,
+) -> sqlite3.Row | None:
+    return conn.execute(
+        """
+        SELECT co.*
+        FROM capture_observations co
+        JOIN classification_runs cr ON cr.session_id = co.session_id
+        WHERE cr.model_sha256 = ?
+          AND (
+              co.observed_ended_at < ?
+              OR (
+                  co.observed_ended_at = ?
+                  AND co.observation_id < ?
+              )
+          )
+        ORDER BY co.observed_ended_at DESC, co.observation_id DESC
+        LIMIT 1
+        """,
+        (
+            model_sha256,
+            current_run["observed_ended_at"],
+            current_run["observed_ended_at"],
+            current_run["observation_id"],
+        ),
+    ).fetchone()
 
 
 def _clock_seconds(value: str) -> int:
@@ -565,16 +641,36 @@ def compare_sessions(
             f"session_id {current_session_id} has no compatible classification run"
         )
     exact_model = str(current_run["model_sha256"])
+    current_observed_run = repository.latest_run_for_session(
+        conn, current_session_id
+    )
+    against_observed_run = None
     if against_session_id is None:
-        against_session_id = previous_session_id(
-            conn,
-            current_session_id,
-            model_sha256=exact_model,
-        )
+        if current_observed_run is not None:
+            against_observed_run = _previous_observed_run(
+                conn, current_observed_run, exact_model
+            )
+            if against_observed_run is not None:
+                against_session_id = int(against_observed_run["session_id"])
+        else:
+            against_session_id = previous_session_id(
+                conn,
+                current_session_id,
+                model_sha256=exact_model,
+            )
         if against_session_id is None:
-            raise ComparisonError("no preceding classified session exists")
-    if against_session_id == current_session_id:
-        raise ComparisonError("a session cannot be compared with itself")
+            raise ComparisonError("no preceding classified run exists")
+    else:
+        against_observed_run = repository.latest_run_for_session(
+            conn, against_session_id
+        )
+    if against_session_id == current_session_id and (
+        current_observed_run is None
+        or against_observed_run is None
+        or current_observed_run["observation_id"]
+        == against_observed_run["observation_id"]
+    ):
+        raise ComparisonError("a run cannot be compared with itself")
     against_session = repository.get_session(conn, against_session_id)
     if against_session is None:
         raise ComparisonError(f"session_id {against_session_id} not found")
@@ -724,11 +820,15 @@ def compare_sessions(
             )
     return {
         "schema": "ck3chronicle.session-comparison",
-        "schema_version": 1,
+        "schema_version": 2,
         "comparison_basis": "observed_semantic_occurrence_counts",
         "model_sha256": exact_model,
-        "previous_session": _session_identity(against_session),
-        "current_session": _session_identity(current_session),
+        "previous_session": _session_identity(
+            against_session, against_observed_run
+        ),
+        "current_session": _session_identity(
+            current_session, current_observed_run
+        ),
         "evidence_quality": {
             "previous": previous_quality,
             "current": current_quality,

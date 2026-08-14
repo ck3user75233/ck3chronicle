@@ -20,6 +20,7 @@ from .harvester import (
     UnstableCapture,
     discover_logs,
 )
+from .run_receipts import publish_protected_receipt
 
 T = TypeVar("T")
 EventSink = Callable[[str, dict[str, Any]], None]
@@ -49,6 +50,62 @@ class ProcessIdentity:
             "image_name": self.image_name,
             "started_ns": self.started_ns,
         }
+
+
+@dataclass(frozen=True)
+class CrashInventory:
+    """One cheap directory-only snapshot; no crash log bytes are read."""
+
+    root: Path
+    available: bool
+    folders: tuple[tuple[str, int], ...]
+
+
+def scan_crash_inventory(root: Path) -> CrashInventory:
+    """List crash directory identities without copying or hashing their logs."""
+    directory = Path(root)
+    try:
+        if not directory.is_dir():
+            return CrashInventory(directory, False, ())
+        folders = tuple(
+            sorted(
+                (
+                    (child.name, child.stat().st_mtime_ns)
+                    for child in directory.iterdir()
+                    if child.is_dir() and not child.is_symlink()
+                ),
+                key=lambda item: item[0],
+            )
+        )
+        return CrashInventory(directory, True, folders)
+    except OSError:
+        return CrashInventory(directory, False, ())
+
+
+def infer_termination_from_crashes(
+    baseline: CrashInventory | None,
+    current: CrashInventory,
+) -> tuple[str, dict[str, Any] | None]:
+    """Infer crash/normal only when both directory inventories are trustworthy."""
+    if baseline is None or not baseline.available or not current.available:
+        return "unknown", None
+    before = dict(baseline.folders)
+    changed = [
+        (name, mtime_ns)
+        for name, mtime_ns in current.folders
+        if name not in before or mtime_ns > before[name]
+    ]
+    if not changed:
+        return "normal", None
+    name, _mtime_ns = max(changed, key=lambda item: (item[1], item[0]))
+    return "crash", {
+        "folder_name": name,
+        "folder_path": str(current.root / name),
+        "detected_at": datetime.now(timezone.utc).isoformat(),
+        "association_method": "new_or_changed_crash_folder_during_observed_run",
+        "confidence": "high" if len(changed) == 1 else "ambiguous",
+        "candidate_count": len(changed),
+    }
 
 
 @dataclass(frozen=True)
@@ -262,16 +319,33 @@ def write_capture_receipt(
     *,
     trigger: str,
     process: ProcessIdentity | None = None,
+    observed_started_at: str | None = None,
+    observed_ended_at: str | None = None,
+    termination_kind: str = "unknown",
+    crash: dict[str, Any] | None = None,
 ) -> Path:
-    """Atomically record which live-log metadata was successfully protected."""
+    """Persist one run receipt and replace the current-state convenience file."""
     path = _receipt_path(dest_root)
     path.parent.mkdir(parents=True, exist_ok=True)
+    process_payload = process.as_dict() if process is not None else None
+    publish_protected_receipt(
+        dest_root,
+        capture_id=pending.dest_dir.name,
+        captured_at=pending.captured_at,
+        pending_dir=pending.dest_dir,
+        trigger=trigger,
+        process=process_payload,
+        observed_started_at=observed_started_at,
+        observed_ended_at=observed_ended_at,
+        termination_kind=termination_kind,
+        crash=crash,
+    )
     payload = {
         "schema_version": RECEIPT_VERSION,
         "captured_at": pending.captured_at,
         "pending_dir": str(pending.dest_dir),
         "trigger": trigger,
-        "process": process.as_dict() if process is not None else None,
+        "process": process_payload,
         "files": [
             {
                 "name": item.name,

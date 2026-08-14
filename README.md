@@ -11,6 +11,10 @@ active source tree because they described a different or failed design.
 
 - copy CK3 logs immediately after an observed `ck3.exe` exit;
 - journal process starts, exits, heartbeats, copy attempts, and failures;
+- retain one immutable run receipt per observed exit independently of
+  content-addressed evidence deduplication;
+- record normal/crash/unknown termination and exact crash-log source
+  equivalence without duplicating identical crash-folder logs;
 - finalize protected copies into content-addressed archives;
 - verify archive manifests and reconcile finalized archives with SQLite;
 - split archived `error.log` into immutable source blocks;
@@ -88,7 +92,8 @@ decisive-result events. It records the suspected boundary only when
 stall interval while the same running CK3 process continues advancing
 `game.log`. It does not copy, hash, parse, classify, or write SQLite.
 
-`compare` selects the latest and preceding compatible captures by capture time.
+`compare` selects the latest and preceding compatible runs by observed run time,
+even when several runs reuse one content-addressed evidence bundle.
 It reports observed new, fixed, worse, improved, and unchanged semantic
 patterns. Known patterns use stable contract IDs; residuals use normalized slot
 structure, so keys, locators, timestamps, and line numbers do not create false

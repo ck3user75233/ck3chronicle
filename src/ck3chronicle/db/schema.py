@@ -51,11 +51,56 @@ CREATE TABLE IF NOT EXISTS session_files (
 
 CAPTURE_OBSERVATIONS_DDL = """
 CREATE TABLE IF NOT EXISTS capture_observations (
-    observation_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    session_id     INTEGER NOT NULL REFERENCES sessions(session_id),
-    observed_at    TEXT NOT NULL,
-    trigger        TEXT NOT NULL,
-    process_name   TEXT
+    observation_id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id                 INTEGER NOT NULL REFERENCES sessions(session_id),
+    capture_id                 TEXT NOT NULL UNIQUE,
+    observed_at                TEXT NOT NULL,
+    observed_started_at        TEXT,
+    observed_ended_at          TEXT NOT NULL,
+    trigger                    TEXT NOT NULL,
+    process_name               TEXT,
+    process_pid                INTEGER,
+    process_started_ns         INTEGER,
+    termination_kind           TEXT NOT NULL DEFAULT 'unknown'
+                               CHECK (termination_kind IN ('normal', 'crash', 'unknown')),
+    crash_folder_name          TEXT,
+    crash_folder_path          TEXT,
+    crash_detected_at          TEXT,
+    crash_association_method   TEXT,
+    crash_association_confidence TEXT,
+    receipt_sha256             TEXT CHECK (
+                                  receipt_sha256 IS NULL
+                                  OR length(receipt_sha256) = 64
+                               )
+);
+"""
+
+RUN_FILE_ORIGINS_DDL = """
+CREATE TABLE IF NOT EXISTS run_file_origins (
+    run_file_origin_id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    observation_id          INTEGER NOT NULL
+                            REFERENCES capture_observations(observation_id)
+                            ON DELETE CASCADE,
+    session_file_id         INTEGER NOT NULL
+                            REFERENCES session_files(session_file_id),
+    origin_kind             TEXT NOT NULL CHECK (
+                                origin_kind IN (
+                                    'live_normal',
+                                    'live_after_crash',
+                                    'live_unknown'
+                                )
+                            ),
+    crash_rel_path          TEXT,
+    crash_sha256            TEXT CHECK (
+                                crash_sha256 IS NULL OR length(crash_sha256) = 64
+                            ),
+    crash_equivalence       TEXT NOT NULL CHECK (
+                                crash_equivalence IN (
+                                    'exact', 'different', 'unavailable', 'not_applicable'
+                                )
+                            ),
+    preserved_crash_rel_path TEXT,
+    UNIQUE(observation_id, session_file_id)
 );
 """
 
@@ -372,6 +417,7 @@ ALL_DDL = [
     SESSIONS_DDL,
     SESSION_FILES_DDL,
     CAPTURE_OBSERVATIONS_DDL,
+    RUN_FILE_ORIGINS_DDL,
     SCHEMA_VERSIONS_DDL,
     ISSUES_DDL,
     ISSUES_IDX_SESSION_SIG_DDL,
@@ -400,7 +446,7 @@ ALL_DDL = [
 CURRENT_VERSION = 1
 CANONICAL_ISSUES_VERSION = 5
 SESSION_CONTEXT_VERSION = 1
-CAPTURE_VERSION = 1
+CAPTURE_VERSION = 2
 CLASSIFICATION_VERSION = 3
 STORAGE_VERSION = 2
 SESSION_INTELLIGENCE_VERSION = 1

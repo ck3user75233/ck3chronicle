@@ -13,12 +13,22 @@ class ReportError(RuntimeError):
 
 
 def latest_session_id(conn: sqlite3.Connection) -> int | None:
-    """Return the latest captured session, never the greatest registry ID."""
+    """Return the newest reportable run's evidence session."""
+    run = repository.latest_run(conn, reportable_only=True)
+    if run is not None:
+        return int(run["session_id"])
+    # Compatibility for callers that register a disposable evidence session
+    # directly without a watcher receipt.
     row = conn.execute(
         """
-        SELECT session_id
-        FROM sessions
-        ORDER BY created_at DESC, session_id DESC
+        SELECT s.session_id
+        FROM sessions s
+        WHERE s.parse_status = 'succeeded'
+          AND EXISTS (
+              SELECT 1 FROM classification_runs cr
+              WHERE cr.session_id = s.session_id
+          )
+        ORDER BY s.created_at DESC, s.session_id DESC
         LIMIT 1
         """
     ).fetchone()
@@ -252,9 +262,51 @@ def build_session_report(
                 for row in repository.get_mounted_mods(conn, session_id)
             ],
         }
+    observed_run = repository.latest_run_for_session(conn, session_id)
+    run_projection = None
+    if observed_run is not None:
+        origins = repository.get_run_file_origins(
+            conn, int(observed_run["observation_id"])
+        )
+        run_projection = {
+            "run_id": int(observed_run["observation_id"]),
+            "capture_id": observed_run["capture_id"],
+            "observed_started_at": observed_run["observed_started_at"],
+            "observed_ended_at": observed_run["observed_ended_at"],
+            "trigger": observed_run["trigger"],
+            "process_name": observed_run["process_name"],
+            "process_pid": observed_run["process_pid"],
+            "termination_kind": observed_run["termination_kind"],
+            "crash": (
+                {
+                    "folder_name": observed_run["crash_folder_name"],
+                    "detected_at": observed_run["crash_detected_at"],
+                    "association_method": observed_run[
+                        "crash_association_method"
+                    ],
+                    "confidence": observed_run[
+                        "crash_association_confidence"
+                    ],
+                }
+                if observed_run["termination_kind"] == "crash"
+                else None
+            ),
+            "file_origins": [
+                {
+                    "rel_path": row["rel_path"],
+                    "origin_kind": row["origin_kind"],
+                    "crash_equivalence": row["crash_equivalence"],
+                    "preserved_crash_rel_path": row[
+                        "preserved_crash_rel_path"
+                    ],
+                }
+                for row in origins
+            ],
+        }
     return {
         "schema": "ck3chronicle.session-report",
-        "schema_version": 2,
+        "schema_version": 3,
+        "run": run_projection,
         "session": {
             "session_id": int(session["session_id"]),
             "captured_at": session["created_at"],

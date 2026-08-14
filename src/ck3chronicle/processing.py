@@ -12,12 +12,14 @@ from .harvester import finalize_pending_captures
 from .parser.service import parse_session
 from .reporting import build_session_report, latest_session_id
 from .runtime_context import parse_runtime_context
+from .run_registry import reconcile_run_receipts
 
 
 @dataclass(frozen=True)
 class ProcessingResult:
     finalized_pending: int
     registered_archives: int
+    registered_runs: int
     context_sessions: int
     parsed_sessions: int
     classified_sessions: int
@@ -35,6 +37,7 @@ def process_pending(root: Path, classifier: Classifier) -> ProcessingResult:
     finalized = finalize_pending_captures(evidence_root)
     db_path = evidence_root / "ck3chronicle.db"
     reconciliation = reconcile_archives(evidence_root, db_path)
+    run_reconciliation = reconcile_run_receipts(evidence_root, db_path)
 
     parsed = 0
     classified = 0
@@ -76,9 +79,12 @@ def process_pending(root: Path, classifier: Classifier) -> ProcessingResult:
     return ProcessingResult(
         finalized_pending=len(finalized),
         registered_archives=reconciliation.registered,
+        registered_runs=run_reconciliation.registered,
         context_sessions=context_sessions,
         parsed_sessions=parsed,
         classified_sessions=classified,
-        reconciliation_errors=reconciliation.errors,
+        reconciliation_errors=(
+            reconciliation.errors + run_reconciliation.errors
+        ),
         latest_report=latest_report,
     )

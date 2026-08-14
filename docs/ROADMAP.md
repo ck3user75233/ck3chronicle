@@ -55,7 +55,9 @@ Status: foreground workflow complete.
 - [x] add `report --since` as a convenience projection;
 - add true gameplay-duration exposure when authoritative lifecycle timing is
   available;
-- persist durable run chronology independently of archive deduplication.
+- [x] persist durable run chronology independently of archive deduplication;
+- add explicit run selection to report/compare commands where several runs
+  share one evidence bundle.
 
 ## Runtime DLC/mod-context capabilities
 

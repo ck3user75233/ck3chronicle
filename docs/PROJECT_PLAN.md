@@ -63,6 +63,8 @@ The repository contains substantial Phase 1 implementation:
 
 - auditable CK3 lifecycle observation and copy-first pending protection;
 - content-addressed archive finalization and transactional registration;
+- durable per-run receipts and run rows independent of deduplicated evidence,
+  including crash termination and principal-log origin provenance;
 - canonical `error.log` block/occurrence storage;
 - versioned empirical classification and review queues;
 - same-run Mounted Data runtime context;
@@ -90,19 +92,23 @@ formal exit report. No current commit has such an exit record.
 
 ### Immediate work
 
-1. Reconcile the Phase 1 contract with user-approved changes made during the
-   reboot, without silently weakening its evidence guarantees.
-2. Publish the callable evaluation interface for every gate; an independent
+1. Complete the remaining product architecture in dependency order: exact
+   runtime-context state/provenance, memory-bounded parse persistence,
+   template post-validation, the canonical `process-pending` command envelope,
+   and newest-reportable-run projections.
+2. Reconcile the Phase 1 semantic oracle with the user-approved empirical
+   template model, including locator recognition before L1 assignment.
+3. Publish the callable evaluation interface for every gate; an independent
    harness author maps it to runner code, while a separate oracle authority
    owns expected artifacts and scorer rules.
-3. Have the independent evaluation authority adapt protected real-evidence
+4. Have the independent evaluation authority adapt protected real-evidence
    harnesses to the current compact schema.
-4. Independently freeze the complete report and command-envelope oracle.
-5. Provide the supported public vertical-slice command and exact failure
+5. Independently freeze the complete report and command-envelope oracle.
+6. Provide the supported public vertical-slice command and exact failure
    envelopes.
-6. Freeze the release candidate before the private holdout is scored.
-7. Execute correctness, rollback, mutation, holdout, and performance gates.
-8. Publish and review the Phase 1 exit report.
+7. Freeze the release candidate before the private holdout is scored.
+8. Execute correctness, rollback, mutation, holdout, and performance gates.
+9. Publish and review the Phase 1 exit report.
 
 ## Phase 2: deltas, baselines, and noise management
 

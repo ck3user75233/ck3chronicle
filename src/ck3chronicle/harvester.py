@@ -11,6 +11,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Iterable
 
+from .run_receipts import finalize_run_receipt
+
 LOG_NAMES = (
     "error.log",
     "debug.log",
@@ -96,6 +98,7 @@ class SnapshotResult:
     files: tuple[CapturedFile, ...]
     missing_principal_logs: tuple[str, ...]
     manifest_sha256: str
+    source_pending_name: str | None = None
 
 
 @dataclass(frozen=True)
@@ -652,6 +655,13 @@ def finalize_pending(
             raise ArchiveIntegrityError(
                 "existing archive manifest disagrees with the pending capture"
             )
+        finalize_run_receipt(
+            dest_root,
+            pending_name=directory.name,
+            evidence_bundle_hash=bundle_hash,
+            manifest_sha256=existing_manifest_sha256,
+            captured_at=captured_at,
+        )
         shutil.rmtree(directory)
         principal = existing_payload["principal_logs"]
         return SnapshotResult(
@@ -667,8 +677,16 @@ def finalize_pending(
                 if principal[name] == "missing"
             ),
             manifest_sha256=existing_manifest_sha256,
+            source_pending_name=directory.name,
         )
 
+    finalize_run_receipt(
+        dest_root,
+        pending_name=directory.name,
+        evidence_bundle_hash=bundle_hash,
+        manifest_sha256=manifest_sha256,
+        captured_at=captured_at,
+    )
     os.rename(directory, final)
     present_logs = {item.identity_path for item in captured_files}
     return SnapshotResult(
@@ -682,6 +700,7 @@ def finalize_pending(
             name for name in PRINCIPAL_LOG_NAMES if name not in present_logs
         ),
         manifest_sha256=manifest_sha256,
+        source_pending_name=directory.name,
     )
 
 

@@ -23,6 +23,7 @@ def test_rprocess_001_pending_to_report_is_complete_and_idempotent(tmp_path) -> 
 
     assert first.finalized_pending == 1
     assert first.registered_archives == 1
+    assert first.registered_runs == 1
     assert first.context_sessions == 1
     assert first.parsed_sessions == 1
     assert first.classified_sessions == 1
@@ -36,6 +37,7 @@ def test_rprocess_001_pending_to_report_is_complete_and_idempotent(tmp_path) -> 
 
     assert second.finalized_pending == 0
     assert second.registered_archives == 0
+    assert second.registered_runs == 0
     assert second.context_sessions == 0
     assert second.parsed_sessions == 0
     assert second.classified_sessions == 0
@@ -56,9 +58,10 @@ def test_rprocess_002_cli_json_reports_each_completed_stage(
     assert args.func(args) == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["schema"] == "ck3chronicle.processing-result"
-    assert payload["schema_version"] == 1
+    assert payload["schema_version"] == 2
     assert payload["finalized_pending"] == 1
     assert payload["registered_archives"] == 1
+    assert payload["registered_runs"] == 1
     assert payload["context_sessions"] == 1
     assert payload["parsed_sessions"] == 1
     assert payload["classified_sessions"] == 1
