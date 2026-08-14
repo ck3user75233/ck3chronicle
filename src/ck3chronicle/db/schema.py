@@ -290,6 +290,44 @@ CREATE TABLE IF NOT EXISTS session_mounted_mods (
 );
 """
 
+SOURCE_RESOLUTION_OBSERVATIONS_DDL = """
+CREATE TABLE IF NOT EXISTS source_resolution_observations (
+    session_id             INTEGER NOT NULL REFERENCES sessions(session_id)
+                           ON DELETE CASCADE,
+    relative_path          TEXT NOT NULL,
+    resolution_contract_version TEXT NOT NULL,
+    observed_at            TEXT NOT NULL,
+    context_status         TEXT NOT NULL,
+    status                 TEXT NOT NULL,
+    domain_policy          TEXT NOT NULL,
+    recorded_root_count    INTEGER NOT NULL CHECK (recorded_root_count >= 0),
+    missing_root_count     INTEGER NOT NULL CHECK (missing_root_count >= 0),
+    PRIMARY KEY (session_id, relative_path)
+);
+"""
+
+SOURCE_FILE_INSTANCES_DDL = """
+CREATE TABLE IF NOT EXISTS source_file_instances (
+    session_id             INTEGER NOT NULL,
+    relative_path          TEXT NOT NULL,
+    instance_ordinal       INTEGER NOT NULL CHECK (instance_ordinal >= 0),
+    mount_order            INTEGER NOT NULL CHECK (mount_order >= 0),
+    source_kind            TEXT NOT NULL,
+    source_key             TEXT NOT NULL,
+    display_name           TEXT,
+    root_path              TEXT NOT NULL,
+    absolute_path          TEXT NOT NULL,
+    bytes                  INTEGER NOT NULL CHECK (bytes >= 0),
+    mtime_ns               INTEGER NOT NULL CHECK (mtime_ns >= 0),
+    sha256                 TEXT NOT NULL CHECK (length(sha256) = 64),
+    PRIMARY KEY (session_id, relative_path, instance_ordinal),
+    UNIQUE (session_id, relative_path, mount_order),
+    FOREIGN KEY (session_id, relative_path)
+        REFERENCES source_resolution_observations(session_id, relative_path)
+        ON DELETE CASCADE
+);
+"""
+
 SOURCE_BLOCKS_DDL = """
 CREATE TABLE IF NOT EXISTS source_blocks (
     session_id          INTEGER NOT NULL REFERENCES sessions(session_id),
@@ -336,6 +374,8 @@ ALL_DDL = [
     SESSION_RUNTIME_CONTEXTS_DDL,
     SESSION_MOUNTED_DLCS_DDL,
     SESSION_MOUNTED_MODS_DDL,
+    SOURCE_RESOLUTION_OBSERVATIONS_DDL,
+    SOURCE_FILE_INSTANCES_DDL,
 ]
 
 CURRENT_VERSION = 1
@@ -345,3 +385,4 @@ CAPTURE_VERSION = 1
 CLASSIFICATION_VERSION = 2
 SESSION_INTELLIGENCE_VERSION = 1
 RUNTIME_CONTEXT_VERSION = 1
+SOURCE_RESOLUTION_VERSION = 1

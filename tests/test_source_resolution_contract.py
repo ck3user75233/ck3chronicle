@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 
 import pytest
@@ -11,6 +12,7 @@ from ck3chronicle.cli import build_parser
 from ck3chronicle.runtime_context import parse_runtime_context
 from ck3chronicle.source_resolution import (
     SourceResolutionError,
+    observe_file_instances,
     resolve_file_instances,
 )
 
@@ -57,7 +59,7 @@ def test_rresolve_001_only_recorded_roots_are_searched_in_mount_order(tmp_path) 
     result = resolve_file_instances(conn, session_id, RELATIVE_PATH)
 
     assert result["schema"] == "ck3chronicle.source-resolution"
-    assert result["schema_version"] == 1
+    assert result["schema_version"] == 2
     assert result["projection"] == "current_filesystem_over_session_recorded_mounts"
     assert result["status"] == "multiple_instances"
     assert result["scope"] == {
@@ -75,8 +77,72 @@ def test_rresolve_001_only_recorded_roots_are_searched_in_mount_order(tmp_path) 
     assert result["last_mounted_candidate"]["path"] == str(
         local.joinpath(*RELATIVE_PATH.split("/"))
     )
+    assert result["file_layer"]["rule"] == (
+        "exact_relative_path_last_mounted_wins"
+    )
+    assert result["file_layer"]["winner"] == result["last_mounted_candidate"]
+    assert result["domain_layer"] == {
+        "policy": "unclassified_directory_semantics",
+        "status": "not_evaluated",
+    }
     assert all(str(inactive) not in item["path"] for item in result["instances"])
     assert all("sha256" not in item for item in result["instances"])
+    conn.close()
+
+
+def test_rresolve_004_first_observation_is_hashed_once_and_immutable(tmp_path) -> None:
+    _runtime, conn, session_id, local, _inactive = _resolution_session(tmp_path)
+    target = local.joinpath(*RELATIVE_PATH.split("/"))
+    original = target.read_bytes()
+
+    observed, mutated = observe_file_instances(conn, session_id, RELATIVE_PATH)
+
+    assert mutated is True
+    assert observed["projection"] == "persisted_processing_observation"
+    assert observed["observation"]["stored"] is True
+    assert observed["last_mounted_candidate"]["sha256"] == hashlib.sha256(
+        original
+    ).hexdigest()
+    target.write_text("updated after observation", encoding="utf-8")
+
+    preserved = resolve_file_instances(conn, session_id, RELATIVE_PATH)
+    second, second_mutated = observe_file_instances(conn, session_id, RELATIVE_PATH)
+
+    assert preserved == observed
+    assert second == observed
+    assert second_mutated is False
+    conn.close()
+
+
+@pytest.mark.parametrize(
+    ("relative_path", "expected_policy"),
+    [
+        (
+            "common/on_action/example.txt",
+            "container_merge_after_file_replacement",
+        ),
+        (
+            "common/culture/cultures/example.txt",
+            "symbol_lios_after_file_replacement",
+        ),
+    ],
+)
+def test_rresolve_005_domain_policy_is_separate_from_file_winner(
+    tmp_path, relative_path, expected_policy
+) -> None:
+    _runtime, conn, session_id, local, _inactive = _resolution_session(tmp_path)
+    target = local.joinpath(*relative_path.split("/"))
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text("definition = { }", encoding="utf-8")
+
+    observed, _mutated = observe_file_instances(conn, session_id, relative_path)
+
+    assert observed["file_layer"]["winner"]["path"] == str(target)
+    assert observed["domain_layer"] == {
+        "policy": expected_policy,
+        "status": "not_evaluated",
+    }
+    assert "semantic merge has not yet been evaluated" in observed["caveat"]
     conn.close()
 
 

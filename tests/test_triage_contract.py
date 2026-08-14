@@ -11,6 +11,7 @@ from ck3chronicle.db import repository
 from ck3chronicle.harvester import MANIFEST_VERSION, finalize_pending, spool_logs
 from ck3chronicle.parser.service import parse_session
 from ck3chronicle.runtime_context import parse_runtime_context
+from ck3chronicle.source_resolution import observe_file_instances
 from ck3chronicle.triage import _file_from_location, build_triage
 
 from foundation_oracle import SIX_LOG_BYTES, write_logs
@@ -86,7 +87,7 @@ def test_rtriage_001_regression_links_stored_locator_to_active_source(tmp_path) 
     triage = build_triage(conn, current_id, previous_id, limit=5)
 
     assert triage["schema"] == "ck3chronicle.action-triage"
-    assert triage["schema_version"] == 1
+    assert triage["schema_version"] == 2
     assert triage["summary"] == {
         "regression_patterns_total": 1,
         "returned_regressions": 1,
@@ -135,8 +136,42 @@ def test_rtriage_002_cli_json_is_bounded_and_schema_versioned(
     assert args.func(args) == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["schema"] == "ck3chronicle.action-triage"
-    assert payload["schema_version"] == 1
+    assert payload["schema_version"] == 2
     assert len(payload["regressions"]) == 1
     assert payload["regressions"][0]["source_resolution"]["projection"] == (
         "current_filesystem_over_session_recorded_mounts"
     )
+
+
+def test_rtriage_003_source_change_is_correlated_from_stored_observations(
+    tmp_path,
+) -> None:
+    _runtime, conn, previous_id, current_id, target = _triage_sessions(tmp_path)
+    _previous, previous_mutated = observe_file_instances(
+        conn, previous_id, RELATIVE_FILE
+    )
+    target.write_text("updated active source", encoding="utf-8")
+    _current, current_mutated = observe_file_instances(
+        conn, current_id, RELATIVE_FILE
+    )
+
+    triage = build_triage(conn, current_id, previous_id, limit=5)
+    delta = triage["regressions"][0]["source_observation_delta"]
+
+    assert previous_mutated is True
+    assert current_mutated is True
+    assert delta["changed"] is True
+    assert delta["file_layer_winner_changed"] is True
+    assert delta["instances"] == [
+        {
+            "source_kind": "workshop",
+            "source_key": "111",
+            "status": "changed",
+            "previous_sha256": delta["instances"][0]["previous_sha256"],
+            "current_sha256": delta["instances"][0]["current_sha256"],
+        }
+    ]
+    assert delta["instances"][0]["previous_sha256"] != (
+        delta["instances"][0]["current_sha256"]
+    )
+    conn.close()

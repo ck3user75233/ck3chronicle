@@ -75,9 +75,14 @@ The suite currently covers:
 - Mounted Data authority over inventory membership and order;
 - disabled-mod exclusion, Workshop/local identity, mismatch visibility,
   missing-debug state, reparse rollback, and context CLI JSON;
-- mounted mod addition/removal/load-order movement in session deltas.
+- mounted mod addition/removal/load-order movement in session deltas;
 - active-root-only file resolution with ordered base/DLC/mod instances;
 - explicit inactive-root exclusion, path-traversal rejection, and CLI JSON;
+- immutable one-pass source fingerprints despite later live-file changes;
+- exact-relative-path file winners separated from on-action/culture domain
+  policies;
+- automatic latest-session source observation during deferred processing;
+- stored source-instance change correlation across compared sessions;
 - new/worse action triage, stored raw-block locator fallback, malformed locator
   rejection, active-source links, bounded CLI JSON, and review separation.
 

@@ -11,7 +11,7 @@ Status: complete at commit `3ef8151`.
 
 ## 2. Empirical classification
 
-Status: runtime inference complete; persistence and CLI in progress.
+Status: production runtime, persistence, and CLI complete.
 
 - [x] register and hash-verify approved model artifacts;
 - [x] implement full, L1+L2, L1-only, and unknown inference;
@@ -69,8 +69,14 @@ Status: first production contract complete.
 
 - [x] restrict exact-file resolution to recorded active runtime roots;
 - [x] list current base/DLC/mod instances in mount order;
-- identify merge-aware winning files and override chains;
-- preserve historical content/update fingerprints;
-- correlate mod/patch changes with error deltas;
+- [x] resolve exact-relative-path replacement as a distinct file layer;
+- [x] persist immutable processing-time SHA-256 observations for the latest
+  session's error-referenced file instances;
+- [x] correlate stored source-instance changes with error deltas while retaining
+  an explicit non-causality boundary;
+- implement on-action container-merge evaluation over the common file chain;
+- implement culture symbol-LIOS evaluation over the common file chain;
+- preserve historical source bytes/diffs, not only content fingerprints;
+- add broader mod/update fingerprints beyond referenced source files;
 - [x] first action triage over new/worse patterns and current source candidates;
 - rank investigation targets with richer explicit confidence and merge rules.

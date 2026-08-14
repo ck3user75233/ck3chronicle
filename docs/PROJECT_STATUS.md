@@ -1,6 +1,6 @@
 # Project status
 
-Date: 2026-08-13
+Date: 2026-08-14
 
 Branch: `codex/ck3chronicle-reboot`
 
@@ -28,7 +28,7 @@ Historical material is recoverable from:
 - atomic parse and reparse persistence.
 
 The accepted foundation and production classifier seam are covered by the new
-reboot-owned suite: 67 tests as of this status record. No inherited test
+reboot-owned suite: 72 tests as of this status record. No inherited test
 contributes to that number.
 
 ## Accepted classifier runtime
@@ -69,6 +69,12 @@ contributes to that number.
   inactive-root exclusion, and cautious last-mounted candidate wording.
 - action `triage` for new/worse contracts, dominant stored file evidence,
   active-source candidates, and separate classifier-review items.
+- immutable first processing-time source observations for the latest session,
+  limited to classified file locators and recorded active runtime roots;
+- one-pass SHA-256 fingerprints per observed file instance, exact-relpath file
+  winners, and explicit unevaluated on-action/culture domain policies;
+- triage source-observation deltas when both compared sessions contain stored
+  observations, with correlation kept distinct from causation.
 
 The production runtime has also been compared with the frozen release
 evaluator across all five training-excluded logs: 194,022 semantic
@@ -78,8 +84,9 @@ separate human-authored contract tests remain the semantic authority.
 
 ## Not yet released
 
-- content/update fingerprints, historical file snapshots/diffs, and richer
-  confidence/merge-aware triage;
+- on-action container-merge and culture symbol-LIOS adapters;
+- historical source-byte snapshots/diffs, broad mod/update fingerprints, and
+  richer confidence/merge-aware triage;
 - automatic watcher startup on user login.
 
 ## Approved production model
@@ -89,6 +96,6 @@ separate human-authored contract tests remain the semantic authority.
 - normalizer: `ck3-empirical-template-normalizer-v4.6`;
 - clusterer: `ordered-token-clusterer-v4-bounded-script-layers`.
 
-The artifact is now hash-pinned and loadable by production inference. Database
-persistence and CLI processing remain the next checkpoint. The model is not
-authority to discard raw evidence or perform automatic mod edits.
+The artifact is hash-pinned and used by production persistence, reporting, and
+triage. It is not authority to discard raw evidence or perform automatic mod
+edits.

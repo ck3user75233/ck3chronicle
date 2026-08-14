@@ -75,3 +75,18 @@ Product reports query stored canonical and classified records. They never
 reopen and reparse raw logs. Reports distinguish evidence, inference, and
 unknown state and do not claim that a referenced mod owns or caused an error
 without later resolver evidence.
+
+## Source-observation boundary
+
+Source observations are derived at processing time, not captured at CK3 exit.
+They are therefore timestamped observations of the current filesystem projected
+through the session's authoritative recorded runtime roots; they are not
+backdated claims about source bytes at game time.
+
+Only the latest processed session is automatically observed. Each referenced
+file instance is read and SHA-256 hashed once for its first session/path
+observation, then the stored observation is immutable. Inactive mod roots are
+never searched. Exact-relative-path file replacement and domain-specific
+definition merging are separate layers: on-action container merge and culture
+symbol LIOS require explicit adapters before ck3chronicle may claim an effective
+definition winner.

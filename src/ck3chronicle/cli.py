@@ -662,12 +662,13 @@ def cmd_process_pending(args: argparse.Namespace) -> int:
 
     payload = {
         "schema": "ck3chronicle.processing-result",
-        "schema_version": 1,
+        "schema_version": 2,
         "finalized_pending": result.finalized_pending,
         "registered_archives": result.registered_archives,
         "context_sessions": result.context_sessions,
         "parsed_sessions": result.parsed_sessions,
         "classified_sessions": result.classified_sessions,
+        "source_observations": result.source_observations,
         "reconciliation_errors": list(result.reconciliation_errors),
         "latest_report": result.latest_report,
     }
@@ -679,7 +680,8 @@ def cmd_process_pending(args: argparse.Namespace) -> int:
             f"registered={result.registered_archives}; "
             f"context={result.context_sessions}; "
             f"parsed={result.parsed_sessions}; "
-            f"classified={result.classified_sessions}"
+            f"classified={result.classified_sessions}; "
+            f"source-observations={result.source_observations}"
         )
         for error in result.reconciliation_errors:
             print(f"WARNING: {error}", file=sys.stderr)
@@ -1204,12 +1206,17 @@ def cmd_resolve_file(args: argparse.Namespace) -> int:
                 f"{item['mount_order']:>3}  {item['source_kind']:<9}  "
                 f"{item['display_name'] or item['source_key']}  {item['path']}"
             )
-        if resolution["last_mounted_candidate"] is not None:
-            winner = resolution["last_mounted_candidate"]
+        if resolution["file_layer"]["winner"] is not None:
+            winner = resolution["file_layer"]["winner"]
             print(
-                "Last-mounted candidate: "
+                "Exact-path file winner: "
                 f"{winner['display_name'] or winner['source_key']}"
             )
+        print(
+            "Domain policy: "
+            f"{resolution['domain_layer']['policy']} "
+            f"({resolution['domain_layer']['status']})"
+        )
         print(f"Caveat: {resolution['caveat']}")
     return 0
 
@@ -1268,12 +1275,34 @@ def cmd_triage(args: argparse.Namespace) -> int:
                     f"{location['dominant_file']}"
                 )
             resolution = item["source_resolution"]
-            if resolution and resolution["last_mounted_candidate"]:
-                winner = resolution["last_mounted_candidate"]
+            if resolution and resolution["file_layer"]["winner"]:
+                winner = resolution["file_layer"]["winner"]
                 print(
-                    "   current last-mounted candidate: "
+                    "   exact-path file winner: "
                     f"{winner['display_name'] or winner['source_key']}"
                 )
+                print(
+                    "   domain policy: "
+                    f"{resolution['domain_layer']['policy']} "
+                    f"({resolution['domain_layer']['status']})"
+                )
+            source_delta = item["source_observation_delta"]
+            if source_delta is not None:
+                changed = [
+                    change
+                    for change in source_delta["instances"]
+                    if change["status"] != "unchanged"
+                ]
+                print(
+                    "   stored source change: "
+                    f"{'yes' if source_delta['changed'] else 'no'}; "
+                    f"changed instances={len(changed)}"
+                )
+                for change in changed[:3]:
+                    print(
+                        f"      {change['status']}: "
+                        f"{change['source_kind']}:{change['source_key']}"
+                    )
         if triage["classification_review"]:
             print("\nClassification review remains")
             for item in triage["classification_review"]:

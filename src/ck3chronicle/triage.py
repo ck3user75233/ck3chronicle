@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from collections import Counter, defaultdict
-import re
 import sqlite3
 
 from .reporting import build_session_report, latest_session_id
@@ -12,34 +11,20 @@ from .session_intelligence import (
     assignment_pattern_id,
     compare_sessions,
 )
-from .source_resolution import resolve_file_instances
+from .source_resolution import (
+    compare_file_observations,
+    extract_file_from_location,
+    resolve_file_instances,
+)
 
 
 class TriageError(RuntimeError):
     """The requested session cannot produce a defensible triage view."""
 
 
-_FILE_LOCATION = re.compile(
-    r"\bfile:\s*(?P<path>.+?)\s+(?:near\s+)?line:\s*\d+",
-    re.IGNORECASE,
-)
-
-
 def _file_from_location(value: str | None) -> str | None:
-    if not value:
-        return None
-    match = _FILE_LOCATION.search(value.replace("\\", "/"))
-    if match is None:
-        return None
-    path = match.group("path").strip().strip("'\"")
-    return (
-        path
-        if path
-        and ("/" in path or "." in path)
-        and not path.startswith(("/", "../"))
-        and ":/" not in path
-        else None
-    )
+    """Compatibility seam for existing triage callers and contracts."""
+    return extract_file_from_location(value)
 
 
 def _latest_run(conn: sqlite3.Connection, session_id: int) -> sqlite3.Row | None:
@@ -125,12 +110,19 @@ def build_triage(
         file_counts = files_by_pattern.get(str(item["pattern_id"]), Counter())
         dominant_file = None
         resolution = None
+        source_change = None
         if file_counts:
             dominant_file, _count = min(
                 file_counts.items(),
                 key=lambda pair: (-pair[1], pair[0].casefold(), pair[0]),
             )
             resolution = resolve_file_instances(conn, current_id, dominant_file)
+            source_change = compare_file_observations(
+                conn,
+                current_id,
+                int(comparison["previous_session"]["session_id"]),
+                dominant_file,
+            )
         regressions.append(
             {
                 **item,
@@ -154,13 +146,14 @@ def build_triage(
                     ],
                 },
                 "source_resolution": resolution,
+                "source_observation_delta": source_change,
             }
         )
         if len(regressions) >= limit:
             break
     return {
         "schema": "ck3chronicle.action-triage",
-        "schema_version": 1,
+        "schema_version": 2,
         "current_session": comparison["current_session"],
         "previous_session": comparison["previous_session"],
         "model_sha256": comparison["model_sha256"],
