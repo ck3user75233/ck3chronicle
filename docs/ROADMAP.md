@@ -69,17 +69,26 @@ Status: first production contract complete.
 
 Status: active.
 
-- reconcile every finalized archive with exactly one session and exact manifest
+- [x] reconcile every finalized archive with exactly one session and manifest
   rows;
-- independently count real archived `error.log` blocks and reconcile them with
+- [x] independently count real archived `error.log` blocks and reconcile them with
   source blocks, occurrences, issues, and classification assignments;
-- prove that every stored occurrence retains recoverable raw provenance;
+- [x] prove that every stored occurrence and assignment retains source-block
+  provenance;
 - test idempotence, failed transactions, and corruption handling on copies of
   large real archives and the real database shape;
-- expose a database audit command with bounded human and deterministic JSON
+- [x] expose a read-only database audit command with bounded human and
+  deterministic JSON
   output;
-- classify each audit failure as evidence, canonical parse, classification,
+- [x] classify each audit failure as evidence, canonical parse, classification,
   runtime-context, or index-integrity failure.
+
+Current real-index standard audit: 12 registered/finalized sessions, 589,546
+independently recounted raw block headers, canonical blocks, and occurrences;
+611,503 classification assignments; zero structural errors; and two explicit
+warnings. Remaining work is deep-distribution performance, interpretation of
+four source logs that themselves contain exactly 100,000 blocks, and chronology
+repair policy for imported sessions.
 
 ## 8. Source resolution and triage
 

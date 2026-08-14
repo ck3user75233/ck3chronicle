@@ -81,8 +81,10 @@ The suite currently covers:
 - immutable one-pass source fingerprints despite later live-file changes;
 - exact-relative-path file winners separated from on-action/culture domain
   policies;
-- automatic latest-session source observation during deferred processing;
 - stored source-instance change correlation across compared sessions;
+- read-only database audit success over a complete archive/index shape;
+- explicit parser-counter corruption and orphan-archive detection;
+- bounded schema-versioned database-audit CLI JSON;
 - new/worse action triage, stored raw-block locator fallback, malformed locator
   rejection, active-source links, bounded CLI JSON, and review separation.
 

@@ -28,6 +28,8 @@ classification do not occur in the process-exit path.
 
 ```powershell
 .\.venv\Scripts\ck3chronicle.exe doctor
+.\.venv\Scripts\ck3chronicle.exe audit-db
+.\.venv\Scripts\ck3chronicle.exe audit-db --deep
 .\.venv\Scripts\ck3chronicle.exe watch
 .\.venv\Scripts\ck3chronicle.exe capture
 .\.venv\Scripts\ck3chronicle.exe reconcile
@@ -59,6 +61,12 @@ restart. Automatic login startup has not yet been released.
 it finalizes protected pending copies, reconciles archives, parses canonical
 blocks, classifies them with the approved model, and prints the latest report.
 It is idempotent and never rewrites captured evidence.
+
+`audit-db` is a read-only reconciliation of finalized archives, session
+manifests, parser counters, canonical occurrence totals, classification runs,
+runtime context, and source-block provenance. The standard audit is intended
+for routine use. `--deep` adds full per-block and per-signature distribution
+checks and can take several minutes on a gigabyte-scale database.
 
 `compare` selects the latest and preceding compatible captures by capture time.
 It reports observed new, fixed, worse, improved, and unchanged semantic

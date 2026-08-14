@@ -259,6 +259,54 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_audit_db(args: argparse.Namespace) -> int:
+    """Audit the archive/index/canonical database contract without mutation."""
+    import sqlite3
+
+    from . import config
+    from .database_audit import DatabaseAuditError, audit_database
+
+    try:
+        result = audit_database(config.ROOT_CK3CHRONICLE, deep=bool(args.deep))
+    except DatabaseAuditError as exc:
+        print(f"ERROR [database_audit]: {exc}", file=sys.stderr)
+        return 2
+    except sqlite3.Error as exc:
+        print(f"ERROR [database_failed]: {exc}", file=sys.stderr)
+        return 5
+    if args.json:
+        print(json.dumps(result, sort_keys=True))
+    else:
+        summary = result["summary"]
+        print(
+            f"Database audit: {result['status'].upper()} - "
+            f"sessions={summary.get('registered_sessions', 0)}; "
+            f"archives={summary.get('archive_directories', 0)}; "
+            f"pending={summary.get('pending_directories', 0)}"
+        )
+        print(
+            f"blocks={summary.get('source_blocks', 0):,}; "
+            f"raw-headers={summary.get('raw_timestamp_headers', 0):,}; "
+            f"occurrences={summary.get('occurrences', 0):,}; "
+            f"assignments={summary.get('classification_assignments', 0):,}"
+        )
+        print(
+            f"errors={summary['errors']}; warnings={summary['warnings']}; "
+            f"read-only=yes; depth={result['audit_depth']}"
+        )
+        for item in result["findings"]:
+            sessions = (
+                f" sessions={','.join(str(value) for value in item['session_ids'])}"
+                if item["session_ids"]
+                else ""
+            )
+            print(
+                f"[{item['severity'].upper()}] {item['code']} "
+                f"{item['message']}{sessions}"
+            )
+    return 2 if result["status"] == "fail" else 0
+
+
 def _log_type_from_relpath(rel_path: str) -> str:
     """Detect log type from filename. Returns 'error', 'debug', 'game', 'database_conflicts', or 'unknown'."""
     name = pathlib.Path(rel_path).name.lower()
@@ -1374,6 +1422,18 @@ def build_parser() -> argparse.ArgumentParser:
     # doctor
     p_doctor = sub.add_parser("doctor", help="Health check.")
     p_doctor.set_defaults(func=cmd_doctor)
+
+    p_audit_db = sub.add_parser(
+        "audit-db",
+        help="Read-only audit of archives, SQLite rows, and canonical invariants.",
+    )
+    p_audit_db.add_argument("--json", action="store_true")
+    p_audit_db.add_argument(
+        "--deep",
+        action="store_true",
+        help="Also reconcile every block/signature distribution; may take minutes.",
+    )
+    p_audit_db.set_defaults(func=cmd_audit_db)
 
     # parse
     p_parse = sub.add_parser(

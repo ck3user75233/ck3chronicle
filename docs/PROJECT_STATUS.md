@@ -28,7 +28,7 @@ Historical material is recoverable from:
 - atomic parse and reparse persistence.
 
 The accepted foundation and production classifier seam are covered by the new
-reboot-owned suite: 72 tests as of this status record. No inherited test
+reboot-owned suite: 75 tests as of this status record. No inherited test
 contributes to that number.
 
 ## Accepted classifier runtime
@@ -93,6 +93,30 @@ separate human-authored contract tests remain the semantic authority.
 Source observation is deliberately not part of `process-pending`. Resolver
 failures or source-file hashing must not block capture, canonical parsing,
 classification, or database reporting.
+
+## Database hardening checkpoint
+
+The read-only `audit-db` command now checks archive/session membership,
+manifest aggregates, stored parser counters, canonical totals, classification
+counters, runtime-context rows, and source-block provenance. Its first run over
+the live 1.04 GB index found:
+
+- 12 finalized archives and 12 registered sessions;
+- 589,546 canonical source blocks and occurrence rows;
+- 589,546 independently recounted timestamped headers in archived `error.log`
+  files, exactly matching the database for every session;
+- 611,503 classification assignments;
+- no structural errors or orphaned provenance;
+- four archived source logs themselves contain exactly 100,000 blocks, so the
+  database did not truncate them; possible upstream CK3 log censoring remains
+  flagged;
+- incomplete durable process-observation chronology for imported sessions;
+- one protected pending capture not yet processed, reported separately.
+
+Full per-block/per-signature distribution reconciliation is available through
+`audit-db --deep`, but its first live run exceeded three minutes. Performance
+work and independent recounting from archived raw logs remain active database
+acceptance tasks.
 
 ## Approved production model
 

@@ -90,3 +90,17 @@ then the stored observation is immutable. Inactive mod roots are never searched.
 Exact-relative-path file replacement and domain-specific definition merging are
 separate layers. Domain adapters remain deferred and cannot block database
 ingestion, canonical parsing, classification, or reporting.
+
+## Database-audit boundary
+
+Database audit is read-only. The standard audit reconciles archive/session
+membership, manifest aggregates, stored parser counters, canonical totals,
+classification counters, runtime context, and relational provenance. It also
+independently streams archived `error.log` bytes and counts timestamped block
+headers without invoking the production parser. Deep audit
+additionally reconciles every source-block and issue-signature distribution and
+is explicitly opt-in because retained raw blocks make a full scan expensive.
+
+An audit warning remains visible but does not make a structurally consistent
+database unusable. An audit error means the affected evidence or derived state
+must not be represented as fully accepted until repaired or regenerated.
