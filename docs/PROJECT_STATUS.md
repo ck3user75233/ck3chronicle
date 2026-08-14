@@ -69,8 +69,8 @@ contributes to that number.
   inactive-root exclusion, and cautious last-mounted candidate wording.
 - action `triage` for new/worse contracts, dominant stored file evidence,
   active-source candidates, and separate classifier-review items.
-- immutable first processing-time source observations for the latest session,
-  limited to classified file locators and recorded active runtime roots;
+- optional immutable processing-time source observations, limited to recorded
+  active runtime roots;
 - one-pass SHA-256 fingerprints per observed file instance, exact-relpath file
   winners, and explicit unevaluated on-action/culture domain policies;
 - triage source-observation deltas when both compared sessions contain stored
@@ -84,10 +84,15 @@ separate human-authored contract tests remain the semantic authority.
 
 ## Not yet released
 
+- real-corpus database reconciliation and a user-facing database audit command;
 - on-action container-merge and culture symbol-LIOS adapters;
 - historical source-byte snapshots/diffs, broad mod/update fingerprints, and
   richer confidence/merge-aware triage;
 - automatic watcher startup on user login.
+
+Source observation is deliberately not part of `process-pending`. Resolver
+failures or source-file hashing must not block capture, canonical parsing,
+classification, or database reporting.
 
 ## Approved production model
 

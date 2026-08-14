@@ -662,13 +662,12 @@ def cmd_process_pending(args: argparse.Namespace) -> int:
 
     payload = {
         "schema": "ck3chronicle.processing-result",
-        "schema_version": 2,
+        "schema_version": 1,
         "finalized_pending": result.finalized_pending,
         "registered_archives": result.registered_archives,
         "context_sessions": result.context_sessions,
         "parsed_sessions": result.parsed_sessions,
         "classified_sessions": result.classified_sessions,
-        "source_observations": result.source_observations,
         "reconciliation_errors": list(result.reconciliation_errors),
         "latest_report": result.latest_report,
     }
@@ -680,8 +679,7 @@ def cmd_process_pending(args: argparse.Namespace) -> int:
             f"registered={result.registered_archives}; "
             f"context={result.context_sessions}; "
             f"parsed={result.parsed_sessions}; "
-            f"classified={result.classified_sessions}; "
-            f"source-observations={result.source_observations}"
+            f"classified={result.classified_sessions}"
         )
         for error in result.reconciliation_errors:
             print(f"WARNING: {error}", file=sys.stderr)

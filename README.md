@@ -20,10 +20,6 @@ active source tree because they described a different or failed design.
   unknown while retaining key, locator, and structured-slot evidence;
 - atomically persist versioned model registrations, classification runs, and
   one provenance row per semantic unit;
-- persist one processing-time SHA-256 observation for every latest-session
-  error-referenced file instance under the recorded active runtime roots;
-- correlate stored source-file changes with later new/worse error patterns
-  without treating correlation as proof of causation.
 
 The watcher is deliberately copy-only. Hashing, SQLite work, parsing, and
 classification do not occur in the process-exit path.
@@ -93,13 +89,15 @@ been stored for the requested session/path; otherwise it projects the recorded
 active roots onto the current filesystem. It checks base game, mounted DLCs,
 and active mods in order and never searches inactive roots. Exact-relative-path
 replacement is resolved separately from directory-specific semantics. The
-first adapters identify on-action container merge and culture symbol LIOS as
-the required next semantic layer; they do not yet evaluate those merges.
+resolver groundwork is optional and is not invoked by `process-pending`.
+On-action and culture semantic adapters are explicitly deferred until the
+database and real-corpus acceptance work is complete.
 
 `triage` keeps classification review separate from game-error priority. It
 ranks observed new/worse contracts, links their stored file evidence to the
-active-root resolution, reports source-observation deltas when both sessions
-have them, and retains explicit evidence-quality and non-causality caveats.
+active-root resolution when requested, and retains explicit evidence-quality
+and non-causality caveats. Resolver enrichment is downstream of the core
+database workflow.
 
 Read these documents in order:
 

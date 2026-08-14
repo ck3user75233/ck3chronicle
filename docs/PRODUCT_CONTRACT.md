@@ -83,10 +83,10 @@ They are therefore timestamped observations of the current filesystem projected
 through the session's authoritative recorded runtime roots; they are not
 backdated claims about source bytes at game time.
 
-Only the latest processed session is automatically observed. Each referenced
-file instance is read and SHA-256 hashed once for its first session/path
-observation, then the stored observation is immutable. Inactive mod roots are
-never searched. Exact-relative-path file replacement and domain-specific
-definition merging are separate layers: on-action container merge and culture
-symbol LIOS require explicit adapters before ck3chronicle may claim an effective
-definition winner.
+Source observation is optional and is not invoked by the core
+`process-pending` workflow. When explicitly performed, each referenced file
+instance is read and SHA-256 hashed once for its first session/path observation,
+then the stored observation is immutable. Inactive mod roots are never searched.
+Exact-relative-path file replacement and domain-specific definition merging are
+separate layers. Domain adapters remain deferred and cannot block database
+ingestion, canonical parsing, classification, or reporting.

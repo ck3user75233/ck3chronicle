@@ -12,7 +12,6 @@ from .harvester import finalize_pending_captures
 from .parser.service import parse_session
 from .reporting import build_session_report, latest_session_id
 from .runtime_context import parse_runtime_context
-from .source_resolution import observe_session_sources
 
 
 @dataclass(frozen=True)
@@ -22,7 +21,6 @@ class ProcessingResult:
     context_sessions: int
     parsed_sessions: int
     classified_sessions: int
-    source_observations: int
     reconciliation_errors: tuple[str, ...]
     latest_report: dict[str, object] | None
 
@@ -63,12 +61,6 @@ def process_pending(root: Path, classifier: Classifier) -> ProcessingResult:
             classified += int(classification.mutated)
 
         latest_id = latest_session_id(conn)
-        # Current source bytes cannot be backdated honestly across historical
-        # sessions. Observe only the latest processed run; future runs then
-        # provide a defensible longitudinal source-change series.
-        source_observations = (
-            observe_session_sources(conn, latest_id) if latest_id is not None else 0
-        )
         latest_report = (
             build_session_report(
                 conn,
@@ -87,7 +79,6 @@ def process_pending(root: Path, classifier: Classifier) -> ProcessingResult:
         context_sessions=context_sessions,
         parsed_sessions=parsed,
         classified_sessions=classified,
-        source_observations=source_observations,
         reconciliation_errors=reconciliation.errors,
         latest_report=latest_report,
     )

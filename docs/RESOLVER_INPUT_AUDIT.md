@@ -58,8 +58,10 @@ generate review candidates but cannot establish CK3 merge semantics.
 
 ## Production direction
 
-`ck3chronicle.source_resolution` now owns the common active-runtime file chain,
-immutable processing-time fingerprints, and file-layer winner. Domain adapters
-must consume that chain. The next implementation slice is on-action container
-merge, followed by culture symbol LIOS; neither adapter may broaden visibility
-beyond the session's archived `Mounted Data:` roots.
+`ck3chronicle.source_resolution` contains optional groundwork for the common
+active-runtime file chain, immutable processing-time fingerprints, and the
+file-layer winner. Domain adapters must eventually consume that chain, but both
+on-action container merge and culture symbol LIOS are deferred until the core
+database passes real-corpus acceptance. Neither the current groundwork nor
+future adapters may broaden visibility beyond the session's archived
+`Mounted Data:` roots or block the core processing workflow.
