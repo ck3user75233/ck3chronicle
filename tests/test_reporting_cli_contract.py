@@ -29,7 +29,11 @@ def test_rreportcli_001_report_json_exposes_evidence_and_review_state(
     )
 
     assert args.func(args) == 0
-    payload = json.loads(capsys.readouterr().out)
+    envelope = json.loads(capsys.readouterr().out)
+    assert envelope["schema"] == "ck3chronicle.command-result"
+    assert envelope["command"] == "report"
+    assert envelope["status"] == "succeeded"
+    payload = envelope["result"]
     assert payload["schema"] == "ck3chronicle.session-report"
     assert payload["session"]["session_id"] == session_id
     assert payload["classification"]["review_required"] == 1
@@ -43,7 +47,9 @@ def test_rreportcli_002_latest_reports_latest_captured_session(
     args = parser.parse_args(["latest", "--json"])
 
     assert args.func(args) == 0
-    payload = json.loads(capsys.readouterr().out)
+    envelope = json.loads(capsys.readouterr().out)
+    assert envelope["command"] == "latest"
+    payload = envelope["result"]
     assert payload["session"]["session_id"] == session_id
 
 
@@ -56,7 +62,9 @@ def test_rreportcli_003_errors_is_a_bounded_stored_pattern_projection(
     )
 
     assert args.func(args) == 0
-    payload = json.loads(capsys.readouterr().out)
+    envelope = json.loads(capsys.readouterr().out)
+    assert envelope["command"] == "errors"
+    payload = envelope["result"]
     assert payload["schema"] == "ck3chronicle.errors"
     assert payload["schema_version"] == 1
     assert payload["session_id"] == session_id
@@ -89,7 +97,7 @@ def test_rreportcli_004_exact_run_selection_survives_evidence_reuse(
 
     exact = parser.parse_args(["report", "--run", str(first_id), "--json"])
     assert exact.func(exact) == 0
-    exact_payload = json.loads(capsys.readouterr().out)
+    exact_payload = json.loads(capsys.readouterr().out)["result"]
     assert exact_payload["schema_version"] == 5
     assert exact_payload["run"]["run_id"] == first_id
     assert exact_payload["run"]["capture_id"] == "first-observed-run"
@@ -98,6 +106,31 @@ def test_rreportcli_004_exact_run_selection_survives_evidence_reuse(
         ["report", "--session", str(session_id), "--json"]
     )
     assert by_evidence.func(by_evidence) == 0
-    evidence_payload = json.loads(capsys.readouterr().out)
+    evidence_payload = json.loads(capsys.readouterr().out)["result"]
     assert evidence_payload["run"]["run_id"] == second_id
     assert evidence_payload["run"]["capture_id"] == "second-observed-run"
+
+
+def test_rreportcli_005_json_failure_uses_the_common_command_envelope(
+    tmp_path, monkeypatch, capsys
+) -> None:
+    runtime = tmp_path / "runtime"
+    runtime.mkdir()
+    conn = repository.open_db(runtime / "ck3chronicle.db")
+    conn.close()
+    monkeypatch.setattr(config, "ROOT_CK3CHRONICLE", runtime)
+    args = build_parser().parse_args(
+        ["report", "--session", "999", "--json"]
+    )
+
+    assert args.func(args) == 2
+    streams = capsys.readouterr()
+    payload = json.loads(streams.out)
+    assert streams.err == ""
+    assert payload["schema"] == "ck3chronicle.command-result"
+    assert payload["command"] == "report"
+    assert payload["status"] == "failed"
+    assert payload["exit_code"] == 2
+    assert payload["result"] is None
+    assert payload["error"]["code"] == "report_unavailable"
+    assert payload["error"]["stage"] == "report"

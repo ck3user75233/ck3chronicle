@@ -119,6 +119,7 @@ The suite currently covers:
   archive-integrity failure, and database failure;
 - exact report-run selection distinct from latest-run selection when identical
   evidence is observed more than once;
+- common report/latest/errors success and readiness-failure JSON envelopes;
 - cross-session semantic deltas despite changed keys, locators, and line
   numbers;
 - chronological CLI selection and bounded deterministic comparison JSON;

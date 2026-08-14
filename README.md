@@ -80,8 +80,9 @@ rewrites captured evidence.
 With `--json`, `process-pending` always emits one
 `ck3chronicle.command-result` v1 object. Success, warning, archive-integrity,
 model, database, and generic pipeline failures have stable status, exit code,
-result, and error fields. `report --run` selects an exact observed CK3 run even
-when its evidence bytes are shared with an earlier or later run.
+result, and error fields. The JSON `report`, `latest`, and `errors` surfaces use
+the same envelope. `report --run` selects an exact observed CK3 run even when
+its evidence bytes are shared with an earlier or later run.
 
 `audit-db` is a read-only reconciliation of finalized archives, session
 manifests, parser counters, canonical occurrence totals, classification runs,

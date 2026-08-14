@@ -69,7 +69,7 @@ harness. The fast reboot suite remains useful regression coverage.
 | `P1-REP-04` | Untested | No before/after database and evidence hashes for every report command. |
 | `P1-REP-05` | Partially covered | Repeat processing is deterministic; randomized insertion-order equivalence is absent. |
 | `P1-REP-06` | Partially covered | `latest` selects the newest reportable run and `report --run` distinguishes repeated observations of identical evidence. The independent eligibility/order gate has not run. |
-| `P1-REP-07` | Partially covered | `process-pending` has a stable success/warning/failure envelope and exit taxonomy. Remaining report/query commands and the all-command black-box gate are incomplete. |
+| `P1-REP-07` | Partially covered | `process-pending`, `report`, `latest`, and `errors` share a stable success/warning/failure envelope and exit taxonomy. The independent all-command black-box gate has not run. |
 
 ## Release gates
 

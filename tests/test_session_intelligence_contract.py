@@ -415,7 +415,10 @@ def test_rdelta_004_report_since_wraps_report_and_compatible_comparison(
     )
 
     assert args.func(args) == 0
-    payload = json.loads(capsys.readouterr().out)
+    envelope = json.loads(capsys.readouterr().out)
+    assert envelope["schema"] == "ck3chronicle.command-result"
+    assert envelope["command"] == "report"
+    payload = envelope["result"]
     assert payload["schema"] == "ck3chronicle.report-with-comparison"
     assert payload["schema_version"] == 1
     assert payload["report"]["session"]["session_id"] == current_id

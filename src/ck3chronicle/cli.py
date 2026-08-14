@@ -78,6 +78,36 @@ def _capture_error(exc: Exception) -> int:
     return 1
 
 
+def _emit_command_json(
+    command: str,
+    *,
+    status: str,
+    exit_code: int,
+    result: dict[str, object] | None = None,
+    error_code: str | None = None,
+    message: str | None = None,
+    stage: str | None = None,
+    retryable: bool = False,
+) -> None:
+    from .command_envelope import command_envelope
+
+    print(
+        json.dumps(
+            command_envelope(
+                command,
+                status=status,
+                exit_code=exit_code,
+                result=result,
+                error_code=error_code,
+                message=message,
+                stage=stage,
+                retryable=retryable,
+            ),
+            sort_keys=True,
+        )
+    )
+
+
 def cmd_ingest(args: argparse.Namespace) -> int:
     """Backward-compatible name for finalized evidence capture."""
     try:
@@ -713,6 +743,7 @@ def _cmd_report(args: argparse.Namespace, *, latest: bool) -> int:
     from .reporting import ReportError
     from .session_intelligence import ComparisonError, compare_sessions
 
+    command = "latest" if latest else "report"
     try:
         if getattr(args, "run", None) is not None and args.since is not None:
             raise ReportError(
@@ -738,11 +769,44 @@ def _cmd_report(args: argparse.Namespace, *, latest: bool) -> int:
             finally:
                 conn.close()
     except (ReportError, ComparisonError, ValueError) as exc:
-        print(f"ERROR: report unavailable: {exc}", file=sys.stderr)
+        if args.json:
+            _emit_command_json(
+                command,
+                status="failed",
+                exit_code=2,
+                error_code="report_unavailable",
+                message=str(exc) or "report unavailable",
+                stage="report",
+            )
+        else:
+            print(f"ERROR: report unavailable: {exc}", file=sys.stderr)
         return 2
     except sqlite3.Error as exc:
-        print(f"ERROR [database_failed]: {exc}", file=sys.stderr)
+        if args.json:
+            _emit_command_json(
+                command,
+                status="failed",
+                exit_code=5,
+                error_code="database_failed",
+                message=str(exc) or "database failed",
+                stage="database",
+            )
+        else:
+            print(f"ERROR [database_failed]: {exc}", file=sys.stderr)
         return 5
+    except Exception as exc:
+        if args.json:
+            _emit_command_json(
+                command,
+                status="failed",
+                exit_code=1,
+                error_code="report_failed",
+                message=str(exc) or "report failed",
+                stage="report",
+            )
+        else:
+            print(f"ERROR: report failed: {exc}", file=sys.stderr)
+        return 1
     if args.json:
         payload = (
             {
@@ -754,7 +818,12 @@ def _cmd_report(args: argparse.Namespace, *, latest: bool) -> int:
             if comparison is not None
             else report
         )
-        print(json.dumps(payload, sort_keys=True))
+        _emit_command_json(
+            command,
+            status="succeeded",
+            exit_code=0,
+            result=payload,
+        )
     else:
         _print_executive_report(report)
         if comparison is not None:
@@ -782,11 +851,44 @@ def cmd_errors(args: argparse.Namespace) -> int:
             latest=not bool(args.session or args.run),
         )
     except ReportError as exc:
-        print(f"ERROR: errors unavailable: {exc}", file=sys.stderr)
+        if args.json:
+            _emit_command_json(
+                "errors",
+                status="failed",
+                exit_code=2,
+                error_code="errors_unavailable",
+                message=str(exc) or "errors unavailable",
+                stage="report",
+            )
+        else:
+            print(f"ERROR: errors unavailable: {exc}", file=sys.stderr)
         return 2
     except sqlite3.Error as exc:
-        print(f"ERROR [database_failed]: {exc}", file=sys.stderr)
+        if args.json:
+            _emit_command_json(
+                "errors",
+                status="failed",
+                exit_code=5,
+                error_code="database_failed",
+                message=str(exc) or "database failed",
+                stage="database",
+            )
+        else:
+            print(f"ERROR [database_failed]: {exc}", file=sys.stderr)
         return 5
+    except Exception as exc:
+        if args.json:
+            _emit_command_json(
+                "errors",
+                status="failed",
+                exit_code=1,
+                error_code="errors_failed",
+                message=str(exc) or "errors failed",
+                stage="report",
+            )
+        else:
+            print(f"ERROR: errors failed: {exc}", file=sys.stderr)
+        return 1
     payload = {
         "schema": "ck3chronicle.errors",
         "schema_version": 1,
@@ -797,7 +899,12 @@ def cmd_errors(args: argparse.Namespace) -> int:
         "patterns": report["top_patterns"],
     }
     if args.json:
-        print(json.dumps(payload, sort_keys=True))
+        _emit_command_json(
+            "errors",
+            status="succeeded",
+            exit_code=0,
+            result=payload,
+        )
     else:
         print(
             f"Session {payload['session_id']} errors — "
@@ -818,7 +925,6 @@ def cmd_process_pending(args: argparse.Namespace) -> int:
     from . import config
     from .classification.catalog import load_approved_classifier
     from .classification.model import ModelIntegrityError
-    from .command_envelope import command_envelope
     from .harvester import ArchiveIntegrityError
     from .processing import process_pending
 
@@ -832,19 +938,14 @@ def cmd_process_pending(args: argparse.Namespace) -> int:
     ) -> int:
         message = message or code
         if args.json:
-            print(
-                json.dumps(
-                    command_envelope(
-                        "process-pending",
-                        status="failed",
-                        exit_code=exit_code,
-                        error_code=code,
-                        message=message,
-                        stage=stage,
-                        retryable=retryable,
-                    ),
-                    sort_keys=True,
-                )
+            _emit_command_json(
+                "process-pending",
+                status="failed",
+                exit_code=exit_code,
+                error_code=code,
+                message=message,
+                stage=stage,
+                retryable=retryable,
             )
         else:
             print(f"ERROR [{code}]: {message}", file=sys.stderr)
@@ -877,7 +978,7 @@ def cmd_process_pending(args: argparse.Namespace) -> int:
     }
     if args.json:
         if result.reconciliation_errors:
-            envelope = command_envelope(
+            _emit_command_json(
                 "process-pending",
                 status="warning",
                 exit_code=1,
@@ -891,13 +992,12 @@ def cmd_process_pending(args: argparse.Namespace) -> int:
                 retryable=True,
             )
         else:
-            envelope = command_envelope(
+            _emit_command_json(
                 "process-pending",
                 status="succeeded",
                 exit_code=0,
                 result=payload,
             )
-        print(json.dumps(envelope, sort_keys=True))
     else:
         print(
             f"finalized={result.finalized_pending}; "

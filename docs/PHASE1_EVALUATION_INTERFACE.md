@@ -273,6 +273,12 @@ newest run whose evidence is finalized, parsed, and classified, with a
 compatibility fallback only for direct development registrations that predate
 run receipts.
 
+Each JSON report command emits one `ck3chronicle.command-result` v1 envelope.
+Its `result` is the session-report v5, report-with-comparison v1, or errors v1
+projection. Readiness/input failures use exit 2 and report-stage error codes;
+database failures use exit 5; unexpected report failures use exit 1. Human text
+mode remains a concise executive projection of the same stored report object.
+
 ## Independent evaluator deliverables
 
 Using only this interface plus the frozen product/gate contracts, the test

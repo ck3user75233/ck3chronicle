@@ -41,7 +41,7 @@ Historical material is recoverable from:
 - atomic parse and reparse persistence.
 
 The implemented foundation and production classifier seam are covered by the new
-reboot-owned suite: 111 tests as of this status record. No inherited test
+reboot-owned suite: 112 tests as of this status record. No inherited test
 contributes to that number.
 
 These are fast regression tests. The complete protected-real-evidence,
@@ -76,8 +76,9 @@ must author and freeze the release harness and scorers.
 - bounded stored-record `review-queue` for L1-only and unknown patterns.
 - database-only executive `report`, chronological `latest`, and bounded
   `errors` projections;
-- stable `process-pending --json` command-result v1 envelopes for success,
-  reconciliation warning, archive integrity, model integrity, database, and
+- stable command-result v1 envelopes across `process-pending`, `report`,
+  `latest`, and `errors` JSON surfaces, including success, reconciliation
+  warning, input/readiness, archive integrity, model integrity, database, and
   generic pipeline failures;
 - newest-reportable-run `latest` selection plus exact `report --run` and
   `errors --run` selection when content-addressed evidence is reused;
@@ -129,8 +130,8 @@ release candidate is frozen.
 
 ## Not yet released
 
-- common command envelopes across the remaining report/query surfaces and an
-  independently frozen complete Phase 1 output contract;
+- an independently frozen complete Phase 1 output contract and any additional
+  non-core command envelopes required by the final all-command gate;
 - independently frozen complete report output;
 - the Phase 1 mutation, private-holdout, and performance exit runs;
 - on-action container-merge and culture symbol-LIOS adapters;
