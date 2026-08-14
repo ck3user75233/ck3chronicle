@@ -313,9 +313,50 @@ def register_run(
     crash_detected_at: str | None = None,
     crash_association_method: str | None = None,
     crash_association_confidence: str | None = None,
+    crash_exception_status: str = "not_applicable",
+    crash_exception_source_rel_path: str | None = None,
+    crash_exception_retained_path: str | None = None,
+    crash_exception_sha256: str | None = None,
+    crash_exception_bytes: int | None = None,
+    crash_exception_source_mtime_ns: int | None = None,
     receipt_sha256: str | None = None,
 ) -> tuple[int, bool]:
     """Idempotently index one game run separately from evidence bytes."""
+    if crash_exception_status not in {
+        "captured",
+        "absent",
+        "unavailable",
+        "not_applicable",
+    }:
+        raise ValueError("invalid crash exception status")
+    if crash_exception_status in {"captured", "absent"} and termination_kind != "crash":
+        raise ValueError("non-crash run has crash exception evidence")
+    if crash_exception_status == "not_applicable" and termination_kind == "crash":
+        raise ValueError("crash run marks exception evidence not applicable")
+    if crash_exception_status == "unavailable" and termination_kind == "normal":
+        raise ValueError("normal run has unavailable crash exception evidence")
+    if crash_exception_status == "captured":
+        if termination_kind != "crash" or any(
+            value is None
+            for value in (
+                crash_exception_source_rel_path,
+                crash_exception_retained_path,
+                crash_exception_sha256,
+                crash_exception_bytes,
+                crash_exception_source_mtime_ns,
+            )
+        ):
+            raise ValueError("captured crash exception metadata is incomplete")
+    elif any(
+        value is not None
+        for value in (
+            crash_exception_retained_path,
+            crash_exception_sha256,
+            crash_exception_bytes,
+            crash_exception_source_mtime_ns,
+        )
+    ):
+        raise ValueError("uncaptured crash exception has retained metadata")
     timestamp = observed_at or datetime.now(timezone.utc).isoformat()
     ended_at = observed_ended_at or timestamp
     values = (
@@ -334,6 +375,12 @@ def register_run(
         crash_detected_at,
         crash_association_method,
         crash_association_confidence,
+        crash_exception_status,
+        crash_exception_source_rel_path,
+        crash_exception_retained_path,
+        crash_exception_sha256,
+        crash_exception_bytes,
+        crash_exception_source_mtime_ns,
         receipt_sha256,
     )
     try:
@@ -350,6 +397,23 @@ def register_run(
                 and existing["receipt_sha256"] not in {None, receipt_sha256}
             ):
                 raise ValueError("run receipt hash disagrees with indexed run")
+            expected_exception = {
+                "crash_exception_status": crash_exception_status,
+                "crash_exception_source_rel_path": crash_exception_source_rel_path,
+                "crash_exception_retained_path": crash_exception_retained_path,
+                "crash_exception_sha256": crash_exception_sha256,
+                "crash_exception_bytes": crash_exception_bytes,
+                "crash_exception_source_mtime_ns": (
+                    crash_exception_source_mtime_ns
+                ),
+            }
+            if any(
+                existing[column] != value
+                for column, value in expected_exception.items()
+            ):
+                raise ValueError(
+                    "run receipt exception provenance disagrees with indexed run"
+                )
             conn.commit()
             return int(existing["observation_id"]), True
         cur = conn.execute(
@@ -360,8 +424,14 @@ def register_run(
                 process_started_ns, termination_kind, crash_folder_name,
                 crash_folder_path, crash_detected_at,
                 crash_association_method, crash_association_confidence,
+                crash_exception_status, crash_exception_source_rel_path,
+                crash_exception_retained_path, crash_exception_sha256,
+                crash_exception_bytes, crash_exception_source_mtime_ns,
                 receipt_sha256
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?, ?
+            )
             """,
             values,
         )

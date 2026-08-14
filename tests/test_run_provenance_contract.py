@@ -1,13 +1,17 @@
 """Implementation regressions for run identity and crash-source provenance."""
 from __future__ import annotations
 
+import hashlib
+import json
 import shutil
 
 from ck3chronicle.db import repository
+from ck3chronicle.cli import _print_executive_report
 from ck3chronicle.database_audit import audit_database
 from ck3chronicle.harvester import PRINCIPAL_LOG_NAMES, spool_logs
 from ck3chronicle.processing import process_pending
 from ck3chronicle.reporting import build_session_report, latest_session_id
+from ck3chronicle.run_registry import reconcile_run_receipts
 from ck3chronicle.session_intelligence import compare_latest
 from ck3chronicle.watcher import (
     ProcessIdentity,
@@ -74,7 +78,9 @@ def test_rrun_001_identical_evidence_retains_two_distinct_runs(tmp_path) -> None
         conn.close()
 
 
-def test_rrun_002_crash_logs_are_attributed_without_duplicate_copy(tmp_path) -> None:
+def test_rrun_002_crash_logs_are_attributed_without_duplicate_copy(
+    tmp_path, capsys
+) -> None:
     game_root = tmp_path / "game-user-root"
     logs = game_root / "logs"
     crashes = game_root / "crashes"
@@ -88,6 +94,9 @@ def test_rrun_002_crash_logs_are_attributed_without_duplicate_copy(tmp_path) -> 
     crash_logs.mkdir(parents=True)
     for name in PRINCIPAL_LOG_NAMES:
         shutil.copyfile(logs / name, crash_logs / name)
+    exception_bytes = b"Unhandled exception: 0xC0000005\n"
+    exception_source = crash_folder / "exception.txt"
+    exception_source.write_bytes(exception_bytes)
     termination, crash = infer_termination_from_crashes(
         baseline, scan_crash_inventory(crashes)
     )
@@ -105,6 +114,10 @@ def test_rrun_002_crash_logs_are_attributed_without_duplicate_copy(tmp_path) -> 
         termination_kind=termination,
         crash=crash,
     )
+    protected_exception = (
+        runtime / "crash_evidence" / pending.dest_dir.name / "exception.txt"
+    )
+    assert protected_exception.read_bytes() == exception_bytes
     processed = process_pending(runtime, _classifier())
     assert processed.reconciliation_errors == ()
     # Exact crash-source hashes are a durable projection. Later processing
@@ -122,6 +135,15 @@ def test_rrun_002_crash_logs_are_attributed_without_duplicate_copy(tmp_path) -> 
         ).fetchone()
         assert run["termination_kind"] == "crash"
         assert run["crash_folder_name"] == crash_folder.name
+        assert run["crash_exception_status"] == "captured"
+        assert run["crash_exception_source_rel_path"] == "exception.txt"
+        assert run["crash_exception_retained_path"] == (
+            f"crash_evidence/{pending.dest_dir.name}/exception.txt"
+        )
+        assert run["crash_exception_sha256"] == hashlib.sha256(
+            exception_bytes
+        ).hexdigest()
+        assert run["crash_exception_bytes"] == len(exception_bytes)
         origins = repository.get_run_file_origins(
             conn, int(run["observation_id"])
         )
@@ -133,10 +155,32 @@ def test_rrun_002_crash_logs_are_attributed_without_duplicate_copy(tmp_path) -> 
         report = build_session_report(conn, int(run["session_id"]))
         assert report["run"]["termination_kind"] == "crash"
         assert report["run"]["crash"]["folder_name"] == crash_folder.name
+        assert report["run"]["crash"]["exception"]["status"] == "captured"
+        assert report["run"]["crash"]["exception"]["retained_path"] == (
+            f"crash_evidence/{pending.dest_dir.name}/exception.txt"
+        )
+        _print_executive_report(report)
+        assert "Crash exception: captured; retained=crash_evidence/" in (
+            capsys.readouterr().out
+        )
     finally:
         conn.close()
 
-    assert not (runtime / "crash_evidence").exists()
+    retained_files = sorted(
+        path.relative_to(runtime).as_posix()
+        for path in (runtime / "crash_evidence").rglob("*")
+        if path.is_file()
+    )
+    assert retained_files == [
+        f"crash_evidence/{pending.dest_dir.name}/exception.txt"
+    ]
+    assert audit_database(runtime)["status"] == "pass"
+    protected_exception.write_bytes(b"corrupt\n")
+    corrupt_audit = audit_database(runtime)
+    assert corrupt_audit["status"] == "fail"
+    assert any(
+        item["code"] == "DB-RUN-004" for item in corrupt_audit["findings"]
+    )
 
 
 def test_rrun_003_different_crash_log_is_preserved_and_linked(tmp_path) -> None:
@@ -245,5 +289,145 @@ def test_rrun_005_latest_and_previous_follow_a_b_a_run_chronology(tmp_path) -> N
         assert comparison["current_session"]["session_id"] == first_a_session
         assert comparison["current_session"]["capture_id"] == latest_a.dest_dir.name
         assert comparison["current_session"]["capture_id"] != first_a.dest_dir.name
+    finally:
+        conn.close()
+
+
+def test_rrun_006_crash_without_exception_is_explicitly_absent(tmp_path) -> None:
+    game_root = tmp_path / "game-user-root"
+    logs = game_root / "logs"
+    crashes = game_root / "crashes"
+    runtime = tmp_path / "runtime"
+    write_logs(logs, SIX_LOG_BYTES)
+    crashes.mkdir(parents=True)
+    baseline = scan_crash_inventory(crashes)
+    crash_folder = crashes / "ck3_20260814_030405"
+    (crash_folder / "logs").mkdir(parents=True)
+    termination, crash = infer_termination_from_crashes(
+        baseline, scan_crash_inventory(crashes)
+    )
+
+    pending = spool_logs(logs, runtime)
+    write_capture_receipt(
+        runtime,
+        pending,
+        trigger="process_exit",
+        process=ProcessIdentity(606, "ck3.exe", 60600),
+        termination_kind=termination,
+        crash=crash,
+    )
+    assert not (runtime / "crash_evidence").exists()
+    processed = process_pending(runtime, _classifier())
+    assert processed.reconciliation_errors == ()
+
+    conn = repository.open_db(runtime / "ck3chronicle.db")
+    try:
+        run = repository.get_run_by_capture_id(conn, pending.dest_dir.name)
+        assert run["termination_kind"] == "crash"
+        assert run["crash_exception_status"] == "absent"
+        report = build_session_report(conn, int(run["session_id"]))
+        assert report["run"]["crash"]["exception"]["status"] == "absent"
+        assert report["run"]["crash"]["exception"]["retained_path"] is None
+    finally:
+        conn.close()
+
+
+def test_rrun_007_stale_crash_folder_is_not_associated_or_copied(tmp_path) -> None:
+    game_root = tmp_path / "game-user-root"
+    logs = game_root / "logs"
+    crashes = game_root / "crashes"
+    runtime = tmp_path / "runtime"
+    write_logs(logs, SIX_LOG_BYTES)
+    stale = crashes / "ck3_20260813_010203"
+    stale.mkdir(parents=True)
+    (stale / "exception.txt").write_bytes(b"old crash\n")
+    baseline = scan_crash_inventory(crashes)
+    termination, crash = infer_termination_from_crashes(
+        baseline, scan_crash_inventory(crashes)
+    )
+    assert termination == "normal"
+    assert crash is None
+
+    pending = spool_logs(logs, runtime)
+    write_capture_receipt(
+        runtime,
+        pending,
+        trigger="process_exit",
+        process=ProcessIdentity(707, "ck3.exe", 70700),
+        termination_kind=termination,
+        crash=crash,
+    )
+    assert not (runtime / "crash_evidence").exists()
+    processed = process_pending(runtime, _classifier())
+    assert processed.reconciliation_errors == ()
+
+    conn = repository.open_db(runtime / "ck3chronicle.db")
+    try:
+        run = repository.get_run_by_capture_id(conn, pending.dest_dir.name)
+        assert run["termination_kind"] == "normal"
+        assert run["crash_exception_status"] == "not_applicable"
+    finally:
+        conn.close()
+
+
+def test_rrun_008_v1_crash_receipt_remains_truthfully_unavailable(tmp_path) -> None:
+    game_root = tmp_path / "game-user-root"
+    logs = game_root / "logs"
+    crashes = game_root / "crashes"
+    runtime = tmp_path / "runtime"
+    write_logs(logs, SIX_LOG_BYTES)
+    crashes.mkdir(parents=True)
+    baseline = scan_crash_inventory(crashes)
+    crash_folder = crashes / "ck3_20260814_040506"
+    crash_folder.mkdir()
+    (crash_folder / "exception.txt").write_bytes(b"historical exception\n")
+    termination, crash = infer_termination_from_crashes(
+        baseline, scan_crash_inventory(crashes)
+    )
+
+    pending = spool_logs(logs, runtime)
+    write_capture_receipt(
+        runtime,
+        pending,
+        trigger="process_exit",
+        process=ProcessIdentity(808, "ck3.exe", 80800),
+        termination_kind=termination,
+        crash=crash,
+    )
+    process_pending(runtime, _classifier())
+
+    db_path = runtime / "ck3chronicle.db"
+    conn = repository.open_db(db_path)
+    try:
+        conn.execute(
+            "DELETE FROM capture_observations WHERE capture_id = ?",
+            (pending.dest_dir.name,),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    receipt_path = (
+        runtime / "run_receipts" / "finalized" / f"{pending.dest_dir.name}.json"
+    )
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    receipt["schema_version"] = 1
+    receipt.pop("crash_exception")
+    receipt_path.write_text(
+        json.dumps(receipt, sort_keys=True, separators=(",", ":")) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+    summary = reconcile_run_receipts(runtime, db_path)
+    assert summary.errors == ()
+    assert summary.registered == 1
+    conn = repository.open_db(db_path)
+    try:
+        run = repository.get_run_by_capture_id(conn, pending.dest_dir.name)
+        assert run["termination_kind"] == "crash"
+        assert run["crash_exception_status"] == "unavailable"
+        assert run["crash_exception_source_rel_path"] == "exception.txt"
+        assert run["crash_exception_retained_path"] is None
     finally:
         conn.close()

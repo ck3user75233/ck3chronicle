@@ -336,13 +336,17 @@ def cmd_sessions(args: argparse.Namespace) -> int:
         print("No sessions recorded.")
         return 0
 
-    header = f"{'id':<4}  {'created_at':<26}  {'logs':<4}  {'crash':<5}  {'bytes'}"
+    header = (
+        f"{'id':<4}  {'created_at':<26}  {'logs':<4}  "
+        f"{'legacy crash files':<18}  {'bytes'}"
+    )
     print(header)
     print("-" * len(header))
     for row in rows:
         print(
             f"{row['session_id']:<4}  {row['created_at']:<26}  "
-            f"{row['log_count']:<4}  {row['crash_present']:<5}  {row['total_bytes']}"
+            f"{row['log_count']:<4}  {row['crash_present']:<18}  "
+            f"{row['total_bytes']}"
         )
     return 0
 
@@ -699,9 +703,16 @@ def _print_executive_report(report: dict[str, object]) -> None:
             f"{observed_run['observed_ended_at']} - "
             f"termination={observed_run['termination_kind']}"
         )
+        crash = observed_run.get("crash")
+        if isinstance(crash, dict):
+            exception = crash["exception"]
+            retained = exception["retained_path"]
+            suffix = f"; retained={retained}" if retained else ""
+            print(f"Crash exception: {exception['status']}{suffix}")
     print(
         f"Evidence: {session['log_count']} logs; completeness="
-        f"{session['evidence_completeness']}; crash={session['crash_present']}"
+        f"{session['evidence_completeness']}; legacy crash artifacts="
+        f"{session['legacy_crash_artifact_present']}"
     )
     print(
         f"Parsed: {parse['source_blocks']:,} blocks; "
@@ -811,7 +822,7 @@ def _cmd_report(args: argparse.Namespace, *, latest: bool) -> int:
         payload = (
             {
                 "schema": "ck3chronicle.report-with-comparison",
-                "schema_version": 1,
+                "schema_version": 2,
                 "report": report,
                 "comparison": comparison,
             }
@@ -966,7 +977,7 @@ def cmd_process_pending(args: argparse.Namespace) -> int:
 
     payload = {
         "schema": "ck3chronicle.processing-result",
-        "schema_version": 2,
+        "schema_version": 3,
         "finalized_pending": result.finalized_pending,
         "registered_archives": result.registered_archives,
         "registered_runs": result.registered_runs,

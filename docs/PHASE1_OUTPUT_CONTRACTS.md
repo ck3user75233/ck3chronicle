@@ -54,13 +54,13 @@ The stable Phase 1 exit taxonomy is:
 
 A warning may carry a non-null partial `result`; a failed envelope does not.
 
-## Processing-result v2
+## Processing-result v3
 
 The `result` of `process-pending --json` is:
 
 ```text
 schema                  "ck3chronicle.processing-result"
-schema_version          2
+schema_version          3
 finalized_pending       integer
 registered_archives     integer
 registered_runs         integer
@@ -68,7 +68,7 @@ context_sessions        integer
 parsed_sessions         integer
 classified_sessions     integer
 reconciliation_errors   array[string]
-latest_report           session-report v5 | null
+latest_report           session-report v6 | null
 ```
 
 The counters describe mutations performed by that invocation, not lifetime
@@ -81,14 +81,14 @@ finalize pending evidence, recover finalized orphan archives, register durable
 run receipts, and transactionally derive runtime, parse, and classification
 records. The watcher never invokes it.
 
-## Session-report v5
+## Session-report v6
 
 `build_session_report`, successful `report --json`, successful `latest
 --json`, and `processing-result.latest_report` use:
 
 ```text
 schema             "ck3chronicle.session-report"
-schema_version     5
+schema_version     6
 run                run | null
 session            session
 parse              parse
@@ -110,7 +110,23 @@ crash, file_origins
 ```
 
 `crash` is `null` unless `termination_kind == "crash"`; otherwise it contains
-`folder_name`, `detected_at`, `association_method`, and `confidence`.
+`folder_name`, `detected_at`, `association_method`, `confidence`, and
+`exception`.
+
+`crash.exception` contains:
+
+```text
+status             "captured" | "absent" | "unavailable"
+source_rel_path    "exception.txt"
+retained_path      string | null
+sha256             64-character lowercase SHA-256 | null
+bytes              non-negative integer | null
+source_mtime_ns    integer | null
+```
+
+Only `captured` carries retained path/hash/size/source-timestamp fields. The
+protected path is `crash_evidence/<capture_id>/exception.txt`. Historical v1
+run receipts may project `unavailable`; they must not be relabeled captured.
 Each file-origin item contains `rel_path`, `origin_kind`,
 `crash_equivalence`, and `preserved_crash_rel_path`. These fields identify
 whether a run's authoritative log came from the live log set or a preserved
@@ -120,8 +136,12 @@ crash copy. They do not assert error causation.
 
 ```text
 session_id, captured_at, evidence_bundle_hash, log_count,
-crash_present, total_bytes, evidence_completeness
+legacy_crash_artifact_present, total_bytes, evidence_completeness
 ```
+
+`legacy_crash_artifact_present` describes old content bundles that embedded a
+crash-folder copy. It is not run termination evidence. Normal/crash/unknown is
+defined only by `run.termination_kind` and its crash projection.
 
 `parse` contains:
 
@@ -186,8 +206,8 @@ reopen archived logs, reparse, or reclassify.
 
 ```text
 schema          "ck3chronicle.report-with-comparison"
-schema_version  1
-report          session-report v5
+schema_version  2
+report          session-report v6
 comparison      session-comparison v2
 ```
 
@@ -286,7 +306,7 @@ printed value must originate from the corresponding JSON result object.
 
 | Operation | Evidence writes | SQLite writes | Reads archived logs |
 |---|---:|---:|---:|
-| `spool_logs` / watcher capture | yes, pending copy/receipt | no | live source only |
+| `spool_logs` / watcher capture | yes, pending copy/receipt and optional protected exception | no | live approved logs plus only the associated crash exception; no archive reads |
 | `process_pending` | yes, finalization/reconciliation | yes | yes |
 | `parse_session` | no | yes, derived transaction | `error.log` only |
 | `parse_runtime_context` | no | yes, derived transaction | `debug.log` only |

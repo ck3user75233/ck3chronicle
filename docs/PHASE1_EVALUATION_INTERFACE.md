@@ -64,8 +64,14 @@ ck3chronicle.watcher.write_capture_receipt(
 
 The immutable receipt is separate from evidence bytes. Two receipts may point
 to one content-addressed bundle; they must become two database run rows. Crash
-inventory detection reads directory metadata only on the exit path. Deferred
-processing hashes crash logs and avoids copying an exactly equal crash copy.
+inventory detection reads directory metadata only on the exit path. For a
+newly associated crash folder, `write_capture_receipt` attempts to copy the
+root-level `exception.txt` immediately to
+`crash_evidence/<capture_id>/exception.txt`, hashes only that protected copy,
+and records `captured`, `absent`, or `unavailable` in the receipt. Normal runs
+record `not_applicable`. Deferred processing verifies that artifact, projects
+its provenance into SQLite, hashes crash principal logs, and avoids copying an
+exactly equal principal-log copy.
 
 Public equivalents:
 
@@ -110,7 +116,7 @@ ck3chronicle process-pending [--json]
 ```
 
 The function returns `ProcessingResult` directly. The JSON CLI wraps its
-`ck3chronicle.processing-result` v2 projection in exactly one
+`ck3chronicle.processing-result` v3 projection in exactly one
 `ck3chronicle.command-result` v1 envelope:
 
 ```text
@@ -276,14 +282,14 @@ ck3chronicle latest [--json]
 ck3chronicle errors [--session SESSION_ID | --run RUN_ID] [--json]
 ```
 
-The report is schema v5. `observed_run_id` selects an exact run; omitting it
+The report is schema v6. `observed_run_id` selects an exact run; omitting it
 selects the latest observed run for that evidence session. `latest` selects the
 newest run whose evidence is finalized, parsed, and classified, with a
 compatibility fallback only for direct development registrations that predate
 run receipts.
 
 Each JSON report command emits one `ck3chronicle.command-result` v1 envelope.
-Its `result` is the session-report v5, report-with-comparison v1, or errors v1
+Its `result` is the session-report v6, report-with-comparison v2, or errors v1
 projection. Readiness/input failures use exit 2 and report-stage error codes;
 database failures use exit 5; unexpected report failures use exit 1. Human text
 mode remains a concise executive projection of the same stored report object.
@@ -297,9 +303,9 @@ private data. Those are independent-evaluator responsibilities.
 
 | Gate | Product seam | Public inputs and observations |
 |---|---|---|
-| `P1-CAP-01` | `spool_logs`; `finalize_pending_captures`; `capture`; `process-pending --json` | A logs directory and evidence root. Observe pending/archive paths, manifest, registry rows, processing envelope, and immutable evidence bytes. Copy/finalize/process mutate evidence and the index. |
+| `P1-CAP-01` | `spool_logs`; `write_capture_receipt`; `finalize_pending_captures`; `capture`; `process-pending --json` | A logs directory, run-associated crash folder, and evidence root. Observe pending/archive paths, protected `exception.txt`, receipts, manifest, registry rows, processing envelope, and immutable evidence bytes. Exercise captured, absent, and stale/unassociated crash-folder cases. Copy/finalize/process mutate evidence and the index. |
 | `P1-CAP-02` | Same capture/finalize/process seams | Re-submit independently selected identical evidence. Observe bundle identity, session rows, durable run receipts/rows, and returned registration counters. |
-| `P1-CAP-03` | `spool_logs`; `read_snapshot`; `reconcile_archives`; `process-pending --json` | The evaluator supplies its own source/evidence mutations. Observe manifest/file verification, bundle identity, command status, and archive/index state. |
+| `P1-CAP-03` | `spool_logs`; `read_snapshot`; `reconcile_archives`; `process-pending --json`; `audit_database` | The evaluator supplies its own source/evidence mutations, including a protected exception mutation. Observe manifest/file verification, run-artifact verification, bundle identity, command status, and archive/index state. |
 | `P1-CAP-04` | `spool_logs(..., abort_if=...)`; `capture`; watcher receipt path | The evaluator controls restart/source-instability signals. Observe exception or command exit, pending/final archive presence, and receipts. |
 | `P1-CAP-05` | `finalize_pending_captures`; `reconcile_archives`; `process-pending --json` | The evaluator supplies fault points. Observe durable archive recoverability plus the command-result status, exit code, stage, retryability, counters, and database state. |
 | `P1-CAP-06` | `spool_logs`; `process-pending --json`; `build_session_report` | The evaluator supplies missing/zero-byte approved logs. Observe explicit rejection or accepted completeness, zero counters, and report fields. |
@@ -319,12 +325,12 @@ private data. Those are independent-evaluator responsibilities.
 | `P1-PAR-09` | `parse_session` plus repository reads | Evaluator chooses a first-parse failure. Observe exception/public exit and absence of a falsely successful or partial projection. |
 | `P1-PAR-10` | `parse_session`; `classify_session`; `build_session_report` | A finalized zero-byte `error.log`. Observe returned counters, stored state, classification counts, and report projection. |
 | `P1-PAR-11` | `audit_database`; `audit-db --deep --json`; repository aggregate reads | Evaluator-selected processed databases. Observe audit output and stored total/per-block/per-signature/provenance invariants. Audit is read-only. |
-| `P1-REP-01` | `process_pending`; `process-pending --json` | Evidence root plus approved classifier. Observe processing-result v2 inside command-result v1 and all documented side effects. |
+| `P1-REP-01` | `process_pending`; `process-pending --json` | Evidence root plus approved classifier. Observe processing-result v3 inside command-result v1 and all documented side effects. |
 | `P1-REP-02` | `report`, `latest`, `errors` in text and `--json` modes | Same stored target and limit. Observe stdout bytes, JSON result, exit status, and stderr; field equivalence is independently scored. |
 | `P1-REP-03` | `build_session_report`; `report`; `latest`; `errors` | Process once, then use stored records. The evaluator controls removal/unavailability of raw inputs and observes report stability. |
 | `P1-REP-04` | Same report seams | Evaluator records database/evidence hashes before and after each read command. Product report functions and commands are read-only. |
 | `P1-REP-05` | `process_pending`; report seams | Evaluator controls repeat calls and insertion order. Observe processing counters, stored projections, JSON bytes, and pattern ordering. |
-| `P1-REP-06` | `latest_report_target`; `report --run`; `errors --run`; `latest` | Evaluator supplies run chronology including repeated evidence. Observe exact run/session selection and file-origin/crash provenance. |
+| `P1-REP-06` | `latest_report_target`; `report --run`; `errors --run`; `latest` | Evaluator supplies run chronology including repeated evidence. Observe exact run/session selection, principal-file origin, crash provenance, and the exception status/path/hash/size/source-timestamp projection. |
 | `P1-REP-07` | `process-pending --json`; `report --json`; `latest --json`; `errors --json` | Evaluator supplies success/readiness/integrity/model/database/pipeline conditions. Observe one command-result envelope, stdout/stderr, and process exit. |
 | `P1-HOLD-01` | The same capture/runtime/parse/classify/report seams | Oracle custodian supplies a post-freeze unseen package. Runner records outputs only; scorer owns expected values. |
 | `P1-MUT-01` | The same product seams | Independent harness author creates and hashes mutations. Runner records candidate outputs; independent scorer owns kill criteria. |

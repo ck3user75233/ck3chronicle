@@ -11,13 +11,16 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import shutil
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping
 
 
-RUN_RECEIPT_VERSION = 1
+RUN_RECEIPT_VERSION = 2
+SUPPORTED_RUN_RECEIPT_VERSIONS = frozenset({1, RUN_RECEIPT_VERSION})
+CRASH_EXCEPTION_NAME = "exception.txt"
 
 
 class RunReceiptError(RuntimeError):
@@ -32,6 +35,93 @@ def _canonical_bytes(payload: Mapping[str, Any]) -> bytes:
 
 def _receipt_root(root: Path) -> Path:
     return Path(root) / "run_receipts"
+
+
+def _hash_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _uncaptured_exception(status: str) -> dict[str, Any]:
+    return {
+        "status": status,
+        "source_rel_path": CRASH_EXCEPTION_NAME,
+        "retained_path": None,
+        "sha256": None,
+        "bytes": None,
+        "source_mtime_ns": None,
+    }
+
+
+def preserve_crash_exception(
+    root: Path,
+    *,
+    capture_id: str,
+    termination_kind: str,
+    crash: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    """Copy the associated crash exception once, then hash the protected copy.
+
+    This runs only after the live logs have been copied. It never hashes the
+    live exception source and never traverses an unassociated crash folder.
+    """
+    safe_id = _validate_capture_id(capture_id)
+    if termination_kind != "crash":
+        return _uncaptured_exception("not_applicable")
+    folder_path = crash.get("folder_path") if isinstance(crash, Mapping) else None
+    if not isinstance(folder_path, str) or not folder_path:
+        return _uncaptured_exception("unavailable")
+
+    source = Path(folder_path) / CRASH_EXCEPTION_NAME
+    try:
+        if not source.exists():
+            return _uncaptured_exception("absent")
+        if source.is_symlink() or not source.is_file():
+            return _uncaptured_exception("unavailable")
+
+        relative = Path("crash_evidence") / safe_id / CRASH_EXCEPTION_NAME
+        destination = Path(root) / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        if not destination.exists():
+            fd, temporary_name = tempfile.mkstemp(
+                prefix=f".{CRASH_EXCEPTION_NAME}-", dir=destination.parent
+            )
+            temporary = Path(temporary_name)
+            try:
+                with source.open("rb") as source_stream, os.fdopen(
+                    fd, "wb"
+                ) as target_stream:
+                    shutil.copyfileobj(
+                        source_stream, target_stream, length=1024 * 1024
+                    )
+                    target_stream.flush()
+                    os.fsync(target_stream.fileno())
+                shutil.copystat(source, temporary, follow_symlinks=False)
+                try:
+                    os.link(temporary, destination)
+                except FileExistsError:
+                    pass
+            finally:
+                try:
+                    temporary.unlink()
+                except FileNotFoundError:
+                    pass
+        if destination.is_symlink() or not destination.is_file():
+            raise RunReceiptError("protected crash exception is not a regular file")
+        stat = destination.stat()
+        return {
+            "status": "captured",
+            "source_rel_path": CRASH_EXCEPTION_NAME,
+            "retained_path": relative.as_posix(),
+            "sha256": _hash_file(destination),
+            "bytes": stat.st_size,
+            "source_mtime_ns": stat.st_mtime_ns,
+        }
+    except OSError:
+        return _uncaptured_exception("unavailable")
 
 
 def protected_receipt_path(root: Path, capture_id: str) -> Path:
@@ -93,6 +183,7 @@ def publish_protected_receipt(
     observed_ended_at: str | None = None,
     termination_kind: str = "unknown",
     crash: Mapping[str, Any] | None = None,
+    crash_exception: Mapping[str, Any] | None = None,
 ) -> Path:
     """Record one protected copy without hashing or touching SQLite."""
     safe_id = _validate_capture_id(capture_id)
@@ -111,6 +202,13 @@ def publish_protected_receipt(
         "observed_ended_at": observed_ended_at or captured_at,
         "termination_kind": termination_kind,
         "crash": dict(crash) if crash is not None else None,
+        "crash_exception": (
+            dict(crash_exception)
+            if crash_exception is not None
+            else _uncaptured_exception(
+                "unavailable" if termination_kind == "crash" else "not_applicable"
+            )
+        ),
     }
     return _publish_immutable(protected_receipt_path(root, safe_id), payload)
 
@@ -146,6 +244,7 @@ def _legacy_last_capture(root: Path, pending_name: str) -> dict[str, Any] | None
         "observed_ended_at": payload.get("captured_at"),
         "termination_kind": "unknown",
         "crash": None,
+        "crash_exception": _uncaptured_exception("not_applicable"),
     }
 
 
@@ -176,6 +275,7 @@ def finalize_run_receipt(
             "observed_ended_at": captured_at,
             "termination_kind": "unknown",
             "crash": None,
+            "crash_exception": _uncaptured_exception("not_applicable"),
         }
         _publish_immutable(protected_path, protected)
 
@@ -210,4 +310,3 @@ def receipt_sha256(path: Path) -> str:
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
-

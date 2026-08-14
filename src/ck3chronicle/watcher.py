@@ -20,7 +20,7 @@ from .harvester import (
     UnstableCapture,
     discover_logs,
 )
-from .run_receipts import publish_protected_receipt
+from .run_receipts import preserve_crash_exception, publish_protected_receipt
 
 T = TypeVar("T")
 EventSink = Callable[[str, dict[str, Any]], None]
@@ -328,6 +328,12 @@ def write_capture_receipt(
     path = _receipt_path(dest_root)
     path.parent.mkdir(parents=True, exist_ok=True)
     process_payload = process.as_dict() if process is not None else None
+    crash_exception = preserve_crash_exception(
+        dest_root,
+        capture_id=pending.dest_dir.name,
+        termination_kind=termination_kind,
+        crash=crash,
+    )
     publish_protected_receipt(
         dest_root,
         capture_id=pending.dest_dir.name,
@@ -339,6 +345,7 @@ def write_capture_receipt(
         observed_ended_at=observed_ended_at,
         termination_kind=termination_kind,
         crash=crash,
+        crash_exception=crash_exception,
     )
     payload = {
         "schema_version": RECEIPT_VERSION,
@@ -346,6 +353,9 @@ def write_capture_receipt(
         "pending_dir": str(pending.dest_dir),
         "trigger": trigger,
         "process": process_payload,
+        "termination_kind": termination_kind,
+        "crash": crash,
+        "crash_exception": crash_exception,
         "files": [
             {
                 "name": item.name,

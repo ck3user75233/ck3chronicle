@@ -113,6 +113,12 @@ def _apply_migrations(conn: sqlite3.Connection) -> bool:
         "crash_detected_at": "TEXT",
         "crash_association_method": "TEXT",
         "crash_association_confidence": "TEXT",
+        "crash_exception_status": "TEXT NOT NULL DEFAULT 'unavailable'",
+        "crash_exception_source_rel_path": "TEXT",
+        "crash_exception_retained_path": "TEXT",
+        "crash_exception_sha256": "TEXT",
+        "crash_exception_bytes": "INTEGER",
+        "crash_exception_source_mtime_ns": "INTEGER",
         "receipt_sha256": "TEXT",
     }
     for column, declaration in observation_additions.items():
@@ -132,6 +138,22 @@ def _apply_migrations(conn: sqlite3.Connection) -> bool:
         UPDATE capture_observations
         SET observed_ended_at = observed_at
         WHERE observed_ended_at IS NULL
+        """
+    )
+    cur.execute(
+        """
+        UPDATE capture_observations
+        SET crash_exception_status = 'not_applicable'
+        WHERE termination_kind = 'normal'
+          AND crash_exception_status = 'unavailable'
+        """
+    )
+    cur.execute(
+        """
+        UPDATE capture_observations
+        SET crash_exception_source_rel_path = 'exception.txt'
+        WHERE termination_kind = 'crash'
+          AND crash_exception_source_rel_path IS NULL
         """
     )
     cur.execute(

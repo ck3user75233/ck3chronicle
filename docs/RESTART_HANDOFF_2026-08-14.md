@@ -80,6 +80,12 @@ On exit, the watcher must continue copying the live logs first. Crash-folder
 discovery and hash comparison may happen afterward. Preserve a crash-folder
 copy only when its bytes differ from the protected live copy.
 
+Subsequent Phase 1 decision (2026-08-15): the root-level crash
+`exception.txt` is distinct evidence, not a duplicate principal log. After the
+live logs are protected, the watcher captures it by default from only the
+newly associated crash folder, hashes the protected copy, and binds explicit
+captured/absent/unavailable provenance to the run receipt and SQLite row.
+
 ## Next implementation sequence
 
 The immediate checkpoint is still Phase 1 architecture, not resolver work:
@@ -118,4 +124,3 @@ partially fixed, unchanged, worse, or inconclusive, with exact counts and any
 new errors associated with the patch file. Causation language requires A/B or
 rollback evidence; otherwise the product should say newly observed and
 associated, not spawned by the patch.
-

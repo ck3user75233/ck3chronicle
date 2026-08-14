@@ -64,7 +64,8 @@ The repository contains substantial Phase 1 implementation:
 - auditable CK3 lifecycle observation and copy-first pending protection;
 - content-addressed archive finalization and transactional registration;
 - durable per-run receipts and run rows independent of deduplicated evidence,
-  including crash termination and principal-log origin provenance;
+  including crash termination, principal-log origin provenance, and default
+  capture of the associated crash `exception.txt` artifact;
 - canonical `error.log` block/occurrence storage;
 - versioned empirical classification and review queues;
 - memory-bounded block-at-a-time canonical persistence with transactional
@@ -98,11 +99,12 @@ formal exit report. No current commit has such an exit record.
 
 ### Immediate work
 
-The implementation-side public interface freeze is complete: process/report
-command envelopes, text/JSON projections, the failure taxonomy, all 35
-gate-to-call mappings, output schemas, and mutation boundaries are published.
-Implementation agents stop at that boundary and do not supply evaluator runner
-or scorer code.
+The implementation-side public interface was frozen for candidate `d07b19e`,
+but that candidate was superseded before private-holdout execution when
+default crash `exception.txt` capture was added to the Phase 1 requirement.
+The frozen `d07b19e` harness remains a baseline artifact only. Implementation
+agents publish the updated function/output contract but do not edit evaluator
+runner or scorer code.
 
 The Phase 1 semantic authority is also reconciled: the 252-item canonical
 issue-field oracle and later human-reviewed template/slot authority now have
@@ -110,10 +112,11 @@ separate hash-bound roles, with locator recognition preceding L1 assignment.
 
 Remaining work proceeds in this order:
 
-1. Freeze a clean release-candidate commit and record its tree, package,
-   interface, model, and contract hashes.
-2. Have the independent harness authority implement and freeze the protected
-   real-evidence runners from the published interfaces.
+1. Freeze a clean successor release-candidate commit and record its tree,
+   package, interface, model, and contract hashes.
+2. Have the independent harness authority rebind and extend its own frozen
+   harness for the successor interface, including captured, absent, corrupt,
+   and stale/unassociated crash-exception cases.
 3. Have the independent oracle authority freeze the complete report and
    command-envelope expected artifacts.
 4. Execute correctness, rollback, mutation, holdout, and performance gates

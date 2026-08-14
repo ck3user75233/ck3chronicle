@@ -15,6 +15,8 @@ active source tree because they described a different or failed design.
   content-addressed evidence deduplication;
 - record normal/crash/unknown termination and exact crash-log source
   equivalence without duplicating identical crash-folder logs;
+- capture `exception.txt` by default from the newly associated crash folder,
+  with explicit captured/absent/unavailable provenance bound to the run;
 - finalize protected copies into content-addressed archives;
 - verify archive manifests and reconcile finalized archives with SQLite;
 - split archived `error.log` into immutable source blocks;
@@ -28,8 +30,10 @@ active source tree because they described a different or failed design.
 - atomically persist versioned model registrations, classification runs, and
   one provenance row per semantic unit;
 
-The watcher is deliberately copy-only. Hashing, SQLite work, parsing, and
-classification do not occur in the process-exit path.
+The watcher never hashes the live principal logs and performs no SQLite,
+parsing, or classification work in the process-exit path. It copies the small
+crash `exception.txt` artifact, when present, and hashes only that protected
+copy so the immutable run receipt can bind it immediately.
 
 ## Commands currently implemented
 

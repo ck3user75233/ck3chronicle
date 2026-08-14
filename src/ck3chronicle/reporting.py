@@ -347,6 +347,20 @@ def build_session_report(
                     "confidence": observed_run[
                         "crash_association_confidence"
                     ],
+                    "exception": {
+                        "status": observed_run["crash_exception_status"],
+                        "source_rel_path": observed_run[
+                            "crash_exception_source_rel_path"
+                        ],
+                        "retained_path": observed_run[
+                            "crash_exception_retained_path"
+                        ],
+                        "sha256": observed_run["crash_exception_sha256"],
+                        "bytes": observed_run["crash_exception_bytes"],
+                        "source_mtime_ns": observed_run[
+                            "crash_exception_source_mtime_ns"
+                        ],
+                    },
                 }
                 if observed_run["termination_kind"] == "crash"
                 else None
@@ -365,14 +379,14 @@ def build_session_report(
         }
     return {
         "schema": "ck3chronicle.session-report",
-        "schema_version": 5,
+        "schema_version": 6,
         "run": run_projection,
         "session": {
             "session_id": int(session["session_id"]),
             "captured_at": session["created_at"],
             "evidence_bundle_hash": session["evidence_bundle_hash"],
             "log_count": int(session["log_count"]),
-            "crash_present": bool(session["crash_present"]),
+            "legacy_crash_artifact_present": bool(session["crash_present"]),
             "total_bytes": int(session["total_bytes"]),
             "evidence_completeness": session["evidence_completeness"],
         },

@@ -1,6 +1,6 @@
 # Project status
 
-Date: 2026-08-14
+Date: 2026-08-15
 
 Branch: `codex/ck3chronicle-reboot`
 
@@ -33,6 +33,8 @@ Historical material is recoverable from:
 - one immutable receipt and database run row per observed exit, even when
   several runs share the same evidence bundle;
 - normal/crash/unknown termination provenance and per-run file origins;
+- immediate default preservation of a newly associated crash folder's
+  `exception.txt`, with receipt/database status and integrity provenance;
 - deferred exact-hash comparison of crash-folder principal logs, with no
   duplicate copy when they equal the protected live logs;
 - manifest verification and transactional SQLite registration;
@@ -40,17 +42,20 @@ Historical material is recoverable from:
 - immutable source blocks plus one-row-per-occurrence provenance;
 - atomic parse and reparse persistence.
 
-The implemented foundation and production classifier seam are covered by the new
-reboot-owned suite: 112 tests as of this status record. No inherited test
-contributes to that number.
+The implemented foundation and production classifier seam are covered by the
+new reboot-owned suite: 115 tests at the current successor checkpoint. No
+inherited test contributes to that count.
 
 These are fast regression tests. The complete protected-real-evidence,
 holdout, mutation, command-envelope, and performance exit gates have not run
 against one frozen current-tip candidate.
 
 The repository contains an implementation-side evaluation-interface handoff,
-not implementation-authored executable exit tests. Independent evaluator roles
-must author and freeze the release harness and scorers.
+not implementation-authored executable exit tests. An independent harness was
+frozen for `d07b19e`, but no private holdout was selected or executed. The
+candidate and harness were superseded by the crash-exception requirement and
+remain baseline artifacts only. Independent evaluator roles must rebind and
+extend their own harness for the successor candidate.
 
 Semantic authority is reconciled in `PHASE1_SEMANTIC_AUTHORITY.md`: canonical
 issue fields, structural template identity, and explicit human slot decisions
@@ -168,9 +173,10 @@ the live index found:
 - multiple archived source logs themselves end at exactly 100,000 blocks, so
   ck3chronicle did not truncate them; the repeated boundary is recorded as an
   observation whose cause remains unverified;
-- historical imports lacked durable process chronology; capture-schema v2
+- historical imports lacked durable process chronology; capture-schema v3
   preserves one explicit `unknown` legacy run per otherwise unobserved bundle,
-  without inventing unrecoverable start/exit facts;
+  without inventing unrecoverable start/exit facts, and marks historical crash
+  exception evidence `unavailable` rather than claiming it was captured;
 - one protected pending capture not yet processed, reported separately.
 
 The compact-storage migration was exercised on a consistent disposable copy of

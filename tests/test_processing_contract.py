@@ -67,7 +67,7 @@ def test_rprocess_002_cli_json_reports_each_completed_stage(
     assert payload["error"] is None
     result = payload["result"]
     assert result["schema"] == "ck3chronicle.processing-result"
-    assert result["schema_version"] == 2
+    assert result["schema_version"] == 3
     assert result["finalized_pending"] == 1
     assert result["registered_archives"] == 1
     assert result["registered_runs"] == 1

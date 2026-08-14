@@ -629,12 +629,45 @@ def audit_database(root: Path, *, deep: bool = False) -> dict[str, object]:
         receipt_errors: list[dict[str, object]] = []
         origin_errors: list[dict[str, object]] = []
         crash_errors: list[int] = []
+        exception_errors: list[dict[str, object]] = []
+        resolved_evidence_root = evidence_root.resolve()
         for run in run_rows:
             observation_id = int(run["observation_id"])
             if run["termination_kind"] == "crash" and (
                 not run["crash_folder_name"] or not run["crash_folder_path"]
             ):
                 crash_errors.append(observation_id)
+            exception_status = run["crash_exception_status"]
+            if run["termination_kind"] == "crash":
+                if exception_status == "not_applicable":
+                    exception_errors.append(
+                        {"run_id": observation_id, "error": "contradictory_status"}
+                    )
+            elif exception_status in {"captured", "absent"}:
+                exception_errors.append(
+                    {"run_id": observation_id, "error": "contradictory_status"}
+                )
+            if exception_status == "captured":
+                retained_path = run["crash_exception_retained_path"]
+                try:
+                    if not isinstance(retained_path, str):
+                        raise ValueError("missing retained path")
+                    retained = (evidence_root / retained_path).resolve()
+                    retained.relative_to(resolved_evidence_root)
+                    expected_sha256 = run["crash_exception_sha256"]
+                    expected_bytes = run["crash_exception_bytes"]
+                    if retained.is_symlink() or not retained.is_file():
+                        raise ValueError("retained file is missing")
+                    if retained.stat().st_size != expected_bytes:
+                        raise ValueError("retained byte count disagrees")
+                    with retained.open("rb") as stream:
+                        digest = hashlib.file_digest(stream, "sha256").hexdigest()
+                    if digest != expected_sha256:
+                        raise ValueError("retained hash disagrees")
+                except (OSError, ValueError) as exc:
+                    exception_errors.append(
+                        {"run_id": observation_id, "error": str(exc)}
+                    )
             if run["receipt_sha256"] is None:
                 continue
             receipt_path = receipt_root / f"{run['capture_id']}.json"
@@ -691,6 +724,14 @@ def audit_database(root: Path, *, deep: bool = False) -> dict[str, object]:
                 "index_integrity",
                 "crash runs are missing crash-folder provenance",
                 details={"run_ids": crash_errors},
+            )
+        if exception_errors:
+            finding(
+                "error",
+                "DB-RUN-004",
+                "evidence_integrity",
+                "run exception evidence is contradictory, missing, or corrupt",
+                details={"runs": exception_errors},
             )
 
         aggregates = {

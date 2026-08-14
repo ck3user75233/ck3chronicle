@@ -11,7 +11,8 @@ from typing import Any
 from .db import repository
 from .harvester import PRINCIPAL_LOG_NAMES, hash_file
 from .run_receipts import (
-    RUN_RECEIPT_VERSION,
+    CRASH_EXCEPTION_NAME,
+    SUPPORTED_RUN_RECEIPT_VERSIONS,
     finalized_receipts,
     receipt_sha256,
 )
@@ -30,6 +31,85 @@ def _required_text(payload: dict[str, Any], name: str) -> str:
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f"run receipt has invalid {name}")
     return value
+
+
+def _exception_projection(
+    payload: dict[str, Any],
+    root: Path,
+    *,
+    capture_id: str,
+    termination_kind: str,
+) -> dict[str, Any]:
+    """Validate one protected exception descriptor without reading CK3 live data."""
+    version = int(payload.get("schema_version", 0))
+    if version == 1:
+        return {
+            "status": (
+                "not_applicable" if termination_kind == "normal" else "unavailable"
+            ),
+            "source_rel_path": (
+                CRASH_EXCEPTION_NAME if termination_kind == "crash" else None
+            ),
+            "retained_path": None,
+            "sha256": None,
+            "bytes": None,
+            "source_mtime_ns": None,
+        }
+
+    descriptor = payload.get("crash_exception")
+    if not isinstance(descriptor, dict):
+        raise ValueError("run receipt has no crash exception descriptor")
+    status = descriptor.get("status")
+    if status not in {"captured", "absent", "unavailable", "not_applicable"}:
+        raise ValueError("run receipt has invalid crash exception status")
+    if termination_kind == "crash" and status == "not_applicable":
+        raise ValueError("crash run marks exception evidence not applicable")
+    if termination_kind == "normal" and status != "not_applicable":
+        raise ValueError("normal run has contradictory crash exception status")
+
+    source_rel_path = descriptor.get("source_rel_path")
+    retained_path = descriptor.get("retained_path")
+    sha256 = descriptor.get("sha256")
+    bytes_ = descriptor.get("bytes")
+    source_mtime_ns = descriptor.get("source_mtime_ns")
+    if source_rel_path != CRASH_EXCEPTION_NAME:
+        raise ValueError("crash exception source path is invalid")
+    if status == "captured":
+        expected = (
+            Path("crash_evidence") / capture_id / CRASH_EXCEPTION_NAME
+        ).as_posix()
+        if source_rel_path != CRASH_EXCEPTION_NAME or retained_path != expected:
+            raise ValueError("crash exception path is not bound to this run")
+        if (
+            not isinstance(sha256, str)
+            or len(sha256) != 64
+            or sha256 != sha256.lower()
+            or any(character not in "0123456789abcdef" for character in sha256)
+        ):
+            raise ValueError("crash exception hash is invalid")
+        if not isinstance(bytes_, int) or bytes_ < 0:
+            raise ValueError("crash exception byte count is invalid")
+        if not isinstance(source_mtime_ns, int):
+            raise ValueError("crash exception source timestamp is invalid")
+        retained = Path(root) / Path(retained_path)
+        if retained.is_symlink() or not retained.is_file():
+            raise ValueError("captured crash exception is missing")
+        if retained.stat().st_size != bytes_ or hash_file(retained) != sha256:
+            raise ValueError("captured crash exception fails integrity verification")
+    elif any(
+        value is not None
+        for value in (retained_path, sha256, bytes_, source_mtime_ns)
+    ):
+        raise ValueError("uncaptured crash exception has retained metadata")
+
+    return {
+        "status": status,
+        "source_rel_path": source_rel_path,
+        "retained_path": retained_path,
+        "sha256": sha256,
+        "bytes": bytes_,
+        "source_mtime_ns": source_mtime_ns,
+    }
 
 
 def _preserve_different_crash_file(
@@ -151,7 +231,7 @@ def reconcile_run_receipts(
             try:
                 if payload.get("schema") != "ck3chronicle.finalized-run-receipt":
                     raise ValueError("unexpected run receipt schema")
-                if payload.get("schema_version") != RUN_RECEIPT_VERSION:
+                if payload.get("schema_version") not in SUPPORTED_RUN_RECEIPT_VERSIONS:
                     raise ValueError("unsupported run receipt version")
                 if payload.get("status") != "finalized":
                     raise ValueError("run receipt is not finalized")
@@ -170,6 +250,12 @@ def reconcile_run_receipts(
                 crash = payload.get("crash")
                 crash = crash if isinstance(crash, dict) else None
                 termination_kind = str(payload.get("termination_kind", "unknown"))
+                exception = _exception_projection(
+                    payload,
+                    evidence_root,
+                    capture_id=capture_id,
+                    termination_kind=termination_kind,
+                )
                 observation_id, was_existing = repository.register_run(
                     conn,
                     session_id=int(session["session_id"]),
@@ -187,6 +273,14 @@ def reconcile_run_receipts(
                     crash_detected_at=(crash or {}).get("detected_at"),
                     crash_association_method=(crash or {}).get("association_method"),
                     crash_association_confidence=(crash or {}).get("confidence"),
+                    crash_exception_status=exception["status"],
+                    crash_exception_source_rel_path=exception["source_rel_path"],
+                    crash_exception_retained_path=exception["retained_path"],
+                    crash_exception_sha256=exception["sha256"],
+                    crash_exception_bytes=exception["bytes"],
+                    crash_exception_source_mtime_ns=exception[
+                        "source_mtime_ns"
+                    ],
                     receipt_sha256=receipt_sha256(path),
                 )
                 stored_origins = repository.get_run_file_origins(

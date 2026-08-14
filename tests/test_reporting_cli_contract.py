@@ -98,7 +98,7 @@ def test_rreportcli_004_exact_run_selection_survives_evidence_reuse(
     exact = parser.parse_args(["report", "--run", str(first_id), "--json"])
     assert exact.func(exact) == 0
     exact_payload = json.loads(capsys.readouterr().out)["result"]
-    assert exact_payload["schema_version"] == 5
+    assert exact_payload["schema_version"] == 6
     assert exact_payload["run"]["run_id"] == first_id
     assert exact_payload["run"]["capture_id"] == "first-observed-run"
 

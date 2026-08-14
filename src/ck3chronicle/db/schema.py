@@ -68,6 +68,22 @@ CREATE TABLE IF NOT EXISTS capture_observations (
     crash_detected_at          TEXT,
     crash_association_method   TEXT,
     crash_association_confidence TEXT,
+    crash_exception_status     TEXT NOT NULL DEFAULT 'unavailable'
+                               CHECK (crash_exception_status IN (
+                                  'captured', 'absent', 'unavailable',
+                                  'not_applicable'
+                               )),
+    crash_exception_source_rel_path TEXT,
+    crash_exception_retained_path   TEXT,
+    crash_exception_sha256     TEXT CHECK (
+                                  crash_exception_sha256 IS NULL
+                                  OR length(crash_exception_sha256) = 64
+                               ),
+    crash_exception_bytes      INTEGER CHECK (
+                                  crash_exception_bytes IS NULL
+                                  OR crash_exception_bytes >= 0
+                               ),
+    crash_exception_source_mtime_ns INTEGER,
     receipt_sha256             TEXT CHECK (
                                   receipt_sha256 IS NULL
                                   OR length(receipt_sha256) = 64
@@ -473,7 +489,7 @@ ALL_DDL = [
 CURRENT_VERSION = 1
 CANONICAL_ISSUES_VERSION = 5
 SESSION_CONTEXT_VERSION = 1
-CAPTURE_VERSION = 2
+CAPTURE_VERSION = 3
 CLASSIFICATION_VERSION = 3
 STORAGE_VERSION = 2
 SESSION_INTELLIGENCE_VERSION = 1

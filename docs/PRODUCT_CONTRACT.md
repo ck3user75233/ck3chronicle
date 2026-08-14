@@ -16,7 +16,8 @@ ck3chronicle answers four questions with reproducible evidence:
    hashes to one content-addressed archive.
 3. An immutable run receipt records each observed CK3 lifecycle separately
    from the deduplicated archive, including normal/crash/unknown termination
-   provenance.
+   provenance and the associated protected `exception.txt` artifact when a
+   crash produced one.
 4. Canonical source blocks and occurrence rows are immutable projections of
    archived `error.log`.
 5. Template classifications, categories, reports, and deltas are derived,
@@ -44,14 +45,21 @@ requires an observed absent -> running -> absent lifecycle. On exit it copies
 the approved logs once to a private pending directory and publishes that
 pending copy only after the complete file set is protected.
 
-The exit path does not hash, parse, classify, or write SQLite.
+The exit path does not hash live principal logs, parse, classify, or write
+SQLite. After the approved live logs are protected, a crash run attempts to
+copy `exception.txt` from only the newly associated crash folder. The watcher
+hashes that small protected copy—not its live source—and binds its retained
+path, byte count, source timestamp, and SHA-256 to the immutable run receipt.
+Crash runs distinguish `captured`, `absent`, and `unavailable`; normal runs
+record `not_applicable`.
 
 The watcher may compare directory names and metadata in the sibling CK3
 `crashes` directory to classify an observed termination as normal, crash, or
 unknown. Crash-log hashes are calculated only during deferred processing.
 Crash-folder `error.log`, `debug.log`, and `game.log` files that exactly match
 the protected live copy are attributed but not copied again. A differing crash
-version is preserved separately and linked to the run.
+version is preserved separately and linked to the run. `exception.txt` is not
+a duplicate principal log and is captured by default when present.
 
 ## Canonical issue stream
 

@@ -420,7 +420,7 @@ def test_rdelta_004_report_since_wraps_report_and_compatible_comparison(
     assert envelope["command"] == "report"
     payload = envelope["result"]
     assert payload["schema"] == "ck3chronicle.report-with-comparison"
-    assert payload["schema_version"] == 1
+    assert payload["schema_version"] == 2
     assert payload["report"]["session"]["session_id"] == current_id
     assert payload["comparison"]["previous_session"]["session_id"] == previous_id
     assert payload["comparison"]["current_session"]["session_id"] == current_id
