@@ -92,9 +92,11 @@ formal exit report. No current commit has such an exit record.
 
 1. Reconcile the Phase 1 contract with user-approved changes made during the
    reboot, without silently weakening its evidence guarantees.
-2. Map every gate to an independent oracle, runner command, expected artifact,
-   and scorer rule.
-3. Adapt the protected real-evidence harnesses to the current compact schema.
+2. Publish the callable evaluation interface for every gate; an independent
+   harness author maps it to runner code, while a separate oracle authority
+   owns expected artifacts and scorer rules.
+3. Have the independent evaluation authority adapt protected real-evidence
+   harnesses to the current compact schema.
 4. Independently freeze the complete report and command-envelope oracle.
 5. Provide the supported public vertical-slice command and exact failure
    envelopes.

@@ -20,6 +20,12 @@ record against one frozen candidate.
 
 ## Exit-test separation of duties
 
+- The implementation/orchestration authority documents callable functions,
+  CLI commands, inputs, outputs, side effects, and schemas. It does not write
+  or run executable exit harnesses, exit fixtures, mutation campaigns, or
+  scorers.
+- An independent test-harness author turns that public interface contract into
+  runner code without receiving expected answers or modifying product code.
 - The implementer freezes the candidate before private holdout designation and
   cannot access private inputs, expected answers, or answer-level scorer output.
 - The blind runner receives the candidate, input package, and public command
@@ -36,6 +42,10 @@ separation alone is procedural, not a hard security boundary. A release-grade
 blind holdout requires user custody, separate OS identities/ACLs, or external
 CI jobs with isolated secrets. The exit report must state the actual isolation
 level.
+
+Implementation-authored unit and regression tests remain valuable fast-suite
+controls. They are not exit tests, even when they call the same product seam or
+use the same public calibration input.
 
 ## Permitted oracles
 

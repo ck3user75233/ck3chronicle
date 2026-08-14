@@ -17,12 +17,13 @@ The evaluator tooling and documentation were uncommitted during this
 calibration. The product lexer under evaluation had no working-tree change
 from the candidate commit.
 
-This first calibration runner recorded the candidate commit but did not yet
-fail closed if Python imported a package outside the declared checkout. The
-matching code copies were manually checked, but this keeps the result at
-calibration grade. The committed successor runner binds the imported module
-path and hash to the declared Git root and requires a clean candidate by
-default.
+The implementation authority wrote the calibration runner and scorer. Even
+though different agents executed and scored it, that authorship makes the
+result development calibration rather than independent exit evidence. Those
+prototype scripts were subsequently removed from the production repository.
+The independent harness author must implement provenance binding and execution
+from `PHASE1_EVALUATION_INTERFACE.md`; the implementation authority may not
+supply that executable logic.
 
 ## Separation of duties
 

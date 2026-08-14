@@ -14,9 +14,28 @@ candidate execution.
 
 - may read public contracts, training evidence, and ordinary regression tests;
 - may implement and run the fast suite;
+- publishes only the callable product interface, input/output contract, and
+  operational instructions needed by independent evaluators;
+- may not author, edit, or run executable exit-test harnesses, exit fixtures,
+  mutation campaigns, private-holdout selectors, or scorer code;
 - may not read private holdout inputs, private expected answers, or scorer
   output before the release candidate is frozen;
 - supplies only a commit hash and documented public execution commands.
+
+Implementation-authored unit and regression tests are permitted development
+controls. They can never be promoted into exit evidence by renaming them.
+
+### Independent test-harness author
+
+- receives the frozen public evaluation interface and gate contract, but no
+  private expected answers;
+- independently writes the execution harness, result-envelope capture,
+  mutations, resource measurements, and cleanup behavior;
+- cannot modify product code or ask the implementer to provide executable
+  test logic;
+- freezes and hashes the harness before the release candidate receives its
+  private holdout run;
+- hands only the frozen harness and public invocation manifest to the runner.
 
 ### Oracle custodian
 
@@ -24,12 +43,15 @@ candidate execution.
 - holds expected lexical, semantic, runtime, and report answers;
 - records hashes and provenance before execution;
 - does not modify the candidate or runner outputs;
+- does not accept implementation-authored runner or scorer logic as exit
+  authority;
 - does not disclose answer-level failures to the implementer during the same
   release attempt.
 
 ### Blind runner
 
-- receives the frozen candidate, public runner instructions, and input package;
+- receives the frozen candidate, evaluator-authored harness, public invocation
+  manifest, and input package;
 - does not receive expected answers, scorer rules containing answer values, or
   prior answer-level failure reports;
 - executes only the declared commands in a clean environment;
@@ -61,6 +83,8 @@ candidate execution.
 Separate subagents can be given non-overlapping instructions and context:
 
 - the runner is not told expected answers or oracle paths;
+- the harness author is not an implementation subagent and receives no private
+  expected answers;
 - the scorer is instructed to remain read-only and not invoke the candidate;
 - handoffs use hash-bound files rather than prose copied between agents.
 
@@ -83,22 +107,26 @@ procedural Codex-only run must not be described as cryptographically blind.
 
 ## 4. Freeze and handoff order
 
-1. Freeze public contracts and the gate inventory.
-2. Freeze the candidate commit and require a clean worktree.
-3. Record candidate source-tree and package hashes.
-4. Freeze public calibration inputs and their independent manifests.
-5. Select a holdout whose content hashes are absent from training,
+1. Freeze public contracts, the gate inventory, and the implementation-authored
+   callable-interface handoff.
+2. The independent harness author writes and freezes execution code from that
+   handoff without receiving expected answers.
+3. Freeze public calibration inputs and their independent manifests, then
+   validate the harness without using the private holdout.
+4. Freeze the candidate commit and require a clean worktree.
+5. Record candidate source-tree, package, interface, and harness hashes.
+6. Select a holdout whose content hashes are absent from training,
    adjudication, debugging, and implementation evidence.
-6. Freeze the private oracle before candidate execution.
-7. Give the blind runner only the candidate, input package, and public command
-   manifest.
-8. Close and hash the runner result package.
-9. Give the read-only scorer the closed result package and private oracle.
-10. Give the adjudicator the gate scores, provenance, isolation statement, and
-    exception log.
+7. Freeze the private oracle before candidate execution.
+8. Give the blind runner only the candidate, frozen evaluator harness, input
+   package, and public invocation manifest.
+9. Close and hash the runner result package.
+10. Give the read-only scorer the closed result package and private oracle.
+11. Give the adjudicator the gate scores, provenance, isolation statement, and
+   exception log.
 
-Any candidate change after step 2 starts a new release attempt. Any oracle
-change after step 6 invalidates the run unless the adjudicator records an
+Any candidate change after step 4 starts a new release attempt. Any oracle
+change after step 7 invalidates the run unless the adjudicator records an
 oracle defect and restarts from a newly versioned oracle.
 
 ## 5. Artifact contract
@@ -108,7 +136,9 @@ Every release attempt has immutable files equivalent to:
 ```text
 attempt.json
 candidate.manifest.json
+evaluation-interface.json
 public-run-plan.json
+evaluator-harness.manifest.json
 input.manifest.json
 runner-result.json
 outputs/<gate-id>/...
@@ -118,9 +148,9 @@ exit-report.md
 ```
 
 `attempt.json` binds the candidate commit, public contract versions, input
-manifest hash, runner-result hash, scorer-result hash, role identities, and
-isolation level. Every JSON file has an explicit schema version and canonical
-SHA-256.
+manifest hash, evaluation-interface hash, evaluator-harness hash, runner-result
+hash, scorer-result hash, role identities, and isolation level. Every JSON file
+has an explicit schema version and canonical SHA-256.
 
 The runner result records output bytes exactly. The scorer never consumes an
 unhashed mutable working file.

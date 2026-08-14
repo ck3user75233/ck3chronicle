@@ -36,12 +36,16 @@ Historical material is recoverable from:
 - atomic parse and reparse persistence.
 
 The implemented foundation and production classifier seam are covered by the new
-reboot-owned suite: 89 tests as of this status record. No inherited test
+reboot-owned suite: 86 tests as of this status record. No inherited test
 contributes to that number.
 
 These are fast regression tests. The complete protected-real-evidence,
 holdout, mutation, command-envelope, and performance exit gates have not run
 against one frozen current-tip candidate.
+
+The repository contains an implementation-side evaluation-interface handoff,
+not implementation-authored executable exit tests. Independent evaluator roles
+must author and freeze the release harness and scorers.
 
 ## Implemented classifier runtime
 

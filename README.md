@@ -131,12 +131,13 @@ Read these documents in order:
 
 1. [Project phase plan](docs/PROJECT_PLAN.md)
 2. [Phase 1 exit matrix](docs/PHASE1_EXIT_MATRIX.md)
-3. [Phase 1 exit protocol](docs/PHASE1_EXIT_PROTOCOL.md)
-4. [Project status](docs/PROJECT_STATUS.md)
-5. [Product contract](docs/PRODUCT_CONTRACT.md)
-6. [Testing authority](docs/TESTING.md)
-7. [Capability inventory](docs/ROADMAP.md)
-8. [Resolver input audit](docs/RESOLVER_INPUT_AUDIT.md)
+3. [Phase 1 evaluation interface](docs/PHASE1_EVALUATION_INTERFACE.md)
+4. [Phase 1 exit protocol](docs/PHASE1_EXIT_PROTOCOL.md)
+5. [Project status](docs/PROJECT_STATUS.md)
+6. [Product contract](docs/PRODUCT_CONTRACT.md)
+7. [Testing authority](docs/TESTING.md)
+8. [Capability inventory](docs/ROADMAP.md)
+9. [Resolver input audit](docs/RESOLVER_INPUT_AUDIT.md)
 
 ## Configuration
 

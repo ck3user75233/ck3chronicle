@@ -87,12 +87,15 @@ harness. The fast reboot suite remains useful regression coverage.
 1. Reconcile old contract clauses with the approved copy-first watcher,
    recoverable archive, empirical-classifier, and deferred-processing design.
    Record each change; do not silently redefine a failed gate.
-2. Freeze the updated public Phase 1 contract and complete output schemas.
-3. Adapt the independent real capture/runtime/lexical runners to current storage
-   without importing production expectation logic.
-4. Reconcile and re-freeze semantic authority from the later human reviews.
-5. Implement missing public/report eligibility and envelope behavior.
-6. Run calibration, failure, rollback, mutation, and performance gates.
+2. Freeze the updated public Phase 1 contract, evaluation-interface handoff,
+   and complete output schemas. Implementation agents stop at that boundary.
+3. Implement missing public/report eligibility and envelope behavior.
+4. Have the independent harness authority write the real
+   capture/runtime/lexical runners from the published interface, without
+   importing production expectation logic.
+5. Reconcile and re-freeze semantic authority from the later human reviews.
+6. Independent evaluator roles run calibration, failure, rollback, mutation,
+   and performance gates.
 7. Freeze a candidate, select a new private holdout, and use the separated
    runner/scorer process in `PHASE1_EXIT_PROTOCOL.md`.
 8. Publish a single candidate-bound exit report.
