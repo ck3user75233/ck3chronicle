@@ -82,11 +82,14 @@ def test_rparse_002_only_error_log_blocks_enter_canonical_storage(
     }
     rows = conn.execute(
         """
-        SELECT log_relpath, start_line, end_line, source_family,
-               raw_block_sha256, raw_byte_length, raw_block, issue_count
-        FROM source_blocks
-        WHERE session_id = ?
-        ORDER BY start_line
+        SELECT sb.log_relpath, sb.start_line, sb.end_line, sb.source_family,
+               rb.raw_block_sha256, rb.raw_byte_length, rb.raw_block,
+               sb.issue_count
+        FROM source_blocks sb
+        JOIN raw_block_contents rb
+          ON rb.raw_block_pk = sb.raw_block_pk
+        WHERE sb.session_id = ?
+        ORDER BY sb.start_line
         """,
         (session_id,),
     ).fetchall()
@@ -155,4 +158,35 @@ def test_rparse_004_missing_archived_error_log_fails_without_canonical_rows(
         "SELECT COUNT(*) FROM source_blocks WHERE session_id = ?", (session_id,)
     ).fetchone()[0] == 0
     assert repository.get_session(conn, session_id)["parse_status"] == "not_started"
+    conn.close()
+
+
+def test_rparse_005_identical_blocks_share_one_lossless_content_row(
+    tmp_path: Path,
+) -> None:
+    """Oracle: two occurrences remain distinct while exact raw bytes are stored once."""
+    repeated = b"[12:00:00][E][same.cpp:1]: Repeated diagnostic\n"
+    runtime, _captured, conn, session_id = _registered_session(
+        tmp_path, repeated + repeated
+    )
+
+    parse_session(conn, runtime, session_id)
+
+    assert conn.execute(
+        "SELECT COUNT(*) FROM source_blocks WHERE session_id = ?", (session_id,)
+    ).fetchone()[0] == 2
+    assert conn.execute("SELECT COUNT(*) FROM raw_block_contents").fetchone()[0] == 1
+    assert conn.execute(
+        "SELECT COUNT(*) FROM issue_occurrences WHERE session_id = ?", (session_id,)
+    ).fetchone()[0] == 2
+    assert "raw_block" not in {
+        row[1] for row in conn.execute("PRAGMA table_info(source_blocks)")
+    }
+    assert "raw_block" not in {
+        row[1] for row in conn.execute("PRAGMA table_info(issue_occurrences)")
+    }
+    stored = conn.execute(
+        "SELECT raw_block FROM raw_block_contents"
+    ).fetchone()[0]
+    assert stored.encode("utf-8") == repeated
     conn.close()

@@ -216,7 +216,8 @@ def _known_pattern_id(
         SELECT 1
         FROM classification_assignments ca
         JOIN classification_runs cr ON cr.run_id = ca.run_id
-        WHERE cr.model_sha256 = ? AND ca.contract_id = ?
+        JOIN classification_payloads cp ON cp.payload_pk = ca.payload_pk
+        WHERE cr.model_sha256 = ? AND cp.contract_id = ?
         LIMIT 1
         """,
         (model_sha256, pattern_id),
@@ -226,10 +227,11 @@ def _known_pattern_id(
         return False
     rows = conn.execute(
         """
-        SELECT DISTINCT ca.source_family, ca.normalized_tokens_json
+        SELECT DISTINCT cp.source_family, cp.normalized_tokens_json
         FROM classification_assignments ca
         JOIN classification_runs cr ON cr.run_id = ca.run_id
-        WHERE cr.model_sha256 = ? AND ca.contract_id IS NULL
+        JOIN classification_payloads cp ON cp.payload_pk = ca.payload_pk
+        WHERE cr.model_sha256 = ? AND cp.contract_id IS NULL
         """,
         (model_sha256,),
     ).fetchall()
@@ -342,27 +344,28 @@ def _patterns(
 ) -> dict[str, dict[str, object]]:
     rows = conn.execute(
         """
-        SELECT MIN(ca.assignment_level) AS assignment_level,
-               ca.contract_id,
-               MIN(ca.source_family) AS source_family,
-               MIN(ca.normalized_tokens_json) AS normalized_tokens_json,
-               MIN(ca.l1_template) AS l1_template,
-               MIN(ca.l2_template) AS l2_template,
+        SELECT MIN(cp.assignment_level) AS assignment_level,
+               cp.contract_id,
+               MIN(cp.source_family) AS source_family,
+               MIN(cp.normalized_tokens_json) AS normalized_tokens_json,
+               MIN(cp.l1_template) AS l1_template,
+               MIN(cp.l2_template) AS l2_template,
                MIN(cc.template) AS catalog_template,
-               MIN(ca.semantic_text) AS sample,
+               MIN(cp.semantic_text) AS sample,
                COUNT(*) AS occurrences
         FROM classification_assignments ca
+        JOIN classification_payloads cp ON cp.payload_pk = ca.payload_pk
         LEFT JOIN classification_contracts cc
           ON cc.model_sha256 = ?
-         AND cc.contract_id = ca.contract_id
+         AND cc.contract_id = cp.contract_id
         WHERE ca.run_id = ?
-        GROUP BY ca.contract_id,
+        GROUP BY cp.contract_id,
                  CASE
-                     WHEN ca.contract_id IS NULL THEN lower(ca.source_family)
+                     WHEN cp.contract_id IS NULL THEN lower(cp.source_family)
                      ELSE NULL
                  END,
                  CASE
-                     WHEN ca.contract_id IS NULL THEN ca.normalized_tokens_json
+                     WHEN cp.contract_id IS NULL THEN cp.normalized_tokens_json
                      ELSE NULL
                  END
         """,

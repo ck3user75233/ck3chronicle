@@ -22,6 +22,13 @@ ck3chronicle answers four questions with reproducible evidence:
 Derived data may be replaced by a newer approved model. Captured bytes and raw
 source-block provenance may not be rewritten.
 
+SQLite normalization may store identical decoded raw blocks or identical full
+classifier payloads once and reference them from many independently countable
+rows. This is storage deduplication only: source blocks, canonical occurrences,
+and semantic assignments retain separate ordered provenance. Compact integer
+keys never replace the manifest SHA-256, raw-block SHA-256, line span, or
+session identity used to verify evidence.
+
 ## Capture boundary
 
 The watcher observes exact `ck3.exe` process identities. A normal capture
@@ -75,6 +82,16 @@ Product reports query stored canonical and classified records. They never
 reopen and reparse raw logs. Reports distinguish evidence, inference, and
 unknown state and do not claim that a referenced mod owns or caused an error
 without later resolver evidence.
+
+## Empirical logging observation
+
+The optional logging-progress observer is separate from capture and reporting.
+It may describe an exact-100,000 boundary only when `error.log` remains stable
+at that timestamp-header count while the same observed CK3 process remains
+alive and `game.log` advances. Process existence or a 100,000-count archived
+file alone is insufficient. The observation does not prove that CK3 attempted
+to emit additional errors; it establishes that the game session and another
+log stream continued beyond the stable error boundary.
 
 ## Source-observation boundary
 

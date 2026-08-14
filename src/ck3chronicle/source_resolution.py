@@ -418,11 +418,14 @@ def referenced_file_paths(
         return ()
     rows = conn.execute(
         """
-        SELECT ca.location_evidence, sb.raw_block
+        SELECT cp.location_evidence, rb.raw_block
         FROM classification_assignments ca
+        JOIN classification_payloads cp ON cp.payload_pk = ca.payload_pk
         JOIN source_blocks sb
           ON sb.session_id = ca.session_id
-         AND sb.source_block_id = ca.source_block_id
+         AND sb.source_block_pk = ca.source_block_pk
+        JOIN raw_block_contents rb
+          ON rb.raw_block_pk = sb.raw_block_pk
         WHERE ca.run_id = ?
         """,
         (run["run_id"],),

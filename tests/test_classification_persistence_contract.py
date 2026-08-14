@@ -86,12 +86,12 @@ def test_rclassdb_001_one_row_per_semantic_unit_with_exact_provenance(
     }
     rows = conn.execute(
         """
-        SELECT sb.start_line, ca.unit_ordinal, ca.source_family,
-               ca.assignment_level, ca.contract_id, ca.semantic_text
+        SELECT sb.start_line, ca.unit_ordinal, cp.source_family,
+               cp.assignment_level, cp.contract_id, cp.semantic_text
         FROM classification_assignments ca
+        JOIN classification_payloads cp ON cp.payload_pk = ca.payload_pk
         JOIN source_blocks sb
-          ON sb.session_id = ca.session_id
-         AND sb.source_block_id = ca.source_block_id
+          ON sb.source_block_pk = ca.source_block_pk
         WHERE ca.session_id = ?
         ORDER BY sb.start_line, ca.unit_ordinal
         """,
@@ -109,6 +109,24 @@ def test_rclassdb_001_one_row_per_semantic_unit_with_exact_provenance(
         "SELECT COUNT(*) FROM classification_contracts WHERE model_sha256 = ?",
         (MODEL_SHA256,),
     ).fetchone()[0] == 822
+    # The three persistent-reader units are independently addressable but have
+    # one exact derived payload. Together with the other two blocks this yields
+    # three dictionary rows for five assignment rows.
+    assert conn.execute(
+        "SELECT COUNT(*) FROM classification_payloads WHERE model_sha256 = ?",
+        (MODEL_SHA256,),
+    ).fetchone()[0] == 3
+    assert set(
+        row[1]
+        for row in conn.execute("PRAGMA table_info(classification_assignments)")
+    ) == {
+        "classification_assignment_id",
+        "run_id",
+        "session_id",
+        "source_block_pk",
+        "unit_ordinal",
+        "payload_pk",
+    }
     conn.close()
 
 

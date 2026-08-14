@@ -28,7 +28,7 @@ Historical material is recoverable from:
 - atomic parse and reparse persistence.
 
 The accepted foundation and production classifier seam are covered by the new
-reboot-owned suite: 75 tests as of this status record. No inherited test
+reboot-owned suite: 82 tests as of this status record. No inherited test
 contributes to that number.
 
 ## Accepted classifier runtime
@@ -44,6 +44,8 @@ contributes to that number.
 - versioned model registry and per-session classification runs in SQLite;
 - one assignment row per semantic unit with source-block and ordinal identity;
 - database-only classification after canonical parse;
+- lossless raw-block and complete-classifier-payload dictionaries, with compact
+  integer relationships for every independently countable occurrence;
 - atomic same-model reclassification with prior-run rollback on failure.
 - schema-versioned `classify --json` with same-model idempotence;
 - bounded stored-record `review-queue` for L1-only and unknown patterns.
@@ -84,11 +86,12 @@ separate human-authored contract tests remain the semantic authority.
 
 ## Not yet released
 
-- real-corpus database reconciliation and a user-facing database audit command;
 - on-action container-merge and culture symbol-LIOS adapters;
 - historical source-byte snapshots/diffs, broad mod/update fingerprints, and
   richer confidence/merge-aware triage;
 - automatic watcher startup on user login.
+- a controlled live-session logging-progress observation proving or rejecting
+  the suspected exact-100,000 error-record boundary.
 
 Source observation is deliberately not part of `process-pending`. Resolver
 failures or source-file hashing must not block capture, canonical parsing,
@@ -96,27 +99,33 @@ classification, or database reporting.
 
 ## Database hardening checkpoint
 
-The read-only `audit-db` command now checks archive/session membership,
+The read-only `audit-db` command checks archive/session membership,
 manifest aggregates, stored parser counters, canonical totals, classification
 counters, runtime-context rows, and source-block provenance. Its first run over
-the live 1.04 GB index found:
+the live index found:
 
-- 12 finalized archives and 12 registered sessions;
-- 589,546 canonical source blocks and occurrence rows;
-- 589,546 independently recounted timestamped headers in archived `error.log`
+- 15 registered sessions;
+- 858,732 canonical source blocks and occurrence rows;
+- 858,732 independently recounted timestamped headers in archived `error.log`
   files, exactly matching the database for every session;
-- 611,503 classification assignments;
+- 887,892 classification assignments;
 - no structural errors or orphaned provenance;
-- four archived source logs themselves contain exactly 100,000 blocks, so the
-  database did not truncate them; possible upstream CK3 log censoring remains
-  flagged;
+- multiple archived source logs themselves end at exactly 100,000 blocks, so
+  ck3chronicle did not truncate them; the repeated boundary is recorded as an
+  observation whose cause remains unverified;
 - incomplete durable process-observation chronology for imported sessions;
 - one protected pending capture not yet processed, reported separately.
 
-Full per-block/per-signature distribution reconciliation is available through
-`audit-db --deep`, but its first live run exceeded three minutes. Performance
-work and independent recounting from archived raw logs remain active database
-acceptance tasks.
+The compact-storage migration was exercised on a consistent disposable copy of
+the 1,583,861,760-byte live database. After `VACUUM` it was 289,566,720 bytes,
+an 81.7% reduction. All 15 report JSON hashes, the current comparison hash, and
+the current triage hash were byte-identical before and after; canonical row
+counts, `foreign_key_check`, and `quick_check` also reconciled exactly.
+
+Full per-block/per-signature distribution reconciliation remains available
+through `audit-db --deep`. A standard `compact-db` command now performs the
+versioned migration, refuses vacuum after a failed integrity check, reclaims
+free pages, and reports the retained row counts and byte reduction.
 
 ## Approved production model
 

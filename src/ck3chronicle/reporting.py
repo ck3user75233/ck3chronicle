@@ -89,11 +89,12 @@ def build_session_report(
     source_summary = _summary_rows(
         conn,
         """
-        SELECT source_family, COUNT(*) AS occurrences
-        FROM classification_assignments
-        WHERE run_id = ?
-        GROUP BY source_family
-        ORDER BY occurrences DESC, source_family
+        SELECT cp.source_family, COUNT(*) AS occurrences
+        FROM classification_assignments ca
+        JOIN classification_payloads cp ON cp.payload_pk = ca.payload_pk
+        WHERE ca.run_id = ?
+        GROUP BY cp.source_family
+        ORDER BY occurrences DESC, cp.source_family
         LIMIT ?
         """,
         (run["run_id"], limit),
@@ -124,34 +125,35 @@ def build_session_report(
     )
     pattern_rows = conn.execute(
         """
-        SELECT ca.assignment_level,
-               ca.contract_id,
-               ca.source_family,
-               ca.l1_template,
-               ca.l2_template,
+        SELECT cp.assignment_level,
+               cp.contract_id,
+               cp.source_family,
+               cp.l1_template,
+               cp.l2_template,
                cc.template AS catalog_template,
-               MIN(ca.semantic_text) AS sample,
+               MIN(cp.semantic_text) AS sample,
                COUNT(*) AS occurrences,
                MIN(sb.start_line) AS first_line
         FROM classification_assignments ca
+        JOIN classification_payloads cp ON cp.payload_pk = ca.payload_pk
         JOIN source_blocks sb
           ON sb.session_id = ca.session_id
-         AND sb.source_block_id = ca.source_block_id
+         AND sb.source_block_pk = ca.source_block_pk
         LEFT JOIN classification_contracts cc
-          ON cc.model_sha256 = ?
-         AND cc.contract_id = ca.contract_id
+         ON cc.model_sha256 = ?
+         AND cc.contract_id = cp.contract_id
         WHERE ca.run_id = ?
-        GROUP BY ca.assignment_level,
-                 ca.contract_id,
-                 ca.source_family,
-                 ca.l1_template,
-                 ca.l2_template,
+        GROUP BY cp.assignment_level,
+                 cp.contract_id,
+                 cp.source_family,
+                 cp.l1_template,
+                 cp.l2_template,
                  CASE
-                     WHEN ca.contract_id IS NOT NULL THEN ca.contract_id
-                     ELSE ca.normalized_tokens_json
+                     WHEN cp.contract_id IS NOT NULL THEN cp.contract_id
+                     ELSE cp.normalized_tokens_json
                  END,
                  cc.template
-        ORDER BY occurrences DESC, ca.source_family, first_line
+        ORDER BY occurrences DESC, cp.source_family, first_line
         LIMIT ?
         """,
         (run["model_sha256"], run["run_id"], limit),

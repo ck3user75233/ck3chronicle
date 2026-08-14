@@ -8,16 +8,21 @@ from __future__ import annotations
 import sqlite3
 from datetime import datetime, timezone
 
+from .payloads import payload_sha256
 from .schema import (
     ALL_DDL,
     CANONICAL_ISSUES_VERSION,
     CAPTURE_VERSION,
+    CLASSIFICATION_ASSIGNMENTS_IDX_DDL,
     CLASSIFICATION_VERSION,
     CURRENT_VERSION,
+    ISSUE_OCCURRENCES_IDX_DDL,
     RUNTIME_CONTEXT_VERSION,
     SESSION_CONTEXT_VERSION,
     SESSION_INTELLIGENCE_VERSION,
+    SOURCE_BLOCKS_IDX_DDL,
     SOURCE_RESOLUTION_VERSION,
+    STORAGE_VERSION,
 )
 
 
@@ -88,7 +93,7 @@ def _apply_migrations(conn: sqlite3.Connection) -> None:
             "ALTER TABLE issue_occurrences "
             "ADD COLUMN occurrence_count INTEGER NOT NULL DEFAULT 1"
         )
-    if "source_block_id" not in cols:
+    if "source_block_pk" not in cols and "source_block_id" not in cols:
         cur.execute("ALTER TABLE issue_occurrences ADD COLUMN source_block_id TEXT")
     if "issue_ordinal" not in cols:
         cur.execute("ALTER TABLE issue_occurrences ADD COLUMN issue_ordinal INTEGER")
@@ -104,14 +109,19 @@ def _apply_migrations(conn: sqlite3.Connection) -> None:
                 f"ALTER TABLE {tbl} ADD COLUMN log_type TEXT NOT NULL DEFAULT 'error'"
             )
 
+    provenance_column = (
+        "source_block_pk" if "source_block_pk" in cols else "source_block_id"
+    )
     cur.execute(
-        """
+        f"""
         CREATE UNIQUE INDEX IF NOT EXISTS
             idx_issue_occurrences_source_ordinal
-        ON issue_occurrences(session_id, source_block_id, issue_ordinal)
-        WHERE source_block_id IS NOT NULL AND issue_ordinal IS NOT NULL
+        ON issue_occurrences(session_id, {provenance_column}, issue_ordinal)
+        WHERE {provenance_column} IS NOT NULL AND issue_ordinal IS NOT NULL
         """
     )
+
+    _migrate_compact_storage(conn)
 
     # The mutable session-context model is rejected for fresh databases.  If a
     # user's legacy database already has it, keep it readable and non-destructively
@@ -200,6 +210,13 @@ def _apply_migrations(conn: sqlite3.Connection) -> None:
         """,
         ("source_resolution", SOURCE_RESOLUTION_VERSION, now),
     )
+    cur.execute(
+        """
+        INSERT OR REPLACE INTO schema_versions (component, version, migrated_at)
+        VALUES (?, ?, ?)
+        """,
+        ("storage", STORAGE_VERSION, now),
+    )
     if has_legacy_context:
         cur.execute(
             """
@@ -207,4 +224,302 @@ def _apply_migrations(conn: sqlite3.Connection) -> None:
             VALUES (?, ?, ?)
             """,
             ("session_context", SESSION_CONTEXT_VERSION, now),
+        )
+
+
+def _migrate_compact_storage(conn: sqlite3.Connection) -> None:
+    """Normalize repeated evidence/payload text without losing any projection.
+
+    Captured archives remain primary evidence. SQLite retains the same decoded
+    source blocks and classifier fields, but stores each distinct raw block and
+    complete classifier payload once. The migration is one transaction because
+    ``apply_migrations`` owns the surrounding ``BEGIN IMMEDIATE``.
+    """
+    cur = conn.cursor()
+    source_columns = {
+        row[1] for row in cur.execute("PRAGMA table_info(source_blocks)").fetchall()
+    }
+    occurrence_columns = {
+        row[1]
+        for row in cur.execute("PRAGMA table_info(issue_occurrences)").fetchall()
+    }
+    assignment_columns = {
+        row[1]
+        for row in cur.execute(
+            "PRAGMA table_info(classification_assignments)"
+        ).fetchall()
+    }
+    needs_source = "source_block_pk" not in source_columns
+    needs_occurrence = "source_block_pk" not in occurrence_columns
+    needs_assignment = (
+        "payload_pk" not in assignment_columns
+        or "source_block_pk" not in assignment_columns
+    )
+    if not (needs_source or needs_occurrence or needs_assignment):
+        return
+    if needs_source != needs_occurrence or needs_source != needs_assignment:
+        raise sqlite3.DatabaseError(
+            "storage is partially compacted; refusing ambiguous migration"
+        )
+    if needs_assignment and "source_family" not in assignment_columns:
+        raise sqlite3.DatabaseError(
+            "classification storage is neither legacy nor compact"
+        )
+
+    expected_source = int(cur.execute("SELECT COUNT(*) FROM source_blocks").fetchone()[0])
+    expected_occurrence = int(
+        cur.execute("SELECT COUNT(*) FROM issue_occurrences").fetchone()[0]
+    )
+    expected_assignment = int(
+        cur.execute("SELECT COUNT(*) FROM classification_assignments").fetchone()[0]
+    )
+
+    if needs_source:
+        if "raw_block" not in source_columns:
+            raise sqlite3.DatabaseError(
+                "legacy source blocks do not retain migratable raw content"
+            )
+        collision = cur.execute(
+            """
+            SELECT raw_block_sha256
+            FROM source_blocks
+            GROUP BY raw_block_sha256
+            HAVING MIN(raw_byte_length) != MAX(raw_byte_length)
+                OR MIN(raw_block) != MAX(raw_block)
+            LIMIT 1
+            """
+        ).fetchone()
+        if collision is not None:
+            raise sqlite3.DatabaseError(
+                "raw-block SHA-256 maps to conflicting stored content"
+            )
+        cur.execute(
+            """
+            INSERT OR IGNORE INTO raw_block_contents (
+                raw_block_sha256, raw_byte_length, raw_block
+            )
+            SELECT raw_block_sha256, MIN(raw_byte_length), MIN(raw_block)
+            FROM source_blocks
+            GROUP BY raw_block_sha256
+            """
+        )
+        conflict = cur.execute(
+            """
+            SELECT 1
+            FROM source_blocks sb
+            JOIN raw_block_contents rb
+              ON rb.raw_block_sha256 = sb.raw_block_sha256
+            WHERE rb.raw_byte_length != sb.raw_byte_length
+               OR rb.raw_block != sb.raw_block
+            LIMIT 1
+            """
+        ).fetchone()
+        if conflict is not None:
+            raise sqlite3.DatabaseError(
+                "raw-block dictionary conflicts with canonical source content"
+            )
+        cur.execute(
+            """
+            CREATE TABLE source_blocks_compact (
+                source_block_pk      INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id          INTEGER NOT NULL REFERENCES sessions(session_id),
+                log_relpath         TEXT NOT NULL CHECK (log_relpath = 'error.log'),
+                start_line          INTEGER NOT NULL CHECK (start_line >= 1),
+                end_line            INTEGER NOT NULL CHECK (end_line >= start_line),
+                timestamp           TEXT NOT NULL,
+                level               TEXT NOT NULL,
+                source_tag          TEXT NOT NULL,
+                source_family       TEXT NOT NULL,
+                raw_block_pk        INTEGER NOT NULL
+                    REFERENCES raw_block_contents(raw_block_pk),
+                issue_count         INTEGER NOT NULL CHECK (issue_count >= 1),
+                UNIQUE (session_id, start_line)
+            )
+            """
+        )
+        cur.execute(
+            """
+            INSERT INTO source_blocks_compact (
+                session_id, log_relpath, start_line, end_line, timestamp, level,
+                source_tag, source_family, raw_block_pk, issue_count
+            )
+            SELECT sb.session_id, sb.log_relpath, sb.start_line, sb.end_line,
+                   sb.timestamp, sb.level, sb.source_tag, sb.source_family,
+                   rb.raw_block_pk, sb.issue_count
+            FROM source_blocks sb
+            JOIN raw_block_contents rb
+              ON rb.raw_block_sha256 = sb.raw_block_sha256
+            """
+        )
+
+        cur.execute(
+            """
+            CREATE TABLE issue_occurrences_compact (
+                issue_occurrence_id      INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id               INTEGER NOT NULL REFERENCES sessions(session_id),
+                signature                TEXT NOT NULL,
+                source_block_pk          INTEGER NOT NULL
+                                         REFERENCES source_blocks_compact(source_block_pk),
+                issue_ordinal            INTEGER NOT NULL CHECK (issue_ordinal >= 0),
+                log_relpath              TEXT NOT NULL,
+                line_number              INTEGER NOT NULL,
+                occurrence_count         INTEGER NOT NULL DEFAULT 1
+                                         CHECK (occurrence_count = 1),
+                referenced_symbols_json  TEXT NOT NULL DEFAULT '[]',
+                extra_json               TEXT NOT NULL DEFAULT '{}',
+                log_type                 TEXT NOT NULL DEFAULT 'error',
+                UNIQUE (session_id, source_block_pk, issue_ordinal)
+            )
+            """
+        )
+        cur.execute(
+            """
+            INSERT INTO issue_occurrences_compact (
+                issue_occurrence_id, session_id, signature, source_block_pk,
+                issue_ordinal, log_relpath, line_number, occurrence_count,
+                referenced_symbols_json, extra_json, log_type
+            )
+            SELECT io.issue_occurrence_id, io.session_id, io.signature,
+                   compact.source_block_pk, io.issue_ordinal, io.log_relpath,
+                   io.line_number, io.occurrence_count,
+                   io.referenced_symbols_json, io.extra_json, io.log_type
+            FROM issue_occurrences io
+            JOIN source_blocks legacy
+              ON legacy.session_id = io.session_id
+             AND legacy.source_block_id = io.source_block_id
+            JOIN source_blocks_compact compact
+              ON compact.session_id = legacy.session_id
+             AND compact.start_line = legacy.start_line
+            """
+        )
+
+    if needs_assignment:
+        rows = cur.execute(
+            """
+            SELECT DISTINCT cr.model_sha256, ca.source_family,
+                   ca.assignment_level, ca.contract_id, ca.confidence,
+                   ca.semantic_text, ca.location_evidence,
+                   ca.normalized_tokens_json, ca.l1_template, ca.l2_template,
+                   ca.structured_slots_json
+            FROM classification_assignments ca
+            JOIN classification_runs cr ON cr.run_id = ca.run_id
+            """
+        ).fetchall()
+        for row in rows:
+            values = tuple(row)
+            digest = payload_sha256(values)
+            cur.execute(
+                """
+                INSERT OR IGNORE INTO classification_payloads (
+                    payload_sha256, model_sha256, source_family,
+                    assignment_level, contract_id, confidence, semantic_text,
+                    location_evidence, normalized_tokens_json, l1_template,
+                    l2_template, structured_slots_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (digest, *values),
+            )
+            stored = cur.execute(
+                """
+                SELECT model_sha256, source_family, assignment_level,
+                       contract_id, confidence, semantic_text,
+                       location_evidence, normalized_tokens_json, l1_template,
+                       l2_template, structured_slots_json
+                FROM classification_payloads
+                WHERE payload_sha256 = ?
+                """,
+                (digest,),
+            ).fetchone()
+            if stored is None or tuple(stored) != values:
+                raise sqlite3.DatabaseError(
+                    "classification payload SHA-256 collision"
+                )
+
+        conn.create_function(
+            "ck3chronicle_payload_sha256",
+            11,
+            lambda *values: payload_sha256(values),
+            deterministic=True,
+        )
+        cur.execute(
+            """
+            CREATE TABLE classification_assignments_compact (
+                classification_assignment_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                run_id              INTEGER NOT NULL,
+                session_id          INTEGER NOT NULL,
+                source_block_pk     INTEGER NOT NULL
+                                    REFERENCES source_blocks_compact(source_block_pk),
+                unit_ordinal        INTEGER NOT NULL CHECK (unit_ordinal >= 0),
+                payload_pk          INTEGER NOT NULL
+                                    REFERENCES classification_payloads(payload_pk),
+                FOREIGN KEY (run_id, session_id)
+                    REFERENCES classification_runs(run_id, session_id)
+                    ON DELETE CASCADE,
+                UNIQUE(run_id, source_block_pk, unit_ordinal)
+            )
+            """
+        )
+        cur.execute(
+            """
+            INSERT INTO classification_assignments_compact (
+                classification_assignment_id, run_id, session_id,
+                source_block_pk, unit_ordinal, payload_pk
+            )
+            SELECT ca.classification_assignment_id, ca.run_id, ca.session_id,
+                   compact.source_block_pk, ca.unit_ordinal, cp.payload_pk
+            FROM classification_assignments ca
+            JOIN classification_runs cr ON cr.run_id = ca.run_id
+            JOIN source_blocks legacy
+              ON legacy.session_id = ca.session_id
+             AND legacy.source_block_id = ca.source_block_id
+            JOIN source_blocks_compact compact
+              ON compact.session_id = legacy.session_id
+             AND compact.start_line = legacy.start_line
+            JOIN classification_payloads cp
+              ON cp.payload_sha256 = ck3chronicle_payload_sha256(
+                    cr.model_sha256, ca.source_family, ca.assignment_level,
+                    ca.contract_id, ca.confidence, ca.semantic_text,
+                    ca.location_evidence, ca.normalized_tokens_json,
+                    ca.l1_template, ca.l2_template, ca.structured_slots_json
+                 )
+            """
+        )
+
+    if needs_assignment:
+        cur.execute("DROP TABLE classification_assignments")
+    if needs_source:
+        cur.execute("DROP TABLE issue_occurrences")
+        cur.execute("DROP TABLE source_blocks")
+        cur.execute("ALTER TABLE source_blocks_compact RENAME TO source_blocks")
+        cur.execute(
+            "ALTER TABLE issue_occurrences_compact RENAME TO issue_occurrences"
+        )
+    if needs_assignment:
+        cur.execute(
+            "ALTER TABLE classification_assignments_compact "
+            "RENAME TO classification_assignments"
+        )
+
+    cur.execute(SOURCE_BLOCKS_IDX_DDL)
+    cur.execute(ISSUE_OCCURRENCES_IDX_DDL)
+    cur.execute(CLASSIFICATION_ASSIGNMENTS_IDX_DDL)
+    cur.execute(
+        """
+        CREATE UNIQUE INDEX IF NOT EXISTS
+            idx_issue_occurrences_source_ordinal
+        ON issue_occurrences(session_id, source_block_pk, issue_ordinal)
+        WHERE source_block_pk IS NOT NULL AND issue_ordinal IS NOT NULL
+        """
+    )
+
+    actual = (
+        int(cur.execute("SELECT COUNT(*) FROM source_blocks").fetchone()[0]),
+        int(cur.execute("SELECT COUNT(*) FROM issue_occurrences").fetchone()[0]),
+        int(
+            cur.execute("SELECT COUNT(*) FROM classification_assignments").fetchone()[0]
+        ),
+    )
+    if actual != (expected_source, expected_occurrence, expected_assignment):
+        raise sqlite3.DatabaseError(
+            "compact-storage migration changed canonical row counts"
         )

@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any, Sequence
 
 from .migrations import apply_migrations
+from .payloads import payload_sha256
 from ..models.parse import (
     ClusterRecord,
     OccurrenceRecord,
@@ -546,18 +547,37 @@ def _insert_source_block(
     conn: sqlite3.Connection,
     session_id: int,
     block: SourceBlockRecord,
-) -> None:
+) -> int:
     conn.execute(
         """
+        INSERT OR IGNORE INTO raw_block_contents (
+            raw_block_sha256, raw_byte_length, raw_block
+        ) VALUES (?, ?, ?)
+        """,
+        (block.raw_block_sha256, block.raw_byte_length, block.raw_block),
+    )
+    content = conn.execute(
+        """
+        SELECT raw_block_pk, raw_byte_length, raw_block
+        FROM raw_block_contents
+        WHERE raw_block_sha256 = ?
+        """,
+        (block.raw_block_sha256,),
+    ).fetchone()
+    if content is None or (
+        int(content["raw_byte_length"]) != block.raw_byte_length
+        or content["raw_block"] != block.raw_block
+    ):
+        raise ValueError("raw-block SHA-256 maps to conflicting content")
+    cursor = conn.execute(
+        """
         INSERT INTO source_blocks (
-            session_id, source_block_id, log_relpath, start_line, end_line,
-            timestamp, level, source_tag, source_family, raw_block_sha256,
-            raw_byte_length, raw_block, issue_count
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            session_id, log_relpath, start_line, end_line, timestamp, level,
+            source_tag, source_family, raw_block_pk, issue_count
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             session_id,
-            block.source_block_id,
             block.log_relpath,
             block.start_line,
             block.end_line,
@@ -565,12 +585,12 @@ def _insert_source_block(
             block.level,
             block.source_tag,
             block.source_family,
-            block.raw_block_sha256,
-            block.raw_byte_length,
-            block.raw_block,
+            int(content["raw_block_pk"]),
             block.issue_count,
         ),
     )
+    assert cursor.lastrowid is not None
+    return int(cursor.lastrowid)
 
 
 def _insert_cluster(
@@ -614,24 +634,24 @@ def _insert_occurrence(
     conn: sqlite3.Connection,
     session_id: int,
     occurrence: OccurrenceRecord,
+    source_block_pk: int,
 ) -> None:
     issue = occurrence.issue
     conn.execute(
         """
         INSERT INTO issue_occurrences (
-            session_id, signature, source_block_id, issue_ordinal,
-            log_relpath, line_number, raw_block, occurrence_count,
+            session_id, signature, source_block_pk, issue_ordinal,
+            log_relpath, line_number, occurrence_count,
             referenced_symbols_json, extra_json, log_type
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?, 'error')
+        ) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, 'error')
         """,
         (
             session_id,
             issue.signature,
-            occurrence.source_block_id,
+            source_block_pk,
             occurrence.issue_ordinal,
             issue.log_relpath,
             issue.line_number,
-            issue.raw_block,
             _json(issue.referenced_symbols),
             _json(issue.extra_json),
         ),
@@ -723,12 +743,19 @@ def replace_canonical_parse(
         conn.execute("DELETE FROM source_blocks WHERE session_id = ?", (session_id,))
         conn.execute("DELETE FROM issues WHERE session_id = ?", (session_id,))
 
-        for block in blocks:
-            _insert_source_block(conn, session_id, block)
+        source_block_pks = {
+            block.source_block_id: _insert_source_block(conn, session_id, block)
+            for block in blocks
+        }
         for cluster in clusters:
             _insert_cluster(conn, session_id, cluster)
         for occurrence in occurrences:
-            _insert_occurrence(conn, session_id, occurrence)
+            _insert_occurrence(
+                conn,
+                session_id,
+                occurrence,
+                source_block_pks[occurrence.source_block_id],
+            )
 
         updated = conn.execute(
             """
@@ -782,10 +809,12 @@ def get_classification_source_blocks(
 ) -> list[sqlite3.Row]:
     return conn.execute(
         """
-        SELECT source_block_id, source_family, raw_block, start_line
-        FROM source_blocks
-        WHERE session_id = ?
-        ORDER BY start_line, source_block_id
+        SELECT sb.source_block_pk, sb.source_family, rb.raw_block, sb.start_line
+        FROM source_blocks sb
+        JOIN raw_block_contents rb
+          ON rb.raw_block_pk = sb.raw_block_pk
+        WHERE sb.session_id = ?
+        ORDER BY sb.start_line, sb.source_block_pk
         """,
         (session_id,),
     ).fetchall()
@@ -815,9 +844,9 @@ def _validate_classification_replacement(
         if levels[level] != counts[level]:
             raise ValueError(f"classification {level} counter does not reconcile")
 
-    by_block: dict[str, list[int]] = defaultdict(list)
+    by_block: dict[int, list[int]] = defaultdict(list)
     for item in assignments:
-        by_block[item.source_block_id].append(item.unit_ordinal)
+        by_block[item.source_block_pk].append(item.unit_ordinal)
         has_contract = item.result.contract_id is not None
         if has_contract != (item.result.assignment_level in {"full", "l1_l2"}):
             raise ValueError("classification contract ID disagrees with assignment level")
@@ -990,33 +1019,79 @@ def replace_classification_run(
         )
         assert cursor.lastrowid is not None
         run_id = int(cursor.lastrowid)
+        prepared_payloads: list[tuple[Any, str, tuple[Any, ...]]] = []
+        unique_payloads: dict[str, tuple[Any, ...]] = {}
+        for item in assignments:
+            values = (
+                model.sha256,
+                item.result.source_family,
+                item.result.assignment_level,
+                item.result.contract_id,
+                float(item.result.confidence),
+                item.result.semantic_text,
+                item.result.location_evidence,
+                _json(item.result.normalized_tokens),
+                item.result.l1_template,
+                item.result.l2_template,
+                _json(item.result.structured_slots),
+            )
+            digest = payload_sha256(values)
+            previous = unique_payloads.setdefault(digest, values)
+            if previous != values:
+                raise ValueError("classification payload SHA-256 collision")
+            prepared_payloads.append((item, digest, values))
+        conn.executemany(
+            """
+            INSERT OR IGNORE INTO classification_payloads (
+                payload_sha256, model_sha256, source_family,
+                assignment_level, contract_id, confidence, semantic_text,
+                location_evidence, normalized_tokens_json, l1_template,
+                l2_template, structured_slots_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            [(digest, *values) for digest, values in unique_payloads.items()],
+        )
+        payload_rows = conn.execute(
+            """
+            SELECT payload_pk, payload_sha256, model_sha256, source_family,
+                   assignment_level, contract_id, confidence, semantic_text,
+                   location_evidence, normalized_tokens_json, l1_template,
+                   l2_template, structured_slots_json
+            FROM classification_payloads
+            WHERE model_sha256 = ?
+            """,
+            (model.sha256,),
+        ).fetchall()
+        payload_pks: dict[str, int] = {}
+        for row in payload_rows:
+            values = tuple(row[column] for column in (
+                "model_sha256", "source_family", "assignment_level",
+                "contract_id", "confidence", "semantic_text",
+                "location_evidence", "normalized_tokens_json", "l1_template",
+                "l2_template", "structured_slots_json",
+            ))
+            digest = str(row["payload_sha256"])
+            if digest in unique_payloads and unique_payloads[digest] != values:
+                raise ValueError("stored classification payload disagrees with hash")
+            payload_pks[digest] = int(row["payload_pk"])
+        if any(digest not in payload_pks for digest in unique_payloads):
+            raise ValueError("classification payload registration is incomplete")
         conn.executemany(
             """
             INSERT INTO classification_assignments (
-                run_id, session_id, source_block_id, unit_ordinal,
-                source_family, assignment_level, contract_id, confidence,
-                semantic_text, location_evidence, normalized_tokens_json,
-                l1_template, l2_template, structured_slots_json
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                run_id, session_id, source_block_pk, unit_ordinal,
+                payload_pk
+            ) VALUES (?, ?, ?, ?, ?)
             """,
             [
                 (
                     run_id,
                     session_id,
-                    item.source_block_id,
+                    item.source_block_pk,
                     item.unit_ordinal,
-                    item.result.source_family,
-                    item.result.assignment_level,
-                    item.result.contract_id,
-                    item.result.confidence,
-                    item.result.semantic_text,
-                    item.result.location_evidence,
-                    _json(item.result.normalized_tokens),
-                    item.result.l1_template,
-                    item.result.l2_template,
-                    _json(item.result.structured_slots),
+                    payload_pks[digest],
                 )
-                for item in assignments
+                for item, digest, _values in prepared_payloads
             ],
         )
         conn.commit()
@@ -1051,28 +1126,29 @@ def list_classification_review_items(
     placeholders = ",".join("?" for _ in levels)
     return conn.execute(
         f"""
-        SELECT ca.assignment_level,
-               ca.source_family,
-               ca.l1_template,
-               ca.l2_template,
-               MIN(ca.semantic_text) AS sample,
+        SELECT cp.assignment_level,
+               cp.source_family,
+               cp.l1_template,
+               cp.l2_template,
+               MIN(cp.semantic_text) AS sample,
                COUNT(*) AS occurrences,
                MIN(sb.start_line) AS first_line
         FROM classification_assignments ca
         JOIN classification_runs cr ON cr.run_id = ca.run_id
+        JOIN classification_payloads cp ON cp.payload_pk = ca.payload_pk
         JOIN source_blocks sb
           ON sb.session_id = ca.session_id
-         AND sb.source_block_id = ca.source_block_id
+         AND sb.source_block_pk = ca.source_block_pk
         WHERE cr.session_id = ?
           AND cr.model_sha256 = ?
-          AND ca.assignment_level IN ({placeholders})
-        GROUP BY ca.assignment_level,
-                 ca.source_family,
-                 ca.l1_template,
-                 ca.l2_template,
-                 ca.normalized_tokens_json
+          AND cp.assignment_level IN ({placeholders})
+        GROUP BY cp.assignment_level,
+                 cp.source_family,
+                 cp.l1_template,
+                 cp.l2_template,
+                 cp.normalized_tokens_json
         ORDER BY occurrences DESC,
-                 ca.source_family,
+                 cp.source_family,
                  first_line
         LIMIT ?
         """,

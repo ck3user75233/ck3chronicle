@@ -14,10 +14,12 @@ _RAW_BLOCK_HEADER = re.compile(rb"^\[\d\d:\d\d:\d\d\]\[[A-Z]\]\[")
 _REQUIRED_TABLES = {
     "sessions",
     "session_files",
+    "raw_block_contents",
     "source_blocks",
     "issues",
     "issue_occurrences",
     "classification_runs",
+    "classification_payloads",
     "classification_assignments",
     "session_runtime_contexts",
     "session_mounted_dlcs",
@@ -71,8 +73,8 @@ def audit_database(root: Path, *, deep: bool = False) -> dict[str, object]:
     """Audit archive/index agreement and stored canonical invariants read-only.
 
     ``deep`` performs full per-block and per-signature distribution checks. It
-    is intentionally opt-in because real databases retain large raw blocks and
-    a full scan can take several minutes.
+    is intentionally opt-in because a full per-occurrence distribution scan can
+    take several minutes on the real corpus.
     """
     evidence_root = Path(root)
     db_path = evidence_root / "ck3chronicle.db"
@@ -313,12 +315,11 @@ def audit_database(root: Path, *, deep: bool = False) -> dict[str, object]:
                 conn.execute(
                 """
                 SELECT COUNT(*) FROM (
-                    SELECT sb.session_id, sb.source_block_id
+                    SELECT sb.session_id, sb.source_block_pk
                     FROM source_blocks sb
                     LEFT JOIN issue_occurrences io
-                      ON io.session_id = sb.session_id
-                     AND io.source_block_id = sb.source_block_id
-                    GROUP BY sb.session_id, sb.source_block_id, sb.issue_count
+                      ON io.source_block_pk = sb.source_block_pk
+                    GROUP BY sb.session_id, sb.source_block_pk, sb.issue_count
                     HAVING sb.issue_count != COUNT(io.issue_occurrence_id)
                 )
                 """
@@ -365,9 +366,10 @@ def audit_database(root: Path, *, deep: bool = False) -> dict[str, object]:
             (int(row["run_id"]), str(row["assignment_level"])): int(row["count"])
             for row in conn.execute(
                 """
-                SELECT run_id, assignment_level, COUNT(*) AS count
-                FROM classification_assignments
-                GROUP BY run_id, assignment_level
+                SELECT ca.run_id, cp.assignment_level, COUNT(*) AS count
+                FROM classification_assignments ca
+                JOIN classification_payloads cp ON cp.payload_pk = ca.payload_pk
+                GROUP BY ca.run_id, cp.assignment_level
                 """
             )
         }
@@ -456,9 +458,8 @@ def audit_database(root: Path, *, deep: bool = False) -> dict[str, object]:
                     """
                     SELECT COUNT(*) FROM issue_occurrences io
                     LEFT JOIN source_blocks sb
-                      ON sb.session_id = io.session_id
-                     AND sb.source_block_id = io.source_block_id
-                    WHERE sb.source_block_id IS NULL
+                      ON sb.source_block_pk = io.source_block_pk
+                    WHERE sb.source_block_pk IS NULL
                     """
                 ).fetchone()[0]
             ),
@@ -467,9 +468,31 @@ def audit_database(root: Path, *, deep: bool = False) -> dict[str, object]:
                     """
                     SELECT COUNT(*) FROM classification_assignments ca
                     LEFT JOIN source_blocks sb
-                      ON sb.session_id = ca.session_id
-                     AND sb.source_block_id = ca.source_block_id
-                    WHERE sb.source_block_id IS NULL
+                      ON sb.source_block_pk = ca.source_block_pk
+                    WHERE sb.source_block_pk IS NULL
+                    """
+                ).fetchone()[0]
+            ),
+            "blocks_without_raw_content": int(
+                conn.execute(
+                    """
+                    SELECT COUNT(*) FROM source_blocks sb
+                    LEFT JOIN raw_block_contents rb
+                      ON rb.raw_block_pk = sb.raw_block_pk
+                    WHERE rb.raw_block_pk IS NULL
+                    """
+                ).fetchone()[0]
+            ),
+            "assignments_without_payload": int(
+                conn.execute(
+                    """
+                    SELECT COUNT(*) FROM classification_assignments ca
+                    LEFT JOIN classification_payloads cp
+                      ON cp.payload_pk = ca.payload_pk
+                    LEFT JOIN classification_runs cr ON cr.run_id = ca.run_id
+                    WHERE cp.payload_pk IS NULL
+                       OR cr.run_id IS NULL
+                       OR cp.model_sha256 != cr.model_sha256
                     """
                 ).fetchone()[0]
             ),
@@ -488,7 +511,7 @@ def audit_database(root: Path, *, deep: bool = False) -> dict[str, object]:
                 "warning",
                 "DB-QUALITY-001",
                 "evidence_quality",
-                "sessions contain exactly 100,000 source blocks; log censoring is possible",
+                "sessions end at exactly 100,000 source blocks; the repeated boundary is observed but its cause is unverified",
                 session_ids=capped_sessions,
             )
 

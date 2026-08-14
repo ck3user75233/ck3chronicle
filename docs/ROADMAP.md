@@ -82,13 +82,20 @@ Status: active.
   output;
 - [x] classify each audit failure as evidence, canonical parse, classification,
   runtime-context, or index-integrity failure.
+- [x] normalize repeated raw blocks and complete classification payloads without
+  collapsing occurrences or changing report/comparison/triage output;
+- [x] replace repeated textual source relationships with compact integer foreign
+  keys and expose verified `compact-db` space reclamation;
+- [x] add a separate append-only `observe-logging` diagnostic that requires
+  stable 100,000 error headers and independently advancing `game.log` evidence;
 
-Current real-index standard audit: 12 registered/finalized sessions, 589,546
-independently recounted raw block headers, canonical blocks, and occurrences;
-611,503 classification assignments; zero structural errors; and two explicit
-warnings. Remaining work is deep-distribution performance, interpretation of
-four source logs that themselves contain exactly 100,000 blocks, and chronology
-repair policy for imported sessions.
+Current real-index compaction oracle: 15 sessions, 858,732 independently
+recounted raw headers/canonical blocks/occurrences, and 887,892 classification
+assignments. A disposable real-index migration reduced SQLite from 1.584 GB to
+289.6 MB while preserving every report, comparison, and triage hash. Remaining
+work is a controlled live-session observation of the exact-100,000 boundary,
+deep-distribution performance, and chronology repair policy for imported
+sessions.
 
 ## 8. Source resolution and triage
 

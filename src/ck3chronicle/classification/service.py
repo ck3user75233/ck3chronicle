@@ -24,7 +24,7 @@ class ClassificationPreconditionError(ClassificationError):
 
 @dataclass(frozen=True)
 class PreparedAssignment:
-    source_block_id: str
+    source_block_pk: int
     unit_ordinal: int
     result: ClassificationResult
 
@@ -101,10 +101,10 @@ def classify_session(
         )
         if not results:
             raise ClassificationError(
-                f"source block {block['source_block_id']} produced no semantic occurrence"
+                f"source block {block['source_block_pk']} produced no semantic occurrence"
             )
         assignments.extend(
-            PreparedAssignment(block["source_block_id"], ordinal, result)
+            PreparedAssignment(int(block["source_block_pk"]), ordinal, result)
             for ordinal, result in enumerate(results)
         )
 

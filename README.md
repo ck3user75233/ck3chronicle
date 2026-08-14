@@ -30,6 +30,8 @@ classification do not occur in the process-exit path.
 .\.venv\Scripts\ck3chronicle.exe doctor
 .\.venv\Scripts\ck3chronicle.exe audit-db
 .\.venv\Scripts\ck3chronicle.exe audit-db --deep
+.\.venv\Scripts\ck3chronicle.exe compact-db
+.\.venv\Scripts\ck3chronicle.exe observe-logging
 .\.venv\Scripts\ck3chronicle.exe watch
 .\.venv\Scripts\ck3chronicle.exe capture
 .\.venv\Scripts\ck3chronicle.exe reconcile
@@ -67,6 +69,19 @@ manifests, parser counters, canonical occurrence totals, classification runs,
 runtime context, and source-block provenance. The standard audit is intended
 for routine use. `--deep` adds full per-block and per-signature distribution
 checks and can take several minutes on a gigabyte-scale database.
+
+`compact-db` losslessly normalizes repeated decoded raw blocks and complete
+classification payloads, keeps one lightweight relationship row per actual
+occurrence, runs SQLite integrity checks, and vacuums reclaimable pages. On the
+15-session real-index oracle it reduced SQLite from 1.584 GB to 289.6 MB without
+changing any executive report, comparison, or triage JSON hash.
+
+`observe-logging` is an opt-in empirical diagnostic for one CK3 lifecycle. It
+scans `error.log` and `game.log` once, then reads appended bytes only, writing a
+30-second JSONL heartbeat. It records the suspected boundary only when
+`error.log` remains at exactly 100,000 timestamp headers for the configured
+stall interval while the same running CK3 process continues advancing
+`game.log`. It does not copy, hash, parse, classify, or write SQLite.
 
 `compare` selects the latest and preceding compatible captures by capture time.
 It reports observed new, fixed, worse, improved, and unchanged semantic

@@ -56,6 +56,17 @@ The suite currently covers:
 - optional-key extraction;
 - full, L1+L2, L1-only, and unknown classification behavior;
 - one-row-per-semantic-unit database provenance;
+- two identical raw blocks retaining two source/occurrence rows but one exact
+  raw-content dictionary row;
+- repeated complete classifier results retaining independent assignments but
+  one lossless payload row;
+- legacy-schema migration preserving every relationship with clean foreign
+  keys and a verified post-vacuum command envelope;
+- forged raw-hash/content disagreement rolling the entire migration back;
+- incremental timestamp counting that reads appended bytes once and resets on
+  truncation;
+- exact-boundary detection requiring stable 100,000 error headers plus
+  independently advancing `game.log` evidence;
 - classification from stored source blocks without reopening archives;
 - same-model idempotence and atomic reclassification rollback;
 - rejection of unparsed sessions;

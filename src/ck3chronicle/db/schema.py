@@ -111,18 +111,15 @@ CREATE TABLE IF NOT EXISTS issue_occurrences (
     issue_occurrence_id      INTEGER PRIMARY KEY AUTOINCREMENT,
     session_id               INTEGER NOT NULL REFERENCES sessions(session_id),
     signature                TEXT NOT NULL,
-    source_block_id          TEXT NOT NULL,
+    source_block_pk          INTEGER NOT NULL REFERENCES source_blocks(source_block_pk),
     issue_ordinal            INTEGER NOT NULL CHECK (issue_ordinal >= 0),
     log_relpath              TEXT NOT NULL,
     line_number              INTEGER NOT NULL,
-    raw_block                TEXT NOT NULL,
     occurrence_count         INTEGER NOT NULL DEFAULT 1 CHECK (occurrence_count = 1),
     referenced_symbols_json  TEXT NOT NULL DEFAULT '[]',
     extra_json               TEXT NOT NULL DEFAULT '{}',
     log_type                 TEXT NOT NULL DEFAULT 'error',
-    FOREIGN KEY (session_id, source_block_id)
-        REFERENCES source_blocks(session_id, source_block_id),
-    UNIQUE (session_id, source_block_id, issue_ordinal)
+    UNIQUE (session_id, source_block_pk, issue_ordinal)
 );
 """
 
@@ -180,29 +177,22 @@ CREATE TABLE IF NOT EXISTS classification_contracts (
 );
 """
 
-CLASSIFICATION_ASSIGNMENTS_DDL = """
-CREATE TABLE IF NOT EXISTS classification_assignments (
-    classification_assignment_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    run_id              INTEGER NOT NULL,
-    session_id          INTEGER NOT NULL,
-    source_block_id     TEXT NOT NULL,
-    unit_ordinal        INTEGER NOT NULL CHECK (unit_ordinal >= 0),
-    source_family       TEXT NOT NULL,
-    assignment_level    TEXT NOT NULL
-                        CHECK (assignment_level IN ('full', 'l1_l2', 'l1', 'unknown')),
-    contract_id         TEXT,
-    confidence          REAL NOT NULL CHECK (confidence >= 0.0 AND confidence <= 1.0),
-    semantic_text       TEXT NOT NULL,
-    location_evidence   TEXT,
+CLASSIFICATION_PAYLOADS_DDL = """
+CREATE TABLE IF NOT EXISTS classification_payloads (
+    payload_pk            INTEGER PRIMARY KEY AUTOINCREMENT,
+    payload_sha256        TEXT NOT NULL UNIQUE CHECK (length(payload_sha256) = 64),
+    model_sha256          TEXT NOT NULL REFERENCES classification_models(model_sha256),
+    source_family         TEXT NOT NULL,
+    assignment_level      TEXT NOT NULL
+                          CHECK (assignment_level IN ('full', 'l1_l2', 'l1', 'unknown')),
+    contract_id           TEXT,
+    confidence            REAL NOT NULL CHECK (confidence >= 0.0 AND confidence <= 1.0),
+    semantic_text         TEXT NOT NULL,
+    location_evidence     TEXT,
     normalized_tokens_json TEXT NOT NULL,
-    l1_template         TEXT,
-    l2_template         TEXT,
+    l1_template           TEXT,
+    l2_template           TEXT,
     structured_slots_json TEXT NOT NULL DEFAULT '[]',
-    FOREIGN KEY (run_id, session_id)
-        REFERENCES classification_runs(run_id, session_id) ON DELETE CASCADE,
-    FOREIGN KEY (session_id, source_block_id)
-        REFERENCES source_blocks(session_id, source_block_id),
-    UNIQUE(run_id, source_block_id, unit_ordinal),
     CHECK (
         (assignment_level IN ('full', 'l1_l2') AND length(contract_id) = 16)
         OR
@@ -211,9 +201,28 @@ CREATE TABLE IF NOT EXISTS classification_assignments (
 );
 """
 
+CLASSIFICATION_ASSIGNMENTS_DDL = """
+CREATE TABLE IF NOT EXISTS classification_assignments (
+    classification_assignment_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    run_id              INTEGER NOT NULL,
+    session_id          INTEGER NOT NULL,
+    source_block_pk     INTEGER NOT NULL REFERENCES source_blocks(source_block_pk),
+    unit_ordinal        INTEGER NOT NULL CHECK (unit_ordinal >= 0),
+    payload_pk          INTEGER NOT NULL REFERENCES classification_payloads(payload_pk),
+    FOREIGN KEY (run_id, session_id)
+        REFERENCES classification_runs(run_id, session_id) ON DELETE CASCADE,
+    UNIQUE(run_id, source_block_pk, unit_ordinal)
+);
+"""
+
 CLASSIFICATION_ASSIGNMENTS_IDX_DDL = """
-CREATE INDEX IF NOT EXISTS idx_classification_assignments_session_level
-    ON classification_assignments(session_id, assignment_level);
+CREATE INDEX IF NOT EXISTS idx_classification_assignments_session
+    ON classification_assignments(session_id);
+"""
+
+CLASSIFICATION_PAYLOADS_IDX_DDL = """
+CREATE INDEX IF NOT EXISTS idx_classification_payloads_model_level
+    ON classification_payloads(model_sha256, assignment_level);
 """
 
 SESSION_BASELINES_DDL = """
@@ -328,10 +337,19 @@ CREATE TABLE IF NOT EXISTS source_file_instances (
 );
 """
 
+RAW_BLOCK_CONTENTS_DDL = """
+CREATE TABLE IF NOT EXISTS raw_block_contents (
+    raw_block_pk     INTEGER PRIMARY KEY AUTOINCREMENT,
+    raw_block_sha256 TEXT NOT NULL UNIQUE CHECK (length(raw_block_sha256) = 64),
+    raw_byte_length  INTEGER NOT NULL CHECK (raw_byte_length >= 0),
+    raw_block        TEXT NOT NULL
+);
+"""
+
 SOURCE_BLOCKS_DDL = """
 CREATE TABLE IF NOT EXISTS source_blocks (
+    source_block_pk      INTEGER PRIMARY KEY AUTOINCREMENT,
     session_id          INTEGER NOT NULL REFERENCES sessions(session_id),
-    source_block_id     TEXT NOT NULL,
     log_relpath         TEXT NOT NULL CHECK (log_relpath = 'error.log'),
     start_line          INTEGER NOT NULL CHECK (start_line >= 1),
     end_line            INTEGER NOT NULL CHECK (end_line >= start_line),
@@ -339,11 +357,9 @@ CREATE TABLE IF NOT EXISTS source_blocks (
     level               TEXT NOT NULL,
     source_tag          TEXT NOT NULL,
     source_family       TEXT NOT NULL,
-    raw_block_sha256    TEXT NOT NULL,
-    raw_byte_length     INTEGER NOT NULL CHECK (raw_byte_length >= 0),
-    raw_block           TEXT NOT NULL,
+    raw_block_pk        INTEGER NOT NULL REFERENCES raw_block_contents(raw_block_pk),
     issue_count         INTEGER NOT NULL CHECK (issue_count >= 1),
-    PRIMARY KEY (session_id, source_block_id)
+    UNIQUE (session_id, start_line)
 );
 """
 
@@ -360,6 +376,7 @@ ALL_DDL = [
     ISSUES_DDL,
     ISSUES_IDX_SESSION_SIG_DDL,
     ISSUES_IDX_CAT_TYPE_DDL,
+    RAW_BLOCK_CONTENTS_DDL,
     SOURCE_BLOCKS_DDL,
     SOURCE_BLOCKS_IDX_DDL,
     ISSUE_OCCURRENCES_DDL,
@@ -367,6 +384,8 @@ ALL_DDL = [
     CLASSIFICATION_MODELS_DDL,
     CLASSIFICATION_CONTRACTS_DDL,
     CLASSIFICATION_RUNS_DDL,
+    CLASSIFICATION_PAYLOADS_DDL,
+    CLASSIFICATION_PAYLOADS_IDX_DDL,
     CLASSIFICATION_ASSIGNMENTS_DDL,
     CLASSIFICATION_ASSIGNMENTS_IDX_DDL,
     SESSION_BASELINES_DDL,
@@ -379,10 +398,11 @@ ALL_DDL = [
 ]
 
 CURRENT_VERSION = 1
-CANONICAL_ISSUES_VERSION = 4
+CANONICAL_ISSUES_VERSION = 5
 SESSION_CONTEXT_VERSION = 1
 CAPTURE_VERSION = 1
-CLASSIFICATION_VERSION = 2
+CLASSIFICATION_VERSION = 3
+STORAGE_VERSION = 2
 SESSION_INTELLIGENCE_VERSION = 1
 RUNTIME_CONTEXT_VERSION = 1
 SOURCE_RESOLUTION_VERSION = 1
