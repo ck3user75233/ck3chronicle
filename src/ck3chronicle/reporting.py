@@ -235,6 +235,21 @@ def build_session_report(
             "contract_version": runtime_row["context_contract_version"],
             "status": runtime_row["status"],
             "debug_log_sha256": runtime_row["debug_log_sha256"],
+            "provenance": {
+                "source_session_file_id": runtime_row["source_session_file_id"],
+                "start_line": runtime_row["block_start_line"],
+                "end_line": runtime_row["block_end_line"],
+                "start_byte": runtime_row["block_start_byte"],
+                "end_byte": runtime_row["block_end_byte"],
+                "block_sha256": runtime_row["block_sha256"],
+                "candidate_count": int(runtime_row["block_candidate_count"]),
+                "valid_mount_count": int(runtime_row["valid_mount_count"]),
+                "malformed_mount_count": int(
+                    runtime_row["malformed_mount_count"]
+                ),
+                "termination_evidence": runtime_row["termination_evidence"],
+                "absence_reason": runtime_row["absence_reason"],
+            },
             "mounted_entry_count": int(runtime_row["mounted_entry_count"]),
             "dlc_count": int(runtime_row["dlc_count"]),
             "mod_count": int(runtime_row["mod_count"]),
@@ -244,8 +259,6 @@ def build_session_report(
                 {
                     "dlc_order": int(row["dlc_order"]),
                     "dlc_key": row["dlc_key"],
-                    "display_name": row["display_name"],
-                    "descriptor_path": row["descriptor_path"],
                     "mount_path": row["mount_path"],
                 }
                 for row in repository.get_mounted_dlcs(conn, session_id)
@@ -254,13 +267,40 @@ def build_session_report(
                 {
                     "load_order": int(row["load_order"]),
                     "mod_key": row["mod_key"],
-                    "display_name": row["display_name"],
-                    "descriptor_path": row["descriptor_path"],
                     "mount_path": row["mount_path"],
                     "source_kind": row["source_kind"],
                 }
                 for row in repository.get_mounted_mods(conn, session_id)
             ],
+            "inventory_enrichment": {
+                "dlc_count": int(runtime_row["inventory_dlc_count"]),
+                "enabled_mod_count": int(
+                    runtime_row["inventory_enabled_mod_count"]
+                ),
+                "warnings": json.loads(
+                    runtime_row["inventory_warnings_json"]
+                ),
+                "dlcs": [
+                    {
+                        "dlc_key": row["dlc_key"],
+                        "display_name": row["display_name"],
+                        "descriptor_path": row["descriptor_path"],
+                    }
+                    for row in repository.get_mounted_dlcs(conn, session_id)
+                    if row["display_name"] is not None
+                    or row["descriptor_path"] is not None
+                ],
+                "mods": [
+                    {
+                        "mod_key": row["mod_key"],
+                        "display_name": row["display_name"],
+                        "descriptor_path": row["descriptor_path"],
+                    }
+                    for row in repository.get_mounted_mods(conn, session_id)
+                    if row["display_name"] is not None
+                    or row["descriptor_path"] is not None
+                ],
+            },
         }
     observed_run = repository.latest_run_for_session(conn, session_id)
     run_projection = None
@@ -305,7 +345,7 @@ def build_session_report(
         }
     return {
         "schema": "ck3chronicle.session-report",
-        "schema_version": 3,
+        "schema_version": 4,
         "run": run_projection,
         "session": {
             "session_id": int(session["session_id"]),

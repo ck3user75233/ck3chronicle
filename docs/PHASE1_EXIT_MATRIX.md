@@ -37,11 +37,11 @@ harness. The fast reboot suite remains useful regression coverage.
 
 | Gate | Current status | Evidence and gap |
 |---|---|---|
-| `P1-RUN-01` | Missing surface | Parser exists, but current output lacks the frozen line-range/block-hash shape and the 27-DLC/94-mod oracle has not run. |
+| `P1-RUN-01` | Partially covered | Production now exposes archived file identity, line/byte range, block SHA-256, counts, and termination evidence. A read-only real-shape probe found one complete 27-DLC/104-mod block at lines 537–667, but the distinct frozen 27-DLC/94-mod oracle has not run independently. |
 | `P1-RUN-02` | Partially covered | One Workshop and one local mount are tested, not the complete frozen sequence. |
 | `P1-RUN-03` | Untested | No independent swap-order metamorphic gate. |
-| `P1-RUN-04` | Missing surface | Current `absent/partial/complete` behavior does not implement all frozen malformed/truncated/ambiguous states. |
-| `P1-RUN-05` | Missing/contract drift | Mounted membership is authoritative, but inventory enrichment changes warnings/names. Exact output-independence from inventory is not satisfied. |
+| `P1-RUN-04` | Partially covered | Production explicitly implements complete, partial, absent, malformed, truncated, and ambiguous states with focused implementation regressions. The independent frozen state oracle has not run. |
+| `P1-RUN-05` | Partially covered | Inventory names/descriptors/warnings are now a separate enrichment projection and cannot change authoritative membership/order or source-resolution identities. The independent inventory-mutation gate has not run. |
 
 ## Parsing and persistence
 

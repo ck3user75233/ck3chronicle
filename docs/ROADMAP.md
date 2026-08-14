@@ -68,7 +68,11 @@ Status: first production contract complete.
 - [x] distinguish Workshop, local, and unknown mounted roots;
 - [x] enrich from inventory only after authoritative membership is known;
 - [x] exactly validate mounted membership against enabled inventory;
-- [x] explicitly represent complete, partial, and absent runtime context.
+- [x] store exact debug source-file, line, byte, and block-hash provenance;
+- [x] explicitly represent complete, partial, absent, malformed, truncated,
+  and ambiguous runtime context;
+- [x] keep optional inventory enrichment out of authoritative mount and
+  source-resolution identities;
 - [x] include mounted identity/order changes in session comparisons.
 
 ## Database hardening capabilities

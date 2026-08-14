@@ -188,6 +188,12 @@ Purpose: derive and store the same-run ordered DLC and mounted-mod sequence
 from the session's immutable archived `debug.log`. It does not use the
 extension's currently active `session.mods` as historical evidence.
 
+The result exposes `complete`, `partial`, `absent`, `malformed`, `truncated`,
+or `ambiguous` plus the archived `session_file_id`, exact line and byte range,
+raw block SHA-256, candidate/valid/malformed counts, termination evidence, and
+absence reason. Authoritative DLC/mod identities and order are separate from
+optional inventory names, descriptor paths, counts, and warnings.
+
 Public equivalent:
 
 ```text

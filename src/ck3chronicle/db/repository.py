@@ -605,6 +605,17 @@ def replace_runtime_context(
     parsed_at: str,
     status: str,
     debug_log_sha256: str | None,
+    source_session_file_id: int | None,
+    block_start_line: int | None,
+    block_end_line: int | None,
+    block_start_byte: int | None,
+    block_end_byte: int | None,
+    block_sha256: str | None,
+    block_candidate_count: int,
+    valid_mount_count: int,
+    malformed_mount_count: int,
+    termination_evidence: str | None,
+    absence_reason: str | None,
     mounted_entry_count: int,
     dlcs: Sequence[Any],
     mods: Sequence[Any],
@@ -612,10 +623,31 @@ def replace_runtime_context(
     inventory_enabled_mod_count: int,
     inventory_dlc_count: int,
     warnings: Sequence[str],
+    inventory_warnings: Sequence[str],
 ) -> None:
     """Atomically replace one session's derived Mounted Data interpretation."""
-    if status not in {"complete", "partial", "absent"}:
+    if status not in {
+        "complete",
+        "partial",
+        "absent",
+        "malformed",
+        "truncated",
+        "ambiguous",
+    }:
         raise ValueError("runtime context status is invalid")
+    provenance = (
+        block_start_line,
+        block_end_line,
+        block_start_byte,
+        block_end_byte,
+        block_sha256,
+    )
+    if any(value is None for value in provenance) and any(
+        value is not None for value in provenance
+    ):
+        raise ValueError("runtime context block provenance is incomplete")
+    if block_candidate_count < 0 or valid_mount_count < 0 or malformed_mount_count < 0:
+        raise ValueError("runtime context block counters must be non-negative")
     if [item.dlc_order for item in dlcs] != list(range(len(dlcs))):
         raise ValueError("DLC ordinals are not contiguous")
     if [item.load_order for item in mods] != list(range(len(mods))):
@@ -643,10 +675,15 @@ def replace_runtime_context(
             """
             INSERT INTO session_runtime_contexts (
                 session_id, context_contract_version, parsed_at, status,
-                debug_log_sha256, mounted_entry_count, dlc_count, mod_count,
+                debug_log_sha256, source_session_file_id,
+                block_start_line, block_end_line, block_start_byte,
+                block_end_byte, block_sha256, block_candidate_count,
+                valid_mount_count, malformed_mount_count,
+                termination_evidence, absence_reason,
+                mounted_entry_count, dlc_count, mod_count,
                 unknown_mount_count, inventory_enabled_mod_count,
-                inventory_dlc_count, warnings_json
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                inventory_dlc_count, warnings_json, inventory_warnings_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 session_id,
@@ -654,6 +691,17 @@ def replace_runtime_context(
                 parsed_at,
                 status,
                 debug_log_sha256,
+                source_session_file_id,
+                block_start_line,
+                block_end_line,
+                block_start_byte,
+                block_end_byte,
+                block_sha256,
+                block_candidate_count,
+                valid_mount_count,
+                malformed_mount_count,
+                termination_evidence,
+                absence_reason,
                 mounted_entry_count,
                 len(dlcs),
                 len(mods),
@@ -661,6 +709,7 @@ def replace_runtime_context(
                 inventory_enabled_mod_count,
                 inventory_dlc_count,
                 _json(list(warnings)),
+                _json(list(inventory_warnings)),
             ),
         )
         conn.executemany(

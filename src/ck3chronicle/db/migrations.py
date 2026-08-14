@@ -18,6 +18,7 @@ from .schema import (
     CURRENT_VERSION,
     ISSUE_OCCURRENCES_IDX_DDL,
     RUNTIME_CONTEXT_VERSION,
+    SESSION_RUNTIME_CONTEXTS_DDL,
     SESSION_CONTEXT_VERSION,
     SESSION_INTELLIGENCE_VERSION,
     SOURCE_BLOCKS_IDX_DDL,
@@ -163,6 +164,39 @@ def _apply_migrations(conn: sqlite3.Connection) -> bool:
             )
             """
         )
+
+    # Runtime-context v2 expands the status vocabulary and binds the exact
+    # Mounted Data block to its archived debug.log row and byte/line span.
+    # SQLite cannot alter a CHECK constraint in place, so rebuild only the
+    # small context summary table while preserving all v1 rows for reparse.
+    runtime_context_cols = {
+        row[1]
+        for row in cur.execute(
+            "PRAGMA table_info(session_runtime_contexts)"
+        ).fetchall()
+    }
+    if "source_session_file_id" not in runtime_context_cols:
+        cur.execute(
+            "ALTER TABLE session_runtime_contexts "
+            "RENAME TO session_runtime_contexts_v1"
+        )
+        cur.execute(SESSION_RUNTIME_CONTEXTS_DDL)
+        cur.execute(
+            """
+            INSERT INTO session_runtime_contexts (
+                session_id, context_contract_version, parsed_at, status,
+                debug_log_sha256, mounted_entry_count, dlc_count, mod_count,
+                unknown_mount_count, inventory_enabled_mod_count,
+                inventory_dlc_count, warnings_json
+            )
+            SELECT session_id, context_contract_version, parsed_at, status,
+                   debug_log_sha256, mounted_entry_count, dlc_count, mod_count,
+                   unknown_mount_count, inventory_enabled_mod_count,
+                   inventory_dlc_count, warnings_json
+            FROM session_runtime_contexts_v1
+            """
+        )
+        cur.execute("DROP TABLE session_runtime_contexts_v1")
 
     # Backfill newer columns on existing DBs created before occurrence clustering.
     cols = {

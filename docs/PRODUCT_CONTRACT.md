@@ -97,12 +97,21 @@ after template assignment. They may not discover or choose the template.
 
 The same-run captured `debug.log` contiguous `Mounted Data:` block will be the
 only primary source for historical DLC membership and ordered active mods.
+Its exact archived file row, line range, byte range, raw-block SHA-256,
+candidate count, and termination evidence are stored. Runtime context is
+explicitly one of complete, partial, absent, malformed, truncated, or
+ambiguous. Only complete context authorizes active-root source resolution.
+
+The preceding DLC/Mod inventory is optional enrichment. Names, descriptor
+paths, counts, and mismatch warnings are stored and reported separately; they
+cannot add, remove, reorder, or rename an identity in the authoritative mount
+projection.
 
 Explicit exclusions:
 
 - extension `session.mods`;
 - save-game correlation on the normal path;
-- Debug Enabled/Disabled inventory;
+- Debug Enabled/Disabled inventory as a membership authority;
 - searches across inactive mods when resolving a session.
 
 ## Reporting boundary

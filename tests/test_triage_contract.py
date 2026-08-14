@@ -107,9 +107,7 @@ def test_rtriage_001_regression_links_stored_locator_to_active_source(tmp_path) 
     }
     assert item["source_resolution"]["scope"]["inactive_mod_roots_searched"] == 0
     assert item["source_resolution"]["last_mounted_candidate"]["path"] == str(target)
-    assert item["source_resolution"]["last_mounted_candidate"]["display_name"] == (
-        "Workshop Mod"
-    )
+    assert item["source_resolution"]["last_mounted_candidate"]["display_name"] is None
     assert "do not prove causal ownership" in triage["caveat"]
     conn.close()
 

@@ -555,7 +555,6 @@ def _runtime_context_delta(
     def entry(row: sqlite3.Row, order_column: str, key_column: str) -> dict[str, object]:
         return {
             "key": row[key_column],
-            "display_name": row["display_name"],
             "order": int(row[order_column]),
             "mount_path": row["mount_path"],
         }
@@ -580,7 +579,6 @@ def _runtime_context_delta(
         moved = [
             {
                 "key": key,
-                "display_name": current[key]["display_name"],
                 "previous_order": int(previous[key][order_column]),
                 "current_order": int(current[key][order_column]),
             }

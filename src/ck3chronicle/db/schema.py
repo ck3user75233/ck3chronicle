@@ -299,16 +299,43 @@ CREATE TABLE IF NOT EXISTS session_runtime_contexts (
     session_id             INTEGER PRIMARY KEY REFERENCES sessions(session_id),
     context_contract_version TEXT NOT NULL,
     parsed_at              TEXT NOT NULL,
-    status                 TEXT NOT NULL
-                           CHECK (status IN ('complete', 'partial', 'absent')),
+    status                 TEXT NOT NULL CHECK (
+                               status IN (
+                                   'complete', 'partial', 'absent',
+                                   'malformed', 'truncated', 'ambiguous'
+                               )
+                           ),
     debug_log_sha256       TEXT,
+    source_session_file_id INTEGER REFERENCES session_files(session_file_id),
+    block_start_line       INTEGER CHECK (block_start_line IS NULL OR block_start_line >= 1),
+    block_end_line         INTEGER CHECK (
+                               block_end_line IS NULL
+                               OR block_end_line >= block_start_line
+                           ),
+    block_start_byte       INTEGER CHECK (block_start_byte IS NULL OR block_start_byte >= 0),
+    block_end_byte         INTEGER CHECK (
+                               block_end_byte IS NULL
+                               OR block_end_byte >= block_start_byte
+                           ),
+    block_sha256           TEXT CHECK (
+                               block_sha256 IS NULL OR length(block_sha256) = 64
+                           ),
+    block_candidate_count  INTEGER NOT NULL DEFAULT 0
+                           CHECK (block_candidate_count >= 0),
+    valid_mount_count      INTEGER NOT NULL DEFAULT 0
+                           CHECK (valid_mount_count >= 0),
+    malformed_mount_count  INTEGER NOT NULL DEFAULT 0
+                           CHECK (malformed_mount_count >= 0),
+    termination_evidence   TEXT,
+    absence_reason         TEXT,
     mounted_entry_count    INTEGER NOT NULL CHECK (mounted_entry_count >= 0),
     dlc_count              INTEGER NOT NULL CHECK (dlc_count >= 0),
     mod_count              INTEGER NOT NULL CHECK (mod_count >= 0),
     unknown_mount_count    INTEGER NOT NULL CHECK (unknown_mount_count >= 0),
     inventory_enabled_mod_count INTEGER NOT NULL CHECK (inventory_enabled_mod_count >= 0),
     inventory_dlc_count    INTEGER NOT NULL CHECK (inventory_dlc_count >= 0),
-    warnings_json          TEXT NOT NULL DEFAULT '[]'
+    warnings_json          TEXT NOT NULL DEFAULT '[]',
+    inventory_warnings_json TEXT NOT NULL DEFAULT '[]'
 );
 """
 
@@ -450,5 +477,5 @@ CAPTURE_VERSION = 2
 CLASSIFICATION_VERSION = 3
 STORAGE_VERSION = 2
 SESSION_INTELLIGENCE_VERSION = 1
-RUNTIME_CONTEXT_VERSION = 1
+RUNTIME_CONTEXT_VERSION = 2
 SOURCE_RESOLUTION_VERSION = 1

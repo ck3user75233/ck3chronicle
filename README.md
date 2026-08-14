@@ -110,9 +110,13 @@ both human-readable sections) under the same exact model revision.
 
 `context` reads only the session's archived `debug.log`. The contiguous
 `Mounted Data:` sequence is authoritative for DLC/mod membership and order;
-the earlier DLC/Mod inventory only supplies names and descriptor paths and is
-used for exact-set validation. Disabled inventory entries are never promoted
-into the active mod list.
+its exact file, line/byte range, block hash, candidate count, and termination
+evidence are stored. Complete, partial, absent, malformed, truncated, and
+ambiguous states are distinct. The earlier DLC/Mod inventory supplies a
+separate enrichment projection of names, descriptor paths, and mismatch
+warnings; it cannot change authoritative membership/order. Disabled inventory
+entries are never promoted into the active mod list. Source resolution refuses
+non-complete runtime context.
 Session comparisons report mounted DLC/mod additions, removals, and load-order
 moves. They deliberately do not infer that mod contents are unchanged when a
 Workshop/local mount identity remains the same.

@@ -463,7 +463,6 @@ def test_rdelta_005_comparison_exposes_authoritative_mount_changes(tmp_path) -> 
     assert delta["active_mods"]["moved"] == [
         {
             "key": "local:localpatch",
-            "display_name": "Local Patch",
             "previous_order": 1,
             "current_order": 0,
         }

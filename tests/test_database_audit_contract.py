@@ -104,3 +104,21 @@ def test_rdbaudit_004_cli_json_is_bounded_and_read_only(
     assert payload["read_only"] is True
     assert payload["audit_depth"] == "standard"
     assert len(payload["sessions"]) == 2
+
+
+def test_rdbaudit_005_runtime_block_hash_corruption_is_detected(tmp_path) -> None:
+    runtime, conn, _previous_id, current_id = _auditable_runtime(tmp_path)
+    conn.execute(
+        "UPDATE session_runtime_contexts SET block_sha256 = ? WHERE session_id = ?",
+        ("0" * 64, current_id),
+    )
+    conn.commit()
+    conn.close()
+
+    result = audit_database(runtime)
+
+    assert result["status"] == "fail"
+    finding = next(
+        item for item in result["findings"] if item["code"] == "DB-CONTEXT-003"
+    )
+    assert finding["session_ids"] == [current_id]

@@ -68,6 +68,8 @@ The repository contains substantial Phase 1 implementation:
 - canonical `error.log` block/occurrence storage;
 - versioned empirical classification and review queues;
 - same-run Mounted Data runtime context;
+- exact Mounted Data source-file/line/byte/hash provenance, six-state parsing,
+  and inventory-independent authoritative membership/order;
 - stored reporting and deferred `process-pending` processing;
 - database reconciliation and compact default storage.
 
@@ -92,10 +94,9 @@ formal exit report. No current commit has such an exit record.
 
 ### Immediate work
 
-1. Complete the remaining product architecture in dependency order: exact
-   runtime-context state/provenance, memory-bounded parse persistence,
-   template post-validation, the canonical `process-pending` command envelope,
-   and newest-reportable-run projections.
+1. Complete the remaining product architecture in dependency order:
+   memory-bounded parse persistence, template post-validation, the canonical
+   `process-pending` command envelope, and explicit run selection in reports.
 2. Reconcile the Phase 1 semantic oracle with the user-approved empirical
    template model, including locator recognition before L1 assignment.
 3. Publish the callable evaluation interface for every gate; an independent

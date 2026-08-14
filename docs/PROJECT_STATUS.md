@@ -41,7 +41,7 @@ Historical material is recoverable from:
 - atomic parse and reparse persistence.
 
 The implemented foundation and production classifier seam are covered by the new
-reboot-owned suite: 91 tests as of this status record. No inherited test
+reboot-owned suite: 99 tests as of this status record. No inherited test
 contributes to that number.
 
 These are fast regression tests. The complete protected-real-evidence,
@@ -84,8 +84,11 @@ must author and freeze the release harness and scorers.
   pattern-ignore annotations.
 - `report --since` and `latest --since` combined report/comparison projections.
 - archived-debug `Mounted Data:` parsing with ordered DLCs and active mods,
-  inventory enrichment, and exact-set validation;
-- runtime context integrated into `process-pending`, `context`, and report v2.
+  exact source-file/line/byte/block-hash provenance, and explicit complete,
+  partial, absent, malformed, truncated, and ambiguous states;
+- inventory names/descriptors and mismatch warnings separated from the
+  authoritative mounted membership/order projection;
+- runtime context integrated into `process-pending`, `context` v2, and report v4.
 - session comparisons include mounted DLC/mod additions, removals, and
   load-order moves while explicitly deferring content-update fingerprints.
 - active-runtime-only `resolve-file` projection with base/DLC/mod order,

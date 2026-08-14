@@ -430,6 +430,9 @@ def audit_database(root: Path, *, deep: bool = False) -> dict[str, object]:
             int(row["session_id"]): row
             for row in conn.execute("SELECT * FROM session_runtime_contexts")
         }
+        sessions_by_id = {
+            int(row["session_id"]): row for row in session_rows
+        }
         for summary in session_summaries:
             session_id = int(summary["session_id"])
             context = contexts.get(session_id)
@@ -454,6 +457,92 @@ def audit_database(root: Path, *, deep: bool = False) -> dict[str, object]:
                     session_ids=[session_id],
                     details={"stored": stored, "actual": actual},
                 )
+            if str(context["context_contract_version"]).startswith("2."):
+                provenance_errors: list[str] = []
+                status = str(context["status"])
+                candidate_count = int(context["block_candidate_count"])
+                block_fields = (
+                    context["block_start_line"],
+                    context["block_end_line"],
+                    context["block_start_byte"],
+                    context["block_end_byte"],
+                    context["block_sha256"],
+                )
+                if status in {"complete", "partial", "malformed", "truncated"}:
+                    if candidate_count != 1 or any(value is None for value in block_fields):
+                        provenance_errors.append(
+                            "single-block state lacks exact block provenance"
+                        )
+                    if int(context["valid_mount_count"]) != int(
+                        context["mounted_entry_count"]
+                    ):
+                        provenance_errors.append(
+                            "valid mount count disagrees with mounted rows"
+                        )
+                elif status == "ambiguous":
+                    if candidate_count < 2 or any(value is not None for value in block_fields):
+                        provenance_errors.append(
+                            "ambiguous state does not retain a candidate-only boundary"
+                        )
+                elif status == "absent":
+                    if candidate_count != 0 or any(value is not None for value in block_fields):
+                        provenance_errors.append(
+                            "absent state unexpectedly claims a Mounted Data block"
+                        )
+
+                source_file_id = context["source_session_file_id"]
+                if source_file_id is not None:
+                    source = conn.execute(
+                        """
+                        SELECT * FROM session_files
+                        WHERE session_file_id = ?
+                          AND session_id = ?
+                          AND kind = 'log'
+                          AND rel_path = 'debug.log'
+                        """,
+                        (source_file_id, session_id),
+                    ).fetchone()
+                    if source is None:
+                        provenance_errors.append(
+                            "source_session_file_id is not this session's debug.log"
+                        )
+                    elif context["block_sha256"] is not None:
+                        session_row = sessions_by_id[session_id]
+                        debug_path = (
+                            sessions_root
+                            / str(session_row["evidence_bundle_hash"])
+                            / "debug.log"
+                        )
+                        try:
+                            with debug_path.open("rb") as stream:
+                                stream.seek(int(context["block_start_byte"]))
+                                raw_block = stream.read(
+                                    int(context["block_end_byte"])
+                                    - int(context["block_start_byte"])
+                                )
+                            if hashlib.sha256(raw_block).hexdigest() != context[
+                                "block_sha256"
+                            ]:
+                                provenance_errors.append(
+                                    "stored Mounted Data block hash disagrees with archive bytes"
+                                )
+                        except OSError:
+                            provenance_errors.append(
+                                "archived debug.log could not be read for block verification"
+                            )
+                elif context["debug_log_sha256"] is not None:
+                    provenance_errors.append(
+                        "captured debug.log context lacks its session_file identity"
+                    )
+                if provenance_errors:
+                    finding(
+                        "error",
+                        "DB-CONTEXT-003",
+                        "runtime_context",
+                        "runtime-context block provenance is inconsistent",
+                        session_ids=[session_id],
+                        details={"errors": provenance_errors},
+                    )
 
         relational_orphans = {
             "occurrences_without_block": int(

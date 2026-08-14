@@ -1257,23 +1257,32 @@ def cmd_context(args: argparse.Namespace) -> int:
             conn.close()
     payload = {
         "schema": "ck3chronicle.runtime-context",
-        "schema_version": 1,
+        "schema_version": 2,
         "session_id": result.session_id,
         "contract_version": result.context_contract_version,
         "status": result.status,
         "debug_log_sha256": result.debug_log_sha256,
+        "provenance": {
+            "source_session_file_id": result.source_session_file_id,
+            "start_line": result.block_start_line,
+            "end_line": result.block_end_line,
+            "start_byte": result.block_start_byte,
+            "end_byte": result.block_end_byte,
+            "block_sha256": result.block_sha256,
+            "candidate_count": result.block_candidate_count,
+            "valid_mount_count": result.valid_mount_count,
+            "malformed_mount_count": result.malformed_mount_count,
+            "termination_evidence": result.termination_evidence,
+            "absence_reason": result.absence_reason,
+        },
         "mutated": result.mutated,
         "unknown_mount_count": result.unknown_mount_count,
-        "inventory_enabled_mod_count": result.inventory_enabled_mod_count,
-        "inventory_dlc_count": result.inventory_dlc_count,
         "warnings": list(result.warnings),
         "dlcs": [
             {
                 "mount_ordinal": item.mount_ordinal,
                 "dlc_order": item.dlc_order,
                 "dlc_key": item.dlc_key,
-                "display_name": item.display_name,
-                "descriptor_path": item.descriptor_path,
                 "mount_path": item.mount_path,
             }
             for item in result.dlcs
@@ -1283,13 +1292,34 @@ def cmd_context(args: argparse.Namespace) -> int:
                 "mount_ordinal": item.mount_ordinal,
                 "load_order": item.load_order,
                 "mod_key": item.mod_key,
-                "display_name": item.display_name,
-                "descriptor_path": item.descriptor_path,
                 "mount_path": item.mount_path,
                 "source_kind": item.source_kind,
             }
             for item in result.mods
         ],
+        "inventory_enrichment": {
+            "dlc_count": result.inventory_dlc_count,
+            "enabled_mod_count": result.inventory_enabled_mod_count,
+            "warnings": list(result.inventory_warnings),
+            "dlcs": [
+                {
+                    "dlc_key": item.dlc_key,
+                    "display_name": item.display_name,
+                    "descriptor_path": item.descriptor_path,
+                }
+                for item in result.dlcs
+                if item.display_name is not None or item.descriptor_path is not None
+            ],
+            "mods": [
+                {
+                    "mod_key": item.mod_key,
+                    "display_name": item.display_name,
+                    "descriptor_path": item.descriptor_path,
+                }
+                for item in result.mods
+                if item.display_name is not None or item.descriptor_path is not None
+            ],
+        },
     }
     if args.json:
         print(json.dumps(payload, sort_keys=True))
@@ -1300,17 +1330,19 @@ def cmd_context(args: argparse.Namespace) -> int:
         )
         for warning in result.warnings:
             print(f"WARNING: {warning}")
+        for warning in result.inventory_warnings:
+            print(f"INVENTORY: {warning}")
         print("\nMounted DLCs")
         for item in result.dlcs:
             print(
                 f"{item.dlc_order:>3}  {item.dlc_key}  "
-                f"{item.display_name or item.mount_path}"
+                f"{item.mount_path}"
             )
         print("\nActive mod load order")
         for item in result.mods:
             print(
                 f"{item.load_order:>3}  {item.source_kind:<8}  {item.mod_key}  "
-                f"{item.display_name or item.mount_path}"
+                f"{item.mount_path}"
             )
     return 0
 

@@ -90,6 +90,11 @@ def _recorded_roots(
         raise SourceResolutionError(
             f"session_id {session_id} runtime context has not been processed"
         )
+    if context["status"] != "complete":
+        raise SourceResolutionError(
+            f"session_id {session_id} runtime context is {context['status']}; "
+            "active-root resolution requires a complete Mounted Data block"
+        )
     dlcs = repository.get_mounted_dlcs(conn, session_id)
     mods = repository.get_mounted_mods(conn, session_id)
     roots: list[dict[str, object]] = []
@@ -111,7 +116,7 @@ def _recorded_roots(
                 "mount_order": order,
                 "source_kind": "dlc",
                 "source_key": row["dlc_key"],
-                "display_name": row["display_name"],
+                "display_name": None,
                 "root": row["mount_path"],
             }
         )
@@ -122,7 +127,7 @@ def _recorded_roots(
                 "mount_order": order,
                 "source_kind": row["source_kind"],
                 "source_key": row["mod_key"],
-                "display_name": row["display_name"],
+                "display_name": None,
                 "root": row["mount_path"],
             }
         )
