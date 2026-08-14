@@ -41,7 +41,7 @@ Historical material is recoverable from:
 - atomic parse and reparse persistence.
 
 The implemented foundation and production classifier seam are covered by the new
-reboot-owned suite: 107 tests as of this status record. No inherited test
+reboot-owned suite: 111 tests as of this status record. No inherited test
 contributes to that number.
 
 These are fast regression tests. The complete protected-real-evidence,
@@ -76,6 +76,11 @@ must author and freeze the release harness and scorers.
 - bounded stored-record `review-queue` for L1-only and unknown patterns.
 - database-only executive `report`, chronological `latest`, and bounded
   `errors` projections;
+- stable `process-pending --json` command-result v1 envelopes for success,
+  reconciliation warning, archive integrity, model integrity, database, and
+  generic pipeline failures;
+- newest-reportable-run `latest` selection plus exact `report --run` and
+  `errors --run` selection when content-addressed evidence is reused;
 - compact 822-row model-contract catalog for readable templates without
   duplicating template text per occurrence;
 - idempotent `process-pending` finalization → registration → parse → classify
@@ -92,7 +97,7 @@ must author and freeze the release harness and scorers.
   partial, absent, malformed, truncated, and ambiguous states;
 - inventory names/descriptors and mismatch warnings separated from the
   authoritative mounted membership/order projection;
-- runtime context integrated into `process-pending`, `context` v2, and report v4.
+- runtime context integrated into `process-pending`, `context` v2, and report v5.
 - session comparisons include mounted DLC/mod additions, removals, and
   load-order moves while explicitly deferring content-update fingerprints.
 - active-runtime-only `resolve-file` projection with base/DLC/mod order,
@@ -124,7 +129,8 @@ release candidate is frozen.
 
 ## Not yet released
 
-- the complete Phase 1 public vertical slice and common command envelope;
+- common command envelopes across the remaining report/query surfaces and an
+  independently frozen complete Phase 1 output contract;
 - independently frozen complete report output;
 - the Phase 1 mutation, private-holdout, and performance exit runs;
 - on-action container-merge and culture symbol-LIOS adapters;

@@ -618,20 +618,34 @@ def _report_for_args(args: argparse.Namespace, *, latest: bool = False):
 
     from . import config
     from .db import repository
-    from .reporting import ReportError, build_session_report, latest_session_id
+    from .reporting import ReportError, build_session_report, latest_report_target
 
     conn = None
     try:
         conn = repository.open_db(
             config.ROOT_CK3CHRONICLE / "ck3chronicle.db"
         )
-        session_id = latest_session_id(conn) if latest else int(args.session)
+        observed_run_id = None
+        if latest:
+            target = latest_report_target(conn)
+            if target is None:
+                raise ReportError("no reportable runs exist")
+            session_id, observed_run_id = target
+        elif getattr(args, "run", None) is not None:
+            observed_run = repository.get_run(conn, int(args.run))
+            if observed_run is None:
+                raise ReportError(f"run_id {args.run} not found")
+            session_id = int(observed_run["session_id"])
+            observed_run_id = int(observed_run["observation_id"])
+        else:
+            session_id = int(args.session)
         if session_id is None:
             raise ReportError("no captured sessions exist")
         return build_session_report(
             conn,
             session_id,
             model_sha256=getattr(args, "model_sha256", None),
+            observed_run_id=observed_run_id,
             limit=int(args.limit),
         )
     finally:
@@ -640,6 +654,7 @@ def _report_for_args(args: argparse.Namespace, *, latest: bool = False):
 
 
 def _print_executive_report(report: dict[str, object]) -> None:
+    observed_run = report["run"]
     session = report["session"]
     classification = report["classification"]
     parse = report["parse"]
@@ -648,6 +663,12 @@ def _print_executive_report(report: dict[str, object]) -> None:
         f"Session {session['session_id']} — captured {session['captured_at']} — "
         f"{session['total_bytes']:,} bytes"
     )
+    if observed_run is not None:
+        print(
+            f"Run {observed_run['run_id']} - ended "
+            f"{observed_run['observed_ended_at']} - "
+            f"termination={observed_run['termination_kind']}"
+        )
     print(
         f"Evidence: {session['log_count']} logs; completeness="
         f"{session['evidence_completeness']}; crash={session['crash_present']}"
@@ -693,6 +714,10 @@ def _cmd_report(args: argparse.Namespace, *, latest: bool) -> int:
     from .session_intelligence import ComparisonError, compare_sessions
 
     try:
+        if getattr(args, "run", None) is not None and args.since is not None:
+            raise ReportError(
+                "--since is session-based and cannot be combined with exact --run"
+            )
         report = _report_for_args(args, latest=latest)
         comparison = None
         if args.since is not None:
@@ -752,7 +777,10 @@ def cmd_errors(args: argparse.Namespace) -> int:
     from .reporting import ReportError
 
     try:
-        report = _report_for_args(args, latest=not bool(args.session))
+        report = _report_for_args(
+            args,
+            latest=not bool(args.session or args.run),
+        )
     except ReportError as exc:
         print(f"ERROR: errors unavailable: {exc}", file=sys.stderr)
         return 2
@@ -789,22 +817,51 @@ def cmd_process_pending(args: argparse.Namespace) -> int:
 
     from . import config
     from .classification.catalog import load_approved_classifier
+    from .classification.model import ModelIntegrityError
+    from .command_envelope import command_envelope
     from .harvester import ArchiveIntegrityError
     from .processing import process_pending
+
+    def fail(
+        exit_code: int,
+        code: str,
+        message: str,
+        stage: str,
+        *,
+        retryable: bool = False,
+    ) -> int:
+        message = message or code
+        if args.json:
+            print(
+                json.dumps(
+                    command_envelope(
+                        "process-pending",
+                        status="failed",
+                        exit_code=exit_code,
+                        error_code=code,
+                        message=message,
+                        stage=stage,
+                        retryable=retryable,
+                    ),
+                    sort_keys=True,
+                )
+            )
+        else:
+            print(f"ERROR [{code}]: {message}", file=sys.stderr)
+        return exit_code
 
     try:
         result = process_pending(
             config.ROOT_CK3CHRONICLE, load_approved_classifier()
         )
     except ArchiveIntegrityError as exc:
-        print(f"ERROR [archive_integrity]: {exc}", file=sys.stderr)
-        return 3
+        return fail(3, "archive_integrity", str(exc), "archive")
+    except ModelIntegrityError as exc:
+        return fail(4, "model_invalid", str(exc), "classifier")
     except sqlite3.Error as exc:
-        print(f"ERROR [database_failed]: {exc}", file=sys.stderr)
-        return 5
+        return fail(5, "database_failed", str(exc), "database")
     except Exception as exc:
-        print(f"ERROR: processing failed: {exc}", file=sys.stderr)
-        return 1
+        return fail(1, "processing_failed", str(exc), "pipeline")
 
     payload = {
         "schema": "ck3chronicle.processing-result",
@@ -819,7 +876,28 @@ def cmd_process_pending(args: argparse.Namespace) -> int:
         "latest_report": result.latest_report,
     }
     if args.json:
-        print(json.dumps(payload, sort_keys=True))
+        if result.reconciliation_errors:
+            envelope = command_envelope(
+                "process-pending",
+                status="warning",
+                exit_code=1,
+                result=payload,
+                error_code="reconciliation_incomplete",
+                message=(
+                    f"{len(result.reconciliation_errors)} archive/run "
+                    "reconciliation error(s) remain"
+                ),
+                stage="reconcile",
+                retryable=True,
+            )
+        else:
+            envelope = command_envelope(
+                "process-pending",
+                status="succeeded",
+                exit_code=0,
+                result=payload,
+            )
+        print(json.dumps(envelope, sort_keys=True))
     else:
         print(
             f"finalized={result.finalized_pending}; "
@@ -1633,7 +1711,14 @@ def build_parser() -> argparse.ArgumentParser:
     p_report = sub.add_parser(
         "report", help="Executive report for one stored classified session."
     )
-    p_report.add_argument("--session", type=int, required=True, metavar="SESSION_ID")
+    report_target = p_report.add_mutually_exclusive_group(required=True)
+    report_target.add_argument("--session", type=int, metavar="SESSION_ID")
+    report_target.add_argument(
+        "--run",
+        type=int,
+        metavar="RUN_ID",
+        help="Exact observed run ID; selects chronology even when evidence is reused.",
+    )
     p_report.add_argument("--limit", type=int, default=20, metavar="N")
     p_report.add_argument(
         "--since",
@@ -1662,7 +1747,14 @@ def build_parser() -> argparse.ArgumentParser:
     p_errors = sub.add_parser(
         "errors", help="List the most frequent stored semantic error patterns."
     )
-    p_errors.add_argument("--session", type=int, metavar="SESSION_ID")
+    errors_target = p_errors.add_mutually_exclusive_group()
+    errors_target.add_argument("--session", type=int, metavar="SESSION_ID")
+    errors_target.add_argument(
+        "--run",
+        type=int,
+        metavar="RUN_ID",
+        help="Exact observed run ID; defaults to the latest reportable run.",
+    )
     p_errors.add_argument("--limit", type=int, default=20, metavar="N")
     p_errors.add_argument("--model-sha256", metavar="SHA256")
     p_errors.add_argument("--json", action="store_true")

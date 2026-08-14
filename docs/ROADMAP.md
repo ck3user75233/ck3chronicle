@@ -45,6 +45,10 @@ Status: complete.
 Status: foreground workflow complete.
 
 - [x] add `process-pending` to finalize, reconcile, parse, classify, and report;
+- [x] wrap `process-pending --json` success/warning/failure in one versioned
+  command envelope;
+- [x] select the newest reportable run and support exact run reports when
+  evidence bundles are reused;
 - [x] keep the watcher copy-only;
 - evaluate safe login-start automation after the foreground workflow is proven.
 

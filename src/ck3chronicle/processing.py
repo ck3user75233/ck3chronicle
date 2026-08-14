@@ -10,7 +10,7 @@ from .classification import Classifier, classify_session
 from .db import repository
 from .harvester import finalize_pending_captures
 from .parser.service import parse_session
-from .reporting import build_session_report, latest_session_id
+from .reporting import build_session_report, latest_report_target
 from .runtime_context import parse_runtime_context
 from .run_registry import reconcile_run_receipts
 
@@ -63,14 +63,15 @@ def process_pending(root: Path, classifier: Classifier) -> ProcessingResult:
             )
             classified += int(classification.mutated)
 
-        latest_id = latest_session_id(conn)
+        latest_target = latest_report_target(conn)
         latest_report = (
             build_session_report(
                 conn,
-                latest_id,
+                latest_target[0],
                 model_sha256=classifier.model.sha256,
+                observed_run_id=latest_target[1],
             )
-            if latest_id is not None
+            if latest_target is not None
             else None
         )
     finally:

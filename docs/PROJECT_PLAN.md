@@ -98,9 +98,9 @@ formal exit report. No current commit has such an exit record.
 
 ### Immediate work
 
-1. Complete the remaining product architecture in dependency order: the
-   canonical `process-pending` command envelope and explicit run selection in
-   reports.
+1. Extend the stable command envelope from the canonical `process-pending`
+   vertical slice to the remaining Phase 1 report surfaces and freeze their
+   complete text/JSON projections.
 2. Reconcile the Phase 1 semantic oracle with the PostValidate-protected,
    user-approved empirical
    template model, including locator recognition before L1 assignment.

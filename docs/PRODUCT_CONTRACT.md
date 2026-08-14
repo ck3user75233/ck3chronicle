@@ -171,3 +171,16 @@ is explicitly opt-in because retained raw blocks make a full scan expensive.
 An audit warning remains visible but does not make a structurally consistent
 database unusable. An audit error means the affected evidence or derived state
 must not be represented as fully accepted until repaired or regenerated.
+
+## Public Phase 1 workflow
+
+`process-pending` is the canonical deferred vertical slice. Its JSON surface
+emits exactly one `ck3chronicle.command-result` v1 envelope containing command,
+status, exit code, result, and error. Exit codes distinguish pipeline failure
+(1), evidence/archive integrity (3), model integrity (4), and database failure
+(5); reconciliation warnings return 1 while retaining the partial result.
+
+Chronology is run-based, not evidence-bundle-based. `latest` selects the newest
+reportable observed run. `report --run RUN_ID` selects that exact run even if an
+identical content-addressed session was observed on multiple exits. Selecting
+only `--session` means the latest observed run linked to that evidence bundle.

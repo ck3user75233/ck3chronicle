@@ -12,11 +12,13 @@ class ReportError(RuntimeError):
     """A stored session is absent or not ready for reporting."""
 
 
-def latest_session_id(conn: sqlite3.Connection) -> int | None:
-    """Return the newest reportable run's evidence session."""
+def latest_report_target(
+    conn: sqlite3.Connection,
+) -> tuple[int, int | None] | None:
+    """Return the newest reportable evidence session and exact run identity."""
     run = repository.latest_run(conn, reportable_only=True)
     if run is not None:
-        return int(run["session_id"])
+        return int(run["session_id"]), int(run["observation_id"])
     # Compatibility for callers that register a disposable evidence session
     # directly without a watcher receipt.
     row = conn.execute(
@@ -32,7 +34,13 @@ def latest_session_id(conn: sqlite3.Connection) -> int | None:
         LIMIT 1
         """
     ).fetchone()
-    return int(row[0]) if row is not None else None
+    return (int(row[0]), None) if row is not None else None
+
+
+def latest_session_id(conn: sqlite3.Connection) -> int | None:
+    """Compatibility projection of the newest reportable target."""
+    target = latest_report_target(conn)
+    return target[0] if target is not None else None
 
 
 def _classification_run(
@@ -73,6 +81,7 @@ def build_session_report(
     session_id: int,
     *,
     model_sha256: str | None = None,
+    observed_run_id: int | None = None,
     limit: int = 20,
 ) -> dict[str, object]:
     """Build one schema-versioned executive report without reopening logs."""
@@ -302,7 +311,18 @@ def build_session_report(
                 ],
             },
         }
-    observed_run = repository.latest_run_for_session(conn, session_id)
+    observed_run = (
+        repository.get_run(conn, observed_run_id)
+        if observed_run_id is not None
+        else repository.latest_run_for_session(conn, session_id)
+    )
+    if observed_run_id is not None and observed_run is None:
+        raise ReportError(f"run_id {observed_run_id} not found")
+    if observed_run is not None and int(observed_run["session_id"]) != session_id:
+        raise ReportError(
+            f"run_id {observed_run['observation_id']} does not belong to "
+            f"session_id {session_id}"
+        )
     run_projection = None
     if observed_run is not None:
         origins = repository.get_run_file_origins(
@@ -345,7 +365,7 @@ def build_session_report(
         }
     return {
         "schema": "ck3chronicle.session-report",
-        "schema_version": 4,
+        "schema_version": 5,
         "run": run_projection,
         "session": {
             "session_id": int(session["session_id"]),

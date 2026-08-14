@@ -7,6 +7,7 @@ import json
 from ck3chronicle import config
 from ck3chronicle.classification import classify_session
 from ck3chronicle.cli import build_parser
+from ck3chronicle.db import repository
 
 from test_classification_persistence_contract import _classifier, _session
 
@@ -62,3 +63,41 @@ def test_rreportcli_003_errors_is_a_bounded_stored_pattern_projection(
     assert payload["total_occurrences"] == 5
     assert len(payload["patterns"]) == 2
     assert payload["patterns"][0]["occurrences"] == 3
+
+
+def test_rreportcli_004_exact_run_selection_survives_evidence_reuse(
+    tmp_path, monkeypatch, capsys
+) -> None:
+    parser, session_id = _ready(tmp_path, monkeypatch)
+    runtime = config.ROOT_CK3CHRONICLE
+    conn = repository.open_db(runtime / "ck3chronicle.db")
+    first_id, _ = repository.register_run(
+        conn,
+        session_id=session_id,
+        capture_id="first-observed-run",
+        trigger="process_exit",
+        observed_ended_at="2026-08-14T01:00:00+00:00",
+    )
+    second_id, _ = repository.register_run(
+        conn,
+        session_id=session_id,
+        capture_id="second-observed-run",
+        trigger="process_exit",
+        observed_ended_at="2026-08-14T02:00:00+00:00",
+    )
+    conn.close()
+
+    exact = parser.parse_args(["report", "--run", str(first_id), "--json"])
+    assert exact.func(exact) == 0
+    exact_payload = json.loads(capsys.readouterr().out)
+    assert exact_payload["schema_version"] == 5
+    assert exact_payload["run"]["run_id"] == first_id
+    assert exact_payload["run"]["capture_id"] == "first-observed-run"
+
+    by_evidence = parser.parse_args(
+        ["report", "--session", str(session_id), "--json"]
+    )
+    assert by_evidence.func(by_evidence) == 0
+    evidence_payload = json.loads(capsys.readouterr().out)
+    assert evidence_payload["run"]["run_id"] == second_id
+    assert evidence_payload["run"]["capture_id"] == "second-observed-run"

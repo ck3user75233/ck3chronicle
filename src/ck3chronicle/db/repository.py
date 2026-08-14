@@ -402,6 +402,13 @@ def get_run_by_capture_id(
     ).fetchone()
 
 
+def get_run(conn: sqlite3.Connection, observation_id: int) -> sqlite3.Row | None:
+    return conn.execute(
+        "SELECT * FROM capture_observations WHERE observation_id = ?",
+        (observation_id,),
+    ).fetchone()
+
+
 def latest_run(
     conn: sqlite3.Connection, *, reportable_only: bool = False
 ) -> sqlite3.Row | None:

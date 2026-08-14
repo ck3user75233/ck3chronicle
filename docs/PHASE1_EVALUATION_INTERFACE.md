@@ -106,6 +106,18 @@ Public equivalent:
 ck3chronicle process-pending [--json]
 ```
 
+The function returns `ProcessingResult` directly. The JSON CLI wraps its
+`ck3chronicle.processing-result` v2 projection in exactly one
+`ck3chronicle.command-result` v1 envelope:
+
+```text
+schema, schema_version, command, status, exit_code, result, error
+```
+
+`error`, when present, contains `code`, `message`, `stage`, and `retryable`.
+The supported process exit codes are 0 success, 1 warning/pipeline failure,
+3 archive integrity, 4 model integrity, and 5 database failure.
+
 ### Exact lexical blocks
 
 Function:
@@ -240,6 +252,7 @@ ck3chronicle.reporting.build_session_report(
     session_id: int,
     *,
     model_sha256: str | None = None,
+    observed_run_id: int | None = None,
     limit: int = 20,
 ) -> dict[str, object]
 ```
@@ -249,9 +262,16 @@ must not reopen archived logs. Public report surfaces are:
 
 ```text
 ck3chronicle report --session SESSION_ID [--json]
+ck3chronicle report --run RUN_ID [--json]
 ck3chronicle latest [--json]
-ck3chronicle errors [--json]
+ck3chronicle errors [--session SESSION_ID | --run RUN_ID] [--json]
 ```
+
+The report is schema v5. `observed_run_id` selects an exact run; omitting it
+selects the latest observed run for that evidence session. `latest` selects the
+newest run whose evidence is finalized, parsed, and classified, with a
+compatibility fallback only for direct development registrations that predate
+run receipts.
 
 ## Independent evaluator deliverables
 

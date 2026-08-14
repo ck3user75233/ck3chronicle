@@ -63,13 +63,13 @@ harness. The fast reboot suite remains useful regression coverage.
 
 | Gate | Current status | Evidence and gap |
 |---|---|---|
-| `P1-REP-01` | Missing surface/contract drift | `process-pending` composes the implemented workflow, but the old contract requires absent `analyze --logs`; no complete independent report oracle exists. The operator contract must be deliberately updated or the command implemented. |
+| `P1-REP-01` | Partially covered / contract reconciled | `process-pending` is now the documented canonical vertical slice with one command-result envelope; the obsolete `analyze --logs` expectation is explicitly retired. No complete independent report oracle has run. |
 | `P1-REP-02` | Untested | Text and JSON share data in implementation, but no independent field-equivalence gate exists. |
 | `P1-REP-03` | Partially covered | Stored report works after `error.log` removal; `latest` and `errors` have not been proven unchanged in the same gate. |
 | `P1-REP-04` | Untested | No before/after database and evidence hashes for every report command. |
 | `P1-REP-05` | Partially covered | Repeat processing is deterministic; randomized insertion-order equivalence is absent. |
-| `P1-REP-06` | Missing surface | `latest` currently orders sessions but does not implement the frozen successfully-parsed eligibility rule. |
-| `P1-REP-07` | Missing surface | There is no common success/failure command envelope and no all-command black-box gate. |
+| `P1-REP-06` | Partially covered | `latest` selects the newest reportable run and `report --run` distinguishes repeated observations of identical evidence. The independent eligibility/order gate has not run. |
+| `P1-REP-07` | Partially covered | `process-pending` has a stable success/warning/failure envelope and exit taxonomy. Remaining report/query commands and the all-command black-box gate are incomplete. |
 
 ## Release gates
 

@@ -46,6 +46,7 @@ classification do not occur in the process-exit path.
 .\.venv\Scripts\ck3chronicle.exe classify --session <ID>
 .\.venv\Scripts\ck3chronicle.exe review-queue --session <ID>
 .\.venv\Scripts\ck3chronicle.exe report --session <ID>
+.\.venv\Scripts\ck3chronicle.exe report --run <RUN_ID>
 .\.venv\Scripts\ck3chronicle.exe report --session <ID> --since <EARLIER_ID>
 .\.venv\Scripts\ck3chronicle.exe latest
 .\.venv\Scripts\ck3chronicle.exe errors --session <ID>
@@ -71,9 +72,16 @@ fast suite or an implemented capability is not a phase-completion claim. See
 `docs/PROJECT_PLAN.md` and `docs/PHASE1_EXIT_PROTOCOL.md`.
 
 `process-pending` is the normal deferred workflow after the copy-only watcher:
-it finalizes protected pending copies, reconciles archives, parses canonical
-blocks, classifies them with the approved model, and prints the latest report.
-It is idempotent and never rewrites captured evidence.
+it finalizes protected pending copies, reconciles archives and run receipts,
+extracts runtime context, streams canonical blocks, classifies them with the
+approved model, and prints the latest report. It is idempotent and never
+rewrites captured evidence.
+
+With `--json`, `process-pending` always emits one
+`ck3chronicle.command-result` v1 object. Success, warning, archive-integrity,
+model, database, and generic pipeline failures have stable status, exit code,
+result, and error fields. `report --run` selects an exact observed CK3 run even
+when its evidence bytes are shared with an earlier or later run.
 
 `audit-db` is a read-only reconciliation of finalized archives, session
 manifests, parser counters, canonical occurrence totals, classification runs,
