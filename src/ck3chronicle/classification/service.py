@@ -11,7 +11,7 @@ from ck3chronicle.db import repository
 from .inference import ClassificationResult, Classifier
 
 
-CLASSIFICATION_CONTRACT_VERSION = "1.0.0"
+CLASSIFICATION_CONTRACT_VERSION = "2.0.0"
 
 
 class ClassificationError(RuntimeError):
@@ -74,7 +74,12 @@ def classify_session(
     existing = repository.get_classification_run(
         conn, session_id, classifier.model.sha256
     )
-    if existing is not None and not reclassify:
+    if (
+        existing is not None
+        and not reclassify
+        and existing["classification_contract_version"]
+        == CLASSIFICATION_CONTRACT_VERSION
+    ):
         return ClassificationRunResult(
             run_id=int(existing["run_id"]),
             session_id=session_id,

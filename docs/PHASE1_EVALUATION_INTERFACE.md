@@ -161,8 +161,10 @@ ck3chronicle.parser.service.parse_session(
 
 Precondition: the session is registered with finalized capture evidence and
 contains exactly one archived `error.log` manifest row. The function validates
-the archived byte length and SHA-256, derives every candidate before replacing
-canonical storage, and commits replacement atomically.
+the archived byte length and SHA-256, then derives and persists one lexical
+block at a time inside one replacement transaction. It reconciles persisted
+totals, per-block issue counts, per-signature counts, and occurrence provenance
+before marking success. Failure rolls back to the prior accepted projection.
 
 Public equivalent:
 
@@ -214,9 +216,13 @@ ck3chronicle.classification.service.classify_session(
 ) -> ClassificationRunResult
 ```
 
-Precondition: finalized evidence and a successful canonical parse. The return
-value identifies the model revision/hash and supplies source-block, semantic
-occurrence, full, L1+L2, L1-only, and unknown counts.
+Precondition: finalized evidence and a successful canonical parse. Contract v2
+uses empirical similarity only to nominate a template, then PostValidates
+ordered literals and typed slots. Locator typing precedes L1; locator tokens
+cannot fill other slot roles. Invalid L2 falls back to L1 and invalid unlayered
+shape to unknown. The return value identifies the model revision/hash and
+supplies source-block, semantic occurrence, full, L1+L2, L1-only, and unknown
+counts.
 
 Public equivalent:
 

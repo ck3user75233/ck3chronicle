@@ -204,3 +204,51 @@ def test_rclassdb_005_unparsed_session_is_rejected_without_rows(tmp_path: Path) 
 
     assert conn.execute("SELECT COUNT(*) FROM classification_runs").fetchone()[0] == 0
     conn.close()
+
+
+def test_rclassdb_006_stale_inference_contract_is_replaced_automatically(
+    tmp_path: Path,
+) -> None:
+    """Same model bytes cannot make pre-PostValidate results look current."""
+    _runtime, _captured, conn, session_id = _session(tmp_path)
+    first = classify_session(conn, session_id, _classifier())
+    conn.execute(
+        """
+        UPDATE classification_runs
+        SET classification_contract_version = '1.0.0'
+        WHERE run_id = ?
+        """,
+        (first.run_id,),
+    )
+    conn.commit()
+
+    second = classify_session(conn, session_id, _classifier())
+
+    assert second.mutated is True
+    assert second.run_id != first.run_id
+    assert second.classification_contract_version == "2.0.0"
+    assert conn.execute(
+        "SELECT COUNT(*) FROM classification_runs WHERE session_id = ?",
+        (session_id,),
+    ).fetchone()[0] == 1
+    conn.close()
+
+
+def test_rclassdb_007_successful_reparse_invalidates_derived_classification(
+    tmp_path: Path,
+) -> None:
+    """A new canonical projection cannot retain assignments to old block IDs."""
+    runtime, _captured, conn, session_id = _session(tmp_path)
+    classify_session(conn, session_id, _classifier())
+
+    parse_session(conn, runtime, session_id, reparse=True)
+
+    assert conn.execute(
+        "SELECT COUNT(*) FROM classification_runs WHERE session_id = ?",
+        (session_id,),
+    ).fetchone()[0] == 0
+    assert conn.execute(
+        "SELECT COUNT(*) FROM classification_assignments WHERE session_id = ?",
+        (session_id,),
+    ).fetchone()[0] == 0
+    conn.close()

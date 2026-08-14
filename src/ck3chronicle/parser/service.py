@@ -1,14 +1,12 @@
 """Shared C1 parse service: error.log evidence to atomic canonical rows."""
 from __future__ import annotations
 
-from collections import OrderedDict
 import hashlib
 from pathlib import Path
 import sqlite3
 
 from ck3chronicle.db import repository
 from ck3chronicle.models.parse import (
-    ClusterRecord,
     OccurrenceRecord,
     ParseCounters,
     ParseResult,
@@ -45,10 +43,11 @@ def parse_session(
 ) -> ParseResult:
     """Parse one ingested session under the C1 canonical contract.
 
-    Parsing and normalization finish before persistence begins.  The repository
-    then replaces blocks, occurrences, clusters, counters, state, and version in
-    one transaction, so either the whole candidate becomes visible or none of
-    it does.
+    Evidence validation finishes before replacement begins. Blocks are then
+    extracted, normalized, and persisted one at a time inside one transaction.
+    Python memory is bounded by the largest lexical block rather than the whole
+    log, while readers see either the prior accepted parse or the complete new
+    parse—never a partial replacement.
     """
     session = repository.get_session(conn, session_id)
     if session is None:
@@ -93,92 +92,99 @@ def parse_session(
             "captured error.log SHA-256 does not match its manifest row"
         )
 
-    blocks: list[SourceBlockRecord] = []
-    occurrences: list[OccurrenceRecord] = []
-    # Insertion order is deterministic: first semantic occurrence wins the
-    # cluster's representative fields.
-    clustered: OrderedDict[str, list[object]] = OrderedDict()
+    source_blocks = 0
+    issue_occurrences = 0
     preamble_blocks = 0
     unclassified_occurrences = 0
     multi_issue_blocks = 0
 
-    for lexical_block in iter_log_blocks(log_path, log_relpath=log_relpath):
-        if lexical_block.timestamp is None:
-            preamble_blocks += 1
-            continue
+    try:
+        repository.begin_canonical_replacement(conn, session_id)
+        for lexical_block in iter_log_blocks(
+            log_path,
+            log_relpath=log_relpath,
+            retain_preamble=False,
+        ):
+            if lexical_block.timestamp is None:
+                preamble_blocks += 1
+                continue
 
-        extracted = extract_block(lexical_block)
-        # C1 accepts the historical single-draft extractor API while C2
-        # migrates individual families to multi-draft lists.
-        drafts = [extracted] if isinstance(extracted, IssueDraft) else list(extracted)
-        if not drafts:
-            fallback = unclassified.extract(lexical_block)
-            drafts = [fallback] if isinstance(fallback, IssueDraft) else list(fallback)
-        if not drafts:
-            raise CanonicalParseError(
-                f"no fallback issue for source block {lexical_block.source_block_id}"
+            extracted = extract_block(lexical_block)
+            # C1 accepts the historical single-draft extractor API while C2
+            # migrates individual families to multi-draft lists.
+            drafts = (
+                [extracted]
+                if isinstance(extracted, IssueDraft)
+                else list(extracted)
             )
+            if not drafts:
+                fallback = unclassified.extract(lexical_block)
+                drafts = (
+                    [fallback]
+                    if isinstance(fallback, IssueDraft)
+                    else list(fallback)
+                )
+            if not drafts:
+                raise CanonicalParseError(
+                    "no fallback issue for source block "
+                    f"{lexical_block.source_block_id}"
+                )
 
-        normalized = [normalize(draft) for draft in drafts]
-        if len(normalized) > 1:
-            multi_issue_blocks += 1
-
-        blocks.append(
-            SourceBlockRecord(
-                source_block_id=lexical_block.source_block_id,
-                log_relpath=log_relpath,
-                start_line=lexical_block.line_number,
-                end_line=lexical_block.end_line,
-                timestamp=lexical_block.timestamp,
-                level=lexical_block.level or "",
-                source_tag=lexical_block.source_tag,
-                source_family=lexical_block.source_family,
-                raw_block_sha256=lexical_block.raw_block_sha256,
-                raw_byte_length=lexical_block.raw_byte_length,
-                raw_block=lexical_block.raw_block,
-                issue_count=len(normalized),
-            )
-        )
-
-        for issue_ordinal, issue in enumerate(normalized):
-            occurrences.append(
+            normalized = [normalize(draft) for draft in drafts]
+            if len(normalized) > 1:
+                multi_issue_blocks += 1
+            block_occurrences = tuple(
                 OccurrenceRecord(
                     source_block_id=lexical_block.source_block_id,
                     issue_ordinal=issue_ordinal,
                     issue=issue,
                 )
+                for issue_ordinal, issue in enumerate(normalized)
             )
-            if issue.category == "unclassified":
-                unclassified_occurrences += 1
-            cluster = clustered.get(issue.signature)
-            if cluster is None:
-                clustered[issue.signature] = [issue, 1]
-            else:
-                cluster[1] = int(cluster[1]) + 1
+            repository.append_canonical_block(
+                conn,
+                session_id,
+                SourceBlockRecord(
+                    source_block_id=lexical_block.source_block_id,
+                    log_relpath=log_relpath,
+                    start_line=lexical_block.line_number,
+                    end_line=lexical_block.end_line,
+                    timestamp=lexical_block.timestamp,
+                    level=lexical_block.level or "",
+                    source_tag=lexical_block.source_tag,
+                    source_family=lexical_block.source_family,
+                    raw_block_sha256=lexical_block.raw_block_sha256,
+                    raw_byte_length=lexical_block.raw_byte_length,
+                    raw_block=lexical_block.raw_block,
+                    issue_count=len(block_occurrences),
+                ),
+                block_occurrences,
+            )
+            source_blocks += 1
+            issue_occurrences += len(block_occurrences)
+            unclassified_occurrences += sum(
+                item.issue.category == "unclassified"
+                for item in block_occurrences
+            )
 
-    clusters = [
-        ClusterRecord(issue=value[0], occurrence_count=int(value[1]))
-        for value in clustered.values()
-    ]
-    counters = ParseCounters(
-        source_blocks=len(blocks),
-        preamble_blocks=preamble_blocks,
-        issue_occurrences=len(occurrences),
-        issue_clusters=len(clusters),
-        unclassified_occurrences=unclassified_occurrences,
-        multi_issue_blocks=multi_issue_blocks,
-        silently_dropped_blocks=0,
-    )
-
-    repository.replace_canonical_parse(
-        conn,
-        session_id,
-        blocks,
-        occurrences,
-        clusters,
-        counters,
-        PARSER_CONTRACT_VERSION,
-    )
+        counters = ParseCounters(
+            source_blocks=source_blocks,
+            preamble_blocks=preamble_blocks,
+            issue_occurrences=issue_occurrences,
+            issue_clusters=repository.count_canonical_clusters(conn, session_id),
+            unclassified_occurrences=unclassified_occurrences,
+            multi_issue_blocks=multi_issue_blocks,
+            silently_dropped_blocks=0,
+        )
+        repository.finish_canonical_replacement(
+            conn,
+            session_id,
+            counters,
+            PARSER_CONTRACT_VERSION,
+        )
+    except Exception:
+        conn.rollback()
+        raise
     return ParseResult(
         session_id=session_id,
         parser_contract_version=PARSER_CONTRACT_VERSION,

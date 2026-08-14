@@ -84,6 +84,13 @@ unknown. A known L1 does not authorize inventing an L2. Highly variable
 bracketed detail may remain a structured reason slot on an L1 template rather
 than becoming a large collection of low-value L2 templates.
 
+Empirical similarity nominates a template; it never authorizes one. A separate
+PostValidate step must confirm ordered semantic literals and typed slot shape.
+`<LOCATOR>` is assigned by the earlier locator grammar and can satisfy only a
+locator slot. It cannot be absorbed by `<KEY>`, `<VALUE>`, `<PARAM>`, or
+`<TYPE>`. Failed L2 validation falls back to L1; failed unlayered validation
+falls back to unknown while the raw source block remains authoritative.
+
 A template contract is the machine-readable extraction and validation rule
 attached to a template: slot order, `<KEY>`, `<OPTIONAL_KEY>`, `<LOCATOR>`,
 structured relationships such as `<KEY>.<KEY>`, and optional/repeating shape.

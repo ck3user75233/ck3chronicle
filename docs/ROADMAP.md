@@ -20,11 +20,14 @@ Status: production runtime, persistence, and CLI complete.
 - [x] register and hash-verify approved model artifacts;
 - [x] implement full, L1+L2, L1-only, and unknown inference;
 - [x] pass key/locator/source/semantic-order contract tests;
+- [x] recognize locator grammar before L1 and PostValidate typed slots after
+  candidate assignment;
 - [x] persist versioned classification runs;
 - [x] store semantic-unit occurrences linked to raw source blocks;
 - [x] store full, L1+L2, L1-only, and unknown assignments;
 - [x] expose `classify` and `review-queue` commands;
-- [x] pass protected holdout and untouched-candidate compatibility gates;
+- [x] run the historical training-excluded implementation-compatibility gate;
+- [ ] pass a post-freeze independent Phase 1 private holdout;
 - add semantic adjudication samples as new source families are approved.
 
 ## Stored-report capabilities

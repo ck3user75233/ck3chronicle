@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from ck3chronicle.classification.inference import Classifier
+from ck3chronicle.classification.contracts import validate_template_tokens
 from ck3chronicle.classification.model import ModelIntegrityError, load_model
 from ck3chronicle.classification.normalize import diagnostic_lead
 
@@ -49,6 +50,11 @@ def test_rclass_002_key_and_locator_values_do_not_split_localization_contract(
     assert first.assignment_level == "full", first.normalized_tokens
     assert second.assignment_level == "full"
     assert first.contract_id == second.contract_id == "fc12b3d364faee03"
+    assert [slot["role"] for slot in first.structured_slots] == [
+        "key",
+        "locator",
+        "locator",
+    ]
 
 
 def test_rclass_003_semantic_change_is_not_forced_into_localization_contract(
@@ -171,3 +177,27 @@ def test_rclass_009_token_bound_drops_l2_but_preserves_proven_l1(
     )
     assert result.l2_template is not None
     assert result.l2_template.endswith("<TRUNCATED_REASON>")
+
+
+def test_rclass_010_locator_cannot_satisfy_a_key_slot(
+    classifier: Classifier,
+) -> None:
+    """Human invariant: locator typing precedes and constrains L1 assignment."""
+    result = classifier.classify(
+        "pdx_localize.cpp",
+        "Localization key 'localization/english/not_a_key.yml' is defined in "
+        "both 'mod/loc/one.yml' and 'mod/loc/two.yml'",
+    )
+
+    assert result.assignment_level == "unknown"
+    assert result.contract_id is None
+
+
+def test_rclass_011_template_postvalidate_rejects_locator_as_key_directly() -> None:
+    validation = validate_template_tokens(
+        ("Missing", "<LOCATOR>", "at", "<LOCATOR>"),
+        ("Missing", "<KEY>", "at", "<LOCATOR>"),
+    )
+
+    assert validation.valid is False
+    assert validation.reason == "template_shape_mismatch"

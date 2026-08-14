@@ -41,7 +41,7 @@ Historical material is recoverable from:
 - atomic parse and reparse persistence.
 
 The implemented foundation and production classifier seam are covered by the new
-reboot-owned suite: 99 tests as of this status record. No inherited test
+reboot-owned suite: 107 tests as of this status record. No inherited test
 contributes to that number.
 
 These are fast regression tests. The complete protected-real-evidence,
@@ -58,6 +58,10 @@ must author and freeze the release harness and scorers.
 - whole-file SHA-256 and internal cluster-contract validation before use;
 - source family is a hard classification boundary;
 - ordered-token matching with conservative semantic-lead gating;
+- classification contract v2 typed PostValidate after empirical candidate
+  selection; invalid L2 becomes L1 and invalid unlayered shape becomes unknown;
+- locator grammar runs before L1 assignment and a typed locator cannot satisfy
+  a key, value, parameter, or type slot;
 - grammar-preserving `scope:<KEY>.<KEY>` normalization;
 - optional historical identity retained as `<OPTIONAL_KEY>` extraction data;
 - full, independently composed L1+L2, L1-only, and unknown outcomes;
@@ -102,11 +106,16 @@ must author and freeze the release harness and scorers.
 - triage source-observation deltas when both compared sessions contain stored
   observations, with correlation kept distinct from causation.
 
-The production runtime has also been compared with the frozen release
-evaluator across all five training-excluded logs: 194,022 semantic
-occurrences. Every file reconciles exactly by full, L1+L2, L1-only, and
-unknown assignment count. This is an implementation-equivalence gate; the
-separate human-authored contract tests remain the semantic authority.
+The pre-PostValidate classification contract v1 was compared with the frozen
+release evaluator across all five training-excluded logs: 194,022 semantic
+occurrences reconciled by assignment count. Contract v2 deliberately changes
+that behavior by rejecting typed-slot violations. Read-only development probes
+over current stored evidence retained 98.72% L1-or-better coverage on the
+largest session (100,000 blocks / 103,358 semantic occurrences) while
+downgrading 1,055 formerly overconfident assignments; its read-only inference
+probe took 45.7 seconds and the latest 2,124-unit probe took 0.34 seconds. These
+are implementation measurements, not independent semantic or performance exit
+evidence.
 
 This compatibility result is not Phase 1 semantic exit evidence. At least one
 current full-assignment template has failed subsequent human plausibility

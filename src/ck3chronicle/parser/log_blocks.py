@@ -136,12 +136,15 @@ def iter_log_blocks(
     path: Path,
     *,
     log_relpath: str | None = None,
+    retain_preamble: bool = True,
 ) -> Iterator[TimestampedLogBlock]:
     """Yield exact timestamped blocks and, when present, one preamble block.
 
-    A recognized header begins a block.  Every raw physical line belongs either
-    to the preamble or to exactly one yielded timestamped block.  An empty file
-    yields nothing.
+    A recognized header begins a block. Every raw physical line belongs either
+    to the preamble or to exactly one yielded timestamped block. An empty file
+    yields nothing. ``retain_preamble=False`` emits only a lightweight marker
+    for preamble cardinality, avoiding whole-file retention when a malformed
+    file contains no recognized header.
     """
     relpath = path.name if log_relpath is None else log_relpath
     current_lines: list[bytes] = []
@@ -150,6 +153,7 @@ def iter_log_blocks(
     current_level: str | None = None
     current_source = ""
     preamble_lines: list[bytes] = []
+    preamble_seen = False
     last_line = 0
 
     with path.open("rb") as handle:
@@ -159,21 +163,37 @@ def iter_log_blocks(
             if parsed is None:
                 if current_lines:
                     current_lines.append(raw_line)
-                else:
+                elif retain_preamble:
                     preamble_lines.append(raw_line)
+                else:
+                    preamble_seen = True
                 continue
 
-            if preamble_lines:
-                yield _make_block(
-                    raw_lines=preamble_lines,
-                    start_line=1,
-                    end_line=line_number - 1,
-                    log_relpath=relpath,
-                    timestamp=None,
-                    level=None,
-                    source_tag="<preamble>",
-                )
+            if preamble_lines or preamble_seen:
+                if retain_preamble:
+                    yield _make_block(
+                        raw_lines=preamble_lines,
+                        start_line=1,
+                        end_line=line_number - 1,
+                        log_relpath=relpath,
+                        timestamp=None,
+                        level=None,
+                        source_tag="<preamble>",
+                    )
+                else:
+                    yield TimestampedLogBlock(
+                        timestamp=None,
+                        source_tag="<preamble>",
+                        header_line="",
+                        continuation_lines=[],
+                        raw_block="",
+                        log_relpath=relpath,
+                        line_number=1,
+                        end_line=line_number - 1,
+                        source_family="<preamble>",
+                    )
                 preamble_lines = []
+                preamble_seen = False
 
             if current_lines:
                 yield _make_block(
@@ -200,13 +220,26 @@ def iter_log_blocks(
             level=current_level,
             source_tag=current_source,
         )
-    elif preamble_lines:
-        yield _make_block(
-            raw_lines=preamble_lines,
-            start_line=1,
-            end_line=last_line,
-            log_relpath=relpath,
-            timestamp=None,
-            level=None,
-            source_tag="<preamble>",
-        )
+    elif preamble_lines or preamble_seen:
+        if retain_preamble:
+            yield _make_block(
+                raw_lines=preamble_lines,
+                start_line=1,
+                end_line=last_line,
+                log_relpath=relpath,
+                timestamp=None,
+                level=None,
+                source_tag="<preamble>",
+            )
+        else:
+            yield TimestampedLogBlock(
+                timestamp=None,
+                source_tag="<preamble>",
+                header_line="",
+                continuation_lines=[],
+                raw_block="",
+                log_relpath=relpath,
+                line_number=1,
+                end_line=last_line,
+                source_family="<preamble>",
+            )

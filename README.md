@@ -18,10 +18,13 @@ active source tree because they described a different or failed design.
 - finalize protected copies into content-addressed archives;
 - verify archive manifests and reconcile finalized archives with SQLite;
 - split archived `error.log` into immutable source blocks;
-- persist canonical occurrence and cluster rows transactionally;
+- stream canonical occurrence and cluster rows in one rollback-safe
+  transaction, with persisted cardinality/provenance validation before success;
 - load the exact approved empirical model after whole-file SHA-256 validation;
 - classify diagnostics as full, independently composed L1+L2, L1-only, or
   unknown while retaining key, locator, and structured-slot evidence;
+- require typed template PostValidate after empirical candidate selection, so
+  a recognized locator can never satisfy a key/value/parameter slot;
 - atomically persist versioned model registrations, classification runs, and
   one provenance row per semantic unit;
 

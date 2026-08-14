@@ -7,6 +7,7 @@ import hashlib
 from dataclasses import dataclass
 from typing import Sequence
 
+from .contracts import TemplateValidation, validate_template_tokens
 from .model import EmpiricalModel, ModelCluster
 from .normalize import (
     LOCATOR,
@@ -87,18 +88,28 @@ class Classifier:
         candidates = self._by_source.get(source_family.casefold(), ())
         leads = {diagnostic_lead(semantic), legacy_diagnostic_lead(semantic)}
 
-        best: tuple[float, ModelCluster] | None = None
+        scored: list[tuple[float, ModelCluster, TemplateValidation]] = []
         for cluster in candidates:
             if tuple(item.casefold() for item in cluster.semantic_lead) not in leads:
                 continue
             if not _ordered_anchor_overlap(tokens, cluster.medoid_tokens):
                 continue
             score = _similarity(tokens, cluster.medoid_tokens)
-            if score >= self.model.threshold and (best is None or score > best[0]):
-                best = score, cluster
-        if best is not None:
-            score, cluster = best
+            if score < self.model.threshold:
+                continue
+            # Candidate discovery uses empirical similarity, but acceptance is
+            # a separate exact contract check. In particular, locator tokens
+            # were identified before this point and can never be consumed by
+            # a key/value slot.
+            validation = validate_template_tokens(tokens, cluster.template_tokens)
+            scored.append((score, cluster, validation))
+        for score, cluster, validation in sorted(
+            scored, key=lambda item: (-item[0], item[1].cluster_id)
+        ):
+            if not validation.valid:
+                continue
             layers = cluster.layers
+            validated_slots = tuple(item.as_dict() for item in validation.slots)
             return self._result(
                 source_family,
                 "full",
@@ -109,7 +120,7 @@ class Classifier:
                 tokens,
                 layers.l1_template if layers else None,
                 layers.l2_template if layers else None,
-                slots,
+                slots or validated_slots,
             )
 
         layered = script_system_layers(tokens)
@@ -135,18 +146,29 @@ class Classifier:
                         slots,
                     )
                 reason_candidates = [
-                    cluster.layers
+                    (cluster.layers, validation)
                     for cluster in candidates
                     if cluster.layers is not None
                     and reason_lead(cluster.layers.l2_reason_tokens) == reason_lead(reason)
                     and _ordered_anchor_overlap(reason, cluster.layers.l2_reason_tokens)
                     and _similarity(reason, cluster.layers.l2_reason_tokens) >= self.model.threshold
+                    and (
+                        validation := validate_template_tokens(
+                            reason, cluster.layers.l2_reason_tokens
+                        )
+                    ).valid
                 ]
                 if reason_candidates:
-                    reason_contract = max(
+                    reason_layer, reason_validation = max(
                         reason_candidates,
-                        key=lambda item: _similarity(reason, item.l2_reason_tokens),
-                    ).l2_reason_tokens
+                        key=lambda item: _similarity(
+                            reason, item[0].l2_reason_tokens
+                        ),
+                    )
+                    reason_contract = reason_layer.l2_reason_tokens
+                    validated_slots = tuple(
+                        item.as_dict() for item in reason_validation.slots
+                    )
                     return self._result(
                         source_family,
                         "l1_l2",
@@ -157,7 +179,7 @@ class Classifier:
                         tokens,
                         " ".join(outer),
                         " ".join(reason_contract),
-                        slots,
+                        slots or validated_slots,
                     )
                 return self._result(
                     source_family,

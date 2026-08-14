@@ -67,6 +67,10 @@ The repository contains substantial Phase 1 implementation:
   including crash termination and principal-log origin provenance;
 - canonical `error.log` block/occurrence storage;
 - versioned empirical classification and review queues;
+- memory-bounded block-at-a-time canonical persistence with transactional
+  replacement and persisted distribution/provenance validation;
+- typed template PostValidate after candidate assignment, including locator
+  recognition before L1 and conservative L2-to-L1 fallback;
 - same-run Mounted Data runtime context;
 - exact Mounted Data source-file/line/byte/hash provenance, six-state parsing,
   and inventory-independent authoritative membership/order;
@@ -94,10 +98,11 @@ formal exit report. No current commit has such an exit record.
 
 ### Immediate work
 
-1. Complete the remaining product architecture in dependency order:
-   memory-bounded parse persistence, template post-validation, the canonical
-   `process-pending` command envelope, and explicit run selection in reports.
-2. Reconcile the Phase 1 semantic oracle with the user-approved empirical
+1. Complete the remaining product architecture in dependency order: the
+   canonical `process-pending` command envelope and explicit run selection in
+   reports.
+2. Reconcile the Phase 1 semantic oracle with the PostValidate-protected,
+   user-approved empirical
    template model, including locator recognition before L1 assignment.
 3. Publish the callable evaluation interface for every gate; an independent
    harness author maps it to runner code, while a separate oracle authority

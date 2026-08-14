@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import sqlite3
 
 import pytest
 
@@ -189,4 +190,149 @@ def test_rparse_005_identical_blocks_share_one_lossless_content_row(
         "SELECT raw_block FROM raw_block_contents"
     ).fetchone()[0]
     assert stored.encode("utf-8") == repeated
+    conn.close()
+
+
+def test_rparse_006_parser_uses_incremental_repository_boundary(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Development guard: the service must not rebuild whole-session lists."""
+    runtime, _captured, conn, session_id = _registered_session(
+        tmp_path, LEXICAL_ERROR_BYTES
+    )
+
+    def reject_legacy_batch(*_args, **_kwargs):
+        raise AssertionError("legacy whole-session replacement was called")
+
+    monkeypatch.setattr(repository, "replace_canonical_parse", reject_legacy_batch)
+    result = parse_session(conn, runtime, session_id)
+
+    assert result.counters.source_blocks == 2
+    assert result.counters.issue_occurrences == 2
+    conn.close()
+
+
+def test_rparse_007_nonsemantic_preamble_can_be_a_bounded_marker(
+    tmp_path: Path,
+) -> None:
+    """Malformed headerless input need not be retained merely to count preamble."""
+    path = tmp_path / "error.log"
+    path.write_bytes(b"not a CK3 header\n" * 10_000)
+
+    blocks = list(
+        iter_log_blocks(path, log_relpath="error.log", retain_preamble=False)
+    )
+
+    assert len(blocks) == 1
+    assert blocks[0].timestamp is None
+    assert blocks[0].line_number == 1
+    assert blocks[0].end_line == 10_000
+    assert blocks[0].raw_block == ""
+    assert blocks[0].continuation_lines == []
+
+
+def _canonical_snapshot(conn: sqlite3.Connection, session_id: int) -> tuple:
+    session = tuple(
+        conn.execute(
+            """
+            SELECT parse_status, parser_contract_version, parse_source_blocks,
+                   parse_preamble_blocks, parse_issue_occurrences,
+                   parse_issue_clusters, parse_unclassified_occurrences,
+                   parse_multi_issue_blocks, parse_silently_dropped_blocks
+            FROM sessions WHERE session_id = ?
+            """,
+            (session_id,),
+        ).fetchone()
+    )
+    blocks = tuple(
+        tuple(row)
+        for row in conn.execute(
+            """
+            SELECT sb.source_block_pk, sb.start_line, sb.end_line, sb.issue_count,
+                   rb.raw_block_sha256, rb.raw_block
+            FROM source_blocks sb
+            JOIN raw_block_contents rb ON rb.raw_block_pk = sb.raw_block_pk
+            WHERE sb.session_id = ? ORDER BY sb.start_line
+            """,
+            (session_id,),
+        ).fetchall()
+    )
+    issues = tuple(
+        tuple(row)
+        for row in conn.execute(
+            """
+            SELECT issue_id, signature, category, occurrence_count
+            FROM issues WHERE session_id = ? ORDER BY issue_id
+            """,
+            (session_id,),
+        ).fetchall()
+    )
+    occurrences = tuple(
+        tuple(row)
+        for row in conn.execute(
+            """
+            SELECT issue_occurrence_id, signature, source_block_pk,
+                   issue_ordinal, line_number
+            FROM issue_occurrences WHERE session_id = ?
+            ORDER BY issue_occurrence_id
+            """,
+            (session_id,),
+        ).fetchall()
+    )
+    return session, blocks, issues, occurrences
+
+
+def test_rparse_008_failed_streaming_reparse_restores_prior_rows(
+    tmp_path: Path,
+) -> None:
+    """Injected failure after one new block leaves the accepted parse unchanged."""
+    runtime, _captured, conn, session_id = _registered_session(
+        tmp_path, LEXICAL_ERROR_BYTES
+    )
+    parse_session(conn, runtime, session_id)
+    before = _canonical_snapshot(conn, session_id)
+    conn.execute(
+        f"""
+        CREATE TEMP TRIGGER fail_second_streamed_block
+        BEFORE INSERT ON source_blocks
+        WHEN NEW.session_id = {session_id} AND NEW.start_line = 4
+        BEGIN
+            SELECT RAISE(ABORT, 'injected streamed-block failure');
+        END
+        """
+    )
+
+    with pytest.raises(sqlite3.IntegrityError, match="streamed-block failure"):
+        parse_session(conn, runtime, session_id, reparse=True)
+
+    assert _canonical_snapshot(conn, session_id) == before
+    conn.close()
+
+
+def test_rparse_009_postvalidate_rejects_equal_row_but_wrong_distribution(
+    tmp_path: Path,
+) -> None:
+    """Persisted totals alone cannot hide a corrupted per-block distribution."""
+    runtime, _captured, conn, session_id = _registered_session(
+        tmp_path, LEXICAL_ERROR_BYTES
+    )
+    parse_session(conn, runtime, session_id)
+    before = _canonical_snapshot(conn, session_id)
+    conn.execute(
+        f"""
+        CREATE TEMP TRIGGER corrupt_first_block_count
+        AFTER INSERT ON source_blocks
+        WHEN NEW.session_id = {session_id} AND NEW.start_line = 4
+        BEGIN
+            UPDATE source_blocks
+            SET issue_count = issue_count + 1
+            WHERE session_id = NEW.session_id AND start_line = 2;
+        END
+        """
+    )
+
+    with pytest.raises(ValueError, match="persisted canonical totals disagree"):
+        parse_session(conn, runtime, session_id, reparse=True)
+
+    assert _canonical_snapshot(conn, session_id) == before
     conn.close()

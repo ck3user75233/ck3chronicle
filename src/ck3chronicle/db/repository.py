@@ -11,6 +11,7 @@ from typing import Any, Mapping, Sequence
 
 from .migrations import apply_migrations
 from .payloads import payload_sha256
+from ..models.issue import NormalizedIssue
 from ..models.parse import (
     ClusterRecord,
     OccurrenceRecord,
@@ -848,12 +849,12 @@ def _insert_source_block(
     return int(cursor.lastrowid)
 
 
-def _insert_cluster(
+def _upsert_cluster_occurrence(
     conn: sqlite3.Connection,
     session_id: int,
-    cluster: ClusterRecord,
+    issue: NormalizedIssue,
 ) -> None:
-    issue = cluster.issue
+    """Retain the first representative and increment one signature count."""
     conn.execute(
         """
         INSERT INTO issues (
@@ -862,7 +863,9 @@ def _insert_cluster(
             sample_message, primary_file, primary_line,
             referenced_symbols_json, referenced_objects_json, extra_json,
             occurrence_count, log_type
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'error')
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 'error')
+        ON CONFLICT(session_id, signature) DO UPDATE SET
+            occurrence_count = issues.occurrence_count + 1
         """,
         (
             session_id,
@@ -880,7 +883,6 @@ def _insert_cluster(
             _json(issue.referenced_symbols),
             _json(issue.referenced_objects),
             _json(issue.extra_json),
-            cluster.occurrence_count,
         ),
     )
 
@@ -979,6 +981,203 @@ def _validate_canonical_replacement(
         raise ValueError("cluster counts do not match occurrence signatures")
 
 
+def begin_canonical_replacement(
+    conn: sqlite3.Connection,
+    session_id: int,
+) -> None:
+    """Begin an atomic streaming replacement of one session's parse rows."""
+    conn.execute("BEGIN IMMEDIATE")
+    # A successful reparse invalidates every derived classification. Keeping
+    # this deletion in the same transaction means a failed reparse restores
+    # both the prior canonical rows and their prior classification.
+    conn.execute("DELETE FROM classification_runs WHERE session_id = ?", (session_id,))
+    conn.execute("DELETE FROM issue_occurrences WHERE session_id = ?", (session_id,))
+    conn.execute("DELETE FROM source_blocks WHERE session_id = ?", (session_id,))
+    conn.execute("DELETE FROM issues WHERE session_id = ?", (session_id,))
+
+
+def append_canonical_block(
+    conn: sqlite3.Connection,
+    session_id: int,
+    block: SourceBlockRecord,
+    occurrences: Sequence[OccurrenceRecord],
+) -> None:
+    """Persist one prepared block while bounding Python memory to that block."""
+    if block.issue_count < 1 or block.issue_count != len(occurrences):
+        raise ValueError("source-block issue count does not match linked rows")
+    if [item.issue_ordinal for item in occurrences] != list(range(block.issue_count)):
+        raise ValueError("source-block issue ordinals are not contiguous")
+    if any(item.source_block_id != block.source_block_id for item in occurrences):
+        raise ValueError("occurrence references a different source block")
+    if any(
+        item.issue.log_relpath != block.log_relpath
+        or item.issue.line_number != block.start_line
+        for item in occurrences
+    ):
+        raise ValueError("occurrence provenance disagrees with source block")
+
+    source_block_pk = _insert_source_block(conn, session_id, block)
+    for occurrence in occurrences:
+        _upsert_cluster_occurrence(conn, session_id, occurrence.issue)
+        _insert_occurrence(conn, session_id, occurrence, source_block_pk)
+
+
+def count_canonical_clusters(conn: sqlite3.Connection, session_id: int) -> int:
+    """Count the distinct signatures staged in the current transaction."""
+    return int(
+        conn.execute(
+            "SELECT COUNT(*) FROM issues WHERE session_id = ?", (session_id,)
+        ).fetchone()[0]
+    )
+
+
+def _postvalidate_canonical_replacement(
+    conn: sqlite3.Connection,
+    session_id: int,
+    counters: ParseCounters,
+) -> None:
+    """Prove persisted cardinality and provenance before marking success."""
+    if counters.silently_dropped_blocks != 0:
+        raise ValueError("canonical parsing forbids silently dropped blocks")
+
+    totals = conn.execute(
+        """
+        SELECT
+            (SELECT COUNT(*) FROM source_blocks WHERE session_id = ?) AS blocks,
+            (SELECT COUNT(*) FROM issue_occurrences WHERE session_id = ?) AS occurrences,
+            (SELECT COUNT(*) FROM issues WHERE session_id = ?) AS clusters,
+            (SELECT COALESCE(SUM(issue_count), 0)
+               FROM source_blocks WHERE session_id = ?) AS block_issue_sum,
+            (SELECT COALESCE(SUM(occurrence_count), 0)
+               FROM issues WHERE session_id = ?) AS cluster_occurrence_sum,
+            (SELECT COUNT(*) FROM source_blocks
+              WHERE session_id = ? AND issue_count > 1) AS multi_issue_blocks,
+            (SELECT COUNT(*)
+               FROM issue_occurrences io
+               JOIN issues i
+                 ON i.session_id = io.session_id AND i.signature = io.signature
+              WHERE io.session_id = ? AND i.category = 'unclassified')
+              AS unclassified_occurrences
+        """,
+        (session_id,) * 7,
+    ).fetchone()
+    expected = (
+        counters.source_blocks,
+        counters.issue_occurrences,
+        counters.issue_clusters,
+        counters.issue_occurrences,
+        counters.issue_occurrences,
+        counters.multi_issue_blocks,
+        counters.unclassified_occurrences,
+    )
+    actual = tuple(int(value) for value in totals)
+    if actual != expected:
+        raise ValueError(
+            f"persisted canonical totals disagree: expected={expected}, actual={actual}"
+        )
+
+    invalid_blocks = int(
+        conn.execute(
+            """
+            SELECT COUNT(*) FROM (
+                SELECT sb.source_block_pk
+                FROM source_blocks sb
+                LEFT JOIN issue_occurrences io
+                  ON io.session_id = sb.session_id
+                 AND io.source_block_pk = sb.source_block_pk
+                WHERE sb.session_id = ?
+                GROUP BY sb.source_block_pk, sb.issue_count
+                HAVING COUNT(io.issue_occurrence_id) != sb.issue_count
+                    OR MIN(io.issue_ordinal) != 0
+                    OR MAX(io.issue_ordinal) != sb.issue_count - 1
+            )
+            """,
+            (session_id,),
+        ).fetchone()[0]
+    )
+    invalid_clusters = int(
+        conn.execute(
+            """
+            SELECT COUNT(*) FROM (
+                SELECT i.issue_id
+                FROM issues i
+                LEFT JOIN issue_occurrences io
+                  ON io.session_id = i.session_id AND io.signature = i.signature
+                WHERE i.session_id = ?
+                GROUP BY i.issue_id, i.occurrence_count
+                HAVING COUNT(io.issue_occurrence_id) != i.occurrence_count
+            )
+            """,
+            (session_id,),
+        ).fetchone()[0]
+    )
+    invalid_provenance = int(
+        conn.execute(
+            """
+            SELECT COUNT(*)
+            FROM issue_occurrences io
+            LEFT JOIN source_blocks sb
+              ON sb.source_block_pk = io.source_block_pk
+             AND sb.session_id = io.session_id
+            LEFT JOIN issues i
+              ON i.session_id = io.session_id AND i.signature = io.signature
+            WHERE io.session_id = ?
+              AND (
+                  sb.source_block_pk IS NULL OR i.issue_id IS NULL
+                  OR io.log_relpath != sb.log_relpath
+                  OR io.line_number != sb.start_line
+              )
+            """,
+            (session_id,),
+        ).fetchone()[0]
+    )
+    if invalid_blocks or invalid_clusters or invalid_provenance:
+        raise ValueError(
+            "persisted canonical distribution disagrees: "
+            f"blocks={invalid_blocks}, clusters={invalid_clusters}, "
+            f"provenance={invalid_provenance}"
+        )
+
+
+def finish_canonical_replacement(
+    conn: sqlite3.Connection,
+    session_id: int,
+    counters: ParseCounters,
+    parser_contract_version: str,
+) -> None:
+    """Postvalidate, mark success last, and commit a streaming replacement."""
+    _postvalidate_canonical_replacement(conn, session_id, counters)
+    updated = conn.execute(
+        """
+        UPDATE sessions
+        SET parse_status = 'succeeded',
+            parser_contract_version = ?,
+            parse_source_blocks = ?,
+            parse_preamble_blocks = ?,
+            parse_issue_occurrences = ?,
+            parse_issue_clusters = ?,
+            parse_unclassified_occurrences = ?,
+            parse_multi_issue_blocks = ?,
+            parse_silently_dropped_blocks = ?
+        WHERE session_id = ?
+        """,
+        (
+            parser_contract_version,
+            counters.source_blocks,
+            counters.preamble_blocks,
+            counters.issue_occurrences,
+            counters.issue_clusters,
+            counters.unclassified_occurrences,
+            counters.multi_issue_blocks,
+            counters.silently_dropped_blocks,
+            session_id,
+        ),
+    )
+    if updated.rowcount != 1:
+        raise ValueError(f"session_id {session_id} disappeared during parse")
+    conn.commit()
+
+
 def replace_canonical_parse(
     conn: sqlite3.Connection,
     session_id: int,
@@ -988,59 +1187,23 @@ def replace_canonical_parse(
     counters: ParseCounters,
     parser_contract_version: str,
 ) -> None:
-    """Atomically replace all C1 rows and mark the session successful last."""
+    """Compatibility adapter for callers that already prepared complete lists."""
     _validate_canonical_replacement(blocks, occurrences, clusters, counters)
+    occurrences_by_block: dict[str, list[OccurrenceRecord]] = defaultdict(list)
+    for occurrence in occurrences:
+        occurrences_by_block[occurrence.source_block_id].append(occurrence)
     try:
-        conn.execute("BEGIN IMMEDIATE")
-        conn.execute(
-            "DELETE FROM issue_occurrences WHERE session_id = ?", (session_id,)
-        )
-        conn.execute("DELETE FROM source_blocks WHERE session_id = ?", (session_id,))
-        conn.execute("DELETE FROM issues WHERE session_id = ?", (session_id,))
-
-        source_block_pks = {
-            block.source_block_id: _insert_source_block(conn, session_id, block)
-            for block in blocks
-        }
-        for cluster in clusters:
-            _insert_cluster(conn, session_id, cluster)
-        for occurrence in occurrences:
-            _insert_occurrence(
+        begin_canonical_replacement(conn, session_id)
+        for block in blocks:
+            append_canonical_block(
                 conn,
                 session_id,
-                occurrence,
-                source_block_pks[occurrence.source_block_id],
+                block,
+                occurrences_by_block[block.source_block_id],
             )
-
-        updated = conn.execute(
-            """
-            UPDATE sessions
-            SET parse_status = 'succeeded',
-                parser_contract_version = ?,
-                parse_source_blocks = ?,
-                parse_preamble_blocks = ?,
-                parse_issue_occurrences = ?,
-                parse_issue_clusters = ?,
-                parse_unclassified_occurrences = ?,
-                parse_multi_issue_blocks = ?,
-                parse_silently_dropped_blocks = ?
-            WHERE session_id = ?
-            """,
-            (
-                parser_contract_version,
-                counters.source_blocks,
-                counters.preamble_blocks,
-                counters.issue_occurrences,
-                counters.issue_clusters,
-                counters.unclassified_occurrences,
-                counters.multi_issue_blocks,
-                counters.silently_dropped_blocks,
-                session_id,
-            ),
+        finish_canonical_replacement(
+            conn, session_id, counters, parser_contract_version
         )
-        if updated.rowcount != 1:
-            raise ValueError(f"session_id {session_id} disappeared during parse")
-        conn.commit()
     except Exception:
         conn.rollback()
         raise

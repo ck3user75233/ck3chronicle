@@ -50,11 +50,11 @@ harness. The fast reboot suite remains useful regression coverage.
 | `P1-PAR-01` | Partially covered | `P1-PAR-01-LEXICAL` passed a separated blind-runner/read-only-scorer comparison of all 28,131 frozen blocks with zero field mismatches. Persistence against the compact current schema is not yet independently scored. See `PHASE1_LEXICAL_CALIBRATION_2026-08-14.md`. |
 | `P1-PAR-02` | Untested | No audited-candidate exact comparison with the independently approved semantic records. The later human-reviewed empirical contracts must first be reconciled with the older 252-item oracle. |
 | `P1-PAR-03` | Partially covered | Duplicate blocks retain separate occurrences and shared raw content; the complete cluster/signature relation is not asserted. |
-| `P1-PAR-04` | Partially covered | Several key/locator/line invariants are tested, not the complete provenance/absolute-root mutation matrix. |
+| `P1-PAR-04` | Partially covered | Locator grammar now precedes L1 and typed PostValidate rejects a locator in a key slot; the complete independent provenance/absolute-root mutation matrix has not run. |
 | `P1-PAR-05` | Partially covered | Conservative semantic rejection examples exist, not every required independent family mutation. |
-| `P1-PAR-06` | Untested | No authentic positive/near-miss gate for every extractor and no 33-versus-20,156 PostValidate gate. |
+| `P1-PAR-06` | Partially covered | Typed PostValidate and conservative fallback have focused development tests and read-only real-session probes. No independent authentic positive/near-miss gate for every extractor or frozen 33-versus-20,156 gate has run. |
 | `P1-PAR-07` | Partially covered | Mixed line endings and final-newline behavior are tested; the full malformed/BOM/long-line/replacement/truncation matrix is not. |
-| `P1-PAR-08` | Untested | Transactional code exists, but no current test proves byte-equivalent failed reparse rollback after partial replacement work. |
+| `P1-PAR-08` | Partially covered | A development regression injects failure after one streamed replacement block and proves the prior canonical projection is identical; the independent exit gate has not run. |
 | `P1-PAR-09` | Partially covered | Missing evidence leaves `not_started`; generic injected first-parse failure and public exit behavior remain untested. |
 | `P1-PAR-10` | **Proven on audited candidate** | Present zero-byte `error.log` commits succeeded state with every required counter exactly zero. |
 | `P1-PAR-11` | Partially covered | Repository/audit invariants and real-session totals reconcile; the frozen reference and future holdout executions are absent. |

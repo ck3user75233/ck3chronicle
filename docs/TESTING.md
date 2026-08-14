@@ -82,9 +82,15 @@ The suite currently covers:
 - exact lexical block spans, hashes, and identities;
 - `error.log`-only canonical storage;
 - explicit empty-log success and missing-evidence failure;
+- block-at-a-time canonical persistence without the legacy whole-session batch
+  boundary;
+- failed reparse rollback after partial replacement work and persisted
+  per-block distribution validation before success;
 - exact approved-model hash and contract validation;
 - source-family isolation and semantic-change rejection;
 - key and locator invariance;
+- locator-before-L1 typing and rejection of a locator in a key slot;
+- typed template PostValidate with conservative L2-to-L1 fallback;
 - grammar-preserving two-key scope normalization;
 - optional-key extraction;
 - full, L1+L2, L1-only, and unknown classification behavior;

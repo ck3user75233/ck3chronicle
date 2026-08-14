@@ -24,7 +24,7 @@ def test_rclasscli_001_classify_json_is_schema_versioned_and_deterministic(
     assert first_args.func(first_args) == 0
     first = json.loads(capsys.readouterr().out)
     assert first == {
-        "classification_contract_version": "1.0.0",
+        "classification_contract_version": "2.0.0",
         "counts": {
             "full": 4,
             "l1": 1,
