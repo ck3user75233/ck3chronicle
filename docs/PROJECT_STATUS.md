@@ -52,6 +52,12 @@ The repository contains an implementation-side evaluation-interface handoff,
 not implementation-authored executable exit tests. Independent evaluator roles
 must author and freeze the release harness and scorers.
 
+Semantic authority is reconciled in `PHASE1_SEMANTIC_AUTHORITY.md`: canonical
+issue fields, structural template identity, and explicit human slot decisions
+are separate hash-bound authorities over the same immutable evidence. Historical
+development artifacts called `holdout` are excluded from the future private
+release holdout because they have already influenced implementation.
+
 ## Implemented classifier runtime
 
 - exact reviewed model artifact promoted under `models/93196794a7e0115d`;

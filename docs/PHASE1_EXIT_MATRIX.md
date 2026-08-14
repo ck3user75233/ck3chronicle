@@ -49,7 +49,7 @@ The fast reboot suite remains implementation regression coverage only.
 | Gate | Current status | Evidence and gap |
 |---|---|---|
 | `P1-PAR-01` | Partially covered | `P1-PAR-01-LEXICAL` passed a separated blind-runner/read-only-scorer comparison of all 28,131 frozen blocks with zero field mismatches. Persistence against the compact current schema is not yet independently scored. See `PHASE1_LEXICAL_CALIBRATION_2026-08-14.md`. |
-| `P1-PAR-02` | Untested | No audited-candidate exact comparison with the independently approved semantic records. The later human-reviewed empirical contracts must first be reconciled with the older 252-item oracle. |
+| `P1-PAR-02` | Untested / authority reconciled | `PHASE1_SEMANTIC_AUTHORITY.md` separates the 252-item canonical issue-field oracle from later human-reviewed template/slot authority and hash-binds both. No frozen-candidate independent exact comparison has run. |
 | `P1-PAR-03` | Partially covered | Duplicate blocks retain separate occurrences and shared raw content; the complete cluster/signature relation is not asserted. |
 | `P1-PAR-04` | Partially covered | Locator grammar now precedes L1 and typed PostValidate rejects a locator in a key slot; the complete independent provenance/absolute-root mutation matrix has not run. |
 | `P1-PAR-05` | Partially covered | Conservative semantic rejection examples exist, not every required independent family mutation. |

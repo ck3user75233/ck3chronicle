@@ -99,6 +99,8 @@ exist while some detailed slot typing remains unresolved.
 
 Key and symbol shapes such as `*_effect` and `*_trigger` may validate a slot
 after template assignment. They may not discover or choose the template.
+The exact relationship between canonical issue fields, template identity, and
+human slot decisions is frozen in `PHASE1_SEMANTIC_AUTHORITY.md`.
 
 ## Runtime mod evidence
 

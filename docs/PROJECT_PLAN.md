@@ -104,20 +104,21 @@ gate-to-call mappings, output schemas, and mutation boundaries are published.
 Implementation agents stop at that boundary and do not supply evaluator runner
 or scorer code.
 
+The Phase 1 semantic authority is also reconciled: the 252-item canonical
+issue-field oracle and later human-reviewed template/slot authority now have
+separate hash-bound roles, with locator recognition preceding L1 assignment.
+
 Remaining work proceeds in this order:
 
-1. Reconcile the Phase 1 semantic oracle with the PostValidate-protected,
-   user-approved empirical template model, including locator recognition before
-   L1 assignment.
-2. Freeze a clean release-candidate commit and record its tree, package,
+1. Freeze a clean release-candidate commit and record its tree, package,
    interface, model, and contract hashes.
-3. Have the independent harness authority implement and freeze the protected
+2. Have the independent harness authority implement and freeze the protected
    real-evidence runners from the published interfaces.
-4. Have the independent oracle authority freeze the complete report and
+3. Have the independent oracle authority freeze the complete report and
    command-envelope expected artifacts.
-5. Execute correctness, rollback, mutation, holdout, and performance gates
+4. Execute correctness, rollback, mutation, holdout, and performance gates
    under the separation in `PHASE1_EXIT_PROTOCOL.md`.
-6. Publish and review the single candidate-bound Phase 1 exit report.
+5. Publish and review the single candidate-bound Phase 1 exit report.
 
 ## Phase 2: deltas, baselines, and noise management
 
