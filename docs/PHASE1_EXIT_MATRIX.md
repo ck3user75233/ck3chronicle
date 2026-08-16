@@ -1,6 +1,6 @@
 # Phase 1 exit matrix
 
-Release candidate: **successor to `d07b19e` not yet frozen**.
+Release candidate: **successor to failed attempt `76fb2d5` not yet frozen**.
 
 Status: **Phase 1 not exited**.
 
@@ -12,16 +12,17 @@ formal candidate-bound release evidence. `Partially covered` is not a pass.
 | Status | Gates |
 |---|---:|
 | Historical proof on an older candidate | 1 |
-| Partially covered | 23 |
-| Untested | 11 |
+| Partially covered | 25 |
+| Untested | 9 |
 | Missing or contract-incompatible public surface | 0 |
 | Total | 35 |
 
-The frozen `d07b19e8297c82cfa7cf9bc5a9ea07dcd6b118df` harness was authored and
-validated without selecting or executing the private holdout. Its candidate
-was superseded by the Phase 1 default crash-`exception.txt` requirement before
-formal gate execution, so the harness is retained only as a baseline for an
-independent successor rebind. The older
+The `76fb2d57615f716f665b0d078bb26304487e684e` attempt executed all gates but
+does not supply valid release evidence. Its postmortem classified the outcomes
+as 10 trustworthy passes, two trustworthy product failures, 22 invalid
+input/harness results, and one indeterminate taxonomy result. The two product
+defects are repaired in the current checkpoint; that attempt's private holdout
+is retired. The older
 `52a43254f847555a871833ef4a43bd97f3613bf6` candidate has one separated
 real-evidence lexical calibration and one zero-byte proof. Neither transfers
 automatically to the future frozen candidate. The remaining frozen Phase 0
@@ -34,7 +35,7 @@ The fast reboot suite remains implementation regression coverage only.
 |---|---|---|
 | `P1-CAP-01` | Partially covered | Development contracts cover six-log finalization plus captured/absent/stale crash-exception behavior. The frozen real capture oracle and independently authored exception cases have not run for the successor candidate. |
 | `P1-CAP-02` | Partially covered | Duplicate archive/session reuse is tested; no formal gate record. |
-| `P1-CAP-03` | Untested | Archive and protected exception corruption are detected in development contracts, but the independent source/archive/run-artifact mutation matrix has not run. |
+| `P1-CAP-03` | Partially covered | Fault-sensitive development regressions now reject registered archive-byte mutation, SQLite projection disagreement, protected-exception corruption, and archive metadata I/O failure. No valid independent mutation matrix has run. |
 | `P1-CAP-04` | Partially covered | Rapid relaunch rejection is tested; the exact source-mutation command result/envelope is not. |
 | `P1-CAP-05` | Partially covered / contract reconciled | The stable public command envelope distinguishes archive, model, database, reconciliation, and pipeline failures. A finalized content-addressed archive may deliberately survive database registration failure and is recovered by reconciliation; this is the frozen recoverability rule, not a partial-success ambiguity. The independent fault matrix has not run. |
 | `P1-CAP-06` | Partially covered | Missing debug and zero-byte error paths are tested separately; complete public-command outcomes are not. |
@@ -72,7 +73,7 @@ The fast reboot suite remains implementation regression coverage only.
 | `P1-REP-01` | Partially covered / contract reconciled | `process-pending` is now the documented canonical vertical slice with one command-result envelope; the obsolete `analyze --logs` expectation is explicitly retired. No complete independent report oracle has run. |
 | `P1-REP-02` | Untested | Text and JSON share data in implementation, but no independent field-equivalence gate exists. |
 | `P1-REP-03` | Partially covered | Stored report works after `error.log` removal; `latest` and `errors` have not been proven unchanged in the same gate. |
-| `P1-REP-04` | Untested | No before/after database and evidence hashes for every report command. |
+| `P1-REP-04` | Partially covered | Development regressions hash the complete storage tree before and after the report command family and prove current-database immutability. No valid independent gate has run. |
 | `P1-REP-05` | Partially covered | Repeat processing is deterministic; randomized insertion-order equivalence is absent. |
 | `P1-REP-06` | Partially covered | `latest` selects the newest reportable run, `report --run` distinguishes repeated observations of identical evidence, and report v6 projects exception provenance. The independent eligibility/order/provenance gate has not run. |
 | `P1-REP-07` | Partially covered | `process-pending`, `report`, `latest`, and `errors` share a stable success/warning/failure envelope and exit taxonomy. The independent all-command black-box gate has not run. |
@@ -90,17 +91,19 @@ The fast reboot suite remains implementation regression coverage only.
 
 ## Required order of work
 
-1. Freeze the updated public Phase 1 contract, gate-to-interface handoff,
+1. Retain the frozen authentic public corpus and exact gate-to-input mapping;
+   evaluators may not substitute, truncate, synthesize, or reassign base data.
+2. Freeze the updated public Phase 1 contract, gate-to-interface handoff,
    complete output schemas, and exact error taxonomy. Implementation agents
    stop writing execution logic at that boundary.
-2. Reconcile and freeze semantic authority from the later human reviews.
 3. Freeze a clean successor candidate and record its complete tree/interface
    hashes.
 4. Have the independent harness authority—not an implementation agent—rebind
-   and extend its harness for the successor interface and exception cases,
-   without importing production expectation logic.
-5. Independent evaluator roles run calibration, failure, rollback, mutation,
-   and performance gates.
-6. Select a new private holdout and use the separated runner/scorer process in
+   and author a fresh harness for the successor interface, using only the fixed
+   base-input mapping and prescribed hash-bound mutations.
+5. Independent evaluator roles run public calibration, failure, rollback,
+   mutation, and performance gates.
+6. Select and freeze a new private holdout.
+7. Run the holdout through the separated runner/scorer process in
    `PHASE1_EXIT_PROTOCOL.md`.
-7. Publish a single candidate-bound exit report.
+8. Publish a single candidate-bound exit report.

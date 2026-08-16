@@ -1,16 +1,19 @@
 """Reconcile immutable filesystem archives with the rebuildable SQLite index."""
 from __future__ import annotations
 
+import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
 
 from .db import repository
 from .harvester import (
+    ArchiveIntegrityError,
     MANIFEST_NAME,
     MANIFEST_VERSION,
     adopt_legacy_archive,
-    hash_file,
     read_snapshot,
+    snapshot_file_metadata_matches_manifest,
+    snapshot_manifest_projection,
 )
 
 
@@ -29,6 +32,7 @@ def reconcile_archives(
     db_path: Path,
     *,
     full_verify: bool = False,
+    strict_integrity: bool = False,
 ) -> ReconciliationSummary:
     """Validate/register orphan archives and promote verified legacy rows.
 
@@ -53,9 +57,10 @@ def reconcile_archives(
         for row in repository.list_sessions(conn, limit=1_000_000):
             bundle_hash = row["evidence_bundle_hash"]
             if bundle_hash not in directory_hashes:
-                errors.append(
-                    f"{bundle_hash}: registered session is missing its archive"
-                )
+                message = f"{bundle_hash}: registered session is missing its archive"
+                if strict_integrity:
+                    raise ArchiveIntegrityError(message)
+                errors.append(message)
         for directory in directories:
             try:
                 existing = repository.get_session_by_hash(conn, directory.name)
@@ -66,10 +71,26 @@ def reconcile_archives(
                     and existing["capture_status"] == "finalized"
                     and existing["capture_manifest_version"] == MANIFEST_VERSION
                     and manifest_path.is_file()
-                    and existing["capture_manifest_sha256"] == hash_file(manifest_path)
                 ):
-                    existing_count += 1
-                    continue
+                    files, manifest_sha256, completeness = (
+                        snapshot_manifest_projection(directory)
+                    )
+                    if (
+                        existing["capture_manifest_sha256"] == manifest_sha256
+                        and snapshot_file_metadata_matches_manifest(
+                            directory, files=files
+                        )
+                    ):
+                        repository.validate_finalized_session_projection(
+                            conn,
+                            session=existing,
+                            manifest_version=MANIFEST_VERSION,
+                            manifest_sha256=manifest_sha256,
+                            evidence_completeness=completeness,
+                            files=files,
+                        )
+                        existing_count += 1
+                        continue
 
                 if manifest_path.is_file():
                     captured = read_snapshot(directory)
@@ -92,6 +113,14 @@ def reconcile_archives(
                 else:
                     registered += 1
                     registered_hashes.append(captured.evidence_bundle_hash)
+            except sqlite3.Error:
+                raise
+            except (ArchiveIntegrityError, OSError, ValueError) as exc:
+                if strict_integrity:
+                    raise ArchiveIntegrityError(
+                        f"{directory.name}: {exc}"
+                    ) from exc
+                errors.append(f"{directory.name}: {exc}")
             except Exception as exc:
                 errors.append(f"{directory.name}: {exc}")
     finally:

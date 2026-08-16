@@ -30,10 +30,101 @@ from .schema import (
 # Phase 1 note: migrations are intentionally idempotent and non-destructive.
 # We use CREATE TABLE IF NOT EXISTS and record canonical issue schema version so
 # migration runs are safe to re-run while preserving existing data.
+def migrations_required(conn: sqlite3.Connection) -> bool:
+    """Return whether schema work is required without changing the database."""
+    table_names = {
+        str(row[0])
+        for row in conn.execute(
+            "SELECT name FROM sqlite_master WHERE type = 'table'"
+        ).fetchall()
+    }
+    if "schema_versions" not in table_names:
+        return True
+    versions = {
+        str(row[0]): int(row[1])
+        for row in conn.execute(
+            "SELECT component, version FROM schema_versions"
+        ).fetchall()
+    }
+    required_versions = {
+        "core": CURRENT_VERSION,
+        "canonical_issues": CANONICAL_ISSUES_VERSION,
+        "capture": CAPTURE_VERSION,
+        "classification": CLASSIFICATION_VERSION,
+        "session_intelligence": SESSION_INTELLIGENCE_VERSION,
+        "runtime_context": RUNTIME_CONTEXT_VERSION,
+        "source_resolution": SOURCE_RESOLUTION_VERSION,
+        "storage": STORAGE_VERSION,
+    }
+    for component, supported_version in required_versions.items():
+        actual_version = versions.get(component)
+        if actual_version is not None and actual_version > supported_version:
+            raise sqlite3.DatabaseError(
+                f"database {component} schema version {actual_version} is newer "
+                f"than supported version {supported_version}"
+            )
+    if any(
+        versions.get(component, -1) < version
+        for component, version in required_versions.items()
+    ):
+        return True
+
+    required_columns = {
+        "sessions": {"capture_status", "parse_status"},
+        "capture_observations": {"capture_id", "receipt_sha256"},
+        "session_runtime_contexts": {"source_session_file_id"},
+        "source_blocks": {"source_block_pk", "raw_block_pk"},
+        "issue_occurrences": {"source_block_pk", "issue_ordinal", "log_type"},
+        "issues": {"log_type"},
+        "classification_assignments": {"source_block_pk", "payload_pk"},
+    }
+    for table, expected in required_columns.items():
+        if table not in table_names:
+            return True
+        actual = {
+            str(row[1])
+            for row in conn.execute(f"PRAGMA table_info({table})").fetchall()
+        }
+        if not expected.issubset(actual):
+            return True
+
+    if "session_contexts" in table_names:
+        supported_context_version = versions.get("session_context")
+        if (
+            supported_context_version is not None
+            and supported_context_version > SESSION_CONTEXT_VERSION
+        ):
+            raise sqlite3.DatabaseError(
+                "database session_context schema version "
+                f"{supported_context_version} is newer than supported version "
+                f"{SESSION_CONTEXT_VERSION}"
+            )
+        context_columns = {
+            str(row[1])
+            for row in conn.execute("PRAGMA table_info(session_contexts)").fetchall()
+        }
+        required_context_columns = {
+            "membership_evidence",
+            "debug_log_path",
+            "debug_mod_block_sha256",
+            "debug_enabled_count",
+            "debug_disabled_count",
+            "evidence_only_refs_json",
+        }
+        if (
+            supported_context_version != SESSION_CONTEXT_VERSION
+            or not required_context_columns.issubset(context_columns)
+        ):
+            return True
+    return False
+
+
 def apply_migrations(conn: sqlite3.Connection) -> bool:
     """Apply schema changes and report whether compact storage was migrated."""
     if conn.in_transaction:
         raise RuntimeError("schema migration requires a connection without a transaction")
+    if not migrations_required(conn):
+        return False
     try:
         conn.execute("BEGIN IMMEDIATE")
         compact_storage_migrated = _apply_migrations(conn)

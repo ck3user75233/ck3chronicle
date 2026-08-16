@@ -36,7 +36,9 @@ identity, or evidence-bundle identity used to verify evidence.
 Compact storage is the default implementation and requires no user-directed
 workflow. Migration of an older schema is automatic. Physical page reclamation
 follows the committed migration and integrity checks on its first safe database
-open; it is not a product capability or recurring operator obligation.
+open; it is not a product capability or recurring operator obligation. A read
+command may perform that one required legacy migration, then must reopen the
+database read-only. Once current, read commands may not change any storage byte.
 
 ## Capture boundary
 
@@ -60,6 +62,14 @@ Crash-folder `error.log`, `debug.log`, and `game.log` files that exactly match
 the protected live copy are attributed but not copied again. A differing crash
 version is preserved separately and linked to the run. `exception.txt` is not
 a duplicate principal log and is captured by default when present.
+
+Deferred processing performs a cheap steady-state archive preflight: the small
+manifest identity, exact retained path set, byte sizes, and copied-file mtimes
+must remain unchanged. It does not re-read unchanged evidence bytes. Metadata
+drift triggers full SHA-256 verification, so ordinary accidental edits are
+detected without repeatedly hashing the whole archive. An adversarial same-size
+edit with a restored timestamp is outside that fast preflight; explicit full
+reconciliation and deep database audit are the byte-authoritative checks.
 
 ## Canonical issue stream
 
@@ -188,7 +198,10 @@ must not be represented as fully accepted until repaired or regenerated.
 emits exactly one `ck3chronicle.command-result` v1 envelope containing command,
 status, exit code, result, and error. Exit codes distinguish pipeline failure
 (1), evidence/archive integrity (3), model integrity (4), and database failure
-(5); reconciliation warnings return 1 while retaining the partial result.
+(5). Confirmed archive, protected-receipt, or exception corruption is a
+non-retryable integrity failure (3). Reconciliation warnings return 1 while
+retaining a partial result only for non-integrity conditions that may be
+recovered or completed later.
 The JSON `report`, `latest`, and `errors` surfaces use the same envelope, with
 their schema-versioned report projection nested under `result`.
 Exact fields, versions, exit meanings, and mutation boundaries are frozen in

@@ -36,8 +36,16 @@ def process_pending(root: Path, classifier: Classifier) -> ProcessingResult:
     evidence_root = Path(root)
     finalized = finalize_pending_captures(evidence_root)
     db_path = evidence_root / "ck3chronicle.db"
-    reconciliation = reconcile_archives(evidence_root, db_path)
-    run_reconciliation = reconcile_run_receipts(evidence_root, db_path)
+    reconciliation = reconcile_archives(
+        evidence_root,
+        db_path,
+        strict_integrity=True,
+    )
+    run_reconciliation = reconcile_run_receipts(
+        evidence_root,
+        db_path,
+        strict_integrity=True,
+    )
 
     parsed = 0
     classified = 0

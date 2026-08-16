@@ -490,6 +490,84 @@ def validate_snapshot(
     return files, manifest_sha256
 
 
+def snapshot_file_metadata_matches_manifest(
+    directory: Path, *, files: tuple[CapturedFile, ...] | None = None
+) -> bool:
+    """Return whether retained file metadata still matches a known manifest.
+
+    This is the inexpensive steady-state guard used before accepting a
+    previously verified archive from the registry.  It reads the small
+    manifest and stats the retained files, but does not re-read evidence bytes.
+    Any metadata drift sends the caller through full SHA-256 verification.
+    """
+    directory = Path(directory)
+    if files is None:
+        payload, _manifest_sha256 = _load_manifest(directory)
+        files = _files_from_manifest(payload)
+    expected_paths = {item.rel_path for item in files}
+    if len(expected_paths) != len(files):
+        return False
+    for item in files:
+        retained = directory / Path(item.rel_path)
+        if retained.is_symlink() or not retained.is_file():
+            return False
+        stat = retained.stat()
+        if (
+            stat.st_size != item.bytes
+            or stat.st_mtime_ns != item.source_mtime_ns
+        ):
+            return False
+    actual_paths = {
+        path.relative_to(directory).as_posix()
+        for path in directory.rglob("*")
+        if path.is_file()
+        and path.relative_to(directory).as_posix() != MANIFEST_NAME
+    }
+    return actual_paths == expected_paths
+
+
+def snapshot_manifest_projection(
+    directory: Path,
+) -> tuple[tuple[CapturedFile, ...], str, str]:
+    """Read the immutable manifest projection without hashing evidence files.
+
+    The archive registry uses this only after the manifest itself and retained
+    file metadata agree with a previously verified archive.  It supplies the
+    exact manifest rows needed to validate the rebuildable SQLite projection.
+    """
+    directory = Path(directory)
+    payload, manifest_sha256 = _load_manifest(directory)
+    bundle_hash = payload.get("evidence_bundle_hash")
+    if not isinstance(bundle_hash, str) or len(bundle_hash) != 64:
+        raise ArchiveIntegrityError("capture manifest has an invalid bundle hash")
+    if directory.name != bundle_hash:
+        raise ArchiveIntegrityError("archive directory name disagrees with manifest")
+    if payload.get("capture_status") != "finalized":
+        raise ArchiveIntegrityError("capture manifest is not finalized")
+    files = _files_from_manifest(payload)
+    if len({item.rel_path for item in files}) != len(files):
+        raise ArchiveIntegrityError("capture manifest repeats a retained path")
+    records = [(item.kind, item.identity_path, item.sha256) for item in files]
+    if _bundle_hash(records) != bundle_hash:
+        raise ArchiveIntegrityError("manifest files do not derive the bundle identity")
+    present_logs = {item.identity_path for item in files if item.kind == "log"}
+    expected_principal = {
+        name: "present" if name in present_logs else "missing"
+        for name in PRINCIPAL_LOG_NAMES
+    }
+    if payload.get("principal_logs") != expected_principal:
+        raise ArchiveIntegrityError("principal-log status disagrees with manifest files")
+    completeness = payload.get("evidence_completeness")
+    expected_completeness = (
+        "complete"
+        if all(state == "present" for state in expected_principal.values())
+        else "partial"
+    )
+    if completeness != expected_completeness:
+        raise ArchiveIntegrityError("evidence completeness is inconsistent")
+    return files, manifest_sha256, completeness
+
+
 def _evidence_descriptor(files: Iterable[CapturedFile]) -> tuple[tuple[Any, ...], ...]:
     """Compare immutable evidence fields while ignoring source mtimes."""
     return tuple(

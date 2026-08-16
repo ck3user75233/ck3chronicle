@@ -3,15 +3,17 @@ from __future__ import annotations
 
 import os
 import shutil
+import sqlite3
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from .db import repository
-from .harvester import PRINCIPAL_LOG_NAMES, hash_file
+from .harvester import ArchiveIntegrityError, PRINCIPAL_LOG_NAMES, hash_file
 from .run_receipts import (
     CRASH_EXCEPTION_NAME,
+    RunReceiptError,
     SUPPORTED_RUN_RECEIPT_VERSIONS,
     finalized_receipts,
     receipt_sha256,
@@ -26,9 +28,48 @@ class RunReconciliationSummary:
     errors: tuple[str, ...]
 
 
+SQLITE_INTEGER_MAX = (1 << 63) - 1
+
+
 def _required_text(payload: dict[str, Any], name: str) -> str:
     value = payload.get(name)
     if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"run receipt has invalid {name}")
+    return value
+
+
+def _optional_text(
+    payload: dict[str, Any], name: str, *, context: str = "run receipt"
+) -> str | None:
+    value = payload.get(name)
+    if value is None:
+        return None
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{context} has invalid {name}")
+    return value
+
+
+def _optional_integer(
+    payload: dict[str, Any], name: str, *, context: str = "run receipt"
+) -> int | None:
+    value = payload.get(name)
+    if value is None:
+        return None
+    if (
+        isinstance(value, bool)
+        or not isinstance(value, int)
+        or value < 0
+        or value > SQLITE_INTEGER_MAX
+    ):
+        raise ValueError(f"{context} has invalid {name}")
+    return value
+
+
+def _optional_object(payload: dict[str, Any], name: str) -> dict[str, Any] | None:
+    value = payload.get(name)
+    if value is None:
+        return None
+    if not isinstance(value, dict):
         raise ValueError(f"run receipt has invalid {name}")
     return value
 
@@ -41,7 +82,9 @@ def _exception_projection(
     termination_kind: str,
 ) -> dict[str, Any]:
     """Validate one protected exception descriptor without reading CK3 live data."""
-    version = int(payload.get("schema_version", 0))
+    version = payload.get("schema_version")
+    if isinstance(version, bool) or not isinstance(version, int):
+        raise ValueError("run receipt has invalid schema_version")
     if version == 1:
         return {
             "status": (
@@ -87,9 +130,19 @@ def _exception_projection(
             or any(character not in "0123456789abcdef" for character in sha256)
         ):
             raise ValueError("crash exception hash is invalid")
-        if not isinstance(bytes_, int) or bytes_ < 0:
+        if (
+            isinstance(bytes_, bool)
+            or not isinstance(bytes_, int)
+            or bytes_ < 0
+            or bytes_ > SQLITE_INTEGER_MAX
+        ):
             raise ValueError("crash exception byte count is invalid")
-        if not isinstance(source_mtime_ns, int):
+        if (
+            isinstance(source_mtime_ns, bool)
+            or not isinstance(source_mtime_ns, int)
+            or source_mtime_ns < 0
+            or source_mtime_ns > SQLITE_INTEGER_MAX
+        ):
             raise ValueError("crash exception source timestamp is invalid")
         retained = Path(root) / Path(retained_path)
         if retained.is_symlink() or not retained.is_file():
@@ -216,22 +269,64 @@ def _file_origins(
 
 
 def reconcile_run_receipts(
-    root: Path, db_path: Path
+    root: Path,
+    db_path: Path,
+    *,
+    strict_integrity: bool = False,
 ) -> RunReconciliationSummary:
     """Rebuild the run index from finalized receipt files idempotently."""
     evidence_root = Path(root)
-    receipts = finalized_receipts(evidence_root)
+    try:
+        receipts = finalized_receipts(evidence_root)
+    except (
+        OSError,
+        UnicodeError,
+        ValueError,
+        TypeError,
+        RunReceiptError,
+    ) as exc:
+        if strict_integrity:
+            raise ArchiveIntegrityError(
+                f"invalid finalized run receipt: {exc}"
+            ) from exc
+        return RunReconciliationSummary(
+            scanned=0,
+            registered=0,
+            already_registered=0,
+            errors=(str(exc),),
+        )
     registered = 0
     existing = 0
     errors: list[str] = []
     conn = repository.open_db(db_path)
     try:
+        receipt_ids = {path.stem for path, _payload in receipts}
+        indexed_receipts = conn.execute(
+            """
+            SELECT capture_id
+            FROM capture_observations
+            WHERE receipt_sha256 IS NOT NULL
+            ORDER BY capture_id
+            """
+        ).fetchall()
+        for row in indexed_receipts:
+            capture_id = str(row["capture_id"])
+            if capture_id not in receipt_ids:
+                message = f"{capture_id}: indexed run is missing its finalized receipt"
+                if strict_integrity:
+                    raise ArchiveIntegrityError(message)
+                errors.append(message)
         for path, payload in receipts:
             capture_id = path.stem
             try:
                 if payload.get("schema") != "ck3chronicle.finalized-run-receipt":
                     raise ValueError("unexpected run receipt schema")
-                if payload.get("schema_version") not in SUPPORTED_RUN_RECEIPT_VERSIONS:
+                schema_version = payload.get("schema_version")
+                if (
+                    isinstance(schema_version, bool)
+                    or not isinstance(schema_version, int)
+                    or schema_version not in SUPPORTED_RUN_RECEIPT_VERSIONS
+                ):
                     raise ValueError("unsupported run receipt version")
                 if payload.get("status") != "finalized":
                     raise ValueError("run receipt is not finalized")
@@ -245,11 +340,49 @@ def reconcile_run_receipts(
                     payload, "manifest_sha256"
                 ):
                     raise ValueError("run receipt manifest hash disagrees")
-                process = payload.get("process")
-                process = process if isinstance(process, dict) else {}
-                crash = payload.get("crash")
-                crash = crash if isinstance(crash, dict) else None
+                process = _optional_object(payload, "process") or {}
+                crash = _optional_object(payload, "crash")
+                process_name = _optional_text(
+                    process, "image_name", context="run receipt process"
+                )
+                process_pid = _optional_integer(
+                    process, "pid", context="run receipt process"
+                )
+                process_started_ns = _optional_integer(
+                    process, "started_ns", context="run receipt process"
+                )
+                observed_started_at = _optional_text(payload, "observed_started_at")
+                observed_ended_at = _optional_text(payload, "observed_ended_at")
+                crash_folder_name = (
+                    _optional_text(crash, "folder_name", context="run receipt crash")
+                    if crash is not None
+                    else None
+                )
+                crash_folder_path = (
+                    _optional_text(crash, "folder_path", context="run receipt crash")
+                    if crash is not None
+                    else None
+                )
+                crash_detected_at = (
+                    _optional_text(crash, "detected_at", context="run receipt crash")
+                    if crash is not None
+                    else None
+                )
+                crash_association_method = (
+                    _optional_text(
+                        crash, "association_method", context="run receipt crash"
+                    )
+                    if crash is not None
+                    else None
+                )
+                crash_association_confidence = (
+                    _optional_text(crash, "confidence", context="run receipt crash")
+                    if crash is not None
+                    else None
+                )
                 termination_kind = str(payload.get("termination_kind", "unknown"))
+                if termination_kind not in {"normal", "crash", "unknown"}:
+                    raise ValueError("run receipt has invalid termination_kind")
                 exception = _exception_projection(
                     payload,
                     evidence_root,
@@ -261,18 +394,18 @@ def reconcile_run_receipts(
                     session_id=int(session["session_id"]),
                     capture_id=capture_id,
                     trigger=_required_text(payload, "trigger"),
-                    process_name=process.get("image_name"),
+                    process_name=process_name,
                     observed_at=_required_text(payload, "captured_at"),
-                    observed_started_at=payload.get("observed_started_at"),
-                    observed_ended_at=payload.get("observed_ended_at"),
-                    process_pid=process.get("pid"),
-                    process_started_ns=process.get("started_ns"),
+                    observed_started_at=observed_started_at,
+                    observed_ended_at=observed_ended_at,
+                    process_pid=process_pid,
+                    process_started_ns=process_started_ns,
                     termination_kind=termination_kind,
-                    crash_folder_name=(crash or {}).get("folder_name"),
-                    crash_folder_path=(crash or {}).get("folder_path"),
-                    crash_detected_at=(crash or {}).get("detected_at"),
-                    crash_association_method=(crash or {}).get("association_method"),
-                    crash_association_confidence=(crash or {}).get("confidence"),
+                    crash_folder_name=crash_folder_name,
+                    crash_folder_path=crash_folder_path,
+                    crash_detected_at=crash_detected_at,
+                    crash_association_method=crash_association_method,
+                    crash_association_confidence=crash_association_confidence,
                     crash_exception_status=exception["status"],
                     crash_exception_source_rel_path=exception["source_rel_path"],
                     crash_exception_retained_path=exception["retained_path"],
@@ -312,6 +445,20 @@ def reconcile_run_receipts(
                     )
                 existing += int(was_existing)
                 registered += int(not was_existing)
+            except sqlite3.Error:
+                raise
+            except (
+                OSError,
+                UnicodeError,
+                ValueError,
+                TypeError,
+                RunReceiptError,
+            ) as exc:
+                if strict_integrity:
+                    raise ArchiveIntegrityError(
+                        f"{path.name}: {exc}"
+                    ) from exc
+                errors.append(f"{path.name}: {exc}")
             except Exception as exc:
                 errors.append(f"{path.name}: {exc}")
     finally:

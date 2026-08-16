@@ -99,12 +99,16 @@ formal exit report. No current commit has such an exit record.
 
 ### Immediate work
 
-The implementation-side public interface was frozen for candidate `d07b19e`,
-but that candidate was superseded before private-holdout execution when
-default crash `exception.txt` capture was added to the Phase 1 requirement.
-The frozen `d07b19e` harness remains a baseline artifact only. Implementation
-agents publish the updated function/output contract but do not edit evaluator
-runner or scorer code.
+An independent attempt against `76fb2d5` completed all 35 gates, but forensic
+review invalidated its release conclusion: 22 gates used wrong, synthetic-scale,
+or otherwise non-authoritative base inputs; two failures exposed real product
+defects; and one taxonomy judgment was indeterminate. The two real defects have
+been repaired. The attempt's private holdout is retired and cannot be reused.
+
+The successor public evidence corpus is frozen before harness authorship. Its
+gate mapping and bytes are input authority, not evaluator discretion. The
+implementation agents publish function/output contracts and the immutable
+input manifest but do not edit evaluator runner or scorer code.
 
 The Phase 1 semantic authority is also reconciled: the 252-item canonical
 issue-field oracle and later human-reviewed template/slot authority now have
@@ -114,13 +118,14 @@ Remaining work proceeds in this order:
 
 1. Freeze a clean successor release-candidate commit and record its tree,
    package, interface, model, and contract hashes.
-2. Have the independent harness authority rebind and extend its own frozen
-   harness for the successor interface, including captured, absent, corrupt,
-   and stale/unassociated crash-exception cases.
+2. Have the independent harness authority write a fresh harness against the
+   fixed public gate-to-input manifest. It may create only prescribed,
+   hash-bound mutations and may not substitute base inputs.
 3. Have the independent oracle authority freeze the complete report and
    command-envelope expected artifacts.
-4. Execute correctness, rollback, mutation, holdout, and performance gates
-   under the separation in `PHASE1_EXIT_PROTOCOL.md`.
+4. Select and freeze a new unseen private holdout, then execute correctness,
+   rollback, mutation, holdout, and performance gates under the separation in
+   `PHASE1_EXIT_PROTOCOL.md`.
 5. Publish and review the single candidate-bound Phase 1 exit report.
 
 ## Phase 2: deltas, baselines, and noise management

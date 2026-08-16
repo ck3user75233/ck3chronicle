@@ -2,11 +2,13 @@
 from __future__ import annotations
 
 import json
+import sqlite3
 from pathlib import Path
 
 import pytest
 
 from ck3chronicle import harvester
+from ck3chronicle.archive_registry import reconcile_archives
 from ck3chronicle.db import repository
 from ck3chronicle.harvester import (
     ArchiveIntegrityError,
@@ -138,3 +140,24 @@ def test_rarch_005_changed_archived_byte_is_detected(tmp_path: Path) -> None:
 
     with pytest.raises(ArchiveIntegrityError):
         validate_snapshot(result.dest_dir)
+
+
+def test_rarch_006_strict_reconcile_does_not_downgrade_sqlite_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    runtime, _result = _finalized(tmp_path)
+
+    def database_failure(*_args, **_kwargs):
+        raise sqlite3.OperationalError("injected registry failure")
+
+    monkeypatch.setattr(
+        repository,
+        "register_finalized_session",
+        database_failure,
+    )
+    with pytest.raises(sqlite3.OperationalError, match="injected registry failure"):
+        reconcile_archives(
+            runtime,
+            runtime / "ck3chronicle.db",
+            strict_integrity=True,
+        )

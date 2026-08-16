@@ -1,6 +1,7 @@
 # Phase 1 exit protocol
 
-Status: required release process; no Phase 1 exit run has yet completed.
+Status: required release process; no valid Phase 1 exit has been accepted. The
+completed `76fb2d5` attempt was rejected after input/harness postmortem.
 
 ## 1. Purpose
 
@@ -29,6 +30,8 @@ controls. They can never be promoted into exit evidence by renaming them.
 
 - receives the frozen public evaluation interface and gate contract, but no
   private expected answers;
+- receives an immutable public gate-to-input manifest and may not replace,
+  truncate, synthesize, or reassign its base evidence;
 - independently writes the execution harness, result-envelope capture,
   mutations, resource measurements, and cleanup behavior;
 - cannot modify product code or ask the implementer to provide executable
@@ -107,12 +110,13 @@ procedural Codex-only run must not be described as cryptographically blind.
 
 ## 4. Freeze and handoff order
 
-1. Freeze public contracts, the gate inventory, and the implementation-authored
-   callable-interface handoff.
+1. Freeze public contracts, the gate inventory, the implementation-authored
+   callable-interface handoff, and the public gate-to-input manifest.
 2. The independent harness author writes and freezes execution code from that
-   handoff without receiving expected answers.
-3. Freeze public calibration inputs and their independent manifests, then
-   validate the harness without using the private holdout.
+   handoff and fixed input set without receiving expected answers. Prescribed
+   mutations must derive from and remain hash-bound to the assigned base unit.
+3. Validate the harness against the already frozen public inputs without using
+   the private holdout.
 4. Freeze the candidate commit and require a clean worktree.
 5. Record candidate source-tree, package, interface, and harness hashes.
 6. Select a holdout whose content hashes are absent from training,

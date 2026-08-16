@@ -68,8 +68,11 @@ def _capture_error(exc: Exception) -> int:
     if isinstance(exc, InvalidCaptureInput):
         print(f"ERROR [invalid_input]: {exc}", file=sys.stderr)
         return 2
-    if isinstance(exc, (UnstableCapture, ArchiveIntegrityError)):
+    if isinstance(exc, UnstableCapture):
         print(f"ERROR [rejected_unstable]: {exc}", file=sys.stderr)
+        return 3
+    if isinstance(exc, ArchiveIntegrityError):
+        print(f"ERROR [archive_integrity]: {exc}", file=sys.stderr)
         return 3
     if isinstance(exc, sqlite3.Error):
         print(f"ERROR [database_failed]: {exc}", file=sys.stderr)
@@ -299,10 +302,12 @@ def cmd_reconcile(args: argparse.Namespace) -> int:
             config.ROOT_CK3CHRONICLE,
             config.ROOT_CK3CHRONICLE / "ck3chronicle.db",
             full_verify=True,
+            strict_integrity=True,
         )
         run_summary = reconcile_run_receipts(
             config.ROOT_CK3CHRONICLE,
             config.ROOT_CK3CHRONICLE / "ck3chronicle.db",
+            strict_integrity=True,
         )
     except Exception as exc:
         return _capture_error(exc)
@@ -328,7 +333,7 @@ def cmd_sessions(args: argparse.Namespace) -> int:
         print("No sessions yet. Run: ck3chronicle ingest")
         return 0
 
-    conn = repository.open_db(db_path)
+    conn = repository.open_db_readonly(db_path)
     rows = repository.list_sessions(conn, limit=args.limit)
     conn.close()
 
@@ -583,7 +588,7 @@ def cmd_review_queue(args: argparse.Namespace) -> int:
     model_sha256 = args.model_sha256 or APPROVED_MODEL_SHA256
     conn = None
     try:
-        conn = repository.open_db(
+        conn = repository.open_db_readonly(
             config.ROOT_CK3CHRONICLE / "ck3chronicle.db"
         )
         run = repository.get_classification_run(
@@ -656,7 +661,7 @@ def _report_for_args(args: argparse.Namespace, *, latest: bool = False):
 
     conn = None
     try:
-        conn = repository.open_db(
+        conn = repository.open_db_readonly(
             config.ROOT_CK3CHRONICLE / "ck3chronicle.db"
         )
         observed_run_id = None
@@ -766,7 +771,7 @@ def _cmd_report(args: argparse.Namespace, *, latest: bool) -> int:
             from . import config
             from .db import repository
 
-            conn = repository.open_db(
+            conn = repository.open_db_readonly(
                 config.ROOT_CK3CHRONICLE / "ck3chronicle.db"
             )
             try:
@@ -1120,7 +1125,9 @@ def cmd_compare(args: argparse.Namespace) -> int:
             raise ComparisonError(
                 "--model-sha256 cannot override a baseline's pinned model"
             )
-        conn = repository.open_db(config.ROOT_CK3CHRONICLE / "ck3chronicle.db")
+        conn = repository.open_db_readonly(
+            config.ROOT_CK3CHRONICLE / "ck3chronicle.db"
+        )
         if args.baseline is not None:
             comparison = compare_against_baseline(
                 conn,
@@ -1189,7 +1196,9 @@ def cmd_baseline_create(args: argparse.Namespace) -> int:
 
     conn = None
     try:
-        conn = repository.open_db(config.ROOT_CK3CHRONICLE / "ck3chronicle.db")
+        conn = repository.open_db(
+            config.ROOT_CK3CHRONICLE / "ck3chronicle.db"
+        )
         session_id = args.session
         if session_id is None:
             session_id, _latest_model = _latest_session_and_model(conn)
@@ -1233,7 +1242,9 @@ def cmd_baseline_list(args: argparse.Namespace) -> int:
 
     conn = None
     try:
-        conn = repository.open_db(config.ROOT_CK3CHRONICLE / "ck3chronicle.db")
+        conn = repository.open_db_readonly(
+            config.ROOT_CK3CHRONICLE / "ck3chronicle.db"
+        )
         baselines = list_baselines(conn)
     except sqlite3.Error as exc:
         print(f"ERROR [database_failed]: {exc}", file=sys.stderr)
@@ -1271,7 +1282,9 @@ def cmd_baseline_delete(args: argparse.Namespace) -> int:
 
     conn = None
     try:
-        conn = repository.open_db(config.ROOT_CK3CHRONICLE / "ck3chronicle.db")
+        conn = repository.open_db(
+            config.ROOT_CK3CHRONICLE / "ck3chronicle.db"
+        )
         deleted = delete_baseline(conn, args.name)
     except sqlite3.Error as exc:
         print(f"ERROR [database_failed]: {exc}", file=sys.stderr)
@@ -1352,7 +1365,9 @@ def cmd_ignore_list(args: argparse.Namespace) -> int:
 
     conn = None
     try:
-        conn = repository.open_db(config.ROOT_CK3CHRONICLE / "ck3chronicle.db")
+        conn = repository.open_db_readonly(
+            config.ROOT_CK3CHRONICLE / "ck3chronicle.db"
+        )
         ignored = list_ignored_patterns(conn, model_sha256=args.model_sha256)
     except sqlite3.Error as exc:
         print(f"ERROR [database_failed]: {exc}", file=sys.stderr)
@@ -1545,7 +1560,9 @@ def cmd_resolve_file(args: argparse.Namespace) -> int:
 
     conn = None
     try:
-        conn = repository.open_db(config.ROOT_CK3CHRONICLE / "ck3chronicle.db")
+        conn = repository.open_db_readonly(
+            config.ROOT_CK3CHRONICLE / "ck3chronicle.db"
+        )
         resolution = resolve_file_instances(conn, args.session, args.path)
     except SourceResolutionError as exc:
         print(f"ERROR [source_resolution]: {exc}", file=sys.stderr)
@@ -1597,7 +1614,9 @@ def cmd_triage(args: argparse.Namespace) -> int:
 
     conn = None
     try:
-        conn = repository.open_db(config.ROOT_CK3CHRONICLE / "ck3chronicle.db")
+        conn = repository.open_db_readonly(
+            config.ROOT_CK3CHRONICLE / "ck3chronicle.db"
+        )
         triage = build_triage(
             conn,
             session_id=args.session,

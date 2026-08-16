@@ -1,5 +1,14 @@
 # Phase 1 evaluation interface
 
+## Fixed input authority
+
+Every public gate receives its base evidence from the immutable gate-to-input
+manifest frozen before evaluator harness authorship. The evaluator may execute
+the prescribed mutation for a case, but it may not replace, truncate,
+synthesize, resample, or reassign the base evidence. Synthetic fixtures may be
+used for harness self-tests only and cannot score a gate assigned to authentic
+evidence. Runner results must record the assigned unit and its source-set hash.
+
 Status: implementation-side handoff contract. This is not an executable test
 harness and contains no expected answers.
 

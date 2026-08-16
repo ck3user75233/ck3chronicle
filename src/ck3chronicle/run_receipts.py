@@ -297,11 +297,13 @@ def finalized_receipts(root: Path) -> tuple[tuple[Path, dict[str, Any]], ...]:
     directory = _receipt_root(root) / "finalized"
     if not directory.is_dir():
         return ()
-    return tuple(
-        (path, _load_json(path))
-        for path in sorted(directory.glob("*.json"), key=lambda item: item.name)
-        if path.is_file()
-    )
+    receipts: list[tuple[Path, dict[str, Any]]] = []
+    for path in sorted(directory.glob("*.json"), key=lambda item: item.name):
+        if path.is_symlink():
+            raise RunReceiptError(f"finalized run receipt is a symlink: {path.name}")
+        if path.is_file():
+            receipts.append((path, _load_json(path)))
+    return tuple(receipts)
 
 
 def receipt_sha256(path: Path) -> str:

@@ -4,14 +4,22 @@ from __future__ import annotations
 import hashlib
 import json
 import shutil
+from pathlib import Path
+
+import pytest
 
 from ck3chronicle.db import repository
 from ck3chronicle.cli import _print_executive_report
 from ck3chronicle.database_audit import audit_database
-from ck3chronicle.harvester import PRINCIPAL_LOG_NAMES, spool_logs
+from ck3chronicle.harvester import (
+    ArchiveIntegrityError,
+    PRINCIPAL_LOG_NAMES,
+    spool_logs,
+)
 from ck3chronicle.processing import process_pending
 from ck3chronicle.reporting import build_session_report, latest_session_id
 from ck3chronicle.run_registry import reconcile_run_receipts
+from ck3chronicle.run_receipts import RunReceiptError, finalized_receipts
 from ck3chronicle.session_intelligence import compare_latest
 from ck3chronicle.watcher import (
     ProcessIdentity,
@@ -37,6 +45,23 @@ def _capture(runtime, logs, *, process_pid: int):
         termination_kind="normal",
     )
     return pending
+
+
+def test_rrun_000_finalized_receipt_symlinks_are_rejected(
+    tmp_path, monkeypatch
+) -> None:
+    directory = tmp_path / "run_receipts" / "finalized"
+    directory.mkdir(parents=True)
+    receipt = directory / "capture.json"
+    receipt.write_text("{}\n", encoding="utf-8")
+    original = Path.is_symlink
+
+    def pretend_receipt_is_symlink(path):
+        return path == receipt or original(path)
+
+    monkeypatch.setattr(Path, "is_symlink", pretend_receipt_is_symlink)
+    with pytest.raises(RunReceiptError, match="symlink"):
+        finalized_receipts(tmp_path)
 
 
 def test_rrun_001_identical_evidence_retains_two_distinct_runs(tmp_path) -> None:
@@ -431,3 +456,104 @@ def test_rrun_008_v1_crash_receipt_remains_truthfully_unavailable(tmp_path) -> N
         assert run["crash_exception_retained_path"] is None
     finally:
         conn.close()
+
+
+def test_rrun_009_corrupt_protected_exception_is_a_hard_integrity_failure(
+    tmp_path
+) -> None:
+    game_root = tmp_path / "game-user-root"
+    logs = game_root / "logs"
+    crashes = game_root / "crashes"
+    runtime = tmp_path / "runtime"
+    write_logs(logs, SIX_LOG_BYTES)
+    crashes.mkdir(parents=True)
+    baseline = scan_crash_inventory(crashes)
+    crash_folder = crashes / "ck3_20260814_050607"
+    crash_folder.mkdir()
+    (crash_folder / "exception.txt").write_bytes(b"original exception\n")
+    termination, crash = infer_termination_from_crashes(
+        baseline, scan_crash_inventory(crashes)
+    )
+    pending = spool_logs(logs, runtime)
+    write_capture_receipt(
+        runtime,
+        pending,
+        trigger="process_exit",
+        process=ProcessIdentity(909, "ck3.exe", 90900),
+        termination_kind=termination,
+        crash=crash,
+    )
+    process_pending(runtime, _classifier())
+
+    protected = runtime / "crash_evidence" / pending.dest_dir.name / "exception.txt"
+    protected.write_bytes(b"corrupt exception\n")
+
+    with pytest.raises(
+        ArchiveIntegrityError,
+        match="captured crash exception fails integrity verification",
+    ):
+        process_pending(runtime, _classifier())
+
+
+def test_rrun_010_unbound_legacy_run_is_upgraded_from_immutable_receipt(
+    tmp_path
+) -> None:
+    logs = tmp_path / "logs"
+    runtime = tmp_path / "runtime"
+    write_logs(logs, SIX_LOG_BYTES)
+    pending = _capture(runtime, logs, process_pid=100)
+    process_pending(runtime, _classifier())
+    db_path = runtime / "ck3chronicle.db"
+
+    conn = repository.open_db(db_path)
+    try:
+        conn.execute(
+            """
+            UPDATE capture_observations
+            SET receipt_sha256 = NULL, process_pid = NULL,
+                trigger = 'legacy_import'
+            WHERE capture_id = ?
+            """,
+            (pending.dest_dir.name,),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    summary = reconcile_run_receipts(runtime, db_path, strict_integrity=True)
+    assert summary.already_registered == 1
+    assert summary.errors == ()
+    conn = repository.open_db(db_path)
+    try:
+        row = repository.get_run_by_capture_id(conn, pending.dest_dir.name)
+        assert row["receipt_sha256"] is not None
+        assert row["process_pid"] == 100
+        assert row["trigger"] == "process_exit"
+    finally:
+        conn.close()
+
+
+def test_rrun_011_bound_run_projection_mismatch_is_rejected(tmp_path) -> None:
+    logs = tmp_path / "logs"
+    runtime = tmp_path / "runtime"
+    write_logs(logs, SIX_LOG_BYTES)
+    pending = _capture(runtime, logs, process_pid=100)
+    process_pending(runtime, _classifier())
+    db_path = runtime / "ck3chronicle.db"
+
+    conn = repository.open_db(db_path)
+    try:
+        conn.execute(
+            "UPDATE capture_observations SET trigger = 'tampered' "
+            "WHERE capture_id = ?",
+            (pending.dest_dir.name,),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    with pytest.raises(
+        ArchiveIntegrityError,
+        match="run receipt projection disagrees with indexed run",
+    ):
+        reconcile_run_receipts(runtime, db_path, strict_integrity=True)

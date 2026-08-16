@@ -1,6 +1,6 @@
 # Project status
 
-Date: 2026-08-15
+Date: 2026-08-16
 
 Branch: `codex/ck3chronicle-reboot`
 
@@ -43,19 +43,28 @@ Historical material is recoverable from:
 - atomic parse and reparse persistence.
 
 The implemented foundation and production classifier seam are covered by the
-new reboot-owned suite: 115 tests at the current successor checkpoint. No
+new reboot-owned suite: 134 tests at the current repair checkpoint. No
 inherited test contributes to that count.
 
-These are fast regression tests. The complete protected-real-evidence,
-holdout, mutation, command-envelope, and performance exit gates have not run
-against one frozen current-tip candidate.
+These are fast regression tests. They do not constitute Phase 1 exit evidence.
 
 The repository contains an implementation-side evaluation-interface handoff,
-not implementation-authored executable exit tests. An independent harness was
-frozen for `d07b19e`, but no private holdout was selected or executed. The
-candidate and harness were superseded by the crash-exception requirement and
-remain baseline artifacts only. Independent evaluator roles must rebind and
-extend their own harness for the successor candidate.
+not implementation-authored executable exit tests. A later independent attempt
+executed all 35 gates against `76fb2d5`, reporting 15 passes and 20 failures.
+Forensic review found that only 10 passes and two product failures were
+trustworthy; 22 gates used invalid inputs or harness assertions and one was
+indeterminate because the taxonomy contract was ambiguous. The attempt is a
+failed development artifact, not a valid Phase 1 exit measurement. Its private
+holdout is permanently retired.
+
+The two trustworthy product failures were repaired in the current checkpoint:
+stored-report commands no longer rewrite a current SQLite database, and strict
+processing now rejects archive/run-integrity failures with the public
+`archive_integrity` taxonomy. A public eight-unit, 38-file authentic corpus is
+now immutably gate-bound by manifest SHA-256
+`cf1f73d509c25ff104016ecfd9a23ea36a2e6fd2df580691ba91ae0f8cf22171`.
+The next independent harness may exercise prescribed mutations but may not
+replace, truncate, synthesize, or reassign those base inputs.
 
 Semantic authority is reconciled in `PHASE1_SEMANTIC_AUTHORITY.md`: canonical
 issue fields, structural template identity, and explicit human slot decisions

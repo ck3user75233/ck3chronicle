@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-from .migrations import apply_migrations
+from .migrations import apply_migrations, migrations_required
 from .payloads import payload_sha256
 from ..models.issue import NormalizedIssue
 from ..models.parse import (
@@ -63,6 +63,49 @@ def open_db(path: Path) -> sqlite3.Connection:
         conn.close()
         raise
     return conn
+
+
+def open_db_readonly(path: Path) -> sqlite3.Connection:
+    """Open an existing database with downstream writes disabled.
+
+    A legacy database is migrated and reclaimed once before it is reopened.
+    Current databases take the read-only path without a write transaction.
+    SQLite's read-only URI prevents accidental writes in downstream query code,
+    while ``query_only`` provides a second explicit guard at the connection
+    level.
+    """
+    resolved_path = Path(path).resolve()
+    if not resolved_path.is_file():
+        raise sqlite3.OperationalError(f"database is not a file: {resolved_path}")
+
+    def connect_readonly() -> sqlite3.Connection:
+        opened = sqlite3.connect(f"{resolved_path.as_uri()}?mode=ro", uri=True)
+        opened.row_factory = sqlite3.Row
+        opened.execute("PRAGMA foreign_keys = ON")
+        opened.execute("PRAGMA query_only = ON")
+        return opened
+
+    conn = connect_readonly()
+    try:
+        needs_migration = migrations_required(conn)
+        reclaim_receipt = (
+            None
+            if needs_migration
+            else conn.execute(
+                "SELECT version FROM schema_versions WHERE component = ?",
+                ("storage_reclaimed",),
+            ).fetchone()
+        )
+    except Exception:
+        conn.close()
+        raise
+    if not needs_migration and reclaim_receipt is not None:
+        return conn
+
+    conn.close()
+    writable = open_db(resolved_path)
+    writable.close()
+    return connect_readonly()
 
 
 def get_session_by_hash(
@@ -123,6 +166,61 @@ def add_session_file(
     conn.commit()
     assert cur.lastrowid is not None
     return cur.lastrowid
+
+
+def validate_finalized_session_projection(
+    conn: sqlite3.Connection,
+    *,
+    session: sqlite3.Row,
+    manifest_version: int,
+    manifest_sha256: str,
+    evidence_completeness: str,
+    files: Sequence[Any],
+) -> None:
+    """Validate the rebuildable DB projection against an archive manifest.
+
+    This performs no writes and reads no archived evidence bytes.  It is the
+    steady-state counterpart to ``register_finalized_session`` and prevents a
+    trusted archive fast path from concealing corruption in SQLite.
+    """
+    if session["capture_status"] != "finalized":
+        raise ValueError("existing session is not finalized")
+    if session["capture_manifest_version"] != manifest_version:
+        raise ValueError("registered capture manifest version disagrees")
+    if session["capture_manifest_sha256"] != manifest_sha256:
+        raise ValueError("registered capture manifest hash disagrees")
+
+    expected_rows = sorted(
+        (item.rel_path, item.sha256, int(item.bytes), item.kind) for item in files
+    )
+    actual_rows = sorted(
+        tuple(row)
+        for row in conn.execute(
+            """
+            SELECT rel_path, sha256, bytes, kind
+            FROM session_files
+            WHERE session_id = ?
+            """,
+            (session["session_id"],),
+        ).fetchall()
+    )
+    if actual_rows != expected_rows:
+        raise ValueError("registered session manifest disagrees with finalized archive")
+
+    expected_aggregates = (
+        sum(item.kind == "log" for item in files),
+        int(any(item.kind == "crash" for item in files)),
+        sum(int(item.bytes) for item in files),
+    )
+    actual_aggregates = (
+        int(session["log_count"]),
+        int(session["crash_present"]),
+        int(session["total_bytes"]),
+    )
+    if actual_aggregates != expected_aggregates:
+        raise ValueError("registered session aggregates disagree with manifest")
+    if session["evidence_completeness"] != evidence_completeness:
+        raise ValueError("registered evidence completeness disagrees")
 
 
 def register_finalized_session(
@@ -322,6 +420,8 @@ def register_run(
     receipt_sha256: str | None = None,
 ) -> tuple[int, bool]:
     """Idempotently index one game run separately from evidence bytes."""
+    if termination_kind not in {"normal", "crash", "unknown"}:
+        raise ValueError("invalid run termination kind")
     if crash_exception_status not in {
         "captured",
         "absent",
@@ -392,12 +492,20 @@ def register_run(
         if existing is not None:
             if int(existing["session_id"]) != session_id:
                 raise ValueError("run receipt points to a different evidence bundle")
-            if (
-                receipt_sha256 is not None
-                and existing["receipt_sha256"] not in {None, receipt_sha256}
-            ):
-                raise ValueError("run receipt hash disagrees with indexed run")
-            expected_exception = {
+            expected_projection = {
+                "observed_at": timestamp,
+                "observed_started_at": observed_started_at,
+                "observed_ended_at": ended_at,
+                "trigger": trigger,
+                "process_name": process_name,
+                "process_pid": process_pid,
+                "process_started_ns": process_started_ns,
+                "termination_kind": termination_kind,
+                "crash_folder_name": crash_folder_name,
+                "crash_folder_path": crash_folder_path,
+                "crash_detected_at": crash_detected_at,
+                "crash_association_method": crash_association_method,
+                "crash_association_confidence": crash_association_confidence,
                 "crash_exception_status": crash_exception_status,
                 "crash_exception_source_rel_path": crash_exception_source_rel_path,
                 "crash_exception_retained_path": crash_exception_retained_path,
@@ -406,13 +514,25 @@ def register_run(
                 "crash_exception_source_mtime_ns": (
                     crash_exception_source_mtime_ns
                 ),
+                "receipt_sha256": receipt_sha256,
             }
+            if existing["receipt_sha256"] is None and receipt_sha256 is not None:
+                assignments = ", ".join(
+                    f"{column} = ?" for column in expected_projection
+                )
+                conn.execute(
+                    f"UPDATE capture_observations SET {assignments} "
+                    "WHERE observation_id = ?",
+                    (*expected_projection.values(), existing["observation_id"]),
+                )
+                conn.commit()
+                return int(existing["observation_id"]), True
             if any(
                 existing[column] != value
-                for column, value in expected_exception.items()
+                for column, value in expected_projection.items()
             ):
                 raise ValueError(
-                    "run receipt exception provenance disagrees with indexed run"
+                    "run receipt projection disagrees with indexed run"
                 )
             conn.commit()
             return int(existing["observation_id"]), True

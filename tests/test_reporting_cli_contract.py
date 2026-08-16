@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 
 from ck3chronicle import config
@@ -134,3 +135,31 @@ def test_rreportcli_005_json_failure_uses_the_common_command_envelope(
     assert payload["result"] is None
     assert payload["error"]["code"] == "report_unavailable"
     assert payload["error"]["stage"] == "report"
+
+
+def test_rreportcli_006_read_commands_do_not_change_database_bytes(
+    tmp_path, monkeypatch, capsys
+) -> None:
+    parser, session_id = _ready(tmp_path, monkeypatch)
+
+    def storage_identity() -> list[tuple[str, str]]:
+        return [
+            (
+                path.relative_to(config.ROOT_CK3CHRONICLE).as_posix(),
+                hashlib.sha256(path.read_bytes()).hexdigest(),
+            )
+            for path in sorted(config.ROOT_CK3CHRONICLE.rglob("*"))
+            if path.is_file()
+        ]
+
+    for argv in (
+        ["report", "--session", str(session_id), "--json"],
+        ["latest", "--json"],
+        ["errors", "--session", str(session_id), "--json"],
+    ):
+        before = storage_identity()
+        args = parser.parse_args(argv)
+        assert args.func(args) == 0
+        capsys.readouterr()
+        after = storage_identity()
+        assert after == before, argv[0]

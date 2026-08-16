@@ -195,6 +195,88 @@ def test_rstorage_001_legacy_rows_migrate_to_lossless_dictionaries(
     conn.close()
 
 
+def test_rstorage_007_readonly_open_auto_migrates_legacy_then_guards_writes(
+    tmp_path: Path,
+) -> None:
+    db = tmp_path / "legacy-read.db"
+    _legacy_database(db)
+
+    conn = repository.open_db_readonly(db)
+    try:
+        source_columns = {
+            row[1] for row in conn.execute("PRAGMA table_info(source_blocks)")
+        }
+        assert "source_block_pk" in source_columns
+        assert "raw_block_pk" in source_columns
+        with pytest.raises(sqlite3.OperationalError, match="readonly"):
+            conn.execute(
+                "INSERT INTO schema_versions VALUES ('forbidden', 1, 'now')"
+            )
+    finally:
+        conn.close()
+
+
+def test_rstorage_008_readonly_open_upgrades_conditional_legacy_context(
+    tmp_path: Path,
+) -> None:
+    db = tmp_path / "legacy-context.db"
+    conn = repository.open_db(db)
+    conn.execute(
+        """
+        CREATE TABLE session_contexts (
+            session_id INTEGER PRIMARY KEY,
+            save_only_refs_json TEXT NOT NULL DEFAULT '[]'
+        )
+        """
+    )
+    conn.execute(
+        "INSERT INTO session_contexts (session_id, save_only_refs_json) "
+        "VALUES (1, '[\"ugc_1.mod\"]')"
+    )
+    conn.commit()
+    conn.close()
+
+    conn = repository.open_db_readonly(db)
+    try:
+        columns = {
+            row[1] for row in conn.execute("PRAGMA table_info(session_contexts)")
+        }
+        assert {
+            "membership_evidence",
+            "debug_log_path",
+            "debug_mod_block_sha256",
+            "debug_enabled_count",
+            "debug_disabled_count",
+            "evidence_only_refs_json",
+        }.issubset(columns)
+        row = conn.execute(
+            "SELECT evidence_only_refs_json FROM session_contexts WHERE session_id = 1"
+        ).fetchone()
+        assert row[0] == '["ugc_1.mod"]'
+        version = conn.execute(
+            "SELECT version FROM schema_versions WHERE component = 'session_context'"
+        ).fetchone()
+        assert version[0] == 1
+    finally:
+        conn.close()
+
+
+def test_rstorage_009_future_schema_is_rejected_without_writes(tmp_path: Path) -> None:
+    db = tmp_path / "future.db"
+    conn = repository.open_db(db)
+    conn.execute(
+        "UPDATE schema_versions SET version = version + 1 WHERE component = 'core'"
+    )
+    conn.commit()
+    conn.close()
+    before = db.read_bytes()
+
+    with pytest.raises(sqlite3.DatabaseError, match="newer than supported"):
+        repository.open_db_readonly(db)
+
+    assert db.read_bytes() == before
+
+
 def test_rstorage_002_opening_legacy_db_automatically_reclaims_pages(
     tmp_path: Path,
 ) -> None:
