@@ -17,6 +17,8 @@ the canonical branch and object database are owned by `ck3chronicle/.git`.
 - parser, empirical classifier, semantic projection, reporting, and triage;
 - approved hash-bound model/catalog revisions and their manifests;
 - reusable learner, review, and catalog-generation source under `tools/`;
+- source-only archives of independently authored public evaluator harnesses
+  under `evaluation/archive/`, without their corpora or generated results;
 - product contracts, plans, operator documentation, and automated tests.
 
 ## Intentionally excluded
