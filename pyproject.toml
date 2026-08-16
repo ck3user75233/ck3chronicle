@@ -28,5 +28,12 @@ ck3chronicle = "ck3chronicle.cli:main"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.data-files]
+"share/ck3chronicle/models/67303093ecda779d" = [
+  "models/67303093ecda779d/empirical_template_model.json",
+  "models/67303093ecda779d/manifest.json",
+  "models/67303093ecda779d/semantic_projection_catalog.json",
+]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]

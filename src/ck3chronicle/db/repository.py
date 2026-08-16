@@ -2288,16 +2288,26 @@ def list_classification_review_items(
     model_sha256: str,
     level: str,
     limit: int,
+    max_confidence: float | None = None,
 ) -> list[sqlite3.Row]:
-    if level not in {"all", "l1", "unknown"}:
+    if level not in {"all", "full", "l1_l2", "l1", "unknown"}:
         raise ValueError("review level is invalid")
     if limit < 1:
         raise ValueError("review limit must be positive")
+    if max_confidence is not None and not 0.0 <= max_confidence <= 1.0:
+        raise ValueError("review confidence must be between zero and one")
     levels = ("l1", "unknown") if level == "all" else (level,)
     placeholders = ",".join("?" for _ in levels)
+    confidence_clause = ""
+    confidence_parameters: tuple[float, ...] = ()
+    if max_confidence is not None:
+        confidence_clause = "AND cp.confidence <= ?"
+        confidence_parameters = (max_confidence,)
     return conn.execute(
         f"""
         SELECT cp.assignment_level,
+               cp.contract_id,
+               cp.confidence,
                cp.source_family,
                cp.l1_template,
                cp.l2_template,
@@ -2313,7 +2323,10 @@ def list_classification_review_items(
         WHERE cr.session_id = ?
           AND cr.model_sha256 = ?
           AND cp.assignment_level IN ({placeholders})
+          {confidence_clause}
         GROUP BY cp.assignment_level,
+                 cp.contract_id,
+                 cp.confidence,
                  cp.source_family,
                  cp.l1_template,
                  cp.l2_template,
@@ -2323,5 +2336,5 @@ def list_classification_review_items(
                  first_line
         LIMIT ?
         """,
-        (session_id, model_sha256, *levels, limit),
+        (session_id, model_sha256, *levels, *confidence_parameters, limit),
     ).fetchall()

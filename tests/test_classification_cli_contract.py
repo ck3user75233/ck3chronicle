@@ -124,13 +124,15 @@ def test_rclasscli_002_review_queue_reads_stored_uncertain_rows_only(
     payload = json.loads(capsys.readouterr().out)
 
     assert payload["schema"] == "ck3chronicle.classification-review-queue"
-    assert payload["schema_version"] == 1
+    assert payload["schema_version"] == 2
     assert payload["session_id"] == session_id
     assert payload["model_revision_id"] == APPROVED_MODEL_REVISION
     assert payload["returned"] == 1
     assert payload["items"] == [
         {
             "assignment_level": "l1",
+            "confidence": payload["items"][0]["confidence"],
+            "contract_id": None,
             "first_line": 2,
             "l1_template": (
                 "Script system error ! Error : scope : <KEY> . <KEY> trigger"
@@ -144,6 +146,42 @@ def test_rclasscli_002_review_queue_reads_stored_uncertain_rows_only(
             "source_family": "jomini_script_system.cpp",
         }
     ]
+    assert 0.0 <= payload["items"][0]["confidence"] <= 1.0
+
+
+def test_rclasscli_005_full_assignments_can_be_queued_by_confidence(
+    tmp_path, monkeypatch, capsys
+) -> None:
+    runtime, _captured, conn, session_id = _session(tmp_path)
+    conn.close()
+    monkeypatch.setattr(config, "ROOT_CK3CHRONICLE", runtime)
+    parser = build_parser()
+    args = parser.parse_args(["classify", "--session", str(session_id)])
+    assert args.func(args) == 0
+    capsys.readouterr()
+
+    args = parser.parse_args(
+        [
+            "review-queue",
+            "--session",
+            str(session_id),
+            "--level",
+            "full",
+            "--max-confidence",
+            "1.0",
+            "--json",
+        ]
+    )
+    assert args.func(args) == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["schema_version"] == 2
+    assert payload["level"] == "full"
+    assert payload["max_confidence"] == 1.0
+    assert payload["returned"] == 2
+    assert sum(item["occurrences"] for item in payload["items"]) == 4
+    assert all(item["assignment_level"] == "full" for item in payload["items"])
+    assert all(item["contract_id"] for item in payload["items"])
+    assert all(item["confidence"] <= 1.0 for item in payload["items"])
 
 
 def test_rclasscli_003_unknown_filter_can_return_an_explicit_empty_queue(

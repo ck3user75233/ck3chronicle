@@ -108,6 +108,16 @@ unknown. A known L1 does not authorize inventing an L2. Highly variable
 bracketed detail may remain a structured reason slot on an L1 template rather
 than becoming a large collection of low-value L2 templates.
 
+Phase 1 does not require universal full-template or L2 attribution. L1-only,
+provisional or low-confidence full/L1+L2, and unknown outcomes are valid,
+durable results. The non-negotiable requirement is lossless accounting: every
+source occurrence has an explicit disposition and remains traceable to its raw
+evidence. Assignment-level and confidence distributions are retained over
+time, and review tooling must be able to surface each unresolved or
+low-confidence class for periodic human adjudication. A fixed adjudicated
+regression set may require exact results without turning 100% attribution of
+all future logs into a product requirement.
+
 Empirical similarity nominates a template; it never authorizes one. A separate
 PostValidate step must confirm ordered semantic literals and typed slot shape.
 `<LOCATOR>` is assigned by the earlier locator grammar and can satisfy only a

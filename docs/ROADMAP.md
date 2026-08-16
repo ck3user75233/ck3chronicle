@@ -26,6 +26,8 @@ Status: production runtime, persistence, and CLI complete.
 - [x] store semantic-unit occurrences linked to raw source blocks;
 - [x] store full, L1+L2, L1-only, and unknown assignments;
 - [x] expose `classify` and `review-queue` commands;
+- [ ] extend longitudinal review views to include configurable low-confidence
+  full/L1+L2 outcomes as well as L1-only and unknown patterns;
 - [x] run the historical training-excluded implementation-compatibility gate;
 - [ ] pass a post-freeze independent Phase 1 private holdout;
 - add semantic adjudication samples as new source families are approved.
@@ -38,6 +40,7 @@ Status: complete.
 - [x] report only from stored records;
 - [x] show model identity and classification coverage;
 - [x] expose unresolved and L1-only review queues;
+- [ ] expose confidence-filtered and across-run review trends;
 - [x] produce deterministic schema-versioned JSON.
 
 ## Processing-workflow capabilities

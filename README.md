@@ -4,8 +4,11 @@ ck3chronicle preserves CK3 runtime evidence and turns `error.log` into
 versioned, reviewable error intelligence.
 
 This repository was taken over and reset to a controlled reboot on
-2026-08-13. Historical plans, prototypes, and tests were archived outside the
-active source tree because they described a different or failed design.
+2026-08-13. It is the canonical, standalone source repository. Historical WIP
+outside this tree is not required to install, run, test, or continue the
+product; reusable learner and catalog-generation source is retained under
+`tools/`, while captured logs, local databases, training corpora, private
+holdouts, and generated evaluation results remain local data.
 
 ## Working capabilities
 
@@ -29,6 +32,24 @@ active source tree because they described a different or failed design.
   a recognized locator can never satisfy a key/value/parameter slot;
 - atomically persist versioned model registrations, classification runs, and
   one provenance row per semantic unit;
+
+Classification coverage is not required to reach 100%. Every occurrence must
+be accounted for, but L1-only, provisional/low-confidence, and unknown results
+are legitimate stored outcomes that can be reviewed and improved over time.
+
+## Install from a clean clone
+
+```powershell
+git clone https://github.com/ck3user75233/ck3chronicle.git
+Set-Location ck3chronicle
+py -3.11 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+.\.venv\Scripts\python.exe -B -m pytest -q -p no:cacheprovider
+```
+
+The approved model and semantic catalog are source-controlled and are also
+included as installed package data. Runtime captures, databases, and training
+corpora are intentionally not downloaded with the source.
 
 The watcher never hashes the live principal logs and performs no SQLite,
 parsing, or classification work in the process-exit path. It copies the small

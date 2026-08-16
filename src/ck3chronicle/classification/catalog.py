@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import sys
 
 from .inference import Classifier
 from .model import EmpiricalModel, load_model
@@ -21,22 +22,35 @@ APPROVED_PROJECTION_CATALOG_SHA256 = (
 )
 
 
-def approved_model_path() -> Path:
-    return (
+def _approved_revision_root() -> Path:
+    checkout_root = (
         Path(__file__).resolve().parents[3]
         / "models"
         / APPROVED_MODEL_REVISION
-        / "empirical_template_model.json"
     )
+    if checkout_root.is_dir():
+        return checkout_root
+    installed_root = (
+        Path(sys.prefix)
+        / "share"
+        / "ck3chronicle"
+        / "models"
+        / APPROVED_MODEL_REVISION
+    )
+    if installed_root.is_dir():
+        return installed_root
+    raise FileNotFoundError(
+        "approved ck3chronicle model revision is absent from both the "
+        "source checkout and installed package data"
+    )
+
+
+def approved_model_path() -> Path:
+    return _approved_revision_root() / "empirical_template_model.json"
 
 
 def approved_projection_catalog_path() -> Path:
-    return (
-        Path(__file__).resolve().parents[3]
-        / "models"
-        / APPROVED_MODEL_REVISION
-        / "semantic_projection_catalog.json"
-    )
+    return _approved_revision_root() / "semantic_projection_catalog.json"
 
 
 def load_approved_model() -> EmpiricalModel:

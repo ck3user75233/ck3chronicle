@@ -27,6 +27,22 @@ ck3chronicle.db
 ck3chronicle.db-journal
 ck3chronicle.db-wal
 ck3chronicle.db-shm
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Captured or derived CK3 evidence is local data, never source
+*.log
+sessions/
+pending/
+run-receipts/
+watcher-events/
+local-data/
+reference-data/
+training-data/
+evaluation-results/
+private-holdout/
+*.ndjson
 
 # Phase 1 hygiene additions
 *.db
@@ -35,6 +51,8 @@ ck3chronicle.db-shm
 reports/
 tmp/
 .phase1-exit/
+.coverage
+htmlcov/
 
 # Archives (accidentally committed during Phase 1 deploy)
 *.zip

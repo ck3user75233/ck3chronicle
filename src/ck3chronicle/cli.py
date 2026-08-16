@@ -638,7 +638,7 @@ def cmd_classify(args: argparse.Namespace) -> int:
 
 
 def cmd_review_queue(args: argparse.Namespace) -> int:
-    """Show stored L1-only and unknown assignments for human adjudication."""
+    """Show stored unresolved or confidence-filtered assignments for review."""
     import sqlite3
 
     from . import config
@@ -646,6 +646,10 @@ def cmd_review_queue(args: argparse.Namespace) -> int:
     from .db import repository
 
     model_sha256 = args.model_sha256 or APPROVED_MODEL_SHA256
+    max_confidence = args.max_confidence
+    if max_confidence is not None and not 0.0 <= max_confidence <= 1.0:
+        print("ERROR: --max-confidence must be between 0 and 1", file=sys.stderr)
+        return 2
     conn = None
     try:
         conn = repository.open_db_readonly(
@@ -667,6 +671,7 @@ def cmd_review_queue(args: argparse.Namespace) -> int:
             model_sha256=model_sha256,
             level=args.level,
             limit=int(args.limit),
+            max_confidence=max_confidence,
         )
     except sqlite3.Error as exc:
         print(f"ERROR [database_failed]: {exc}", file=sys.stderr)
@@ -678,6 +683,8 @@ def cmd_review_queue(args: argparse.Namespace) -> int:
     items = [
         {
             "assignment_level": row["assignment_level"],
+            "contract_id": row["contract_id"],
+            "confidence": float(row["confidence"]),
             "source_family": row["source_family"],
             "occurrences": int(row["occurrences"]),
             "first_line": int(row["first_line"]),
@@ -689,11 +696,12 @@ def cmd_review_queue(args: argparse.Namespace) -> int:
     ]
     payload = {
         "schema": "ck3chronicle.classification-review-queue",
-        "schema_version": 1,
+        "schema_version": 2,
         "session_id": int(args.session),
         "model_revision_id": model["revision_id"],
         "model_sha256": model_sha256,
         "level": args.level,
+        "max_confidence": max_confidence,
         "returned": len(items),
         "items": items,
     }
@@ -707,6 +715,7 @@ def cmd_review_queue(args: argparse.Namespace) -> int:
         for item in items:
             print(
                 f"{item['occurrences']:>7}  {item['assignment_level']:<7}  "
+                f"confidence={item['confidence']:.3f}  "
                 f"{item['source_family']}:{item['first_line']}  {item['sample']}"
             )
     return 0
@@ -1899,11 +1908,19 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_review = sub.add_parser(
         "review-queue",
-        help="List stored L1-only and unknown patterns for human review.",
+        help="List unresolved or confidence-filtered patterns for human review.",
     )
     p_review.add_argument("--session", type=int, required=True, metavar="SESSION_ID")
     p_review.add_argument(
-        "--level", choices=("all", "l1", "unknown"), default="all"
+        "--level",
+        choices=("all", "full", "l1_l2", "l1", "unknown"),
+        default="all",
+    )
+    p_review.add_argument(
+        "--max-confidence",
+        type=float,
+        metavar="0..1",
+        help="Include only assignments at or below this stored confidence.",
     )
     p_review.add_argument("--limit", type=int, default=100, metavar="N")
     p_review.add_argument("--model-sha256", metavar="SHA256")

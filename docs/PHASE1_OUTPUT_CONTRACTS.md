@@ -211,6 +211,12 @@ assignment_level, source_family, occurrences, first_line,
 l1_template, l2_template, sample
 ```
 
+The standalone `review-queue` v2 item adds `contract_id` and `confidence`. It
+defaults to unresolved L1-only/unknown patterns. Its `level` filter may also
+select full or L1+L2 assignments, and `max_confidence` can bound any selected
+level so provisional or low-confidence contracts remain directly reviewable
+rather than being hidden by aggregate coverage.
+
 Report construction is read-only and queries stored records only. It does not
 reopen archived logs, reparse, or reclassify.
 

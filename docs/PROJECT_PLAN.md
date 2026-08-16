@@ -68,6 +68,8 @@ The repository contains substantial Phase 1 implementation:
   capture of the associated crash `exception.txt` artifact;
 - canonical `error.log` block/occurrence storage;
 - versioned empirical classification and review queues;
+- durable assignment-level/confidence telemetry so L1-only, provisional,
+  low-confidence, and unknown patterns can be reviewed and improved over time;
 - memory-bounded block-at-a-time canonical persistence with transactional
   replacement and persisted distribution/provenance validation;
 - typed template PostValidate after candidate assignment, including locator
@@ -79,6 +81,11 @@ The repository contains substantial Phase 1 implementation:
 - database reconciliation and compact default storage.
 
 These are implementation facts, not a Phase 1 exit claim.
+
+Semantic coverage is intentionally revisable. Phase 1 requires explicit
+accounting for every occurrence, not 100% full/L2 attribution on arbitrary
+future logs. Unknown and lower-confidence outcomes remain visible review debt,
+not release-blocking data loss.
 
 ### Exit authority
 
