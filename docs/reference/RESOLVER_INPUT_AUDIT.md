@@ -1,5 +1,8 @@
 # Resolver input audit
 
+> Reference research only. This is not an active plan or current-phase work
+> queue. Consult it only when the reboot plan enters source-resolution work.
+
 Date: 2026-08-14
 
 This audit prevents future agents from rebuilding source-resolution mechanics

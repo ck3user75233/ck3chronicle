@@ -11,3 +11,5 @@ Use the repository-root `AGENTS.md` as the normative instruction source. Read
   generated evaluation results out of Git.
 - Preserve unknown and low-confidence assignments for review; do not force
   100% semantic attribution.
+- Do not author the Phase 1 exit harness in an implementation session. It is
+  commissioned through a fresh evaluator task and a separate blind-runner task.

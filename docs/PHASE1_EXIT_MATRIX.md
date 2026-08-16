@@ -1,114 +1,104 @@
 # Phase 1 exit matrix
 
-Release candidate: **successor to public candidate `bae136e` not yet frozen**.
+Current release candidate: **not yet frozen**.
 
 Status: **Phase 1 not exited**.
 
-This matrix separates historical candidate-bound evidence from the current
-unfrozen implementation. A pass on `bae136e` is useful regression evidence but
-does not transfer automatically after source or contract changes.
+This matrix records the latest valid public attempt and the work that must be
+rerun against the next frozen successor. Candidate-bound passes never transfer
+automatically after product, model, catalog, interface, or harness changes.
 
-## Latest public-attempt accounting
+## Latest valid public attempt
 
-The frozen public score for candidate
-`bae136e491f75863b34f689d5c9474793fd52437` is preserved under result SHA-256
-`a62e5cfe5fbb5bcb072040e11c13e80c1f51bad25d65680fb1333c93046aa11a`.
-It scored 34 public gates as follows; the private gate was not selected.
+Candidate `1f4d8c2f5a6e3ec1c5dc7a5324b0bbe4c4b233ac` was evaluated by the frozen
+public v4 harness whose manifest SHA-256 was
+`033a8e6ea0749386b7d157d98870308b44c047fe09261a1742b2442f6db1410c`.
+The independent adjudication package manifest SHA-256 was
+`05a69614fa3ae5dc3d160a36e7af1bdfa3f1547da638e4ad0a42df100d18bdbf`.
 
-| Disposition on `bae136e` | Gates |
+| Disposition on `1f4d8c2` | Gates |
 |---|---:|
 | Public PASS | 23 |
-| Product FAIL | 1 |
-| Infrastructure/unscored | 1 |
-| Result/oracle insufficiency | 4 |
-| Contract-unscorable | 5 |
+| Product FAIL | 5 |
+| Infrastructure/unscored | 6 |
 | Private holdout unrun | 1 |
 | Total | 35 |
 
-The one product failure was the byte-zero UTF-8 BOM first-block loss in
-`P1-PAR-07`; the current development tree repairs it and passes real-corpus
-counts of 10,785/10,785 and 100,000/100,000 with zero preamble blocks. The ten
-unscored/insufficient gates were evaluator-input or frozen-rule deficiencies,
-not product failures. Locked public corpus v2 and
-`PHASE1_PUBLIC_GATE_RULES.md` now close those upstream gaps. The current tree
-also adds observable run identity to `errors` v2, which `P1-REP-06` requires.
-
-The earlier `76fb2d5` attempt remains rejected after its input/harness
-postmortem, and its exposed private holdout is retired permanently.
+The five public product failures were repaired on the successor development
+line, but those repairs currently have development regression/calibration
+evidence only. The private holdout was correctly blocked and remains unseen.
 
 ## Capture
 
-| Gate | Latest public evidence | Successor requirement |
+| Gate | `1f4d8c2` disposition | Successor requirement |
 |---|---|---|
-| `P1-CAP-01` | PASS on `bae136e` | Rerun unchanged gate. |
-| `P1-CAP-02` | PASS on `bae136e` | Rerun unchanged gate. |
-| `P1-CAP-03` | Infrastructure/unscored: archive mutation applied zero changes | Use the fixed exact-target mutation rule; a precondition failure remains unscored. |
-| `P1-CAP-04` | PASS on `bae136e` | Rerun unchanged gate. |
-| `P1-CAP-05` | PASS on `bae136e` | Rerun unchanged gate. |
-| `P1-CAP-06` | PASS on `bae136e` | Rerun unchanged gate. |
+| `P1-CAP-01` | Infrastructure/unscored: stale-crash recipe failed before product execution | Fresh harness must exercise the published stale/unassociated crash interface and close a neutral result. |
+| `P1-CAP-02` | PASS | Rerun unchanged gate. |
+| `P1-CAP-03` | PASS | Rerun unchanged integrity gate. |
+| `P1-CAP-04` | PASS | Rerun unchanged unstable-source/abort gate. |
+| `P1-CAP-05` | Infrastructure/unscored: direct calls omitted the required CLI envelope/taxonomy observations | Exercise the public command and record exit, stage, retryability, recovery, and side effects. |
+| `P1-CAP-06` | PASS | Rerun unchanged mandatory/optional/zero-byte gate. |
 
 ## Runtime context
 
-| Gate | Latest public evidence | Successor requirement |
+| Gate | `1f4d8c2` disposition | Successor requirement |
 |---|---|---|
-| `P1-RUN-01` | PASS: exact 27-DLC/104-mod complete projection | Rerun unchanged gate. |
-| `P1-RUN-02` | PASS: Workshop/local and non-complete forms | Rerun unchanged gate. |
-| `P1-RUN-03` | PASS: order-only metamorphism | Rerun unchanged gate. |
-| `P1-RUN-04` | PASS: six distinct runtime states | Rerun unchanged gate. |
-| `P1-RUN-05` | PASS: enrichment cannot change authority | Rerun unchanged gate. |
+| `P1-RUN-01` | PASS | Rerun exact complete runtime projection. |
+| `P1-RUN-02` | PASS | Rerun Workshop/local mount forms. |
+| `P1-RUN-03` | PASS | Rerun order-only metamorphism. |
+| `P1-RUN-04` | **PRODUCT FAIL**: partial, malformed, and ambiguous inputs collapsed to `complete` | Successor structural repairs must distinguish all contract states under the fixed authentic mutations. |
+| `P1-RUN-05` | Infrastructure/unscored: required resolver-root/source-instance observations were absent | Export every specified authority/enrichment observation without changing the product interface. |
 
-## Parsing and persistence
+## Parsing, classification, and persistence
 
-| Gate | Latest public evidence | Successor requirement |
+| Gate | `1f4d8c2` disposition | Successor requirement |
 |---|---|---|
-| `P1-PAR-01` | PASS: 28,131 exact blocks reconcile | Rerun on parser contract 1.0.1. |
-| `P1-PAR-02` | Unscored: 252-item oracle omitted from authorized inputs | Corpus v2 now includes the exact sample/oracle pair; run the frozen row-level rule. |
-| `P1-PAR-03` | PASS: occurrence/content/signature relations | Rerun unchanged gate. |
-| `P1-PAR-04` | Unscored: invalid mutation changed `event:` rather than an absolute root | Corpus v2 adds an authentic absolute-path unit; use the exact locator-root rule. |
-| `P1-PAR-05` | PASS: conservative near-miss rejection | Rerun unchanged gate. |
-| `P1-PAR-06` | PASS: authentic positives and near misses | Rerun unchanged gate. |
-| `P1-PAR-07` | FAIL: BOM first block became preamble | Repair is implemented and development-tested; rerun the complete gate. |
-| `P1-PAR-08` | PASS: reparse rollback | Rerun on parser contract 1.0.1. |
-| `P1-PAR-09` | PASS: first-parse rollback | Rerun on parser contract 1.0.1. |
-| `P1-PAR-10` | PASS: zero-byte explicit success | Rerun on parser contract 1.0.1. |
-| `P1-PAR-11` | PASS: standard/deep database invariants | Rerun on parser contract 1.0.1. |
+| `P1-PAR-01` | PASS | Rerun exact lexical/cardinality/provenance gate. |
+| `P1-PAR-02` | **PRODUCT FAIL**: 0/252 canonical semantic rows matched despite exact block linkage | Rerun the repaired contract-bound semantic projection against the same hash-bound authority. |
+| `P1-PAR-03` | PASS | Rerun occurrence/content/signature relations. |
+| `P1-PAR-04` | Infrastructure/unscored: mutation did not target an already-tokenized absolute-root locator span | Use the fixed authentic absolute-path unit and prove the mutation precondition. |
+| `P1-PAR-05` | **PRODUCT FAIL**: case-variant semantic near miss remained a full contract | Rerun exact case-sensitive semantic-literal rejection. |
+| `P1-PAR-06` | **PRODUCT FAIL**: the same case-variant near miss retained full assignment | Rerun authentic-positive/near-miss classification and assignment gate. |
+| `P1-PAR-07` | PASS | Rerun all BOM/newline/encoding/truncation variants. |
+| `P1-PAR-08` | PASS | Rerun reparse rollback. |
+| `P1-PAR-09` | PASS | Rerun first-parse rollback. |
+| `P1-PAR-10` | PASS | Rerun zero-byte explicit-success gate. |
+| `P1-PAR-11` | PASS | Rerun standard/deep database reconciliation. |
 
 ## Reporting and public workflow
 
-| Gate | Latest public evidence | Successor requirement |
+| Gate | `1f4d8c2` disposition | Successor requirement |
 |---|---|---|
-| `P1-REP-01` | PASS: processing envelope and side effects | Rerun unchanged gate. |
-| `P1-REP-02` | PASS: text/JSON equivalence | Include `errors` v2 run projection. |
-| `P1-REP-03` | PASS: stored reporting without raw archive | Rerun unchanged gate. |
-| `P1-REP-04` | PASS: eight read commands did not mutate storage | Rerun with `errors` v2. |
-| `P1-REP-05` | PASS: repeat/order determinism | Rerun unchanged gate. |
-| `P1-REP-06` | Unscored: no crash provenance case, and `errors` lacked run identity | Use the fixed four-run chronology and three assigned units; score `errors` v2 exact binding. |
-| `P1-REP-07` | Unscored: readiness used no DB; pipeline fault was installed too late | Use the six exact preparations and validity rules in the public gate contract. |
+| `P1-REP-01` | PASS | Rerun processing envelope and side effects. |
+| `P1-REP-02` | PASS | Rerun stored text/JSON equivalence. |
+| `P1-REP-03` | PASS | Rerun archive-independent stored reporting. |
+| `P1-REP-04` | Infrastructure/unscored: only aggregate DB hashes and no per-command evidence hashes were recorded | Record database and evidence identity around every required read command. |
+| `P1-REP-05` | PASS | Rerun idempotence/order determinism. |
+| `P1-REP-06` | Infrastructure/unscored: harness cleanup proof aborted the four-run chronology | Complete and close the exact normal/repeated/crash/unreportable chronology and run-bound reports. |
+| `P1-REP-07` | PASS after independent adjudication of the retained corrupt-database transcript | Rerun all six taxonomy preparations with valid neutral envelopes. |
 
 ## Release gates
 
-| Gate | Latest public evidence | Successor requirement |
+| Gate | `1f4d8c2` disposition | Successor requirement |
 |---|---|---|
-| `P1-HOLD-01` | Not selected or executed | Select a fresh private holdout only after all public gates pass. |
-| `P1-MUT-01` | Contract-unscorable | Run all eleven frozen valid mutations; 11/11 required. |
-| `P1-PERF-01` | Measurements captured; no prior budget | Apply frozen lexical/parse budgets. |
-| `P1-PERF-02` | Measurements captured; no prior budget | Apply frozen runtime budget. |
-| `P1-PERF-03` | Measurements captured; no prior budget | Apply frozen report/storage budget. |
-| `P1-PERF-04` | Measurements captured; no prior budget | Apply frozen pipeline wall/CPU/RSS budget. |
+| `P1-HOLD-01` | Not selected or executed | Select a fresh private holdout only after all 34 public gates pass. |
+| `P1-MUT-01` | **PRODUCT FAIL**: one valid malformed-runtime mutation was not detected; four other variants were invalid infrastructure | Run all eleven valid, precondition-proven variants; 11/11 required. |
+| `P1-PERF-01` | PASS | Rerun frozen lexical/parse budgets. |
+| `P1-PERF-02` | PASS | Rerun frozen runtime budget. |
+| `P1-PERF-03` | PASS | Rerun frozen reporting/storage budgets. |
+| `P1-PERF-04` | PASS | Rerun frozen pipeline wall/CPU/RSS budgets. |
 
 ## Required order of work
 
-1. Keep locked corpus v1 immutable and use verified locked corpus v2 for the
-   successor attempt.
-2. Finish implementation regression, independent code/test review, and public
-   contract consistency review.
-3. Commit and freeze one clean successor candidate and record its complete
-   tree/interface hashes.
-4. Have an independent harness authority author and freeze a new bounded
-   harness against the fixed corpus v2 mapping and public gate rules.
-5. Run and score all 34 public gates. Infrastructure cases are repaired and
-   rerun only under the unchanged candidate/input/oracle rule.
-6. Proceed only if all 34 public gates pass; then select and freeze a new
-   private holdout.
-7. Run the private gate through the separated runner/scorer/adjudicator process
-   and publish one candidate-bound Phase 1 exit report.
+1. Finish implementation regression and public contract consistency review.
+2. Commit and freeze one clean successor candidate and record complete
+   tree/package/interface/model/catalog hashes.
+3. Open a fresh user-owned evaluator task. The harness author may use only the
+   fixed public contracts and input authority and must freeze a new harness.
+4. Open a separate blind-runner task and execute all 34 public gates exactly as
+   frozen. Seal the output package without scoring or substitutions.
+5. Score in a separate read-only task and adjudicate every public gate.
+6. Proceed only if all 34 public gates pass; then select and freeze a genuinely
+   unseen private holdout under the hard-isolation policy.
+7. Publish one candidate-bound Phase 1 exit report. Any product or contract
+   change starts a new candidate and public attempt.

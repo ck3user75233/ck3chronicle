@@ -17,3 +17,7 @@ Continue ck3chronicle from the standalone repository's current handoff.
 5. Implement the next in-scope plan item, run focused and full regression
    tests, update the current handoff when workflow/ownership changes, and
    commit only in this repository.
+
+Do not create or run the Phase 1 exit harness from this implementation task.
+After a clean candidate is frozen, hand it to a fresh user-owned evaluator task
+and use a separate blind-runner task.

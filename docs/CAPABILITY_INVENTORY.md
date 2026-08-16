@@ -2,7 +2,9 @@
 
 This is an implementation/backlog inventory, not the project phase plan. Its
 sections are deliberately unnumbered so they cannot be cited as completed
-phases. See `PROJECT_PLAN.md` for phase authority and exit status.
+phases. It is not part of the required startup reading order. See
+`PROJECT_PLAN.md` for the sole phase authority and `PROJECT_STATUS.md` for the
+current ledger.
 
 ## Reboot foundation capabilities
 

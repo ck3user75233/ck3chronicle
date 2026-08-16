@@ -10,6 +10,8 @@ next release attempt.
 - Implementation agents may update public product contracts elsewhere in this
   repository, but they do not author the next executable exit harness or
   scorer.
+- The next harness is commissioned in a fresh user-owned evaluator task, not a
+  subagent of the implementation task. The blind runner uses a separate task.
 - If an independently completed harness must be preserved, add it under a new
   immutable attempt/revision directory with a source manifest and provenance;
   never overwrite a prior archive.

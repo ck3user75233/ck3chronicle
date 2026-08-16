@@ -74,9 +74,11 @@ coverage percentage.
 Implementation agents may maintain public interfaces, contracts, schemas,
 fixed input manifests, and ordinary regression tests. They must not author or
 edit the executable Phase 1 exit runner, scorer, private holdout, or expected
-answers. An independently authored completed harness may later be preserved as
-a source-only archive under `evaluation/archive/`; its generated results and
-corpora remain outside Git.
+answers. The next evaluator harness must be authored in a fresh user-owned
+task, not by a subagent of the implementation task; its blind runner must use a
+separate task. An independently authored completed harness may later be
+preserved as a source-only archive under `evaluation/archive/`; its generated
+results and corpora remain outside Git.
 
 ## Code review rules
 

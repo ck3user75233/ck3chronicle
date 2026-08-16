@@ -1,5 +1,8 @@
 # Phase 1 lexical calibration record — 2026-08-14
 
+> Historical development evidence only. This record is not active phase
+> authority and does not transfer a gate result to a later candidate.
+
 Result: **pass for `P1-PAR-01-LEXICAL` only**.
 
 This record does not exit `P1-PAR-01` or Phase 1. The database persistence

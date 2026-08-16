@@ -4,30 +4,21 @@ Date: 2026-08-17
 
 Branch: `codex/ck3chronicle-reboot`
 
-Takeover baseline: `99f98e3`
-
 Project phase: **Phase 1 active; not exited**.
 
-The numbered sections formerly published in `ROADMAP.md` were capability
-areas, not project phases. Implemented checkpoints and the passing reboot fast
-suite do not constitute Phase 1 acceptance. Phase authority now lives in
-`PROJECT_PLAN.md`; the role-separated release process lives in
-`PHASE1_EXIT_PROTOCOL.md`.
+Implemented checkpoints and the passing reboot fast suite do not constitute
+Phase 1 acceptance. Phase authority lives only in `PROJECT_PLAN.md`; the
+role-separated release process lives in `PHASE1_EXIT_PROTOCOL.md`.
 
 ## Authority
 
 The standalone repository at
 `https://github.com/ck3user75233/ck3chronicle.git` is the source of truth.
 `AGENTS.md`, `WORKSPACE_ROUTING.md`, and `CURRENT_HANDOFF.md` define the active
-repository and workflow boundary. Old kickoff packets, prototypes,
-architecture plans, dated handoffs, and WIP tests are not active project
-inputs. No ck3chronicle implementation may be continued under `ck3raven` or a
+repository and workflow boundary. Superseded plans and handoffs are available
+through Git history, not maintained as competing documents in the active tree.
+No ck3chronicle implementation may be continued under `ck3raven` or a
 `.ck3raven/wip` tree.
-
-The following location contains historical takeover material only and is not a
-source or restart authority:
-
-`C:\Users\nateb\.ck3raven\wip\ck3chronicle\codex_reboot\takeover_archive_20260813`
 
 ## Implemented Phase 1 foundation
 

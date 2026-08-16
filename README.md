@@ -192,8 +192,9 @@ Read these documents in order:
 10. [Project status](docs/PROJECT_STATUS.md)
 11. [Product contract](docs/PRODUCT_CONTRACT.md)
 12. [Testing authority](docs/TESTING.md)
-13. [Capability inventory](docs/ROADMAP.md)
-14. [Resolver input audit](docs/RESOLVER_INPUT_AUDIT.md)
+
+The optional [capability inventory](docs/CAPABILITY_INVENTORY.md) is a backlog
+reference, not phase or startup authority.
 
 ## Configuration
 

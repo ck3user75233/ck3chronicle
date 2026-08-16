@@ -17,15 +17,16 @@ project contracts, and archived evaluator source requires only a clone of the
 canonical remote. Gameplay evidence and local databases are intentionally a
 separate backup concern.
 
-The full standalone regression suite was verified at **232 passed** on
+The full standalone regression suite was verified at **233 passed** on
 2026-08-17 after the repository-routing guard was added. GitHub CI runs the
 same suite on pushes to `main` and `codex/*` branches and on pull requests.
 
 ## Current product state
 
-Product Phase 1 is active and has not exited. Capture, run receipts, immutable
-archives, SQLite registration, canonical parsing, empirical classification,
-semantic projection, review queues, reporting, and audit are implemented.
+Phase 1 of the reboot plan is active and has not exited. Capture, run receipts,
+immutable archives, SQLite registration, canonical parsing, empirical
+classification, semantic projection, review queues, reporting, and audit are
+implemented.
 The latest independent public attempt found product and evaluator-infrastructure
 issues; the product repairs and semantic-projection integration are now in the
 current successor line, but no private holdout should run until a new public
@@ -52,11 +53,14 @@ Do not resume from an old WIP learner directory. Read `AGENTS.md` and
 
 1. Keep the lower-confidence/unknown review path operational and visible; do
    not block Phase 1 on perfect semantic coverage.
-2. Re-run a fresh independent public evaluation against one clean successor
-   commit using the already frozen input authority and role separation.
-3. Repair only evidence-backed product defects or evaluator defects in their
+2. Freeze one clean successor commit, then open a fresh user-owned evaluator
+   task. The evaluator must not be a subagent of the implementation task.
+3. Run the frozen harness from a separate blind-runner task using the fixed
+   input authority; score only the sealed outputs without executing the
+   candidate.
+4. Repair only evidence-backed product defects or evaluator defects in their
    respective ownership boundaries.
-4. Run the new unseen private holdout only after every public gate is valid and
+5. Run the new unseen private holdout only after every public gate is valid and
    passing, then publish the candidate-bound Phase 1 exit decision.
 
 ## Verification command

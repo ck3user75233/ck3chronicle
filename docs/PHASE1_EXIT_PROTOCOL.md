@@ -1,7 +1,8 @@
 # Phase 1 exit protocol
 
 Status: required release process; no valid Phase 1 exit has been accepted. The
-completed `76fb2d5` attempt was rejected after input/harness postmortem.
+latest candidate-bound public disposition is recorded in
+`PHASE1_EXIT_MATRIX.md`.
 
 ## 1. Purpose
 
@@ -81,18 +82,23 @@ controls. They can never be promoted into exit evidence by renaming them.
 
 ## 3. Isolation levels
 
-### Procedural isolation available in one Codex task
+### Required public procedural task separation
 
-Separate subagents can be given non-overlapping instructions and context:
+The implementation task stops after freezing the candidate and its public
+handoff. The remaining public roles use fresh user-owned tasks:
 
-- the runner is not told expected answers or oracle paths;
-- the harness author is not an implementation subagent and receives no private
+- a fresh evaluator task authors and freezes the harness without private
   expected answers;
-- the scorer is instructed to remain read-only and not invoke the candidate;
-- handoffs use hash-bound files rather than prose copied between agents.
+- a separate blind-runner task receives only the frozen candidate, harness,
+  public inputs, and invocation manifest;
+- a separate read-only scorer task receives sealed outputs and must not invoke
+  or import the candidate;
+- an adjudicator task verifies identities, dispositions, and exceptions.
 
-This is useful separation of duties, but it is not a hard security boundary.
-Codex subagents in one task share filesystem and tool authority.
+The harness author and runner may not be subagents of the implementation task.
+Handoffs use hash-bound files rather than prose copied between agents. Separate
+tasks provide context and role separation but still are not a hard security
+boundary when they share the same OS account and filesystem.
 
 ### Hard isolation required for a release-grade blind holdout
 
@@ -113,24 +119,28 @@ procedural Codex-only run must not be described as cryptographically blind.
 1. Freeze public contracts, the gate inventory, the implementation-authored
    callable-interface handoff, exact public gate/scoring rules, performance
    budgets, and the public gate-to-input manifest.
-2. The independent harness author writes and freezes execution code from that
-   handoff and fixed input set without receiving expected answers. Prescribed
-   mutations must derive from and remain hash-bound to the assigned base unit.
-3. Validate the harness against the already frozen public inputs without using
-   the private holdout.
-4. Freeze the candidate commit and require a clean worktree.
-5. Record candidate source-tree, package, interface, and harness hashes.
-6. Select a holdout whose content hashes are absent from training,
+2. Freeze the candidate commit, require a clean worktree, and record its
+   source-tree, package, interface, model, and catalog hashes.
+3. In a fresh evaluator task, the independent harness author writes, validates,
+   and freezes execution code from the handoff and fixed input set without
+   receiving expected answers. Prescribed mutations must derive from and remain
+   hash-bound to the assigned base unit.
+4. In a separate blind-runner task, execute all public gates exactly once and
+   close/hash the result package.
+5. In a separate read-only scorer task, score the sealed public results without
+   executing or importing the candidate; then adjudicate every gate.
+6. Proceed only if every public gate passes for the same candidate. Then select
+   a holdout whose content hashes are absent from training,
    adjudication, debugging, and implementation evidence.
 7. Freeze the private oracle before candidate execution.
-8. Give the blind runner only the candidate, frozen evaluator harness, input
-   package, and public invocation manifest.
-9. Close and hash the runner result package.
-10. Give the read-only scorer the closed result package and private oracle.
-11. Give the adjudicator the gate scores, provenance, isolation statement, and
+8. Execute the private gate under one of the hard-isolation methods in
+   section 3, then close and hash its result package.
+9. Give the read-only private scorer the closed result package and private
+   oracle.
+10. Give the adjudicator all gate scores, provenance, isolation statement, and
    exception log.
 
-Any candidate change after step 4 starts a new release attempt. Any oracle
+Any candidate change after step 2 starts a new release attempt. Any oracle
 change after step 7 invalidates the run unless the adjudicator records an
 oracle defect and restarts from a newly versioned oracle.
 
