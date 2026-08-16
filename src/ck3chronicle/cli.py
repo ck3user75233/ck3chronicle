@@ -907,7 +907,8 @@ def cmd_errors(args: argparse.Namespace) -> int:
         return 1
     payload = {
         "schema": "ck3chronicle.errors",
-        "schema_version": 1,
+        "schema_version": 2,
+        "run": report["run"],
         "session_id": report["session"]["session_id"],
         "captured_at": report["session"]["captured_at"],
         "model_revision_id": report["classification"]["model_revision_id"],
@@ -926,6 +927,12 @@ def cmd_errors(args: argparse.Namespace) -> int:
             f"Session {payload['session_id']} errors — "
             f"{payload['total_occurrences']:,} semantic occurrences"
         )
+        if payload["run"] is not None:
+            print(
+                f"Run {payload['run']['run_id']} - ended "
+                f"{payload['run']['observed_ended_at']} - "
+                f"termination={payload['run']['termination_kind']}"
+            )
         for pattern in payload["patterns"]:
             label = pattern["template"] or pattern["sample"]
             print(

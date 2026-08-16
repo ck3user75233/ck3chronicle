@@ -14,6 +14,7 @@ from ck3chronicle import processing
 from ck3chronicle.cli import build_parser
 from ck3chronicle.db import repository
 from ck3chronicle.harvester import ArchiveIntegrityError, spool_logs
+from ck3chronicle.parser.service import PARSER_CONTRACT_VERSION
 from ck3chronicle.processing import ProcessingResult, process_pending
 
 from foundation_oracle import SIX_LOG_BYTES, write_logs
@@ -250,6 +251,53 @@ def test_rprocess_008_harmless_archive_mtime_drift_uses_content_verification(
 
     assert result.reconciliation_errors == ()
     assert error_log.read_bytes() == SIX_LOG_BYTES["error.log"]
+
+
+def test_rprocess_015_upgrades_old_parse_and_rebuilds_classification(
+    tmp_path,
+) -> None:
+    """Normal deferred processing cannot strand an accepted old parser contract."""
+    logs = tmp_path / "logs"
+    runtime = tmp_path / "runtime"
+    write_logs(logs, SIX_LOG_BYTES)
+    spool_logs(logs, runtime)
+    first = process_pending(runtime, _classifier())
+    session_id = first.latest_report["session"]["session_id"]
+
+    conn = repository.open_db(runtime / "ck3chronicle.db")
+    old_classification_id = conn.execute(
+        "SELECT run_id FROM classification_runs WHERE session_id = ?",
+        (session_id,),
+    ).fetchone()[0]
+    conn.execute(
+        "UPDATE sessions SET parser_contract_version = '1.0.0' WHERE session_id = ?",
+        (session_id,),
+    )
+    conn.commit()
+    conn.close()
+
+    upgraded = process_pending(runtime, _classifier())
+
+    assert upgraded.parsed_sessions == 1
+    assert upgraded.classified_sessions == 1
+    assert upgraded.latest_report["parse"]["contract_version"] == PARSER_CONTRACT_VERSION
+    conn = repository.open_db(runtime / "ck3chronicle.db")
+    try:
+        rows = conn.execute(
+            "SELECT run_id FROM classification_runs WHERE session_id = ?",
+            (session_id,),
+        ).fetchall()
+        assert len(rows) == 1
+        assert rows[0][0] != old_classification_id
+        assert repository.get_session(conn, session_id)["parser_contract_version"] == (
+            PARSER_CONTRACT_VERSION
+        )
+    finally:
+        conn.close()
+
+    repeated = process_pending(runtime, _classifier())
+    assert repeated.parsed_sessions == 0
+    assert repeated.classified_sessions == 0
 
 
 def _assert_process_pending_archive_failure(runtime, monkeypatch, capsys) -> None:

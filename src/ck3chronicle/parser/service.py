@@ -19,7 +19,7 @@ from ck3chronicle.parser.log_blocks import iter_log_blocks
 from ck3chronicle.parser.normalize import normalize
 
 
-PARSER_CONTRACT_VERSION = "1.0.0"
+PARSER_CONTRACT_VERSION = "1.0.1"
 
 
 class CanonicalParseError(RuntimeError):
@@ -58,7 +58,11 @@ def parse_session(
         )
 
     existing = repository.get_successful_parse_result(conn, session_id)
-    if existing is not None and not reparse:
+    if (
+        existing is not None
+        and existing.parser_contract_version == PARSER_CONTRACT_VERSION
+        and not reparse
+    ):
         return existing
 
     manifest = repository.get_error_log_manifest_row(conn, session_id)

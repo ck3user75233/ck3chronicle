@@ -43,7 +43,7 @@ Historical material is recoverable from:
 - atomic parse and reparse persistence.
 
 The implemented foundation and production classifier seam are covered by the
-new reboot-owned suite: 134 tests at the current repair checkpoint. No
+new reboot-owned suite: 139 tests at the current successor checkpoint. No
 inherited test contributes to that count.
 
 These are fast regression tests. They do not constitute Phase 1 exit evidence.
@@ -57,14 +57,25 @@ indeterminate because the taxonomy contract was ambiguous. The attempt is a
 failed development artifact, not a valid Phase 1 exit measurement. Its private
 holdout is permanently retired.
 
-The two trustworthy product failures were repaired in the current checkpoint:
+The two trustworthy product failures were repaired before candidate `bae136e`:
 stored-report commands no longer rewrite a current SQLite database, and strict
-processing now rejects archive/run-integrity failures with the public
-`archive_integrity` taxonomy. A public eight-unit, 38-file authentic corpus is
-now immutably gate-bound by manifest SHA-256
-`cf1f73d509c25ff104016ecfd9a23ea36a2e6fd2df580691ba91ae0f8cf22171`.
-The next independent harness may exercise prescribed mutations but may not
-replace, truncate, synthesize, or reassign those base inputs.
+processing rejects archive/run-integrity failures with the public
+`archive_integrity` taxonomy. Its independent public run produced 23 passes,
+one product failure, one infrastructure-unscored gate, four result/oracle
+insufficiencies, and five contract-unscorable gates. The product failure was
+the loss of the first valid error block when a UTF-8 BOM preceded its header.
+The current successor preserves that BOM in exact raw evidence while excluding
+it from semantic identity, and automatically reparses stored projections made
+under the preceding parser contract. `errors --run` now also exposes the exact
+selected run in its version-2 result.
+
+Successor input authority is a public nine-unit, 42-file corpus, immutably
+gate-bound by manifest SHA-256
+`407e47d12bc17f30e2abd453dc69c4dda0b4e3fab705e2e361e6d26a8e6a6147`.
+It adds the hash-bound 252-sample semantic authority, authentic absolute-path
+evidence, and crash evidence required by the repaired gate rules. An
+independent harness may exercise only the prescribed mutations; it may not
+replace, truncate, synthesize, or reassign the locked base inputs.
 
 Semantic authority is reconciled in `PHASE1_SEMANTIC_AUTHORITY.md`: canonical
 issue fields, structural template identity, and explicit human slot decisions

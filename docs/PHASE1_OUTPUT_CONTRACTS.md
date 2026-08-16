@@ -221,13 +221,24 @@ an error change.
 
 ```text
 schema               "ck3chronicle.errors"
-schema_version       1
+schema_version       2
+run                  session-report v6 run | null
 session_id           integer
 captured_at          string
 model_revision_id    string
 total_occurrences    integer
 patterns             session-report top-pattern array
 ```
+
+The `run` field makes `errors --run ID` objectively bound to the requested
+observation. It reuses the complete session-report run projection rather than a
+second, lossy identity shape.
+
+A reportable run belongs to a finalized evidence session with a succeeded
+canonical parse and at least one stored classification run. `latest` skips
+newer unreportable runs and orders eligible observations by
+`observed_ended_at DESC, run_id DESC`; evidence-bundle capture time does not
+replace run chronology.
 
 ## Runtime-context v2
 
@@ -291,7 +302,9 @@ Each `iter_log_blocks` item exposes `timestamp`, `level`, `source_tag`,
 `source_family`, `header_line`, `continuation_lines`, `raw_block`,
 `log_relpath`, `line_number`, `end_line`, `raw_block_sha256`,
 `raw_byte_length`, and `source_block_id`. Its hashes and byte lengths cover the
-exact original bytes, including line endings. The iterator is read-only.
+exact original bytes, including line endings and a byte-zero UTF-8 BOM. The
+BOM is omitted from semantic `header_line` processing but remains part of raw
+evidence identity. The iterator is read-only.
 
 ## Human text projection
 

@@ -80,6 +80,12 @@ Every timestamped `error.log` block is stored exactly once and produces at
 least one explicit occurrence or unknown disposition. Silent drops are not
 permitted.
 
+A single UTF-8 BOM at byte zero is an encoding signature, not preamble or
+message semantics. It is retained in the first block's exact raw bytes, byte
+length, content hash, and evidence identity while header recognition and
+semantic normalization ignore it. A BOM later in the file is not a file
+encoding signature and cannot begin a new timestamped block.
+
 ## Template identity
 
 Template identity is based on source family plus ordered semantic content.

@@ -67,8 +67,13 @@ def _count_raw_block_headers(path: Path) -> int:
     """Independently count timestamped CK3 blocks without using the parser."""
     count = 0
     with path.open("rb") as handle:
-        for line in handle:
-            count += int(_RAW_BLOCK_HEADER.match(line) is not None)
+        for line_number, line in enumerate(handle, start=1):
+            header_view = (
+                line[3:]
+                if line_number == 1 and line.startswith(b"\xef\xbb\xbf")
+                else line
+            )
+            count += int(_RAW_BLOCK_HEADER.match(header_view) is not None)
     return count
 
 

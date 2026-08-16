@@ -1,15 +1,22 @@
 """Fresh reboot acceptance tests for immutable canonical source blocks."""
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
 import sqlite3
 
 import pytest
 
 from ck3chronicle.db import repository
+from ck3chronicle.classification.normalize import block_message
+from ck3chronicle.database_audit import audit_database
 from ck3chronicle.harvester import MANIFEST_VERSION, finalize_pending, spool_logs
 from ck3chronicle.parser.log_blocks import iter_log_blocks
-from ck3chronicle.parser.service import ErrorLogEvidenceError, parse_session
+from ck3chronicle.parser.service import (
+    PARSER_CONTRACT_VERSION,
+    ErrorLogEvidenceError,
+    parse_session,
+)
 
 from foundation_oracle import (
     LEXICAL_BLOCK_ORACLE,
@@ -335,4 +342,156 @@ def test_rparse_009_postvalidate_rejects_equal_row_but_wrong_distribution(
         parse_session(conn, runtime, session_id, reparse=True)
 
     assert _canonical_snapshot(conn, session_id) == before
+    conn.close()
+
+
+def test_rparse_010_utf8_bom_is_evidence_not_preamble_or_semantics(
+    tmp_path: Path,
+) -> None:
+    """A byte-zero BOM is retained exactly but cannot hide the first CK3 block."""
+    first = b"[12:00:00][E][first.cpp:10]: First semantic 'alpha'\r\n"
+    second = b"[12:00:01][W][second.cpp:20]: Second semantic\n"
+    plain_path = tmp_path / "plain.log"
+    bom_path = tmp_path / "bom.log"
+    plain_path.write_bytes(first + second)
+    bom_path.write_bytes(b"\xef\xbb\xbf" + first + second)
+
+    plain = list(
+        iter_log_blocks(plain_path, log_relpath="error.log", retain_preamble=False)
+    )
+    bom = list(
+        iter_log_blocks(bom_path, log_relpath="error.log", retain_preamble=False)
+    )
+
+    assert len(plain) == len(bom) == 2
+    assert all(block.timestamp is not None for block in bom)
+    assert bom[0].line_number == 1
+    assert bom[0].header_line == plain[0].header_line
+    assert bom[0].raw_block.encode("utf-8") == b"\xef\xbb\xbf" + first
+    assert bom[0].raw_byte_length == len(first) + 3
+    assert bom[0].raw_block_sha256 == hashlib.sha256(
+        b"\xef\xbb\xbf" + first
+    ).hexdigest()
+    assert bom[0].source_block_id != plain[0].source_block_id
+    assert block_message(bom[0].raw_block) == block_message(plain[0].raw_block)
+    assert bom[1].source_block_id == plain[1].source_block_id
+    assert (
+        b"".join(block.raw_block.encode("utf-8") for block in bom)
+        == bom_path.read_bytes()
+    )
+
+
+def test_rparse_011_utf8_bom_parse_persists_every_block_and_audits_cleanly(
+    tmp_path: Path,
+) -> None:
+    """Production parse and independent audit agree on a BOM-prefixed first header."""
+    error_bytes = (
+        b"\xef\xbb\xbf[12:00:00][E][first.cpp:10]: First semantic 'alpha'\n"
+        b"[12:00:01][W][second.cpp:20]: Second semantic\n"
+    )
+    plain_root = tmp_path / "plain"
+    bom_root = tmp_path / "bom"
+    plain_root.mkdir()
+    bom_root.mkdir()
+    plain_runtime, _plain_capture, plain_conn, plain_session = _registered_session(
+        plain_root, error_bytes[3:]
+    )
+    parse_session(plain_conn, plain_runtime, plain_session)
+    plain_issues = tuple(
+        tuple(row)
+        for row in plain_conn.execute(
+            """
+            SELECT signature, category, error_type, message_template
+            FROM issues WHERE session_id = ? ORDER BY signature
+            """,
+            (plain_session,),
+        ).fetchall()
+    )
+    plain_conn.close()
+
+    runtime, _captured, conn, session_id = _registered_session(bom_root, error_bytes)
+
+    result = parse_session(conn, runtime, session_id)
+    assert result.counters.source_blocks == 2
+    assert result.counters.preamble_blocks == 0
+    assert result.counters.issue_occurrences == 2
+    assert result.counters.silently_dropped_blocks == 0
+    stored = conn.execute(
+        """
+        SELECT rb.raw_block, rb.raw_block_sha256
+        FROM source_blocks sb
+        JOIN raw_block_contents rb ON rb.raw_block_pk = sb.raw_block_pk
+        WHERE sb.session_id = ? ORDER BY sb.start_line LIMIT 1
+        """,
+        (session_id,),
+    ).fetchone()
+    assert stored[0].encode("utf-8") == error_bytes.splitlines(keepends=True)[0]
+    assert stored[1] == hashlib.sha256(
+        error_bytes.splitlines(keepends=True)[0]
+    ).hexdigest()
+    bom_issues = tuple(
+        tuple(row)
+        for row in conn.execute(
+            """
+            SELECT signature, category, error_type, message_template
+            FROM issues WHERE session_id = ? ORDER BY signature
+            """,
+            (session_id,),
+        ).fetchall()
+    )
+    assert bom_issues == plain_issues
+    conn.close()
+
+    audit = audit_database(runtime)
+    assert audit["summary"]["source_blocks"] == 2
+    assert audit["summary"]["raw_timestamp_headers"] == 2
+    assert not any(item["code"] == "DB-RAW-001" for item in audit["findings"])
+
+
+def test_rparse_012_utf8_bom_after_byte_zero_is_not_an_encoding_signature(
+    tmp_path: Path,
+) -> None:
+    """A BOM before a later apparent header cannot create a new CK3 block."""
+    path = tmp_path / "error.log"
+    path.write_bytes(
+        b"[12:00:00][E][first.cpp:10]: First semantic\n"
+        b"\xef\xbb\xbf[12:00:01][E][second.cpp:20]: Not a file-start header\n"
+    )
+
+    blocks = list(
+        iter_log_blocks(path, log_relpath="error.log", retain_preamble=False)
+    )
+
+    assert len(blocks) == 1
+    assert blocks[0].line_number == 1
+    assert blocks[0].end_line == 2
+    assert "\ufeff[12:00:01]" in blocks[0].raw_block
+
+
+def test_rparse_013_older_parser_contract_is_replaced_automatically(
+    tmp_path: Path,
+) -> None:
+    """A successful older projection cannot suppress a required parser upgrade."""
+    runtime, _captured, conn, session_id = _registered_session(
+        tmp_path,
+        b"\xef\xbb\xbf[12:00:00][E][first.cpp:10]: First semantic\n",
+    )
+    first = parse_session(conn, runtime, session_id)
+    assert first.parser_contract_version == PARSER_CONTRACT_VERSION
+    conn.execute(
+        "UPDATE sessions SET parser_contract_version = '1.0.0' WHERE session_id = ?",
+        (session_id,),
+    )
+    conn.commit()
+
+    upgraded = parse_session(conn, runtime, session_id)
+
+    assert upgraded.mutated is True
+    assert upgraded.parser_contract_version == PARSER_CONTRACT_VERSION
+    assert (
+        repository.get_session(conn, session_id)["parser_contract_version"]
+        == PARSER_CONTRACT_VERSION
+    )
+    assert upgraded.counters.source_blocks == 1
+    assert upgraded.counters.preamble_blocks == 0
     conn.close()

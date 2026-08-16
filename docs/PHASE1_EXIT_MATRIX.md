@@ -1,109 +1,114 @@
 # Phase 1 exit matrix
 
-Release candidate: **successor to failed attempt `76fb2d5` not yet frozen**.
+Release candidate: **successor to public candidate `bae136e` not yet frozen**.
 
 Status: **Phase 1 not exited**.
 
-This matrix distinguishes implemented behavior, fast regression coverage, and
-formal candidate-bound release evidence. `Partially covered` is not a pass.
+This matrix separates historical candidate-bound evidence from the current
+unfrozen implementation. A pass on `bae136e` is useful regression evidence but
+does not transfer automatically after source or contract changes.
 
-## Summary
+## Latest public-attempt accounting
 
-| Status | Gates |
+The frozen public score for candidate
+`bae136e491f75863b34f689d5c9474793fd52437` is preserved under result SHA-256
+`a62e5cfe5fbb5bcb072040e11c13e80c1f51bad25d65680fb1333c93046aa11a`.
+It scored 34 public gates as follows; the private gate was not selected.
+
+| Disposition on `bae136e` | Gates |
 |---|---:|
-| Historical proof on an older candidate | 1 |
-| Partially covered | 25 |
-| Untested | 9 |
-| Missing or contract-incompatible public surface | 0 |
+| Public PASS | 23 |
+| Product FAIL | 1 |
+| Infrastructure/unscored | 1 |
+| Result/oracle insufficiency | 4 |
+| Contract-unscorable | 5 |
+| Private holdout unrun | 1 |
 | Total | 35 |
 
-The `76fb2d57615f716f665b0d078bb26304487e684e` attempt executed all gates but
-does not supply valid release evidence. Its postmortem classified the outcomes
-as 10 trustworthy passes, two trustworthy product failures, 22 invalid
-input/harness results, and one indeterminate taxonomy result. The two product
-defects are repaired in the current checkpoint; that attempt's private holdout
-is retired. The older
-`52a43254f847555a871833ef4a43bd97f3613bf6` candidate has one separated
-real-evidence lexical calibration and one zero-byte proof. Neither transfers
-automatically to the future frozen candidate. The remaining frozen Phase 0
-real-evidence oracles are not yet executed by an independent current harness.
-The fast reboot suite remains implementation regression coverage only.
+The one product failure was the byte-zero UTF-8 BOM first-block loss in
+`P1-PAR-07`; the current development tree repairs it and passes real-corpus
+counts of 10,785/10,785 and 100,000/100,000 with zero preamble blocks. The ten
+unscored/insufficient gates were evaluator-input or frozen-rule deficiencies,
+not product failures. Locked public corpus v2 and
+`PHASE1_PUBLIC_GATE_RULES.md` now close those upstream gaps. The current tree
+also adds observable run identity to `errors` v2, which `P1-REP-06` requires.
+
+The earlier `76fb2d5` attempt remains rejected after its input/harness
+postmortem, and its exposed private holdout is retired permanently.
 
 ## Capture
 
-| Gate | Current status | Evidence and gap |
+| Gate | Latest public evidence | Successor requirement |
 |---|---|---|
-| `P1-CAP-01` | Partially covered | Development contracts cover six-log finalization plus captured/absent/stale crash-exception behavior. The frozen real capture oracle and independently authored exception cases have not run for the successor candidate. |
-| `P1-CAP-02` | Partially covered | Duplicate archive/session reuse is tested; no formal gate record. |
-| `P1-CAP-03` | Partially covered | Fault-sensitive development regressions now reject registered archive-byte mutation, SQLite projection disagreement, protected-exception corruption, and archive metadata I/O failure. No valid independent mutation matrix has run. |
-| `P1-CAP-04` | Partially covered | Rapid relaunch rejection is tested; the exact source-mutation command result/envelope is not. |
-| `P1-CAP-05` | Partially covered / contract reconciled | The stable public command envelope distinguishes archive, model, database, reconciliation, and pipeline failures. A finalized content-addressed archive may deliberately survive database registration failure and is recovered by reconciliation; this is the frozen recoverability rule, not a partial-success ambiguity. The independent fault matrix has not run. |
-| `P1-CAP-06` | Partially covered | Missing debug and zero-byte error paths are tested separately; complete public-command outcomes are not. |
+| `P1-CAP-01` | PASS on `bae136e` | Rerun unchanged gate. |
+| `P1-CAP-02` | PASS on `bae136e` | Rerun unchanged gate. |
+| `P1-CAP-03` | Infrastructure/unscored: archive mutation applied zero changes | Use the fixed exact-target mutation rule; a precondition failure remains unscored. |
+| `P1-CAP-04` | PASS on `bae136e` | Rerun unchanged gate. |
+| `P1-CAP-05` | PASS on `bae136e` | Rerun unchanged gate. |
+| `P1-CAP-06` | PASS on `bae136e` | Rerun unchanged gate. |
 
 ## Runtime context
 
-| Gate | Current status | Evidence and gap |
+| Gate | Latest public evidence | Successor requirement |
 |---|---|---|
-| `P1-RUN-01` | Partially covered | Production now exposes archived file identity, line/byte range, block SHA-256, counts, and termination evidence. A read-only real-shape probe found one complete 27-DLC/104-mod block at lines 537–667, but the distinct frozen 27-DLC/94-mod oracle has not run independently. |
-| `P1-RUN-02` | Partially covered | One Workshop and one local mount are tested, not the complete frozen sequence. |
-| `P1-RUN-03` | Untested | No independent swap-order metamorphic gate. |
-| `P1-RUN-04` | Partially covered | Production explicitly implements complete, partial, absent, malformed, truncated, and ambiguous states with focused implementation regressions. The independent frozen state oracle has not run. |
-| `P1-RUN-05` | Partially covered | Inventory names/descriptors/warnings are now a separate enrichment projection and cannot change authoritative membership/order or source-resolution identities. The independent inventory-mutation gate has not run. |
+| `P1-RUN-01` | PASS: exact 27-DLC/104-mod complete projection | Rerun unchanged gate. |
+| `P1-RUN-02` | PASS: Workshop/local and non-complete forms | Rerun unchanged gate. |
+| `P1-RUN-03` | PASS: order-only metamorphism | Rerun unchanged gate. |
+| `P1-RUN-04` | PASS: six distinct runtime states | Rerun unchanged gate. |
+| `P1-RUN-05` | PASS: enrichment cannot change authority | Rerun unchanged gate. |
 
 ## Parsing and persistence
 
-| Gate | Current status | Evidence and gap |
+| Gate | Latest public evidence | Successor requirement |
 |---|---|---|
-| `P1-PAR-01` | Partially covered | `P1-PAR-01-LEXICAL` passed a separated blind-runner/read-only-scorer comparison of all 28,131 frozen blocks with zero field mismatches. Persistence against the compact current schema is not yet independently scored. See `PHASE1_LEXICAL_CALIBRATION_2026-08-14.md`. |
-| `P1-PAR-02` | Untested / authority reconciled | `PHASE1_SEMANTIC_AUTHORITY.md` separates the 252-item canonical issue-field oracle from later human-reviewed template/slot authority and hash-binds both. No frozen-candidate independent exact comparison has run. |
-| `P1-PAR-03` | Partially covered | Duplicate blocks retain separate occurrences and shared raw content; the complete cluster/signature relation is not asserted. |
-| `P1-PAR-04` | Partially covered | Locator grammar now precedes L1 and typed PostValidate rejects a locator in a key slot; the complete independent provenance/absolute-root mutation matrix has not run. |
-| `P1-PAR-05` | Partially covered | Conservative semantic rejection examples exist, not every required independent family mutation. |
-| `P1-PAR-06` | Partially covered | Typed PostValidate and conservative fallback have focused development tests and read-only real-session probes. No independent authentic positive/near-miss gate for every extractor or frozen 33-versus-20,156 gate has run. |
-| `P1-PAR-07` | Partially covered | Mixed line endings and final-newline behavior are tested; the full malformed/BOM/long-line/replacement/truncation matrix is not. |
-| `P1-PAR-08` | Partially covered | A development regression injects failure after one streamed replacement block and proves the prior canonical projection is identical; the independent exit gate has not run. |
-| `P1-PAR-09` | Partially covered | Missing evidence leaves `not_started`; generic injected first-parse failure and public exit behavior remain untested. |
-| `P1-PAR-10` | **Historical proof on older candidate** | Present zero-byte `error.log` committed succeeded state with every required counter exactly zero on `52a...`; rerun is required after candidate freeze. |
-| `P1-PAR-11` | Partially covered | Repository/audit invariants and real-session totals reconcile; the frozen reference and future holdout executions are absent. |
+| `P1-PAR-01` | PASS: 28,131 exact blocks reconcile | Rerun on parser contract 1.0.1. |
+| `P1-PAR-02` | Unscored: 252-item oracle omitted from authorized inputs | Corpus v2 now includes the exact sample/oracle pair; run the frozen row-level rule. |
+| `P1-PAR-03` | PASS: occurrence/content/signature relations | Rerun unchanged gate. |
+| `P1-PAR-04` | Unscored: invalid mutation changed `event:` rather than an absolute root | Corpus v2 adds an authentic absolute-path unit; use the exact locator-root rule. |
+| `P1-PAR-05` | PASS: conservative near-miss rejection | Rerun unchanged gate. |
+| `P1-PAR-06` | PASS: authentic positives and near misses | Rerun unchanged gate. |
+| `P1-PAR-07` | FAIL: BOM first block became preamble | Repair is implemented and development-tested; rerun the complete gate. |
+| `P1-PAR-08` | PASS: reparse rollback | Rerun on parser contract 1.0.1. |
+| `P1-PAR-09` | PASS: first-parse rollback | Rerun on parser contract 1.0.1. |
+| `P1-PAR-10` | PASS: zero-byte explicit success | Rerun on parser contract 1.0.1. |
+| `P1-PAR-11` | PASS: standard/deep database invariants | Rerun on parser contract 1.0.1. |
 
 ## Reporting and public workflow
 
-| Gate | Current status | Evidence and gap |
+| Gate | Latest public evidence | Successor requirement |
 |---|---|---|
-| `P1-REP-01` | Partially covered / contract reconciled | `process-pending` is now the documented canonical vertical slice with one command-result envelope; the obsolete `analyze --logs` expectation is explicitly retired. No complete independent report oracle has run. |
-| `P1-REP-02` | Untested | Text and JSON share data in implementation, but no independent field-equivalence gate exists. |
-| `P1-REP-03` | Partially covered | Stored report works after `error.log` removal; `latest` and `errors` have not been proven unchanged in the same gate. |
-| `P1-REP-04` | Partially covered | Development regressions hash the complete storage tree before and after the report command family and prove current-database immutability. No valid independent gate has run. |
-| `P1-REP-05` | Partially covered | Repeat processing is deterministic; randomized insertion-order equivalence is absent. |
-| `P1-REP-06` | Partially covered | `latest` selects the newest reportable run, `report --run` distinguishes repeated observations of identical evidence, and report v6 projects exception provenance. The independent eligibility/order/provenance gate has not run. |
-| `P1-REP-07` | Partially covered | `process-pending`, `report`, `latest`, and `errors` share a stable success/warning/failure envelope and exit taxonomy. The independent all-command black-box gate has not run. |
+| `P1-REP-01` | PASS: processing envelope and side effects | Rerun unchanged gate. |
+| `P1-REP-02` | PASS: text/JSON equivalence | Include `errors` v2 run projection. |
+| `P1-REP-03` | PASS: stored reporting without raw archive | Rerun unchanged gate. |
+| `P1-REP-04` | PASS: eight read commands did not mutate storage | Rerun with `errors` v2. |
+| `P1-REP-05` | PASS: repeat/order determinism | Rerun unchanged gate. |
+| `P1-REP-06` | Unscored: no crash provenance case, and `errors` lacked run identity | Use the fixed four-run chronology and three assigned units; score `errors` v2 exact binding. |
+| `P1-REP-07` | Unscored: readiness used no DB; pipeline fault was installed too late | Use the six exact preparations and validity rules in the public gate contract. |
 
 ## Release gates
 
-| Gate | Current status | Evidence and gap |
+| Gate | Latest public evidence | Successor requirement |
 |---|---|---|
-| `P1-HOLD-01` | Untested | The 194,022-occurrence run proves evaluator/runtime compatibility only. No post-freeze private holdout has run. |
-| `P1-MUT-01` | Untested | No mutation campaign or mutant-kill ledger. |
-| `P1-PERF-01` | Untested | No prescribed parser warmup + five-run timing/RSS record. |
-| `P1-PERF-02` | Untested | No prescribed runtime-extraction performance record. |
-| `P1-PERF-03` | Untested | No prescribed stored text/JSON reporting performance record. |
-| `P1-PERF-04` | Untested | No prescribed end-to-end performance record. |
+| `P1-HOLD-01` | Not selected or executed | Select a fresh private holdout only after all public gates pass. |
+| `P1-MUT-01` | Contract-unscorable | Run all eleven frozen valid mutations; 11/11 required. |
+| `P1-PERF-01` | Measurements captured; no prior budget | Apply frozen lexical/parse budgets. |
+| `P1-PERF-02` | Measurements captured; no prior budget | Apply frozen runtime budget. |
+| `P1-PERF-03` | Measurements captured; no prior budget | Apply frozen report/storage budget. |
+| `P1-PERF-04` | Measurements captured; no prior budget | Apply frozen pipeline wall/CPU/RSS budget. |
 
 ## Required order of work
 
-1. Retain the frozen authentic public corpus and exact gate-to-input mapping;
-   evaluators may not substitute, truncate, synthesize, or reassign base data.
-2. Freeze the updated public Phase 1 contract, gate-to-interface handoff,
-   complete output schemas, and exact error taxonomy. Implementation agents
-   stop writing execution logic at that boundary.
-3. Freeze a clean successor candidate and record its complete tree/interface
-   hashes.
-4. Have the independent harness authority—not an implementation agent—rebind
-   and author a fresh harness for the successor interface, using only the fixed
-   base-input mapping and prescribed hash-bound mutations.
-5. Independent evaluator roles run public calibration, failure, rollback,
-   mutation, and performance gates.
-6. Select and freeze a new private holdout.
-7. Run the holdout through the separated runner/scorer process in
-   `PHASE1_EXIT_PROTOCOL.md`.
-8. Publish a single candidate-bound exit report.
+1. Keep locked corpus v1 immutable and use verified locked corpus v2 for the
+   successor attempt.
+2. Finish implementation regression, independent code/test review, and public
+   contract consistency review.
+3. Commit and freeze one clean successor candidate and record its complete
+   tree/interface hashes.
+4. Have an independent harness authority author and freeze a new bounded
+   harness against the fixed corpus v2 mapping and public gate rules.
+5. Run and score all 34 public gates. Infrastructure cases are repaired and
+   rerun only under the unchanged candidate/input/oracle rule.
+6. Proceed only if all 34 public gates pass; then select and freeze a new
+   private holdout.
+7. Run the private gate through the separated runner/scorer/adjudicator process
+   and publish one candidate-bound Phase 1 exit report.

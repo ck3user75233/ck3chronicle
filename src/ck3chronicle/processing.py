@@ -9,7 +9,7 @@ from .archive_registry import reconcile_archives
 from .classification import Classifier, classify_session
 from .db import repository
 from .harvester import finalize_pending_captures
-from .parser.service import parse_session
+from .parser.service import PARSER_CONTRACT_VERSION, parse_session
 from .reporting import build_session_report, latest_report_target
 from .runtime_context import parse_runtime_context
 from .run_registry import reconcile_run_receipts
@@ -61,7 +61,10 @@ def process_pending(root: Path, classifier: Classifier) -> ProcessingResult:
                 conn, evidence_root, int(session["session_id"])
             )
             context_sessions += int(context.mutated)
-            if session["parse_status"] != "succeeded":
+            if (
+                session["parse_status"] != "succeeded"
+                or session["parser_contract_version"] != PARSER_CONTRACT_VERSION
+            ):
                 parse_result = parse_session(
                     conn, evidence_root, int(session["session_id"])
                 )

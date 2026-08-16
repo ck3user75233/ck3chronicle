@@ -130,7 +130,10 @@ def block_message(raw_block: str) -> str:
     lines = raw_block.splitlines()
     if not lines:
         return ""
-    header = HEADER_RE.sub("", lines[0], count=1).strip()
+    first_line = lines[0]
+    if first_line.startswith("\ufeff"):
+        first_line = first_line[1:]
+    header = HEADER_RE.sub("", first_line, count=1).strip()
     continuations = [line.strip() for line in lines[1:] if line.strip()]
     return re.sub(r"\s+", " ", " ".join([header, *continuations])).strip()
 

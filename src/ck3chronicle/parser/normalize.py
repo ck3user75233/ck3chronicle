@@ -41,6 +41,8 @@ _QUOTED_RELPATH_RE = re.compile(r'"(?![A-Za-z]:)[^"\n]*(?:/|\\\\)[^"\n]*"')
 
 def _mask_generic(text: str) -> str:
     """Apply whitelist-only volatile masking to *text*."""
+    if text.startswith("\ufeff"):
+        text = text[1:]
     text = _LOG_HEADER_RE.sub("", text, count=1)
     text = _QUOTED_RELPATH_RE.sub('"<FILE>"', text)
     text = _WINDOWS_PATH_RE.sub("<TOKEN>", text)

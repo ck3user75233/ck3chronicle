@@ -111,7 +111,8 @@ procedural Codex-only run must not be described as cryptographically blind.
 ## 4. Freeze and handoff order
 
 1. Freeze public contracts, the gate inventory, the implementation-authored
-   callable-interface handoff, and the public gate-to-input manifest.
+   callable-interface handoff, exact public gate/scoring rules, performance
+   budgets, and the public gate-to-input manifest.
 2. The independent harness author writes and freezes execution code from that
    handoff and fixed input set without receiving expected answers. Prescribed
    mutations must derive from and remain hash-bound to the assigned base unit.
@@ -132,6 +133,12 @@ procedural Codex-only run must not be described as cryptographically blind.
 Any candidate change after step 4 starts a new release attempt. Any oracle
 change after step 7 invalidates the run unless the adjudicator records an
 oracle defect and restarts from a newly versioned oracle.
+
+The harness author cannot alter a frozen input assignment, product expectation,
+mutation validity rule/kill criterion, or performance budget. A case whose
+required input, mutation precondition/application count, observation, or
+result-envelope closure fails is infrastructure/unscored; it cannot be called a
+product pass or failure and cannot be replaced silently.
 
 ## 5. Artifact contract
 
@@ -158,6 +165,14 @@ has an explicit schema version and canonical SHA-256.
 
 The runner result records output bytes exactly. The scorer never consumes an
 unhashed mutable working file.
+
+Retained result packages are bounded evidence packages, not copies of every
+scratch workspace. After each case is closed and its declared observations,
+stdout/stderr, database projections, timings, mutation descriptors, and hashes
+are sealed, the runner removes disposable copied inputs and runtime trees.
+Immutable base evidence remains in the locked corpus. A failed case may retain
+only the smallest hash-bound artifact needed to reproduce the discrepancy;
+keeping complete repeated 100+ MiB workspaces is not an exit requirement.
 
 ## 6. Failure disclosure and reruns
 

@@ -67,7 +67,8 @@ def test_rreportcli_003_errors_is_a_bounded_stored_pattern_projection(
     assert envelope["command"] == "errors"
     payload = envelope["result"]
     assert payload["schema"] == "ck3chronicle.errors"
-    assert payload["schema_version"] == 1
+    assert payload["schema_version"] == 2
+    assert payload["run"] is None
     assert payload["session_id"] == session_id
     assert payload["total_occurrences"] == 5
     assert len(payload["patterns"]) == 2
@@ -102,6 +103,14 @@ def test_rreportcli_004_exact_run_selection_survives_evidence_reuse(
     assert exact_payload["schema_version"] == 6
     assert exact_payload["run"]["run_id"] == first_id
     assert exact_payload["run"]["capture_id"] == "first-observed-run"
+
+    exact_errors = parser.parse_args(["errors", "--run", str(first_id), "--json"])
+    assert exact_errors.func(exact_errors) == 0
+    errors_payload = json.loads(capsys.readouterr().out)["result"]
+    assert errors_payload["schema_version"] == 2
+    assert errors_payload["run"] == exact_payload["run"]
+    assert errors_payload["run"]["run_id"] == first_id
+    assert errors_payload["run"]["capture_id"] == "first-observed-run"
 
     by_evidence = parser.parse_args(
         ["report", "--session", str(session_id), "--json"]

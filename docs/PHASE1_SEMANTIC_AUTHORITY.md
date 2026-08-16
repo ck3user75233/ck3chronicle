@@ -1,7 +1,8 @@
 # Phase 1 semantic authority reconciliation
 
-Status: implementation authority reconciled; independent `P1-PAR-02` execution
-has not run.
+Status: implementation authority reconciled. The 252-item sample/oracle pair is
+required as a hash-bound public scoring input in locked corpus v2; independent
+`P1-PAR-02` execution has not yet run successfully.
 
 ## Result
 
@@ -32,6 +33,12 @@ and the later template-learning reviews: they answer different questions.
 | `ck3chronicle-new-candidate-adjudication-20260813.xlsx` | Explicit user comments on scope paths, semantic role words, and residuals | `d84b76ebe0ed7d53ae4eddaa5f2e956e60f6125b2b937443b2eed2e31619b631` |
 | `ck3chronicle-template-review-v44-20260813.xlsx` | Review-preserving disposition of the preceding comments | `04a5fdc57f33d42fc73279048e4ae79a92d24da985ae0db8324dd58037507a9e` |
 | `ck3chronicle-holdout-semantic-review-gen2-20260813.PARTIAL-REVIEW-20260813T152042.xlsx` | Later partial user review of L1/L2 residuals | `4fa2a2beb311ceec5009ec5e8aa9440c8403ecb786423ce356b6dc6a638240f3` |
+
+The first artifact and its linked 252-sample candidate are now copied without
+normalization into locked public corpus v2. That corpus has manifest SHA-256
+`407e47d12bc17f30e2abd453dc69c4dda0b4e3fab705e2e361e6d26a8e6a6147`
+and source-set SHA-256
+`f4b95276058f5b4f379de6e443e585b6fe8040ed3202b8f886e91c44a4f60c51`.
 
 These files are public development/calibration evidence because their content
 has already been inspected or used while refining the implementation. A file
@@ -142,3 +149,14 @@ not pass `P1-PAR-02`, promote old development holdouts to release evidence, or
 prove every low-volume model slot. The independent evaluator must still compare
 all 252 canonical issue judgments and separately score structural template and
 slot behavior against a frozen release candidate.
+
+For `P1-PAR-02`, join candidate output to the frozen sample by independently
+recomputed block index and raw-block hash, not by a product signature. Exactly
+252 unique sample IDs/indices must be present with no extras or duplicates.
+Every row must exactly match accounting disposition, issue cardinality,
+category, error type, severity, confidence, primary file/line, referenced
+symbols/objects in canonical order, and persisted occurrence/source linkage.
+The aggregate 232 classified / 20 preserved-unclassified totals are mandatory
+but cannot compensate for any row-level mismatch. Proposal, rationale,
+uncertainty, and adjudication metadata are not production output fields and are
+not scored.

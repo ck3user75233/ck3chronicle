@@ -20,6 +20,7 @@ _HEADER_RE_TWO = re.compile(
     br"^\[(\d{2}:\d{2}:\d{2})\]\[([^\]\r\n]+)\]:"
 )
 _SOURCE_LINE_SUFFIX_RE = re.compile(r":\d+$")
+_UTF8_BOM = b"\xef\xbb\xbf"
 
 
 @dataclass
@@ -115,12 +116,18 @@ def _make_block(
         if timestamp is None
         else _SOURCE_LINE_SUFFIX_RE.sub("", source_tag)
     )
+    header_line = display_lines[0] if display_lines else ""
+    # A UTF-8 BOM is an encoding signature, not CK3 message semantics.  The
+    # lexer recognizes it only at byte zero, but the exact bytes remain in
+    # ``raw_block`` and therefore in the evidence hash and source-block ID.
+    if timestamp is not None and start_line == 1 and header_line.startswith("\ufeff"):
+        header_line = header_line[1:]
     return TimestampedLogBlock(
         timestamp=timestamp,
         level=level,
         source_tag=source_tag,
         source_family=family,
-        header_line=display_lines[0] if display_lines else "",
+        header_line=header_line,
         continuation_lines=display_lines[1:],
         raw_block=_decode(raw_bytes),
         log_relpath=log_relpath,
@@ -159,7 +166,12 @@ def iter_log_blocks(
     with path.open("rb") as handle:
         for line_number, raw_line in enumerate(handle, start=1):
             last_line = line_number
-            parsed = _parse_header(raw_line)
+            header_view = (
+                raw_line[len(_UTF8_BOM) :]
+                if line_number == 1 and raw_line.startswith(_UTF8_BOM)
+                else raw_line
+            )
+            parsed = _parse_header(header_view)
             if parsed is None:
                 if current_lines:
                     current_lines.append(raw_line)
