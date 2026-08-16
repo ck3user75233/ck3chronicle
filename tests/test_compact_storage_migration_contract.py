@@ -54,6 +54,16 @@ def _legacy_database(path: Path) -> None:
         """,
         (MODEL_HASH, datetime.now(timezone.utc).isoformat()),
     )
+    conn.execute(
+        """
+        INSERT INTO issues (
+            session_id, signature, category, error_type, message_template,
+            primary_file, primary_line, referenced_objects_json,
+            occurrence_count
+        ) VALUES (1, 'sig', 'unclassified', 'unknown', 'Repeated diagnostic',
+                  'common/invented/legacy.txt', 44, '["legacy_object"]', 2)
+        """
+    )
     conn.commit()
     conn.execute("PRAGMA foreign_keys = OFF")
     conn.executescript(
@@ -192,6 +202,25 @@ def test_rstorage_001_legacy_rows_migrate_to_lossless_dictionaries(
         row[1]
         for row in conn.execute("PRAGMA table_info(classification_assignments)")
     }
+    occurrence_columns = {
+        row[1] for row in conn.execute("PRAGMA table_info(issue_occurrences)")
+    }
+    assert {
+        "primary_file", "primary_line", "referenced_objects_json",
+        "semantic_projection_run_id",
+    }.issubset(occurrence_columns)
+    inherited = conn.execute(
+        """
+        SELECT DISTINCT primary_file, primary_line, referenced_objects_json
+        FROM issue_occurrences
+        """
+    ).fetchone()
+    assert tuple(inherited) == (
+        "common/invented/legacy.txt", 44, '["legacy_object"]'
+    )
+    assert conn.execute(
+        "SELECT version FROM schema_versions WHERE component = 'semantic_projection'"
+    ).fetchone()[0] == 1
     conn.close()
 
 

@@ -501,7 +501,7 @@ def cmd_parse(args: argparse.Namespace) -> int:
 
 
 def cmd_classify(args: argparse.Namespace) -> int:
-    """Classify one session from its stored canonical source blocks."""
+    """Classify and canonically project one stored parsed session."""
     import sqlite3
 
     from . import config
@@ -514,20 +514,58 @@ def cmd_classify(args: argparse.Namespace) -> int:
     )
     from .classification.catalog import (
         APPROVED_MODEL_SHA256,
+        load_approved_semantic_runtime,
         approved_model_path,
     )
+    from .classification.projection_catalog import (
+        ProjectionCatalogIntegrityError,
+        load_projection_catalog,
+    )
     from .db import repository
+    from .semantic_projection_service import (
+        SemanticProjectionServiceError,
+        project_classification_run,
+    )
 
     if args.model and not args.model_sha256:
         print("ERROR: --model requires --model-sha256", file=sys.stderr)
         return 2
-    model_path = Path(args.model) if args.model else approved_model_path()
-    model_sha256 = args.model_sha256 or APPROVED_MODEL_SHA256
+    if bool(args.projection_catalog) != bool(args.projection_catalog_sha256):
+        print(
+            "ERROR: --projection-catalog and --projection-catalog-sha256 "
+            "must be supplied together",
+            file=sys.stderr,
+        )
+        return 2
+    if args.model and not args.projection_catalog:
+        print(
+            "ERROR: a custom --model requires a hash-pinned "
+            "--projection-catalog",
+            file=sys.stderr,
+        )
+        return 2
     conn = None
     try:
-        classifier = Classifier(
-            load_model(model_path, expected_sha256=model_sha256)
-        )
+        if args.model:
+            model_path = Path(args.model)
+            model_sha256 = args.model_sha256
+            classifier = Classifier(
+                load_model(model_path, expected_sha256=model_sha256)
+            )
+        elif args.projection_catalog:
+            classifier = Classifier(
+                load_model(
+                    approved_model_path(), expected_sha256=APPROVED_MODEL_SHA256
+                )
+            )
+        else:
+            classifier, projection_catalog = load_approved_semantic_runtime()
+        if args.projection_catalog:
+            projection_catalog = load_projection_catalog(
+                Path(args.projection_catalog),
+                expected_sha256=args.projection_catalog_sha256,
+                model=classifier.model,
+            )
         conn = repository.open_db(
             config.ROOT_CK3CHRONICLE / "ck3chronicle.db"
         )
@@ -537,7 +575,16 @@ def cmd_classify(args: argparse.Namespace) -> int:
             classifier,
             reclassify=bool(args.reclassify),
         )
-    except (ClassificationError, ModelIntegrityError, FileNotFoundError) as exc:
+        projection = project_classification_run(
+            conn, int(args.session), projection_catalog
+        )
+    except (
+        ClassificationError,
+        ModelIntegrityError,
+        ProjectionCatalogIntegrityError,
+        SemanticProjectionServiceError,
+        FileNotFoundError,
+    ) as exc:
         print(f"ERROR: classification rejected: {exc}", file=sys.stderr)
         return 2
     except sqlite3.Error as exc:
@@ -552,20 +599,33 @@ def cmd_classify(args: argparse.Namespace) -> int:
 
     payload = {
         "schema": "ck3chronicle.classification-run",
-        "schema_version": 1,
+        "schema_version": 2,
         "session_id": result.session_id,
         "run_id": result.run_id,
         "model_revision_id": result.model_revision_id,
         "model_sha256": result.model_sha256,
         "classification_contract_version": result.classification_contract_version,
         "counts": result.counts,
-        "mutated": result.mutated,
+        "classification_mutated": result.mutated,
+        "semantic_projection": {
+            "run_id": projection.projection_run_id,
+            "catalog_revision_id": projection.projection_catalog_revision_id,
+            "catalog_sha256": projection.projection_catalog_sha256,
+            "contract_version": projection.projection_contract_version,
+            "counts": projection.counts,
+            "mutated": projection.mutated,
+        },
+        "mutated": result.mutated or projection.mutated,
     }
     if args.json:
         print(json.dumps(payload, sort_keys=True))
     else:
         counts = result.counts
-        action = "classified" if result.mutated else "already classified"
+        action = (
+            "classified and projected"
+            if result.mutated or projection.mutated
+            else "already classified and projected"
+        )
         print(
             f"session_id={result.session_id}: {action} "
             f"{counts['semantic_occurrences']} semantic occurrences from "
@@ -946,7 +1006,7 @@ def cmd_process_pending(args: argparse.Namespace) -> int:
     import sqlite3
 
     from . import config
-    from .classification.catalog import load_approved_classifier
+    from .classification.catalog import load_approved_semantic_runtime
     from .classification.model import ModelIntegrityError
     from .harvester import ArchiveIntegrityError
     from .processing import process_pending
@@ -975,8 +1035,9 @@ def cmd_process_pending(args: argparse.Namespace) -> int:
         return exit_code
 
     try:
+        classifier, projection_catalog = load_approved_semantic_runtime()
         result = process_pending(
-            config.ROOT_CK3CHRONICLE, load_approved_classifier()
+            config.ROOT_CK3CHRONICLE, classifier, projection_catalog
         )
     except ArchiveIntegrityError as exc:
         return fail(3, "archive_integrity", str(exc), "archive")
@@ -989,13 +1050,14 @@ def cmd_process_pending(args: argparse.Namespace) -> int:
 
     payload = {
         "schema": "ck3chronicle.processing-result",
-        "schema_version": 3,
+        "schema_version": 4,
         "finalized_pending": result.finalized_pending,
         "registered_archives": result.registered_archives,
         "registered_runs": result.registered_runs,
         "context_sessions": result.context_sessions,
         "parsed_sessions": result.parsed_sessions,
         "classified_sessions": result.classified_sessions,
+        "projected_sessions": result.projected_sessions,
         "reconciliation_errors": list(result.reconciliation_errors),
         "latest_report": result.latest_report,
     }
@@ -1029,6 +1091,7 @@ def cmd_process_pending(args: argparse.Namespace) -> int:
             f"context={result.context_sessions}; "
             f"parsed={result.parsed_sessions}; "
             f"classified={result.classified_sessions}"
+            f"; projected={result.projected_sessions}"
         )
         for error in result.reconciliation_errors:
             print(f"WARNING: {error}", file=sys.stderr)
@@ -1824,6 +1887,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_classify.add_argument("--session", type=int, required=True, metavar="SESSION_ID")
     p_classify.add_argument("--model", metavar="PATH")
     p_classify.add_argument("--model-sha256", metavar="SHA256")
+    p_classify.add_argument("--projection-catalog", metavar="PATH")
+    p_classify.add_argument("--projection-catalog-sha256", metavar="SHA256")
     p_classify.add_argument(
         "--reclassify",
         action="store_true",

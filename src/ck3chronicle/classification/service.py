@@ -11,7 +11,7 @@ from ck3chronicle.db import repository
 from .inference import ClassificationResult, Classifier
 
 
-CLASSIFICATION_CONTRACT_VERSION = "2.0.0"
+CLASSIFICATION_CONTRACT_VERSION = "2.0.1"
 
 
 class ClassificationError(RuntimeError):

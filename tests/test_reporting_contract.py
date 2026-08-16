@@ -3,8 +3,14 @@
 from __future__ import annotations
 
 from ck3chronicle.classification import classify_session
+from ck3chronicle.classification.catalog import (
+    APPROVED_MODEL_REVISION,
+    APPROVED_PROJECTION_CATALOG_REVISION,
+    load_approved_projection_catalog,
+)
 from ck3chronicle.db import repository
 from ck3chronicle.reporting import build_session_report, latest_session_id
+from ck3chronicle.semantic_projection_service import project_classification_run
 
 from test_classification_persistence_contract import _classifier, _session
 
@@ -13,20 +19,24 @@ def test_rreport_001_executive_report_uses_stored_classification_rows(
     tmp_path,
 ) -> None:
     runtime, captured, conn, session_id = _session(tmp_path)
-    classify_session(conn, session_id, _classifier())
+    classifier = _classifier()
+    classify_session(conn, session_id, classifier)
+    project_classification_run(
+        conn, session_id, load_approved_projection_catalog(classifier.model)
+    )
     # A report is a database projection. The archive is not consulted again.
     (captured.dest_dir / "error.log").unlink()
 
     report = build_session_report(conn, session_id, limit=10)
 
     assert report["schema"] == "ck3chronicle.session-report"
-    assert report["schema_version"] == 6
+    assert report["schema_version"] == 7
     assert report["session"]["session_id"] == session_id
     assert report["session"]["captured_at"] == "2026-08-13T00:00:00+00:00"
     assert report["session"]["legacy_crash_artifact_present"] is False
     assert "crash_present" not in report["session"]
     assert report["parse"]["source_blocks"] == 3
-    assert report["classification"]["model_revision_id"] == "93196794a7e0115d"
+    assert report["classification"]["model_revision_id"] == APPROVED_MODEL_REVISION
     assert report["classification"]["counts"] == {
         "full": 4,
         "l1_l2": 0,
@@ -37,6 +47,10 @@ def test_rreport_001_executive_report_uses_stored_classification_rows(
     assert report["classification"]["full_rate"] == 0.8
     assert report["classification"]["l1_or_better_rate"] == 1.0
     assert report["classification"]["review_required"] == 1
+    assert report["semantic_projection"]["catalog_revision_id"] == (
+        APPROVED_PROJECTION_CATALOG_REVISION
+    )
+    assert report["semantic_projection"]["counts"]["semantic_occurrences"] == 5
 
     assert report["source_summary"] == [
         {"source_family": "pdx_persistent_reader.cpp", "occurrences": 3},
@@ -73,7 +87,11 @@ def test_rreport_001_executive_report_uses_stored_classification_rows(
 
 def test_rreport_002_latest_uses_capture_chronology_not_session_id(tmp_path) -> None:
     _runtime, _captured, conn, first_id = _session(tmp_path)
-    classify_session(conn, first_id, _classifier())
+    classifier = _classifier()
+    classify_session(conn, first_id, classifier)
+    project_classification_run(
+        conn, first_id, load_approved_projection_catalog(classifier.model)
+    )
     conn.execute(
         "UPDATE sessions SET created_at = ? WHERE session_id = ?",
         ("2026-08-13T10:00:00+00:00", first_id),

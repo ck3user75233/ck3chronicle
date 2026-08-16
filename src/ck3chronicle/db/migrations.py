@@ -18,6 +18,7 @@ from .schema import (
     CURRENT_VERSION,
     ISSUE_OCCURRENCES_IDX_DDL,
     RUNTIME_CONTEXT_VERSION,
+    SEMANTIC_PROJECTION_VERSION,
     SESSION_RUNTIME_CONTEXTS_DDL,
     SESSION_CONTEXT_VERSION,
     SESSION_INTELLIGENCE_VERSION,
@@ -51,6 +52,7 @@ def migrations_required(conn: sqlite3.Connection) -> bool:
         "canonical_issues": CANONICAL_ISSUES_VERSION,
         "capture": CAPTURE_VERSION,
         "classification": CLASSIFICATION_VERSION,
+        "semantic_projection": SEMANTIC_PROJECTION_VERSION,
         "session_intelligence": SESSION_INTELLIGENCE_VERSION,
         "runtime_context": RUNTIME_CONTEXT_VERSION,
         "source_resolution": SOURCE_RESOLUTION_VERSION,
@@ -74,9 +76,17 @@ def migrations_required(conn: sqlite3.Connection) -> bool:
         "capture_observations": {"capture_id", "receipt_sha256"},
         "session_runtime_contexts": {"source_session_file_id"},
         "source_blocks": {"source_block_pk", "raw_block_pk"},
-        "issue_occurrences": {"source_block_pk", "issue_ordinal", "log_type"},
-        "issues": {"log_type"},
+        "issue_occurrences": {
+            "source_block_pk", "issue_ordinal", "log_type",
+            "primary_file", "primary_line", "referenced_objects_json",
+            "semantic_projection_run_id",
+        },
+        "issues": {"log_type", "semantic_projection_run_id"},
         "classification_assignments": {"source_block_pk", "payload_pk"},
+        "semantic_projection_runs": {
+            "projection_run_id", "classification_run_id", "session_id",
+            "projection_catalog_sha256", "projection_contract_version",
+        },
     }
     for table, expected in required_columns.items():
         if table not in table_names:
@@ -351,6 +361,68 @@ def _apply_migrations(conn: sqlite3.Connection) -> bool:
 
     compact_storage_migrated = _migrate_compact_storage(conn)
 
+    # Semantic projection adds hash-bound lineage and retains values that can
+    # differ between occurrences of one canonical signature.  Legacy rows can
+    # only inherit their former cluster representative values; future
+    # reprojection reconstructs the exact values from immutable blocks and
+    # stored classifier assignments.
+    issue_cols = {
+        row[1] for row in cur.execute("PRAGMA table_info(issues)").fetchall()
+    }
+    if "semantic_projection_run_id" not in issue_cols:
+        cur.execute(
+            "ALTER TABLE issues ADD COLUMN semantic_projection_run_id INTEGER "
+            "REFERENCES semantic_projection_runs(projection_run_id) "
+            "ON DELETE CASCADE"
+        )
+
+    occurrence_cols = {
+        row[1]
+        for row in cur.execute("PRAGMA table_info(issue_occurrences)").fetchall()
+    }
+    occurrence_additions = {
+        "referenced_objects_json": "TEXT NOT NULL DEFAULT '[]'",
+        "primary_file": "TEXT",
+        "primary_line": "INTEGER",
+        "semantic_projection_run_id": (
+            "INTEGER REFERENCES semantic_projection_runs(projection_run_id) "
+            "ON DELETE CASCADE"
+        ),
+    }
+    added_occurrence_columns: set[str] = set()
+    for column, declaration in occurrence_additions.items():
+        if column not in occurrence_cols:
+            cur.execute(
+                f"ALTER TABLE issue_occurrences ADD COLUMN {column} {declaration}"
+            )
+            added_occurrence_columns.add(column)
+    if added_occurrence_columns & {
+        "referenced_objects_json", "primary_file", "primary_line"
+    }:
+        cur.execute(
+            """
+            UPDATE issue_occurrences
+            SET referenced_objects_json = COALESCE((
+                    SELECT i.referenced_objects_json
+                    FROM issues i
+                    WHERE i.session_id = issue_occurrences.session_id
+                      AND i.signature = issue_occurrences.signature
+                ), '[]'),
+                primary_file = (
+                    SELECT i.primary_file
+                    FROM issues i
+                    WHERE i.session_id = issue_occurrences.session_id
+                      AND i.signature = issue_occurrences.signature
+                ),
+                primary_line = (
+                    SELECT i.primary_line
+                    FROM issues i
+                    WHERE i.session_id = issue_occurrences.session_id
+                      AND i.signature = issue_occurrences.signature
+                )
+            """
+        )
+
     # The mutable session-context model is rejected for fresh databases.  If a
     # user's legacy database already has it, keep it readable and non-destructively
     # add the historical compatibility columns; never create or drop the tables.
@@ -416,6 +488,13 @@ def _apply_migrations(conn: sqlite3.Connection) -> bool:
         VALUES (?, ?, ?)
         """,
         ("classification", CLASSIFICATION_VERSION, now),
+    )
+    cur.execute(
+        """
+        INSERT OR REPLACE INTO schema_versions (component, version, migrated_at)
+        VALUES (?, ?, ?)
+        """,
+        ("semantic_projection", SEMANTIC_PROJECTION_VERSION, now),
     )
     cur.execute(
         """

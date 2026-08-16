@@ -201,3 +201,25 @@ def test_rclass_011_template_postvalidate_rejects_locator_as_key_directly() -> N
 
     assert validation.valid is False
     assert validation.reason == "template_shape_mismatch"
+
+
+def test_rclass_012_closed_semantic_alternatives_are_exact_literals() -> None:
+    accepted = validate_template_tokens(
+        ("No", "pillar", "in", "slot", "heritage", "for", "culture_a"),
+        ("No", "pillar", "in", "slot", "<ALT:heritage|language>", "for", "<KEY>"),
+    )
+    case_near_miss = validate_template_tokens(
+        ("No", "pillar", "in", "slot", "Heritage", "for", "culture_a"),
+        ("No", "pillar", "in", "slot", "<ALT:heritage|language>", "for", "<KEY>"),
+    )
+    novel_literal = validate_template_tokens(
+        ("No", "pillar", "in", "slot", "ethos", "for", "culture_a"),
+        ("No", "pillar", "in", "slot", "<ALT:heritage|language>", "for", "<KEY>"),
+    )
+
+    assert accepted.valid is True
+    assert [(slot.role, slot.value) for slot in accepted.slots] == [
+        ("key", "culture_a")
+    ]
+    assert case_near_miss.valid is False
+    assert novel_literal.valid is False

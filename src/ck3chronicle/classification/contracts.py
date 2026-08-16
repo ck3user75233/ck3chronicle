@@ -43,7 +43,20 @@ class TemplateValidation:
 
 
 def _literal_equal(left: str, right: str) -> bool:
-    return left.casefold() == right.casefold()
+    # Similarity may nominate a near miss, but only the reviewed spelling of a
+    # semantic literal can satisfy the contract. Slot values have already been
+    # replaced by typed placeholders, so exact comparison here does not make
+    # keys, locators, parameters, or types case-sensitive.
+    return left == right
+
+
+def _closed_alternatives(token: str) -> tuple[str, ...] | None:
+    if not token.startswith("<ALT:") or not token.endswith(">"):
+        return None
+    values = tuple(token[5:-1].split("|"))
+    if not values or any(not value for value in values) or len(values) != len(set(values)):
+        return None
+    return values
 
 
 def validate_template_tokens(
@@ -72,6 +85,11 @@ def validate_template_tokens(
             return ((),) if candidate_index == len(candidate) else ()
 
         expected = template[template_index]
+        alternatives = _closed_alternatives(expected)
+        if alternatives is not None:
+            if candidate_index >= len(candidate) or candidate[candidate_index] not in alternatives:
+                return ()
+            return match(template_index + 1, candidate_index + 1)
         if expected not in SLOT_TOKENS:
             if candidate_index >= len(candidate) or not _literal_equal(
                 candidate[candidate_index], expected

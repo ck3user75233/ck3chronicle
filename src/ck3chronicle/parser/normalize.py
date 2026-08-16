@@ -6,6 +6,7 @@ Signature formula (deterministic across processes and platforms):
         category + "\\n" +
         error_type + "\\n" +
         ",".join(sorted(tags)) + "\\n" +
+        normalized_engine_source_family + "\\n" +
         message_template
     )
     signature = hashlib.sha256(sig_input.encode("utf-8")).hexdigest()[:16]
@@ -72,6 +73,7 @@ def normalize(draft: IssueDraft) -> NormalizedIssue:
         draft.category + "\n" +
         draft.error_type + "\n" +
         ",".join(tags_sorted) + "\n" +
+        re.sub(r":\d+$", "", draft.engine_source) + "\n" +
         text
     )
     signature = hashlib.sha256(sig_input.encode("utf-8")).hexdigest()[:16]

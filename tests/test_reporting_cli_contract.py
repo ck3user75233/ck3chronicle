@@ -7,7 +7,9 @@ import json
 
 from ck3chronicle import config
 from ck3chronicle.classification import classify_session
+from ck3chronicle.classification.catalog import load_approved_projection_catalog
 from ck3chronicle.cli import build_parser
+from ck3chronicle.semantic_projection_service import project_classification_run
 from ck3chronicle.db import repository
 
 from test_classification_persistence_contract import _classifier, _session
@@ -15,7 +17,11 @@ from test_classification_persistence_contract import _classifier, _session
 
 def _ready(tmp_path, monkeypatch):
     runtime, _captured, conn, session_id = _session(tmp_path)
-    classify_session(conn, session_id, _classifier())
+    classifier = _classifier()
+    classify_session(conn, session_id, classifier)
+    project_classification_run(
+        conn, session_id, load_approved_projection_catalog(classifier.model)
+    )
     conn.close()
     monkeypatch.setattr(config, "ROOT_CK3CHRONICLE", runtime)
     return build_parser(), session_id
@@ -100,7 +106,7 @@ def test_rreportcli_004_exact_run_selection_survives_evidence_reuse(
     exact = parser.parse_args(["report", "--run", str(first_id), "--json"])
     assert exact.func(exact) == 0
     exact_payload = json.loads(capsys.readouterr().out)["result"]
-    assert exact_payload["schema_version"] == 6
+    assert exact_payload["schema_version"] == 7
     assert exact_payload["run"]["run_id"] == first_id
     assert exact_payload["run"]["capture_id"] == "first-observed-run"
 

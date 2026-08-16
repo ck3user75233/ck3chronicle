@@ -605,8 +605,12 @@ def latest_run(
     readiness = """
         AND s.parse_status = 'succeeded'
         AND EXISTS (
-            SELECT 1 FROM classification_runs cr
-            WHERE cr.session_id = s.session_id
+            SELECT 1
+            FROM semantic_projection_runs spr
+            JOIN classification_runs cr
+              ON cr.run_id = spr.classification_run_id
+             AND cr.session_id = spr.session_id
+            WHERE spr.session_id = s.session_id
         )
     """ if reportable_only else ""
     return conn.execute(
@@ -1723,6 +1727,558 @@ def get_classification_model(
         "SELECT * FROM classification_models WHERE model_sha256 = ?",
         (model_sha256,),
     ).fetchone()
+
+
+def get_semantic_projection_run(
+    conn: sqlite3.Connection,
+    session_id: int,
+) -> sqlite3.Row | None:
+    """Return the one currently accepted canonical semantic projection."""
+    return conn.execute(
+        """
+        SELECT *
+        FROM semantic_projection_runs
+        WHERE session_id = ?
+        """,
+        (session_id,),
+    ).fetchone()
+
+
+def get_semantic_projection_inputs(
+    conn: sqlite3.Connection,
+    classification_run_id: int,
+) -> list[sqlite3.Row]:
+    """Return stored classifier assignments joined to immutable lexical blocks."""
+    return conn.execute(
+        """
+        SELECT cr.run_id AS classification_run_id,
+               cr.session_id,
+               cr.model_sha256 AS run_model_sha256,
+               cr.classification_contract_version,
+               cm.revision_id AS model_revision_id,
+               ca.source_block_pk,
+               ca.unit_ordinal,
+               cp.model_sha256 AS payload_model_sha256,
+               cp.source_family AS classified_source_family,
+               cp.assignment_level,
+               cp.contract_id,
+               cp.confidence,
+               cp.semantic_text,
+               cp.location_evidence,
+               cp.normalized_tokens_json,
+               cp.l1_template,
+               cp.l2_template,
+               cp.structured_slots_json,
+               sb.log_relpath,
+               sb.start_line,
+               sb.end_line,
+               sb.timestamp,
+               sb.level,
+               sb.source_tag,
+               sb.source_family AS block_source_family,
+               rb.raw_block_sha256,
+               rb.raw_byte_length,
+               rb.raw_block
+        FROM classification_runs cr
+        JOIN classification_models cm
+          ON cm.model_sha256 = cr.model_sha256
+        JOIN classification_assignments ca
+          ON ca.run_id = cr.run_id AND ca.session_id = cr.session_id
+        JOIN classification_payloads cp
+          ON cp.payload_pk = ca.payload_pk
+        JOIN source_blocks sb
+          ON sb.source_block_pk = ca.source_block_pk
+         AND sb.session_id = ca.session_id
+        JOIN raw_block_contents rb
+          ON rb.raw_block_pk = sb.raw_block_pk
+        WHERE cr.run_id = ?
+        ORDER BY sb.start_line, sb.source_block_pk, ca.unit_ordinal
+        """,
+        (classification_run_id,),
+    ).fetchall()
+
+
+def _semantic_projection_counts(
+    occurrences: Sequence[Any],
+) -> dict[str, int]:
+    by_block: dict[int, list[int]] = defaultdict(list)
+    signatures: set[str] = set()
+    unclassified = 0
+    for occurrence in occurrences:
+        source_block_pk = int(occurrence.source_block_pk)
+        unit_ordinal = int(occurrence.unit_ordinal)
+        by_block[source_block_pk].append(unit_ordinal)
+        signatures.add(occurrence.issue.signature)
+        unclassified += occurrence.issue.category == "unclassified"
+    return {
+        "source_blocks": len(by_block),
+        "semantic_occurrences": len(occurrences),
+        "issue_clusters": len(signatures),
+        "unclassified_occurrences": unclassified,
+        "multi_issue_blocks": sum(len(items) > 1 for items in by_block.values()),
+    }
+
+
+def _validate_semantic_projection_prepared(
+    conn: sqlite3.Connection,
+    *,
+    classification_run: sqlite3.Row,
+    occurrences: Sequence[Any],
+) -> dict[str, int]:
+    counts = _semantic_projection_counts(occurrences)
+    expected_keys = {
+        (int(row["source_block_pk"]), int(row["unit_ordinal"]))
+        for row in conn.execute(
+            """
+            SELECT source_block_pk, unit_ordinal
+            FROM classification_assignments
+            WHERE run_id = ? AND session_id = ?
+            """,
+            (
+                int(classification_run["run_id"]),
+                int(classification_run["session_id"]),
+            ),
+        ).fetchall()
+    }
+    actual_keys = {
+        (int(item.source_block_pk), int(item.unit_ordinal))
+        for item in occurrences
+    }
+    if len(actual_keys) != len(occurrences):
+        raise ValueError("semantic projection contains duplicate block/unit keys")
+    if actual_keys != expected_keys:
+        raise ValueError(
+            "semantic projection keys do not match stored classification assignments"
+        )
+    if counts["source_blocks"] != int(classification_run["source_block_count"]):
+        raise ValueError("semantic projection source-block count does not reconcile")
+    if counts["semantic_occurrences"] != int(
+        classification_run["semantic_occurrence_count"]
+    ):
+        raise ValueError("semantic projection occurrence count does not reconcile")
+
+    by_block: dict[int, list[Any]] = defaultdict(list)
+    for occurrence in occurrences:
+        by_block[int(occurrence.source_block_pk)].append(occurrence)
+    block_rows = conn.execute(
+        """
+        SELECT source_block_pk, log_relpath, start_line
+        FROM source_blocks
+        WHERE session_id = ?
+        """,
+        (int(classification_run["session_id"]),),
+    ).fetchall()
+    blocks = {int(row["source_block_pk"]): row for row in block_rows}
+    if set(by_block) != set(blocks):
+        raise ValueError("semantic projection does not cover every source block")
+    for source_block_pk, items in by_block.items():
+        if sorted(int(item.unit_ordinal) for item in items) != list(range(len(items))):
+            raise ValueError("semantic projection unit ordinals are not contiguous")
+        block = blocks[source_block_pk]
+        if any(
+            item.issue.log_relpath != block["log_relpath"]
+            or int(item.issue.line_number) != int(block["start_line"])
+            for item in items
+        ):
+            raise ValueError("semantic projection provenance disagrees with source block")
+    return counts
+
+
+def _upsert_projected_cluster_occurrence(
+    conn: sqlite3.Connection,
+    *,
+    session_id: int,
+    projection_run_id: int,
+    issue: NormalizedIssue,
+) -> None:
+    conn.execute(
+        """
+        INSERT INTO issues (
+            session_id, signature, category, error_type, tags_json,
+            engine_source, severity, confidence, message_template,
+            sample_message, primary_file, primary_line,
+            referenced_symbols_json, referenced_objects_json, extra_json,
+            occurrence_count, log_type, semantic_projection_run_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1,
+                  'error', ?)
+        ON CONFLICT(session_id, signature) DO UPDATE SET
+            occurrence_count = issues.occurrence_count + 1
+        """,
+        (
+            session_id,
+            issue.signature,
+            issue.category,
+            issue.error_type,
+            _json(issue.tags),
+            issue.engine_source,
+            issue.severity,
+            issue.confidence,
+            issue.message_template,
+            issue.sample_message,
+            issue.primary_file,
+            issue.primary_line,
+            _json(issue.referenced_symbols),
+            _json(issue.referenced_objects),
+            _json(issue.extra_json),
+            projection_run_id,
+        ),
+    )
+
+
+def _insert_projected_occurrence(
+    conn: sqlite3.Connection,
+    *,
+    session_id: int,
+    projection_run_id: int,
+    occurrence: Any,
+) -> None:
+    issue = occurrence.issue
+    conn.execute(
+        """
+        INSERT INTO issue_occurrences (
+            session_id, signature, source_block_pk, issue_ordinal,
+            log_relpath, line_number, occurrence_count,
+            referenced_symbols_json, referenced_objects_json,
+            primary_file, primary_line, extra_json, log_type,
+            semantic_projection_run_id
+        ) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, 'error', ?)
+        """,
+        (
+            session_id,
+            issue.signature,
+            int(occurrence.source_block_pk),
+            int(occurrence.unit_ordinal),
+            issue.log_relpath,
+            issue.line_number,
+            _json(issue.referenced_symbols),
+            _json(issue.referenced_objects),
+            issue.primary_file,
+            issue.primary_line,
+            _json(issue.extra_json),
+            projection_run_id,
+        ),
+    )
+
+
+def _postvalidate_semantic_projection(
+    conn: sqlite3.Connection,
+    projection_run_id: int,
+) -> None:
+    lineage = conn.execute(
+        "SELECT * FROM semantic_projection_runs WHERE projection_run_id = ?",
+        (projection_run_id,),
+    ).fetchone()
+    if lineage is None:
+        raise ValueError("semantic projection lineage is missing")
+    session_id = int(lineage["session_id"])
+    classification_run_id = int(lineage["classification_run_id"])
+    totals = conn.execute(
+        """
+        SELECT
+            (SELECT COUNT(*) FROM source_blocks WHERE session_id = ?) AS blocks,
+            (SELECT COUNT(*) FROM issue_occurrences
+              WHERE session_id = ? AND semantic_projection_run_id = ?) AS occurrences,
+            (SELECT COUNT(*) FROM issues
+              WHERE session_id = ? AND semantic_projection_run_id = ?) AS clusters,
+            (SELECT COALESCE(SUM(issue_count), 0) FROM source_blocks
+              WHERE session_id = ?) AS block_issue_sum,
+            (SELECT COALESCE(SUM(occurrence_count), 0) FROM issues
+              WHERE session_id = ? AND semantic_projection_run_id = ?)
+              AS cluster_occurrence_sum,
+            (SELECT COUNT(*) FROM source_blocks
+              WHERE session_id = ? AND issue_count > 1) AS multi_issue_blocks,
+            (SELECT COUNT(*)
+               FROM issue_occurrences io
+               JOIN issues i
+                 ON i.session_id = io.session_id AND i.signature = io.signature
+              WHERE io.session_id = ?
+                AND io.semantic_projection_run_id = ?
+                AND i.category = 'unclassified') AS unclassified_occurrences
+        """,
+        (
+            session_id,
+            session_id, projection_run_id,
+            session_id, projection_run_id,
+            session_id,
+            session_id, projection_run_id,
+            session_id,
+            session_id, projection_run_id,
+        ),
+    ).fetchone()
+    expected = (
+        int(lineage["source_block_count"]),
+        int(lineage["semantic_occurrence_count"]),
+        int(lineage["issue_cluster_count"]),
+        int(lineage["semantic_occurrence_count"]),
+        int(lineage["semantic_occurrence_count"]),
+        int(lineage["multi_issue_block_count"]),
+        int(lineage["unclassified_occurrence_count"]),
+    )
+    actual = tuple(int(value) for value in totals)
+    if actual != expected:
+        raise ValueError(
+            "persisted semantic projection totals disagree: "
+            f"expected={expected}, actual={actual}"
+        )
+
+    invalid_blocks = int(
+        conn.execute(
+            """
+            SELECT COUNT(*) FROM (
+                SELECT sb.source_block_pk
+                FROM source_blocks sb
+                LEFT JOIN issue_occurrences io
+                  ON io.session_id = sb.session_id
+                 AND io.source_block_pk = sb.source_block_pk
+                 AND io.semantic_projection_run_id = ?
+                WHERE sb.session_id = ?
+                GROUP BY sb.source_block_pk, sb.issue_count
+                HAVING COUNT(io.issue_occurrence_id) != sb.issue_count
+                    OR MIN(io.issue_ordinal) != 0
+                    OR MAX(io.issue_ordinal) != sb.issue_count - 1
+            )
+            """,
+            (projection_run_id, session_id),
+        ).fetchone()[0]
+    )
+    invalid_clusters = int(
+        conn.execute(
+            """
+            SELECT COUNT(*) FROM (
+                SELECT i.issue_id
+                FROM issues i
+                LEFT JOIN issue_occurrences io
+                  ON io.session_id = i.session_id
+                 AND io.signature = i.signature
+                 AND io.semantic_projection_run_id = i.semantic_projection_run_id
+                WHERE i.session_id = ?
+                  AND i.semantic_projection_run_id = ?
+                GROUP BY i.issue_id, i.occurrence_count
+                HAVING COUNT(io.issue_occurrence_id) != i.occurrence_count
+            )
+            """,
+            (session_id, projection_run_id),
+        ).fetchone()[0]
+    )
+    invalid_provenance = int(
+        conn.execute(
+            """
+            SELECT COUNT(*)
+            FROM issue_occurrences io
+            LEFT JOIN source_blocks sb
+              ON sb.source_block_pk = io.source_block_pk
+             AND sb.session_id = io.session_id
+            LEFT JOIN issues i
+              ON i.session_id = io.session_id AND i.signature = io.signature
+            WHERE io.session_id = ?
+              AND io.semantic_projection_run_id = ?
+              AND (
+                  sb.source_block_pk IS NULL OR i.issue_id IS NULL
+                  OR i.semantic_projection_run_id != io.semantic_projection_run_id
+                  OR io.log_relpath != sb.log_relpath
+                  OR io.line_number != sb.start_line
+              )
+            """,
+            (session_id, projection_run_id),
+        ).fetchone()[0]
+    )
+    unmatched_occurrences = int(
+        conn.execute(
+            """
+            SELECT COUNT(*)
+            FROM issue_occurrences io
+            LEFT JOIN classification_assignments ca
+              ON ca.run_id = ?
+             AND ca.session_id = io.session_id
+             AND ca.source_block_pk = io.source_block_pk
+             AND ca.unit_ordinal = io.issue_ordinal
+            WHERE io.session_id = ?
+              AND io.semantic_projection_run_id = ?
+              AND ca.classification_assignment_id IS NULL
+            """,
+            (classification_run_id, session_id, projection_run_id),
+        ).fetchone()[0]
+    )
+    missing_occurrences = int(
+        conn.execute(
+            """
+            SELECT COUNT(*)
+            FROM classification_assignments ca
+            LEFT JOIN issue_occurrences io
+              ON io.session_id = ca.session_id
+             AND io.source_block_pk = ca.source_block_pk
+             AND io.issue_ordinal = ca.unit_ordinal
+             AND io.semantic_projection_run_id = ?
+            WHERE ca.run_id = ? AND ca.session_id = ?
+              AND io.issue_occurrence_id IS NULL
+            """,
+            (projection_run_id, classification_run_id, session_id),
+        ).fetchone()[0]
+    )
+    session_counts = conn.execute(
+        """
+        SELECT parse_source_blocks, parse_issue_occurrences,
+               parse_issue_clusters, parse_unclassified_occurrences,
+               parse_multi_issue_blocks
+        FROM sessions WHERE session_id = ?
+        """,
+        (session_id,),
+    ).fetchone()
+    expected_session = (
+        int(lineage["source_block_count"]),
+        int(lineage["semantic_occurrence_count"]),
+        int(lineage["issue_cluster_count"]),
+        int(lineage["unclassified_occurrence_count"]),
+        int(lineage["multi_issue_block_count"]),
+    )
+    actual_session = tuple(int(value) for value in session_counts)
+    if (
+        invalid_blocks
+        or invalid_clusters
+        or invalid_provenance
+        or unmatched_occurrences
+        or missing_occurrences
+        or actual_session != expected_session
+    ):
+        raise ValueError(
+            "persisted semantic projection distribution disagrees: "
+            f"blocks={invalid_blocks}, clusters={invalid_clusters}, "
+            f"provenance={invalid_provenance}, unmatched={unmatched_occurrences}, "
+            f"missing={missing_occurrences}, session_counts="
+            f"{actual_session != expected_session}"
+        )
+
+
+def validate_semantic_projection(
+    conn: sqlite3.Connection,
+    projection_run_id: int,
+) -> None:
+    """Revalidate a previously accepted projection without mutating storage."""
+    _postvalidate_semantic_projection(conn, projection_run_id)
+
+
+def replace_semantic_projection(
+    conn: sqlite3.Connection,
+    *,
+    session_id: int,
+    classification_run_id: int,
+    model_sha256: str,
+    projection_catalog_sha256: str,
+    projection_catalog_revision_id: str,
+    projection_catalog_schema_version: int,
+    projection_contract_version: str,
+    occurrences: Sequence[Any],
+) -> int:
+    """Atomically replace canonical issues from one stored classification run."""
+    projected_at = datetime.now(timezone.utc).isoformat()
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        classification_run = conn.execute(
+            """
+            SELECT * FROM classification_runs
+            WHERE run_id = ? AND session_id = ?
+            """,
+            (classification_run_id, session_id),
+        ).fetchone()
+        if classification_run is None:
+            raise ValueError("classification run does not exist for session")
+        if classification_run["model_sha256"] != model_sha256:
+            raise ValueError("classification run model disagrees with projection")
+        counts = _validate_semantic_projection_prepared(
+            conn,
+            classification_run=classification_run,
+            occurrences=occurrences,
+        )
+
+        # Canonical issues are one current semantic view per session. Deleting
+        # the old lineage cascades its rows; explicit deletes also remove legacy
+        # parser rows whose projection lineage predates this schema.
+        conn.execute(
+            "DELETE FROM semantic_projection_runs WHERE session_id = ?",
+            (session_id,),
+        )
+        conn.execute("DELETE FROM issue_occurrences WHERE session_id = ?", (session_id,))
+        conn.execute("DELETE FROM issues WHERE session_id = ?", (session_id,))
+        cursor = conn.execute(
+            """
+            INSERT INTO semantic_projection_runs (
+                classification_run_id, session_id, model_sha256,
+                projection_catalog_sha256, projection_catalog_revision_id,
+                projection_catalog_schema_version, projection_contract_version,
+                projected_at, source_block_count, semantic_occurrence_count,
+                issue_cluster_count, unclassified_occurrence_count,
+                multi_issue_block_count
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                classification_run_id,
+                session_id,
+                model_sha256,
+                projection_catalog_sha256,
+                projection_catalog_revision_id,
+                projection_catalog_schema_version,
+                projection_contract_version,
+                projected_at,
+                counts["source_blocks"],
+                counts["semantic_occurrences"],
+                counts["issue_clusters"],
+                counts["unclassified_occurrences"],
+                counts["multi_issue_blocks"],
+            ),
+        )
+        assert cursor.lastrowid is not None
+        projection_run_id = int(cursor.lastrowid)
+
+        by_block = Counter(int(item.source_block_pk) for item in occurrences)
+        conn.executemany(
+            "UPDATE source_blocks SET issue_count = ? "
+            "WHERE session_id = ? AND source_block_pk = ?",
+            [
+                (count, session_id, source_block_pk)
+                for source_block_pk, count in by_block.items()
+            ],
+        )
+        for occurrence in occurrences:
+            _upsert_projected_cluster_occurrence(
+                conn,
+                session_id=session_id,
+                projection_run_id=projection_run_id,
+                issue=occurrence.issue,
+            )
+            _insert_projected_occurrence(
+                conn,
+                session_id=session_id,
+                projection_run_id=projection_run_id,
+                occurrence=occurrence,
+            )
+        updated = conn.execute(
+            """
+            UPDATE sessions
+            SET parse_issue_occurrences = ?,
+                parse_issue_clusters = ?,
+                parse_unclassified_occurrences = ?,
+                parse_multi_issue_blocks = ?
+            WHERE session_id = ?
+              AND parse_status = 'succeeded'
+              AND parse_source_blocks = ?
+            """,
+            (
+                counts["semantic_occurrences"],
+                counts["issue_clusters"],
+                counts["unclassified_occurrences"],
+                counts["multi_issue_blocks"],
+                session_id,
+                counts["source_blocks"],
+            ),
+        ).rowcount
+        if updated != 1:
+            raise ValueError("semantic projection session parse state is stale")
+        _postvalidate_semantic_projection(conn, projection_run_id)
+        conn.commit()
+        return projection_run_id
+    except Exception:
+        conn.rollback()
+        raise
 
 
 def list_classification_review_items(

@@ -6,6 +6,7 @@ import json
 
 from ck3chronicle import config
 from ck3chronicle.classification import classify_session
+from ck3chronicle.classification.catalog import load_approved_projection_catalog
 from ck3chronicle.cli import build_parser
 from ck3chronicle.db import repository
 from ck3chronicle.harvester import MANIFEST_VERSION, finalize_pending, spool_logs
@@ -13,6 +14,7 @@ from ck3chronicle.parser.service import parse_session
 from ck3chronicle.runtime_context import parse_runtime_context
 from ck3chronicle.source_resolution import observe_file_instances
 from ck3chronicle.triage import _file_from_location, build_triage
+from ck3chronicle.semantic_projection_service import project_classification_run
 
 from foundation_oracle import SIX_LOG_BYTES, write_logs
 from test_classification_persistence_contract import _classifier
@@ -75,7 +77,11 @@ def _triage_sessions(tmp_path):
             files=captured.files,
         )
         parse_session(conn, runtime, session_id)
-        classify_session(conn, session_id, _classifier())
+        classifier = _classifier()
+        classify_session(conn, session_id, classifier)
+        project_classification_run(
+            conn, session_id, load_approved_projection_catalog(classifier.model)
+        )
         parse_runtime_context(conn, runtime, session_id)
         session_ids.append(session_id)
     return runtime, conn, session_ids[0], session_ids[1], target

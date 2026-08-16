@@ -15,7 +15,7 @@ from typing import Any, Iterable
 from .db import repository
 
 
-CONTEXT_CONTRACT_VERSION = "2.0.0"
+CONTEXT_CONTRACT_VERSION = "2.0.1"
 
 
 class RuntimeContextError(RuntimeError):
@@ -86,10 +86,19 @@ _WORKSHOP_PATH = re.compile(
 )
 _WORKSHOP_DESCRIPTOR = re.compile(r"(?:^|/)ugc_(?P<key>\d+)\.mod$", re.IGNORECASE)
 _LOCAL_DESCRIPTOR = re.compile(r"(?:^|/)mod/(?P<name>.+)\.mod$", re.IGNORECASE)
+_ABSOLUTE_MOUNT_PATH = re.compile(
+    r"^(?:[A-Za-z]:/|//[^/]+/[^/]+(?:/|$)|/)", re.IGNORECASE
+)
 
 
 def _normalized_path(value: str) -> str:
     return value.strip().replace("\\", "/").rstrip("/")
+
+
+def _valid_mount_path(value: str) -> str | None:
+    """Return one normalized absolute mount path, or reject malformed evidence."""
+    normalized = _normalized_path(value)
+    return normalized if _ABSOLUTE_MOUNT_PATH.match(normalized) else None
 
 
 def _dlc_descriptor_key(path: str) -> str | None:
@@ -154,6 +163,18 @@ class _BlockCandidate:
             self.paths.append(path)
         else:
             self.malformed_count += 1
+
+    def starts_new_candidate(self, path: str | None) -> bool:
+        """Recognize a repeated mount sequence without relying on its length."""
+        if path is None or not self.paths:
+            return False
+        if path.casefold() == self.paths[0].casefold():
+            # A return to the exact first root is an observable sequence restart,
+            # including a DLC-only playset where no DLC-to-mod transition exists.
+            return True
+        return _DLC_PATH.search(path) is not None and any(
+            _DLC_PATH.search(prior) is None for prior in self.paths
+        )
 
     @property
     def sha256(self) -> str:
@@ -272,6 +293,12 @@ def _analyze_debug_context(
         )
         if marker_like:
             mode = None
+            path = _valid_mount_path(mount.group("path")) if mount else None
+            if current is not None and current.starts_new_candidate(path):
+                current.terminated = True
+                current.termination_evidence = "next_mount_block"
+                blocks.append(current)
+                current = None
             if current is None:
                 current = _BlockCandidate(
                     start_line=line_number,
@@ -279,7 +306,6 @@ def _analyze_debug_context(
                     end_line=line_number,
                     end_byte=end_byte,
                 )
-            path = _normalized_path(mount.group("path")) if mount else None
             current.add(
                 line_number=line_number,
                 end_byte=end_byte,

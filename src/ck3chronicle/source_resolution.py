@@ -412,9 +412,13 @@ def referenced_file_paths(
     """Return classified file locators for the session's latest model run."""
     run = conn.execute(
         """
-        SELECT run_id FROM classification_runs
-        WHERE session_id = ?
-        ORDER BY classified_at DESC, run_id DESC
+        SELECT cr.run_id
+        FROM classification_runs cr
+        JOIN semantic_projection_runs spr
+          ON spr.classification_run_id = cr.run_id
+         AND spr.session_id = cr.session_id
+        WHERE cr.session_id = ?
+        ORDER BY cr.classified_at DESC, cr.run_id DESC
         LIMIT 1
         """,
         (session_id,),

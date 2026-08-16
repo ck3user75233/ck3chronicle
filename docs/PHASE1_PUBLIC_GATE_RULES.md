@@ -68,6 +68,24 @@ exception path/hash/size/source-time provenance; and `latest` to skip
 unreportable D and select C. Ordering is `observed_ended_at DESC, run_id DESC`.
 Evidence-bundle timestamps cannot substitute for run chronology.
 
+## `P1-RUN-04` runtime states
+
+Runtime state is scored from observable `Mounted Data:` structure, never from
+a fixed or minimum mount count. A terminated, internally valid candidate whose
+27 DLC and one mod entries exactly match the optional inventory remains a valid
+complete one-mod playset; the authentic public crash file does not contain an
+observable partial-block signal. A partial case must therefore introduce a
+hash-bound structural fault, such as one malformed mount entry among otherwise
+valid entries. Removing the terminating non-mount line exercises `truncated`,
+not `partial`.
+
+An exact `:/` to `?/` edit in one absolute mount root is malformed evidence:
+the edited entry cannot remain valid or become an unknown mounted root. An
+exact contiguous duplicate of the authentic complete sequence is two
+candidates and therefore `ambiguous`; it cannot be merged into one candidate
+with twice the entries. The remaining state rules are the observable
+definitions in `PRODUCT_CONTRACT.md`.
+
 ## `P1-REP-07` command taxonomy
 
 Every JSON case emits exactly one command-result object on stdout, with no

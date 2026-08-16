@@ -43,7 +43,7 @@ Historical material is recoverable from:
 - atomic parse and reparse persistence.
 
 The implemented foundation and production classifier seam are covered by the
-new reboot-owned suite: 139 tests at the current successor checkpoint. No
+new reboot-owned suite: 182 tests at the current successor checkpoint. No
 inherited test contributes to that count.
 
 These are fast regression tests. They do not constitute Phase 1 exit evidence.
@@ -69,6 +69,22 @@ it from semantic identity, and automatically reparses stored projections made
 under the preceding parser contract. `errors --run` now also exposes the exact
 selected run in its version-2 result.
 
+The later frozen candidate `1f4d8c2` completed the repaired public v4 run. Final
+independent adjudication was 23 pass, five product fail, and six infrastructure
+unscored, so the private holdout remained blocked. The product failures were:
+malformed/duplicated runtime-state handling; 0/252 exact canonical semantic
+rows despite sound block linkage; two case-variant near misses incorrectly
+accepted as full contracts; and the matching malformed-runtime mutation.
+
+The current successor checkpoint repairs those failures. Runtime candidates
+are structurally separated and absolute mount paths are validated. Semantic
+literals compare exactly and case-sensitively. Most importantly, the empirical
+classifier now feeds a separately hash-bound semantic projection catalog rather
+than the old source-substring canonical parser. Development calibration against
+the now-public 252-row authority is 252/252 exact over all scored fields. This
+is a regression/calibration result, not independent exit or private-holdout
+evidence.
+
 Successor input authority is a public nine-unit, 42-file corpus, immutably
 gate-bound by manifest SHA-256
 `407e47d12bc17f30e2abd453dc69c4dda0b4e3fab705e2e361e6d26a8e6a6147`.
@@ -85,12 +101,13 @@ release holdout because they have already influenced implementation.
 
 ## Implemented classifier runtime
 
-- exact reviewed model artifact promoted under `models/93196794a7e0115d`;
+- exact reviewed model artifact promoted under `models/67303093ecda779d`;
 - whole-file SHA-256 and internal cluster-contract validation before use;
 - source family is a hard classification boundary;
 - ordered-token matching with conservative semantic-lead gating;
 - classification contract v2 typed PostValidate after empirical candidate
   selection; invalid L2 becomes L1 and invalid unlayered shape becomes unknown;
+- exact case-sensitive semantic-literal validation;
 - locator grammar runs before L1 assignment and a typed locator cannot satisfy
   a key, value, parameter, or type slot;
 - grammar-preserving `scope:<KEY>.<KEY>` normalization;
@@ -103,6 +120,10 @@ release holdout because they have already influenced implementation.
 - lossless raw-block and complete-classifier-payload dictionaries, with compact
   integer relationships for every independently countable occurrence;
 - atomic same-model reclassification with prior-run rollback on failure.
+- hash-bound semantic projection catalog schema v2 with total contract
+  disposition and contract-specific symbol/object/locator selectors;
+- database-only canonical reprojection from persisted classifications, with
+  exact model/catalog lineage and atomic per-block/per-signature validation;
 - schema-versioned `classify --json` with same-model idempotence;
 - bounded stored-record `review-queue` for L1-only and unknown patterns.
 - database-only executive `report`, chronological `latest`, and bounded
@@ -113,7 +134,7 @@ release holdout because they have already influenced implementation.
   generic pipeline failures;
 - newest-reportable-run `latest` selection plus exact `report --run` and
   `errors --run` selection when content-addressed evidence is reused;
-- compact 822-row model-contract catalog for readable templates without
+- compact 891-row model-contract catalog for readable templates without
   duplicating template text per occurrence;
 - idempotent `process-pending` finalization → registration → parse → classify
   → latest-report workflow.
@@ -143,21 +164,13 @@ release holdout because they have already influenced implementation.
 - triage source-observation deltas when both compared sessions contain stored
   observations, with correlation kept distinct from causation.
 
-The pre-PostValidate classification contract v1 was compared with the frozen
-release evaluator across all five training-excluded logs: 194,022 semantic
-occurrences reconciled by assignment count. Contract v2 deliberately changes
-that behavior by rejecting typed-slot violations. Read-only development probes
-over current stored evidence retained 98.72% L1-or-better coverage on the
-largest session (100,000 blocks / 103,358 semantic occurrences) while
-downgrading 1,055 formerly overconfident assignments; its read-only inference
-probe took 45.7 seconds and the latest 2,124-unit probe took 0.34 seconds. These
-are implementation measurements, not independent semantic or performance exit
-evidence.
-
-This compatibility result is not Phase 1 semantic exit evidence. At least one
-current full-assignment template has failed subsequent human plausibility
-review, and the private holdout must be selected and scored only after the
-release candidate is frozen.
+The current learner revision uses eight distinct training logs containing
+432,847 timestamped blocks and produces 891 source-qualified contracts.
+Development calibration assigns all 252 public semantic samples with 100%
+category/type purity and stable locator/key mutation checks. The downstream
+contract-bound projection independently reproduces all 252 canonical rows
+exactly. These are implementation measurements over known development
+authority, not independent semantic, performance, or private-holdout evidence.
 
 ## Not yet released
 
@@ -211,13 +224,15 @@ migrate automatically. The first post-migration database open verifies
 integrity and reclaims the freed pages automatically; this is not a recurring
 user workflow.
 
-## Approved production model
+## Approved production semantic runtime
 
-- revision: `93196794a7e0115d`;
-- SHA-256: `3bd189b4c93ad260e925d1a1ac3ece7c79cc63217480b79a939f6f7f5d034db3`;
-- normalizer: `ck3-empirical-template-normalizer-v4.6`;
+- revision: `67303093ecda779d`;
+- model SHA-256: `0a508eb8056f37d586921bb4441099dcb71fcf89e4a9d1c0e764b1b86d4c1b89`;
+- projection catalog SHA-256: `c287849b16447e7b154f067c918afb3e0d30563ce56a9c578b06c006f20032b4`;
+- projection revision: `public-semantic-252-contract-evidence-v3`;
+- normalizer: `ck3-empirical-template-normalizer-v4.11`;
 - clusterer: `ordered-token-clusterer-v4-bounded-script-layers`.
 
-The artifact is hash-pinned and used by production persistence, reporting, and
-triage. It is not authority to discard raw evidence or perform automatic mod
-edits.
+Both artifacts are hash-pinned and their exact lineage is used by production
+persistence, reporting, audit, and triage. They are not authority to discard
+raw evidence or perform automatic mod edits.

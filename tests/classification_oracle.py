@@ -10,6 +10,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from ck3chronicle.classification.model import NORMALIZER_VERSION
+
 
 SOURCE = "jomini_script_system.cpp"
 
@@ -70,14 +72,14 @@ MODEL = {
     "schema_version": 3,
     "revision": {
         "revision_id": "reboot-test-model",
-        "normalizer_version": "ck3-empirical-template-normalizer-v4.6",
+        "normalizer_version": NORMALIZER_VERSION,
         "clusterer_version": "ordered-token-clusterer-v4-bounded-script-layers",
         "threshold": 0.72,
         "training_sha256": ["training-a", "training-b"],
     },
     "algorithm": {
         "cluster_threshold": 0.72,
-        "normalizer_version": "ck3-empirical-template-normalizer-v4.6",
+        "normalizer_version": NORMALIZER_VERSION,
         "clusterer_version": "ordered-token-clusterer-v4-bounded-script-layers",
     },
     "summary": {"distinct_error_logs": 2, "clusters": 5},

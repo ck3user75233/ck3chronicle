@@ -24,17 +24,28 @@ def _classification_run(
     session_id: int,
     model_sha256: str | None,
 ) -> sqlite3.Row | None:
+    parameters: tuple[object, ...]
+    model_filter = ""
     if model_sha256 is not None:
-        return repository.get_classification_run(conn, session_id, model_sha256)
+        model_filter = "AND cr.model_sha256 = ?"
+        parameters = (session_id, model_sha256)
+    else:
+        parameters = (session_id,)
     return conn.execute(
         """
-        SELECT *
-        FROM classification_runs
-        WHERE session_id = ?
-        ORDER BY classified_at DESC, run_id DESC
+        SELECT cr.*
+        FROM classification_runs cr
+        JOIN semantic_projection_runs spr
+          ON spr.classification_run_id = cr.run_id
+         AND spr.session_id = cr.session_id
+        WHERE cr.session_id = ?
+        """
+        + model_filter
+        + """
+        ORDER BY cr.classified_at DESC, cr.run_id DESC
         LIMIT 1
         """,
-        (session_id,),
+        parameters,
     ).fetchone()
 
 
@@ -144,6 +155,9 @@ def previous_session_id(
             SELECT co.session_id
             FROM capture_observations co
             JOIN classification_runs cr ON cr.session_id = co.session_id
+            JOIN semantic_projection_runs spr
+              ON spr.classification_run_id = cr.run_id
+             AND spr.session_id = cr.session_id
             WHERE cr.model_sha256 = ?
               AND (
                   co.observed_ended_at < ?
@@ -171,6 +185,9 @@ def previous_session_id(
         SELECT s.session_id
         FROM sessions s
         JOIN classification_runs cr ON cr.session_id = s.session_id
+        JOIN semantic_projection_runs spr
+          ON spr.classification_run_id = cr.run_id
+         AND spr.session_id = cr.session_id
         WHERE cr.model_sha256 = ?
           AND (
               s.created_at < ?
@@ -470,6 +487,9 @@ def _previous_observed_run(
         SELECT co.*
         FROM capture_observations co
         JOIN classification_runs cr ON cr.session_id = co.session_id
+        JOIN semantic_projection_runs spr
+          ON spr.classification_run_id = cr.run_id
+         AND spr.session_id = cr.session_id
         WHERE cr.model_sha256 = ?
           AND (
               co.observed_ended_at < ?

@@ -270,11 +270,20 @@ ck3chronicle.classification.service.classify_session(
 
 Precondition: finalized evidence and a successful canonical parse. Contract v2
 uses empirical similarity only to nominate a template, then PostValidates
-ordered literals and typed slots. Locator typing precedes L1; locator tokens
-cannot fill other slot roles. Invalid L2 falls back to L1 and invalid unlayered
-shape to unknown. The return value identifies the model revision/hash and
-supplies source-block, semantic occurrence, full, L1+L2, L1-only, and unknown
-counts.
+ordered literals with exact, case-sensitive equality and typed slots. Locator
+typing precedes L1; locator tokens cannot fill other slot roles. Invalid L2
+falls back to L1 and invalid unlayered shape to unknown. The return value
+identifies the model revision/hash and supplies source-block, semantic
+occurrence, full, L1+L2, L1-only, and unknown counts.
+
+`classify --session` then invokes
+`ck3chronicle.semantic_projection_service.project_classification_run` against
+the hash-approved projection catalog. This database-only transaction rebuilds
+canonical issue/occurrence rows from persisted classification payloads, binds
+the exact model/catalog lineage, and validates per-block, per-signature, global,
+and provenance distributions. Compatible repeated calls are no-ops; a catalog
+or projection-contract change permits explicit reprojection without changing
+immutable source blocks.
 
 Public equivalent:
 
@@ -307,14 +316,14 @@ ck3chronicle latest [--json]
 ck3chronicle errors [--session SESSION_ID | --run RUN_ID] [--json]
 ```
 
-The report is schema v6. `observed_run_id` selects an exact run; omitting it
+The report is schema v7. `observed_run_id` selects an exact run; omitting it
 selects the latest observed run for that evidence session. `latest` selects the
 newest run whose evidence is finalized, parsed, and classified, with a
 compatibility fallback only for direct development registrations that predate
 run receipts.
 
 Each JSON report command emits one `ck3chronicle.command-result` v1 envelope.
-Its `result` is the session-report v6, report-with-comparison v2, or errors v1
+Its `result` is the session-report v7, report-with-comparison v2, or errors v2
 projection. Readiness/input failures use exit 2 and report-stage error codes;
 database failures use exit 5; unexpected report failures use exit 1. Human text
 mode remains a concise executive projection of the same stored report object.
@@ -350,7 +359,7 @@ private data. Those are independent-evaluator responsibilities.
 | `P1-PAR-09` | `parse_session` plus repository reads | Evaluator chooses a first-parse failure. Observe exception/public exit and absence of a falsely successful or partial projection. |
 | `P1-PAR-10` | `parse_session`; `classify_session`; `build_session_report` | A finalized zero-byte `error.log`. Observe returned counters, stored state, classification counts, and report projection. |
 | `P1-PAR-11` | `audit_database`; `audit-db --deep --json`; repository aggregate reads | Evaluator-selected processed databases. Observe audit output and stored total/per-block/per-signature/provenance invariants. Audit is read-only. |
-| `P1-REP-01` | `process_pending`; `process-pending --json` | Evidence root plus approved classifier. Observe processing-result v3 inside command-result v1 and all documented side effects. |
+| `P1-REP-01` | `process_pending`; `process-pending --json` | Evidence root plus approved classifier/catalog. Observe processing-result v4 inside command-result v1 and all documented side effects. |
 | `P1-REP-02` | `report`, `latest`, `errors` in text and `--json` modes | Same stored target and limit. Observe stdout bytes, JSON result, exit status, and stderr; field equivalence is independently scored. |
 | `P1-REP-03` | `build_session_report`; `report`; `latest`; `errors` | Process once, then use stored records. The evaluator controls removal/unavailability of raw inputs and observes report stability. |
 | `P1-REP-04` | Same report seams | Evaluator records database/evidence hashes before and after each read command. Product report functions and commands are read-only. |

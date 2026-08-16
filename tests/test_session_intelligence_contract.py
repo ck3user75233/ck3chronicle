@@ -8,6 +8,7 @@ import pytest
 
 from ck3chronicle import config
 from ck3chronicle.classification import classify_session
+from ck3chronicle.classification.catalog import load_approved_projection_catalog
 from ck3chronicle.cli import build_parser
 from ck3chronicle.db import repository
 from ck3chronicle.harvester import MANIFEST_VERSION, finalize_pending, spool_logs
@@ -22,9 +23,18 @@ from ck3chronicle.session_intelligence import (
     list_baselines,
     list_ignored_patterns,
 )
+from ck3chronicle.semantic_projection_service import project_classification_run
 
 from foundation_oracle import SIX_LOG_BYTES, write_logs
 from test_classification_persistence_contract import _classifier, _session
+
+
+def _classify_and_project(conn, session_id: int) -> None:
+    classifier = _classifier()
+    classify_session(conn, session_id, classifier)
+    project_classification_run(
+        conn, session_id, load_approved_projection_catalog(classifier.model)
+    )
 
 
 CURRENT_ERROR_LOG = (
@@ -72,7 +82,7 @@ RUNTIME_B = (
 
 def _two_sessions(tmp_path):
     runtime, _captured, conn, previous_id = _session(tmp_path)
-    classify_session(conn, previous_id, _classifier())
+    _classify_and_project(conn, previous_id)
     parse_runtime_context(conn, runtime, previous_id)
 
     logs = tmp_path / "live-logs"
@@ -90,7 +100,7 @@ def _two_sessions(tmp_path):
         files=captured.files,
     )
     parse_session(conn, runtime, current_id)
-    classify_session(conn, current_id, _classifier())
+    _classify_and_project(conn, current_id)
     parse_runtime_context(conn, runtime, current_id)
     return runtime, conn, previous_id, current_id
 
@@ -121,7 +131,7 @@ def _capture_classified(
         files=captured.files,
     )
     parse_session(conn, runtime, session_id)
-    classify_session(conn, session_id, _classifier())
+    _classify_and_project(conn, session_id)
     parse_runtime_context(conn, runtime, session_id)
     return session_id
 

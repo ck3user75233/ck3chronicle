@@ -27,8 +27,12 @@ def latest_report_target(
         FROM sessions s
         WHERE s.parse_status = 'succeeded'
           AND EXISTS (
-              SELECT 1 FROM classification_runs cr
-              WHERE cr.session_id = s.session_id
+              SELECT 1
+              FROM semantic_projection_runs spr
+              JOIN classification_runs cr
+                ON cr.run_id = spr.classification_run_id
+               AND cr.session_id = spr.session_id
+              WHERE spr.session_id = s.session_id
           )
         ORDER BY s.created_at DESC, s.session_id DESC
         LIMIT 1
@@ -95,6 +99,18 @@ def build_session_report(
     run = _classification_run(conn, session_id, model_sha256)
     if run is None:
         raise ReportError(f"session_id {session_id} has not been classified")
+    projection = repository.get_semantic_projection_run(conn, session_id)
+    if projection is None:
+        raise ReportError(
+            f"session_id {session_id} has not been semantically projected"
+        )
+    if int(projection["classification_run_id"]) != int(run["run_id"]):
+        raise ReportError(
+            "semantic projection lineage does not match the selected classification"
+        )
+    repository.validate_semantic_projection(
+        conn, int(projection["projection_run_id"])
+    )
     model = repository.get_classification_model(conn, run["model_sha256"])
     if model is None:
         raise ReportError("classification model registry row is missing")
@@ -133,14 +149,15 @@ def build_session_report(
     file_summary = _summary_rows(
         conn,
         """
-        SELECT primary_file AS file, SUM(occurrence_count) AS occurrences
-        FROM issues
+        SELECT primary_file AS file, COUNT(*) AS occurrences
+        FROM issue_occurrences
         WHERE session_id = ? AND primary_file IS NOT NULL AND primary_file != ''
+          AND semantic_projection_run_id = ?
         GROUP BY primary_file
         ORDER BY occurrences DESC, primary_file
         LIMIT ?
         """,
-        (session_id, limit),
+        (session_id, projection["projection_run_id"], limit),
     )
     pattern_rows = conn.execute(
         """
@@ -236,6 +253,25 @@ def build_session_report(
             else 1.0
         ),
         "review_required": l1 + unknown,
+    }
+    semantic_projection = {
+        "run_id": int(projection["projection_run_id"]),
+        "catalog_revision_id": projection["projection_catalog_revision_id"],
+        "catalog_sha256": projection["projection_catalog_sha256"],
+        "catalog_schema_version": int(
+            projection["projection_catalog_schema_version"]
+        ),
+        "contract_version": projection["projection_contract_version"],
+        "projected_at": projection["projected_at"],
+        "counts": {
+            "source_blocks": int(projection["source_block_count"]),
+            "semantic_occurrences": int(projection["semantic_occurrence_count"]),
+            "issue_clusters": int(projection["issue_cluster_count"]),
+            "unclassified_occurrences": int(
+                projection["unclassified_occurrence_count"]
+            ),
+            "multi_issue_blocks": int(projection["multi_issue_block_count"]),
+        },
     }
     runtime_row = repository.get_runtime_context(conn, session_id)
     runtime_context = None
@@ -379,7 +415,7 @@ def build_session_report(
         }
     return {
         "schema": "ck3chronicle.session-report",
-        "schema_version": 6,
+        "schema_version": 7,
         "run": run_projection,
         "session": {
             "session_id": int(session["session_id"]),
@@ -392,6 +428,7 @@ def build_session_report(
         },
         "parse": parse,
         "classification": classification,
+        "semantic_projection": semantic_projection,
         "runtime_context": runtime_context,
         "category_summary": category_summary,
         "source_summary": source_summary,

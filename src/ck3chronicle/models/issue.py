@@ -69,8 +69,9 @@ class IssueDraft:
 class NormalizedIssue:
     """Result of normalize(): masked message + deterministic signature.
 
-    Mirrors the IssueDraft fields but adds signature and message_template,
-    and exposes the (possibly enriched) referenced_symbols list.
+    Mirrors the IssueDraft fields but adds signature and message_template.
+    Signature identity includes the normalized engine source family and
+    ordered semantic template; concrete keys and locators remain excluded.
     """
 
     signature: str

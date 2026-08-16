@@ -282,6 +282,99 @@ def test_rcontext_010_multiple_mounted_blocks_are_ambiguous(tmp_path) -> None:
     conn.close()
 
 
+def test_rcontext_013_contiguous_duplicate_mount_sequence_is_ambiguous(
+    tmp_path,
+) -> None:
+    lines = DEBUG_CONTEXT.splitlines(keepends=True)
+    first = next(index for index, line in enumerate(lines) if b"Mounted Data:" in line)
+    last = max(index for index, line in enumerate(lines) if b"Mounted Data:" in line)
+    duplicated = b"".join(
+        lines[: last + 1] + lines[first : last + 1] + lines[last + 1 :]
+    )
+    runtime, _captured, conn, session_id = _captured_session(tmp_path, duplicated)
+
+    result = parse_runtime_context(conn, runtime, session_id)
+
+    assert result.status == "ambiguous"
+    assert result.block_candidate_count == 2
+    assert result.valid_mount_count == 8
+    assert result.malformed_mount_count == 0
+    assert result.termination_evidence == "multiple_blocks"
+    assert result.block_start_line is None
+    assert result.dlcs == ()
+    assert result.mods == ()
+    conn.close()
+
+
+def test_rcontext_014_malformed_absolute_root_is_not_a_valid_mount(
+    tmp_path,
+) -> None:
+    malformed = DEBUG_CONTEXT.replace(
+        b"C:/CK3/game/dlc/dlc002_beta",
+        b"C?/CK3/game/dlc/dlc002_beta",
+        1,
+    )
+    runtime, _captured, conn, session_id = _captured_session(tmp_path, malformed)
+
+    result = parse_runtime_context(conn, runtime, session_id)
+
+    assert result.status == "partial"
+    assert result.block_candidate_count == 1
+    assert result.valid_mount_count == 3
+    assert result.malformed_mount_count == 1
+    assert result.unknown_mount_count == 0
+    assert [item.dlc_key for item in result.dlcs] == ["dlc001_alpha"]
+    assert [item.mod_key for item in result.mods] == ["222", "local:localpatch"]
+    conn.close()
+
+
+def test_rcontext_015_contiguous_duplicate_dlc_only_sequence_is_ambiguous(
+    tmp_path,
+) -> None:
+    first = (
+        b"[12:00:00][D][virtualfilesystem_physfs.cpp:813]: "
+        b"Mounted Data: C:/CK3/game/dlc/dlc001_alpha\n"
+    )
+    second = (
+        b"[12:00:01][D][virtualfilesystem_physfs.cpp:813]: "
+        b"Mounted Data: C:/CK3/game/dlc/dlc002_beta\n"
+    )
+    terminator = b"[12:00:04][D][virtualfilesystem.cpp:339]: Startup continues\n"
+    runtime, _captured, conn, session_id = _captured_session(
+        tmp_path, first + second + first + second + terminator
+    )
+
+    result = parse_runtime_context(conn, runtime, session_id)
+
+    assert result.status == "ambiguous"
+    assert result.block_candidate_count == 2
+    assert result.valid_mount_count == 4
+    assert result.dlcs == ()
+    assert result.mods == ()
+    conn.close()
+
+
+def test_rcontext_016_distinct_dlc_roots_remain_one_candidate(tmp_path) -> None:
+    debug = (
+        b"[12:00:00][D][virtualfilesystem_physfs.cpp:813]: "
+        b"Mounted Data: C:/CK3/game/dlc/dlc001_alpha\n"
+        b"[12:00:01][D][virtualfilesystem_physfs.cpp:813]: "
+        b"Mounted Data: C:/CK3/game/dlc/dlc002_beta\n"
+        b"[12:00:02][D][virtualfilesystem.cpp:339]: Startup continues\n"
+    )
+    runtime, _captured, conn, session_id = _captured_session(tmp_path, debug)
+
+    result = parse_runtime_context(conn, runtime, session_id)
+
+    assert result.status == "complete"
+    assert result.block_candidate_count == 1
+    assert [item.dlc_key for item in result.dlcs] == [
+        "dlc001_alpha",
+        "dlc002_beta",
+    ]
+    conn.close()
+
+
 def test_rcontext_011_v1_summary_migrates_without_inventing_provenance(
     tmp_path,
 ) -> None:

@@ -35,6 +35,7 @@ def test_rprocess_001_pending_to_report_is_complete_and_idempotent(tmp_path) -> 
     assert first.context_sessions == 1
     assert first.parsed_sessions == 1
     assert first.classified_sessions == 1
+    assert first.projected_sessions == 1
     assert first.reconciliation_errors == ()
     assert first.latest_report is not None
     assert first.latest_report["session"]["session_id"] == 1
@@ -49,6 +50,7 @@ def test_rprocess_001_pending_to_report_is_complete_and_idempotent(tmp_path) -> 
     assert second.context_sessions == 0
     assert second.parsed_sessions == 0
     assert second.classified_sessions == 0
+    assert second.projected_sessions == 0
     assert second.reconciliation_errors == ()
     assert second.latest_report == first.latest_report
 
@@ -73,13 +75,14 @@ def test_rprocess_002_cli_json_reports_each_completed_stage(
     assert payload["error"] is None
     result = payload["result"]
     assert result["schema"] == "ck3chronicle.processing-result"
-    assert result["schema_version"] == 3
+    assert result["schema_version"] == 4
     assert result["finalized_pending"] == 1
     assert result["registered_archives"] == 1
     assert result["registered_runs"] == 1
     assert result["context_sessions"] == 1
     assert result["parsed_sessions"] == 1
     assert result["classified_sessions"] == 1
+    assert result["projected_sessions"] == 1
     assert result["reconciliation_errors"] == []
     assert result["latest_report"]["session"]["session_id"] == 1
 
@@ -159,6 +162,7 @@ def test_rprocess_005_reconciliation_warning_retains_partial_result(
             context_sessions=0,
             parsed_sessions=0,
             classified_sessions=0,
+            projected_sessions=0,
             reconciliation_errors=("orphan receipt",),
             latest_report=None,
         ),

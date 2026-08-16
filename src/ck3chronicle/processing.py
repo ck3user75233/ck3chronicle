@@ -7,12 +7,14 @@ from pathlib import Path
 
 from .archive_registry import reconcile_archives
 from .classification import Classifier, classify_session
+from .classification.projection_catalog import ProjectionCatalog
 from .db import repository
 from .harvester import finalize_pending_captures
 from .parser.service import PARSER_CONTRACT_VERSION, parse_session
 from .reporting import build_session_report, latest_report_target
 from .runtime_context import parse_runtime_context
 from .run_registry import reconcile_run_receipts
+from .semantic_projection_service import project_classification_run
 
 
 @dataclass(frozen=True)
@@ -23,17 +25,26 @@ class ProcessingResult:
     context_sessions: int
     parsed_sessions: int
     classified_sessions: int
+    projected_sessions: int
     reconciliation_errors: tuple[str, ...]
     latest_report: dict[str, object] | None
 
 
-def process_pending(root: Path, classifier: Classifier) -> ProcessingResult:
+def process_pending(
+    root: Path,
+    classifier: Classifier,
+    projection_catalog: ProjectionCatalog | None = None,
+) -> ProcessingResult:
     """Process every finalized session to the current approved derived state.
 
     The watcher never calls this function. It operates only on protected
     pending copies and immutable archives after the time-critical exit path.
     """
     evidence_root = Path(root)
+    if projection_catalog is None:
+        from .classification.catalog import load_approved_projection_catalog
+
+        projection_catalog = load_approved_projection_catalog(classifier.model)
     finalized = finalize_pending_captures(evidence_root)
     db_path = evidence_root / "ck3chronicle.db"
     reconciliation = reconcile_archives(
@@ -49,6 +60,7 @@ def process_pending(root: Path, classifier: Classifier) -> ProcessingResult:
 
     parsed = 0
     classified = 0
+    projected = 0
     context_sessions = 0
     conn = repository.open_db(db_path)
     try:
@@ -73,6 +85,10 @@ def process_pending(root: Path, classifier: Classifier) -> ProcessingResult:
                 conn, int(session["session_id"]), classifier
             )
             classified += int(classification.mutated)
+            projection = project_classification_run(
+                conn, int(session["session_id"]), projection_catalog
+            )
+            projected += int(projection.mutated)
 
         latest_target = latest_report_target(conn)
         latest_report = (
@@ -95,6 +111,7 @@ def process_pending(root: Path, classifier: Classifier) -> ProcessingResult:
         context_sessions=context_sessions,
         parsed_sessions=parsed,
         classified_sessions=classified,
+        projected_sessions=projected,
         reconciliation_errors=(
             reconciliation.errors + run_reconciliation.errors
         ),

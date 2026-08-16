@@ -8,6 +8,10 @@ import sqlite3
 import pytest
 
 from ck3chronicle.classification import Classifier, load_model
+from ck3chronicle.classification.catalog import (
+    APPROVED_MODEL_SHA256,
+    approved_model_path,
+)
 from ck3chronicle.classification.service import (
     ClassificationPreconditionError,
     classify_session,
@@ -19,13 +23,8 @@ from ck3chronicle.parser.service import parse_session
 from foundation_oracle import SIX_LOG_BYTES, write_logs
 
 
-MODEL_SHA256 = "3bd189b4c93ad260e925d1a1ac3ece7c79cc63217480b79a939f6f7f5d034db3"
-MODEL_PATH = (
-    Path(__file__).parents[1]
-    / "models"
-    / "93196794a7e0115d"
-    / "empirical_template_model.json"
-)
+MODEL_SHA256 = APPROVED_MODEL_SHA256
+MODEL_PATH = approved_model_path()
 
 CLASSIFICATION_ERROR_LOG = (
     b"[12:00:00][E][pdx_localize.cpp:1]: Duplicate localization key. Key "
@@ -108,7 +107,7 @@ def test_rclassdb_001_one_row_per_semantic_unit_with_exact_provenance(
     assert conn.execute(
         "SELECT COUNT(*) FROM classification_contracts WHERE model_sha256 = ?",
         (MODEL_SHA256,),
-    ).fetchone()[0] == 822
+    ).fetchone()[0] == len(_classifier().model.clusters)
     # The three persistent-reader units are independently addressable but have
     # one exact derived payload. Together with the other two blocks this yields
     # three dictionary rows for five assignment rows.
@@ -215,7 +214,7 @@ def test_rclassdb_006_stale_inference_contract_is_replaced_automatically(
     conn.execute(
         """
         UPDATE classification_runs
-        SET classification_contract_version = '1.0.0'
+        SET classification_contract_version = '2.0.0'
         WHERE run_id = ?
         """,
         (first.run_id,),
@@ -226,7 +225,7 @@ def test_rclassdb_006_stale_inference_contract_is_replaced_automatically(
 
     assert second.mutated is True
     assert second.run_id != first.run_id
-    assert second.classification_contract_version == "2.0.0"
+    assert second.classification_contract_version == "2.0.1"
     assert conn.execute(
         "SELECT COUNT(*) FROM classification_runs WHERE session_id = ?",
         (session_id,),

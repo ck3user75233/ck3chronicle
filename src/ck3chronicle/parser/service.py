@@ -19,7 +19,7 @@ from ck3chronicle.parser.log_blocks import iter_log_blocks
 from ck3chronicle.parser.normalize import normalize
 
 
-PARSER_CONTRACT_VERSION = "1.0.1"
+PARSER_CONTRACT_VERSION = "1.0.2"
 
 
 class CanonicalParseError(RuntimeError):

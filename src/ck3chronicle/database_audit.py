@@ -22,6 +22,7 @@ _REQUIRED_TABLES = {
     "classification_runs",
     "classification_payloads",
     "classification_assignments",
+    "semantic_projection_runs",
     "session_runtime_contexts",
     "session_mounted_dlcs",
     "session_mounted_mods",
@@ -221,6 +222,8 @@ def audit_database(root: Path, *, deep: bool = False) -> dict[str, object]:
                 "issues": issues,
                 "classification_runs": 0,
                 "classification_assignments": 0,
+                "semantic_projection_runs": 0,
+                "projected_occurrences": 0,
                 "runtime_context": None,
             }
             session_summaries.append(summary)
@@ -367,9 +370,19 @@ def audit_database(root: Path, *, deep: bool = False) -> dict[str, object]:
                 )
 
         runs = list(conn.execute("SELECT * FROM classification_runs ORDER BY run_id"))
+        projection_runs = list(
+            conn.execute(
+                "SELECT * FROM semantic_projection_runs ORDER BY projection_run_id"
+            )
+        )
         runs_by_session: dict[int, list[sqlite3.Row]] = {}
         for run in runs:
             runs_by_session.setdefault(int(run["session_id"]), []).append(run)
+        projections_by_session: dict[int, list[sqlite3.Row]] = {}
+        for projection in projection_runs:
+            projections_by_session.setdefault(
+                int(projection["session_id"]), []
+            ).append(projection)
         assignment_counts = {
             (int(row["run_id"]), str(row["assignment_level"])): int(row["count"])
             for row in conn.execute(
@@ -390,6 +403,8 @@ def audit_database(root: Path, *, deep: bool = False) -> dict[str, object]:
                 for run in session_runs
                 for level in ("full", "l1_l2", "l1", "unknown")
             )
+            session_projections = projections_by_session.get(session_id, [])
+            summary["semantic_projection_runs"] = len(session_projections)
             if not session_runs:
                 finding(
                     "error",
@@ -430,6 +445,146 @@ def audit_database(root: Path, *, deep: bool = False) -> dict[str, object]:
                             "actual_source_blocks": block_counts.get(session_id, 0),
                         },
                     )
+
+            if len(session_projections) != 1:
+                finding(
+                    "error",
+                    "DB-PROJECT-001",
+                    "classification",
+                    "classified session does not have exactly one accepted semantic projection",
+                    session_ids=[session_id],
+                    details={"semantic_projection_runs": len(session_projections)},
+                )
+                continue
+
+            projection = session_projections[0]
+            projection_run_id = int(projection["projection_run_id"])
+            classification_run_id = int(projection["classification_run_id"])
+            actual_projection = conn.execute(
+                """
+                SELECT
+                    (SELECT COUNT(*) FROM source_blocks
+                     WHERE session_id = ?) AS source_blocks,
+                    (SELECT COUNT(*) FROM issue_occurrences
+                     WHERE session_id = ? AND semantic_projection_run_id = ?)
+                        AS semantic_occurrences,
+                    (SELECT COUNT(*) FROM issues
+                     WHERE session_id = ? AND semantic_projection_run_id = ?)
+                        AS issue_clusters,
+                    (SELECT COUNT(*)
+                     FROM issue_occurrences io
+                     JOIN issues i
+                       ON i.session_id = io.session_id
+                      AND i.signature = io.signature
+                      AND i.semantic_projection_run_id = io.semantic_projection_run_id
+                     WHERE io.session_id = ?
+                       AND io.semantic_projection_run_id = ?
+                       AND i.category = 'unclassified')
+                        AS unclassified_occurrences,
+                    (SELECT COUNT(*) FROM (
+                         SELECT source_block_pk
+                         FROM issue_occurrences
+                         WHERE session_id = ? AND semantic_projection_run_id = ?
+                         GROUP BY source_block_pk
+                         HAVING COUNT(*) > 1
+                     )) AS multi_issue_blocks
+                """,
+                (
+                    session_id,
+                    session_id,
+                    projection_run_id,
+                    session_id,
+                    projection_run_id,
+                    session_id,
+                    projection_run_id,
+                    session_id,
+                    projection_run_id,
+                ),
+            ).fetchone()
+            actual_projection_counts = {
+                "source_blocks": int(actual_projection["source_blocks"]),
+                "semantic_occurrences": int(
+                    actual_projection["semantic_occurrences"]
+                ),
+                "issue_clusters": int(actual_projection["issue_clusters"]),
+                "unclassified_occurrences": int(
+                    actual_projection["unclassified_occurrences"]
+                ),
+                "multi_issue_blocks": int(actual_projection["multi_issue_blocks"]),
+            }
+            stored_projection_counts = {
+                "source_blocks": int(projection["source_block_count"]),
+                "semantic_occurrences": int(
+                    projection["semantic_occurrence_count"]
+                ),
+                "issue_clusters": int(projection["issue_cluster_count"]),
+                "unclassified_occurrences": int(
+                    projection["unclassified_occurrence_count"]
+                ),
+                "multi_issue_blocks": int(projection["multi_issue_block_count"]),
+            }
+            summary["projected_occurrences"] = actual_projection_counts[
+                "semantic_occurrences"
+            ]
+            matching_run = next(
+                (
+                    run
+                    for run in session_runs
+                    if int(run["run_id"]) == classification_run_id
+                ),
+                None,
+            )
+            assignment_total = sum(
+                assignment_counts.get((classification_run_id, level), 0)
+                for level in ("full", "l1_l2", "l1", "unknown")
+            )
+            lineage_mismatch = (
+                matching_run is None
+                or str(matching_run["model_sha256"])
+                != str(projection["model_sha256"])
+                or assignment_total
+                != actual_projection_counts["semantic_occurrences"]
+            )
+            wrong_issue_lineage = int(
+                conn.execute(
+                    """
+                    SELECT
+                        (SELECT COUNT(*) FROM issues
+                         WHERE session_id = ?
+                           AND semantic_projection_run_id IS NOT ?) +
+                        (SELECT COUNT(*) FROM issue_occurrences
+                         WHERE session_id = ?
+                           AND semantic_projection_run_id IS NOT ?)
+                    """,
+                    (
+                        session_id,
+                        projection_run_id,
+                        session_id,
+                        projection_run_id,
+                    ),
+                ).fetchone()[0]
+            )
+            if (
+                stored_projection_counts != actual_projection_counts
+                or lineage_mismatch
+                or wrong_issue_lineage
+            ):
+                finding(
+                    "error",
+                    "DB-PROJECT-002",
+                    "classification",
+                    "semantic projection lineage or counters disagree with stored rows",
+                    session_ids=[session_id],
+                    details={
+                        "projection_run_id": projection_run_id,
+                        "classification_run_id": classification_run_id,
+                        "stored": stored_projection_counts,
+                        "actual": actual_projection_counts,
+                        "classification_assignments": assignment_total,
+                        "lineage_mismatch": lineage_mismatch,
+                        "rows_with_wrong_projection_lineage": wrong_issue_lineage,
+                    },
+                )
 
         contexts = {
             int(row["session_id"]): row
@@ -752,6 +907,7 @@ def audit_database(root: Path, *, deep: bool = False) -> dict[str, object]:
             "occurrences": sum(occurrence_counts.values()),
             "issues": sum(issue_counts.values()),
             "classification_runs": len(runs),
+            "semantic_projection_runs": len(projection_runs),
             "classification_assignments": sum(
                 int(summary["classification_assignments"])
                 for summary in session_summaries

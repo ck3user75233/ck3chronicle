@@ -30,9 +30,13 @@ def _file_from_location(value: str | None) -> str | None:
 def _latest_run(conn: sqlite3.Connection, session_id: int) -> sqlite3.Row | None:
     return conn.execute(
         """
-        SELECT * FROM classification_runs
-        WHERE session_id = ?
-        ORDER BY classified_at DESC, run_id DESC
+        SELECT cr.*
+        FROM classification_runs cr
+        JOIN semantic_projection_runs spr
+          ON spr.classification_run_id = cr.run_id
+         AND spr.session_id = cr.session_id
+        WHERE cr.session_id = ?
+        ORDER BY cr.classified_at DESC, cr.run_id DESC
         LIMIT 1
         """,
         (session_id,),

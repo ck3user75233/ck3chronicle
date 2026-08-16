@@ -54,21 +54,22 @@ The stable Phase 1 exit taxonomy is:
 
 A warning may carry a non-null partial `result`; a failed envelope does not.
 
-## Processing-result v3
+## Processing-result v4
 
 The `result` of `process-pending --json` is:
 
 ```text
 schema                  "ck3chronicle.processing-result"
-schema_version          3
+schema_version          4
 finalized_pending       integer
 registered_archives     integer
 registered_runs         integer
 context_sessions        integer
 parsed_sessions         integer
 classified_sessions     integer
+projected_sessions      integer
 reconciliation_errors   array[string]
-latest_report           session-report v6 | null
+latest_report           session-report v7 | null
 ```
 
 The counters describe mutations performed by that invocation, not lifetime
@@ -81,18 +82,19 @@ finalize pending evidence, recover finalized orphan archives, register durable
 run receipts, and transactionally derive runtime, parse, and classification
 records. The watcher never invokes it.
 
-## Session-report v6
+## Session-report v7
 
 `build_session_report`, successful `report --json`, successful `latest
 --json`, and `processing-result.latest_report` use:
 
 ```text
 schema             "ck3chronicle.session-report"
-schema_version     6
+schema_version     7
 run                run | null
 session            session
 parse              parse
 classification     classification
+semantic_projection semantic-projection
 runtime_context    runtime-context projection | null
 category_summary   array[summary row]
 source_summary     array[summary row]
@@ -162,6 +164,18 @@ review_required
 `counts` contains the integer fields `full`, `l1_l2`, `l1`, and `unknown`.
 The rates are numbers in `[0, 1]`; an empty semantic population has rate `1.0`.
 
+`semantic_projection` contains:
+
+```text
+run_id, catalog_revision_id, catalog_sha256, catalog_schema_version,
+contract_version, projected_at, counts
+```
+
+Its counts are `source_blocks`, `semantic_occurrences`, `issue_clusters`,
+`unclassified_occurrences`, and `multi_issue_blocks`. Reports require a current,
+validated semantic projection; they do not silently read legacy canonical rows
+whose model/catalog lineage is absent or stale.
+
 `runtime_context`, when present, contains:
 
 ```text
@@ -207,7 +221,7 @@ reopen archived logs, reparse, or reclassify.
 ```text
 schema          "ck3chronicle.report-with-comparison"
 schema_version  2
-report          session-report v6
+ report          session-report v7
 comparison      session-comparison v2
 ```
 
@@ -222,7 +236,7 @@ an error change.
 ```text
 schema               "ck3chronicle.errors"
 schema_version       2
-run                  session-report v6 run | null
+ run                  session-report v7 run | null
 session_id           integer
 captured_at          string
 model_revision_id    string
@@ -268,26 +282,30 @@ items include `dlc_order` while mod items include `load_order` and
 Runtime parsing mutates only derived SQLite rows and validates archived
 `debug.log` identity before replacement.
 
-## Classification-run v1
+## Classification-run v2
 
 `classify --session ID --json` emits a direct object:
 
 ```text
 schema                              "ck3chronicle.classification-run"
-schema_version                      1
+schema_version                      2
 session_id                          integer
 run_id                              integer
 model_revision_id                   string
 model_sha256                        lowercase SHA-256
 classification_contract_version     string
 counts                              object
+classification_mutated              boolean
+semantic_projection                 object
 mutated                             boolean
 ```
 
 `counts` contains `source_blocks`, `semantic_occurrences`, `full`, `l1_l2`,
-`l1`, and `unknown`. Classification mutates derived SQLite rows in one
-replacement transaction. A repeated compatible call returns the accepted run
-with `mutated=false`.
+`l1`, and `unknown`. `semantic_projection` identifies its run, catalog
+revision/hash, projection-contract version, counts, and mutation state.
+Classification and projection each mutate derived SQLite rows in validated
+replacement transactions. A repeated compatible call returns the accepted
+lineage with `mutated=false`.
 
 ## Direct parse and lexical results
 
@@ -324,6 +342,7 @@ printed value must originate from the corresponding JSON result object.
 | `parse_session` | no | yes, derived transaction | `error.log` only |
 | `parse_runtime_context` | no | yes, derived transaction | `debug.log` only |
 | `classify_session` | no | yes, derived transaction | no |
+| `project_classification_run` | no | yes, derived transaction | no |
 | `build_session_report`, `report`, `latest`, `errors` | no | no | no |
 | `iter_log_blocks` | no | no | supplied file only |
 

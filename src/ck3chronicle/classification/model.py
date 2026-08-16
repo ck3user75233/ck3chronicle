@@ -13,7 +13,7 @@ from .normalize import tokenize
 
 MODEL_SCHEMA = "ck3chronicle-empirical-template-calibration"
 MODEL_SCHEMA_VERSION = 3
-NORMALIZER_VERSION = "ck3-empirical-template-normalizer-v4.6"
+NORMALIZER_VERSION = "ck3-empirical-template-normalizer-v4.11"
 CLUSTERER_VERSION = "ordered-token-clusterer-v4-bounded-script-layers"
 
 

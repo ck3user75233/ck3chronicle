@@ -121,6 +121,21 @@ structured relationships such as `<KEY>.<KEY>`, and optional/repeating shape.
 It is not a synonym for the error template itself. A useful L1 template may
 exist while some detailed slot typing remains unresolved.
 
+After a contract is assigned, a separately hash-bound semantic projection
+catalog maps that exact contract to canonical accounting, category, subtype,
+confidence, and typed reference roles. These selectors may read the complete
+retained message to recover paths, lines, symbols, objects, and structured CK3
+relationships; the classifier's bounded identity token stream is not a lossy
+evidence source. Projection selectors never nominate a template. An unreviewed
+contract remains an explicit preserved-unclassified occurrence, never a silent
+drop or a guessed category.
+
+Canonical projection is derived and versioned. Reprojection replaces only
+derived issue/occurrence rows in one validated transaction and binds the exact
+classification run, model, projection-catalog revision/hash/schema, and
+projection-contract version. Immutable source blocks and archived bytes remain
+unchanged.
+
 Key and symbol shapes such as `*_effect` and `*_trigger` may validate a slot
 after template assignment. They may not discover or choose the template.
 The exact relationship between canonical issue fields, template identity, and
@@ -134,6 +149,16 @@ Its exact archived file row, line range, byte range, raw-block SHA-256,
 candidate count, and termination evidence are stored. Runtime context is
 explicitly one of complete, partial, absent, malformed, truncated, or
 ambiguous. Only complete context authorizes active-root source resolution.
+
+A valid mounted entry must contain an absolute filesystem path; nonempty text
+after `Mounted Data:` is not sufficient. Candidate boundaries are structural,
+not count-based: after non-DLC roots begin, a return to DLC roots starts a new
+candidate even when no unrelated log line separates two repeated sequences.
+One terminated candidate with only valid paths is `complete`; valid and
+malformed entries are `partial`; no valid entries are `malformed`; an
+unterminated candidate at end-of-file is `truncated`; multiple candidates are
+`ambiguous`; and no candidate is `absent`. Mount count alone never determines
+state, so a valid one-mod playset is not downgraded merely for being small.
 
 The preceding DLC/Mod inventory is optional enrichment. Names, descriptor
 paths, counts, and mismatch warnings are stored and reported separately; they

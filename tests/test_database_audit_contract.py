@@ -122,3 +122,44 @@ def test_rdbaudit_005_runtime_block_hash_corruption_is_detected(tmp_path) -> Non
         item for item in result["findings"] if item["code"] == "DB-CONTEXT-003"
     )
     assert finding["session_ids"] == [current_id]
+
+
+def test_rdbaudit_006_missing_semantic_projection_is_explicit(tmp_path) -> None:
+    runtime, conn, _previous_id, current_id = _auditable_runtime(tmp_path)
+    conn.execute(
+        "DELETE FROM semantic_projection_runs WHERE session_id = ?", (current_id,)
+    )
+    conn.commit()
+    conn.close()
+
+    result = audit_database(runtime)
+
+    finding = next(
+        item for item in result["findings"] if item["code"] == "DB-PROJECT-001"
+    )
+    assert finding["session_ids"] == [current_id]
+    assert finding["category"] == "classification"
+
+
+def test_rdbaudit_007_semantic_projection_counter_corruption_is_detected(
+    tmp_path,
+) -> None:
+    runtime, conn, _previous_id, current_id = _auditable_runtime(tmp_path)
+    conn.execute(
+        """
+        UPDATE semantic_projection_runs
+        SET semantic_occurrence_count = semantic_occurrence_count + 1
+        WHERE session_id = ?
+        """,
+        (current_id,),
+    )
+    conn.commit()
+    conn.close()
+
+    result = audit_database(runtime)
+
+    finding = next(
+        item for item in result["findings"] if item["code"] == "DB-PROJECT-002"
+    )
+    assert finding["session_ids"] == [current_id]
+    assert finding["details"]["stored"] != finding["details"]["actual"]

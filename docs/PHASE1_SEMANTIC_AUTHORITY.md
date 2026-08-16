@@ -1,8 +1,10 @@
 # Phase 1 semantic authority reconciliation
 
-Status: implementation authority reconciled. The 252-item sample/oracle pair is
-required as a hash-bound public scoring input in locked corpus v2; independent
-`P1-PAR-02` execution has not yet run successfully.
+Status: implementation authority reconciled and the public 252-item regression
+is exact at the current development checkpoint. The preceding independently
+frozen candidate failed `P1-PAR-02` at 0/252; the repaired implementation now
+matches 252/252 in development calibration. A new candidate has not yet passed
+an independent exit run or an unseen private holdout.
 
 ## Result
 
@@ -27,7 +29,9 @@ and the later template-learning reviews: they answer different questions.
 | Artifact | Role | SHA-256 |
 |---|---|---|
 | `SEMANTIC_LABELS_ADJUDICATED.json` | Canonical issue-field calibration: 252 ordered blocks, 232 classified, 20 preserved unclassified | `db8a58a9a7f7f7fb0b84d1e39c1b2e724eae8058a00d07bb578367b795723e3d` |
-| approved model `models/93196794a7e0115d/empirical_template_model.json` | Frozen structural-template inference input | `3bd189b4c93ad260e925d1a1ac3ece7c79cc63217480b79a939f6f7f5d034db3` |
+| approved model `models/67303093ecda779d/empirical_template_model.json` | Current structural-template inference input | `0a508eb8056f37d586921bb4441099dcb71fcf89e4a9d1c0e764b1b86d4c1b89` |
+| approved projection `models/67303093ecda779d/semantic_projection_catalog.json` | Contract-bound canonical meaning and typed evidence roles | `c287849b16447e7b154f067c918afb3e0d30563ce56a9c578b06c006f20032b4` |
+| `semantic-projection-public-calibration.json` | Development-only end-to-end 252-row result, 252 exact / 0 mismatches | `2cadcc9c5f8064975a3d3fc615c2cb727f5f7d1de99c9ec0ce193bfdf6a78377` |
 | learner `release_candidate_v2/FINAL_REVIEW.md` | Model provenance and bounded-development decision | `8ac04b3a73edd34d8805ff9815c41a8fba229dfb19c2473775dab0d73ee300b4` |
 | `human-template-review-queue-v4-human comments.xlsx` | Early explicit user comments on templates and slot roles | `a44313c57fb1dc5b2b440f9664cd4218bc2d318ed7b0474847f81f176a285d6b` |
 | `ck3chronicle-new-candidate-adjudication-20260813.xlsx` | Explicit user comments on scope paths, semantic role words, and residuals | `d84b76ebe0ed7d53ae4eddaa5f2e956e60f6125b2b937443b2eed2e31619b631` |
@@ -67,6 +71,9 @@ oracle change needs a new artifact version, rationale, review, and hash.
 ## Reconciled template rules
 
 - Source family and ordered semantic literals define template identity.
+- Semantic-literal equality is exact and case-sensitive. A differently cased
+  near miss does not satisfy a reviewed contract unless that variant is
+  separately explicit in the approved model or vocabulary.
 - Timestamp, locator value, line/range value, key value, and repetition count
   never create a different base template.
 - Strong locator grammar runs before L1 assignment. A typed `<LOCATOR>` can
@@ -116,6 +123,7 @@ contains symbol-looking segments.
 | Exact source evidence | `source_blocks`, immutable archived logs, source/run provenance |
 | Canonical issue fields | `occurrences`, `issues`, parse counters and signatures |
 | Structural templates | classification model registry, runs, payloads, contracts, assignments |
+| Contract-bound canonical meaning | semantic projection catalog/runs plus versioned issue and occurrence rows |
 | Human review debt | L1-only/unknown review queue and retained unresolved reason text |
 
 Issue signature and template contract ID are intentionally different keys. An
@@ -125,7 +133,8 @@ not imply that equality or causation follows from their co-occurrence.
 
 ## Implemented reviewed decisions
 
-The approved model and classification contract v2 already contain the reviewed
+The approved model, classification contract v2, and projection catalog schema
+v2 contain the reviewed
 high-priority structure:
 
 - separate `scope:<KEY>.<KEY> trigger` and plain `<KEY> trigger` L1 forms;
@@ -135,6 +144,12 @@ high-priority structure:
 - complete location-chain separation;
 - script-system L1/L2 classification with conservative fallback;
 - locator-first typed PostValidate.
+- total disposition of every approved model contract, with unreviewed contracts
+  preserved explicitly as unclassified;
+- complete-message typed reference extraction that distinguishes primary
+  locators, referenced symbols, and referenced objects only after contract
+  assignment;
+- atomic, lineage-bound canonical reprojection from stored classifications.
 
 The generation-two reviewed residuals are handled conservatively: the paired
 illustration diagnostic receives no invented locator; the new illustration key
@@ -144,13 +159,14 @@ travel-plan reason has a structured full contract.
 
 ## Remaining release work
 
-This reconciliation closes the implementation-authority prerequisite. It does
-not pass `P1-PAR-02`, promote old development holdouts to release evidence, or
-prove every low-volume model slot. The independent evaluator must still compare
-all 252 canonical issue judgments and separately score structural template and
-slot behavior against a frozen release candidate.
+This reconciliation and exact development result close the implementation-side
+authority prerequisite. They do not pass Phase 1, promote development evidence
+to a private holdout, or prove generalization to unseen low-volume templates.
+The independent evaluator must still rerun all public gates against a frozen
+successor candidate and separately score structural template/slot behavior plus
+a newly selected unseen private holdout.
 
-For `P1-PAR-02`, join candidate output to the frozen sample by independently
+For the public `P1-PAR-02` regression, join candidate output to the frozen sample by independently
 recomputed block index and raw-block hash, not by a product signature. Exactly
 252 unique sample IDs/indices must be present with no extras or duplicates.
 Every row must exactly match accounting disposition, issue cardinality,
