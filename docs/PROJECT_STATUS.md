@@ -1,6 +1,6 @@
 # Project status
 
-Date: 2026-08-16
+Date: 2026-08-17
 
 Branch: `codex/ck3chronicle-reboot`
 
@@ -16,11 +16,16 @@ suite do not constitute Phase 1 acceptance. Phase authority now lives in
 
 ## Authority
 
-Source behavior and the documents in this directory are authoritative. Old
-kickoff packets, prototypes, architecture plans, and tests are not active
-project inputs.
+The standalone repository at
+`https://github.com/ck3user75233/ck3chronicle.git` is the source of truth.
+`AGENTS.md`, `WORKSPACE_ROUTING.md`, and `CURRENT_HANDOFF.md` define the active
+repository and workflow boundary. Old kickoff packets, prototypes,
+architecture plans, dated handoffs, and WIP tests are not active project
+inputs. No ck3chronicle implementation may be continued under `ck3raven` or a
+`.ck3raven/wip` tree.
 
-Historical material is recoverable from:
+The following location contains historical takeover material only and is not a
+source or restart authority:
 
 `C:\Users\nateb\.ck3raven\wip\ck3chronicle\codex_reboot\takeover_archive_20260813`
 
@@ -43,8 +48,8 @@ Historical material is recoverable from:
 - atomic parse and reparse persistence.
 
 The implemented foundation and production classifier seam are covered by the
-new reboot-owned suite: 182 tests at the current successor checkpoint. No
-inherited test contributes to that count.
+new reboot-owned regression suite. Its current verified count is recorded in
+`CURRENT_HANDOFF.md`; no inherited test contributes to that count.
 
 These are fast regression tests. They do not constitute Phase 1 exit evidence.
 

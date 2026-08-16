@@ -1,5 +1,9 @@
 # Restart handoff — 2026-08-14
 
+> **Historical snapshot only.** This handoff has been superseded by
+> `CURRENT_HANDOFF.md`. Its process IDs, pending paths, branch/worktree state,
+> and external WIP references must not be used as current instructions.
+
 Recorded at approximately 2026-08-14 20:45 Asia/Hong_Kong so the current
 Codex task and the PC can be stopped without relying on conversation memory.
 

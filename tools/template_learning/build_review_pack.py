@@ -1,4 +1,4 @@
-"""Build a human-reviewable evidence pack for the WIP template learner.
+"""Build a human-reviewable evidence pack for the template learner.
 
 The pack is deliberately separate from production ck3chronicle.  It maps the
 frozen 252-sample semantic oracle onto a frozen empirical model and emits both

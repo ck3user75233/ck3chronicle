@@ -15,6 +15,7 @@ dist/
 .vscode/
 .idea/
 *.swp
+.codex-log/
 
 # OS
 Thumbs.db

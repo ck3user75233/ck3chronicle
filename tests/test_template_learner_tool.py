@@ -1,4 +1,4 @@
-"""Executable CK3-specific invariants for the WIP template learner."""
+"""Executable CK3-specific invariants for the template learner."""
 from __future__ import annotations
 
 import importlib.util

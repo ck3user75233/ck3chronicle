@@ -1,4 +1,4 @@
-"""Incremental evidence cache and immutable model revisions for the WIP learner.
+"""Incremental evidence cache and immutable model revisions for the template learner.
 
 This module never reads CK3's live log directory.  It inventories protected
 ck3chronicle session/pending copies, hashes a protected path only when its

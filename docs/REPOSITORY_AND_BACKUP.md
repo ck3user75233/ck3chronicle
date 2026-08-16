@@ -9,6 +9,11 @@ worktree of, submodule of, or otherwise dependent on the `ck3raven` Git
 repository. Auxiliary historical worktrees may physically live elsewhere, but
 the canonical branch and object database are owned by `ck3chronicle/.git`.
 
+Repository-loaded agent instructions live in `AGENTS.md`; the detailed
+ownership map lives in `WORKSPACE_ROUTING.md`; and restart-safe current context
+lives in `CURRENT_HANDOFF.md`. These files must be updated when source
+ownership changes so new agents do not reconstruct moved tooling in WIP.
+
 ## Included in Git
 
 - product source and CLI;
