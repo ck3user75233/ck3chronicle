@@ -37,6 +37,10 @@ operator-readiness requirements are part of the Phase 1 capture and reporting
 gates. Superseded pre-reboot plans remain recoverable from Git history but are
 not active project inputs.
 
+The evaluation cycle that used substituted or synthetic-scale evidence and was
+later rejected was a **Phase 1 exit attempt**, not a reboot Phase 0 cycle. Its
+invalid results do not remove, satisfy, or rename any Phase 1 gate.
+
 ## Phase 1: first useful vertical slice
 
 Status: **active; not exited**.

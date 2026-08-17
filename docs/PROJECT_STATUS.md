@@ -10,6 +10,23 @@ Implemented checkpoints and the passing reboot fast suite do not constitute
 Phase 1 acceptance. Phase authority lives only in `PROJECT_PLAN.md`; the
 role-separated release process lives in `PHASE1_EXIT_PROTOCOL.md`.
 
+## Phase ledger
+
+| Ledger item | Status | Meaning |
+|---|---|---|
+| Reboot foundation | **Complete** | Unnumbered planning, takeover audit, evidence control, and Phase 1 contract definition. It is not a product test exit. |
+| Phase 1 | **Active; not exited** | All 34 public gates must pass together against one frozen successor, followed by the private holdout gate. No earlier gate result transfers. |
+| Phase 2 | **Not entered** | Partial delta/baseline implementation is groundwork only. |
+| Phase 3 | **Not entered** | Partial source-resolution implementation is groundwork only. |
+| Phase 4 | **Not entered** | Workspace/likely-cause phase has not started. |
+| Phase 5 | **Not entered** | Triage groundwork does not exit fixability/recommendation requirements. |
+| Phase 6 | **Not entered** | Partial JSON surfaces do not exit the agentic query layer. |
+
+The rejected test cycle that used wrong, substituted, or synthetic-scale base
+inputs was a Phase 1 exit-harness failure. It was not Phase 0 testing. The
+corrected cycle must rerun every Phase 1 public gate against the immutable
+nine-unit corpus; prior passes and failures are diagnostic history only.
+
 ## Authority
 
 The standalone repository at

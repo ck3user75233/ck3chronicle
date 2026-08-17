@@ -7,6 +7,8 @@ Status: **Phase 1 not exited**.
 This matrix records the latest valid public attempt and the work that must be
 rerun against the next frozen successor. Candidate-bound passes never transfer
 automatically after product, model, catalog, interface, or harness changes.
+The rejected earlier fake/substituted-input cycle and the valid attempts that
+followed it were Phase 1 evaluation work, not Phase 0 testing.
 
 ## Latest valid public attempt
 
