@@ -71,6 +71,38 @@ The `DEV-SEMANTIC-252` answer artifact belongs only to the read-only scorer.
 The harness author may bind its declared identity without opening its answer
 contents. The blind runner must not receive it.
 
+### Fail-closed designated-input enforcement
+
+The `gate_inputs` object inside the exact corpus manifest is normative, not a
+menu or example. Preserve its complete 35-gate mapping verbatim in the harness
+plan. The evaluator has no discretion to choose a different unit, a smaller
+sample, another real log, or synthetic data for a scored case.
+
+Before harness authorship, publish a neutral input-authority preflight that
+records, for every gate, the exact assigned unit names and their declared file
+paths, sizes, hashes, and source-set identities. It must prove:
+
+- all 35 gate keys occur exactly once, including the disabled private
+  placeholder;
+- every public case uses only units assigned to its gate by `gate_inputs`;
+- every assigned unit and file matches the locked manifest exactly;
+- no prefix, first-N-line subset, truncation, reconstructed sample, or
+  evaluator-created replacement is used as base evidence;
+- any derived mutation retains the immutable base identity, records the exact
+  derived identity and byte delta, and satisfies the prescribed precondition
+  and application count.
+
+Any mismatch aborts before candidate execution and is reported as
+`INFRASTRUCTURE_INVALID_INPUT`; it cannot be repaired by substituting a
+different input within the attempt. The harness reviewer must compare the
+machine plan back to `gate_inputs`, not merely confirm that all nine corpus
+units exist.
+
+Be efficient: verify the locked source corpus once at runner preflight. During
+case staging, compute the staged or derived file hash as part of that copy or
+derivation and compare it with the declared identity. Do not repeatedly hash
+the same immutable source file merely to prove the same authority again.
+
 ## Role and execution boundaries
 
 1. Independently author a new harness from the current public contracts and

@@ -97,4 +97,8 @@ def test_only_reboot_plan_is_active_and_evaluation_uses_fresh_tasks() -> None:
     assert "pre-reboot Phase 0 launch packet" in prompt
     assert "Run all 34 public gates" in prompt
     assert "407e47d12bc17f30e2abd453dc69c4dda0b4e3fab705e2e361e6d26a8e6a6147" in prompt
+    assert "Fail-closed designated-input enforcement" in prompt
+    assert "gate_inputs" in prompt
+    assert "INFRASTRUCTURE_INVALID_INPUT" in prompt
+    assert "first-N-line subset" in prompt
     assert "separate user-owned blind-runner task" in prompt
