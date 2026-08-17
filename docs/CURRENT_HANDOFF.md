@@ -63,6 +63,10 @@ Do not resume from an old WIP learner directory. Read `AGENTS.md` and
 5. Run the new unseen private holdout only after every public gate is valid and
    passing, then publish the candidate-bound Phase 1 exit decision.
 
+Use `.github/prompts/run-phase1-exit-cycle.prompt.md` as the master prompt in a
+fresh Codex task. Do not ask that task to rerun a historical Phase 0 packet;
+the required cycle is the complete 35-gate Phase 1 exit process.
+
 ## Verification command
 
 From the repository root:

@@ -18,6 +18,7 @@ def test_canonical_agent_guidance_and_owned_components_exist() -> None:
         "CLAUDE.md",
         ".github/copilot-instructions.md",
         ".github/prompts/continue-ck3chronicle.prompt.md",
+        ".github/prompts/run-phase1-exit-cycle.prompt.md",
         "docs/CURRENT_HANDOFF.md",
         "docs/PROJECT_PLAN.md",
         "docs/PROJECT_STATUS.md",
@@ -76,9 +77,9 @@ def test_only_reboot_plan_is_active_and_evaluation_uses_fresh_tasks() -> None:
 
     plan = (REPO_ROOT / "docs" / "PROJECT_PLAN.md").read_text(encoding="utf-8")
     assert "Reboot foundation" in plan
-    assert "Phase 0" not in plan
-    assert "Historical product Phase 0" not in plan
-    assert "Product Phase 0" not in plan
+    assert "## Reboot Phase 0" not in plan
+    assert "### Historical product Phase 0" not in plan
+    assert "Phase 1 exit attempt" in plan
     assert "fresh user-owned evaluator task" in plan
     assert "separate blind-runner task" in plan
 
@@ -89,3 +90,11 @@ def test_only_reboot_plan_is_active_and_evaluation_uses_fresh_tasks() -> None:
     assert "Public PASS | 23" in matrix
     assert "Product FAIL | 5" in matrix
     assert "Infrastructure/unscored | 6" in matrix
+
+    prompt = (
+        REPO_ROOT / ".github" / "prompts" / "run-phase1-exit-cycle.prompt.md"
+    ).read_text(encoding="utf-8")
+    assert "pre-reboot Phase 0 launch packet" in prompt
+    assert "Run all 34 public gates" in prompt
+    assert "407e47d12bc17f30e2abd453dc69c4dda0b4e3fab705e2e361e6d26a8e6a6147" in prompt
+    assert "separate user-owned blind-runner task" in prompt

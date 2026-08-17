@@ -196,6 +196,10 @@ Read these documents in order:
 The optional [capability inventory](docs/CAPABILITY_INVENTORY.md) is a backlog
 reference, not phase or startup authority.
 
+When a successor candidate is ready for independent evaluation, start a fresh
+Codex task with the
+[Phase 1 exit-cycle master prompt](.github/prompts/run-phase1-exit-cycle.prompt.md).
+
 ## Configuration
 
 On first run, `ck3chronicle doctor` creates configuration at:
