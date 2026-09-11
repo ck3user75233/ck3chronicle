@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ck3chronicle"
+version = "0.0.1"
+description = "Preserve and triage Crusader Kings III runtime logs and crash evidence."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "TBD" }
+authors = [{ name = "ck3chronicle authors" }]
+keywords = ["ck3", "crusader-kings", "modding", "logs", "diagnostics"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Operating System :: OS Independent",
+]
+dependencies = []
+
+[project.scripts]
+ck3chronicle = "ck3chronicle.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.data-files]
+"share/ck3chronicle/models/67303093ecda779d" = [
+  "models/67303093ecda779d/empirical_template_model.json",
+  "models/67303093ecda779d/manifest.json",
+  "models/67303093ecda779d/semantic_projection_catalog.json",
+]

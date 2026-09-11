@@ -1,0 +1,13 @@
+# Copy this file to config.toml in the canonical repository root and replace
+# every external placeholder with an absolute machine-local path. Relative WIP
+# paths resolve from the directory containing config.toml.
+
+[paths]
+root_game = 'C:\path\to\Crusader Kings III\game'
+root_steam = 'C:\path\to\steamapps\workshop\content\1158310'
+root_local_mods = 'C:\path\to\Paradox Interactive\Crusader Kings III\mod'
+root_logs = 'C:\path\to\Paradox Interactive\Crusader Kings III\logs'
+root_crashes = 'C:\path\to\Paradox Interactive\Crusader Kings III\crashes'
+root_wip = '.ck3chronicle\wip'
+root_ck3chronicle = '.ck3chronicle\wip\runtime'
+root_learner_state = '.ck3chronicle\wip\learner'

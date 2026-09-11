@@ -1,0 +1,67 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+.venv-codex/
+.venv-owner-*/
+.venv-candidate-*/
+.venv-backup-*/
+.venv-failed-*/
+venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+.codex-log/
+.codex-tmp/
+
+# Local transfer package for the separate sandbox/security project
+docs/codex-sandbox-handoff/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Local ck3chronicle config / runtime
+config.toml
+.ck3chronicle/
+ck3chronicle.db
+ck3chronicle.db-journal
+ck3chronicle.db-wal
+ck3chronicle.db-shm
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Captured or derived CK3 evidence is local data, never source
+*.log
+sessions/
+pending/
+watcher-events/
+local-data/
+reference-data/
+training-data/
+evaluation-results/
+private-holdout/
+*.ndjson
+
+# Local databases and generated output
+*.db
+*.sqlite
+*.sqlite3
+output/
+reports/
+tmp/
+.coverage
+htmlcov/
+
+# Local archives
+*.zip
