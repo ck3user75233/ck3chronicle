@@ -1,19 +1,132 @@
 # Current handoff
 
-Updated: 2026-09-08
+Updated: 2026-09-12
 
-The canonical checkout is `C:\Users\nateb\Documents\ck3chronicle` on branch
-`codex/ck3chronicle-reboot`. The active product plan is `PROJECT_PLAN.md`, with
-Trusted Run first. The evidence and reasoning behind this handoff are recorded
-in `DEVELOPMENT_RESTART_AUDIT_2026-09-08.md`.
+## Live working-tree handoff
+
+Branch: `main`
+
+Completed documentation baseline:
+`17d2fe2636e4170247b319e1f0bd8476139a2243`
+(`docs: simplify project guidance and clarify product authority`).
+
+At the time of this update, `origin/main` remains at
+`2613207dbd853e646cb657e55c3166b67c4ec91d`; the documentation baseline has not
+been pushed. Verify the current local HEAD and ahead count after this handoff is
+committed.
+
+The remaining working tree is intentionally not clean. It contains one bounded
+classification-recovery body plus this handoff:
+
+| Paths | Purpose | State before the next task |
+|---|---|---|
+| `docs/CLASSIFICATION_PIPELINE_RECOVERY_REVIEW.md`, `docs/PROJECT_PLAN.md`, `docs/PROJECT_STATUS.md`, `docs/classification_pipeline_recovery_prompts/`, deleted `tools/git-local-wins-reconcile.ps1` | Owner-authorized classification-recovery review, executable mini-project sequence, current-plan/status activation, and retirement of the one-time reconciliation tool | Preserve as the prepared recovery package. The next task uses it to execute mini-project 01; it is not a documentation-cleanup task. |
+| `docs/CURRENT_HANDOFF.md` | This live ledger plus dated recovery evidence | Keep with the classification-recovery documentation boundary and update at each mini-project handoff. |
+
+Commit `17d2fe2` completes the assigned review and revision of `AGENTS.md`,
+`README.md`, owner intent, architecture and data lineage, banned ideas,
+development environment, workspace routing, and repository/backup guidance.
+No further cleanup of those files belongs to the classification-recovery task.
+
+Verification completed before that commit:
+
+- all 14 current requirement-derived tests passed through `.venv`;
+- isolated `ck3chronicle` and CLI imports passed;
+- `pip check` reported no broken requirements;
+- relative Markdown links in the revised active guidance resolve; and
+- `git diff --check` passed after the documentation edits.
+
+### Exact next task
+
+1. Confirm HEAD and preserve every listed working-tree change; do not discard or
+   recreate the prepared recovery package.
+2. Use `CLASSIFICATION_PIPELINE_RECOVERY_REVIEW.md`, the master prompt, and
+   numbered prompt 01 to begin the approved classification-pipeline recovery.
+   The objective is the pipeline replacement described there, not another
+   review or rewrite of the general project documentation.
+3. Execute **only mini-project 01**. It establishes verified real-log baselines,
+   an ignored evidence ledger, and the LibCST tooling route; it makes no product-
+   architecture change. End with the required independent validation and master
+   handoff, then stop before mini-project 02.
+
+Production `process-pending`, production database writes, production cutover,
+and watcher startup remain outside the recovery exercise. Use genuine retained
+CK3 logs only through explicit paths and keep all evidence and generated results
+outside Git.
+
+After mini-projects 01 through 08 are complete, step back and produce a current
+detailed Trusted Run implementation and acceptance plan. That later planning
+work is not part of the classification-pipeline recovery.
+
+Deferred documentation direction after classification recovery:
+
+- `PROJECT_PLAN.md`: lead with the explicit capability order—Trusted Run, Run
+  Comparison, Source Context, Action Triage, Extended Log Intelligence, Trend
+  Intelligence, then Integrations and Guided Repair—and distinguish that chosen
+  order from the hard dependency graph. Show the mandatory same-Run `debug.log`
+  capture and effective-playset slice immediately after Trusted Run, before Run
+  Comparison, without implying that all Source Context moves with it. Remove
+  completed-checkpoint evidence, active-exercise detail, and current maturity
+  reporting to status.
+- `PROJECT_STATUS.md`: reduce to current objective, accepted versus implemented
+  capabilities, active work, remaining gaps, operational restrictions, and next
+  owner decisions. State explicitly that same-Run `debug.log` capture and
+  effective-playset extraction are required immediately after Trusted Run and
+  are not yet accepted. Move repository-recovery history, replay totals, hashes,
+  and performance investigations to dated evidence documents.
+- `TRUSTED_RUN_SPEC.md`: after the classification pipeline is recovered,
+  reconcile every requirement with direct error-contract classification and
+  rebuild-only database generations. Replace the one-week `error.log` rule with
+  no automatic expiry during current product development; clarify that retained
+  logs, not SQLite, are reconstruction authority; and record the immediate post-
+  Trusted-Run playset fast-follow. Mark each requirement retained, revised,
+  removed, or awaiting an owner decision, then produce ordered implementation
+  work packages and one acceptance map.
+- Source Context playset plan: ratify same-Run `debug.log` acquisition timing,
+  complete-file preservation, the DLC/enabled-mod/`Mounted Data:` extraction
+  grammar, Run-ID fields and availability states, rebuild lineage, and manual-
+  capture behavior. Treat the existing runtime-context implementation as
+  provisional evidence to assess, not as an automatically accepted contract.
+- `CURRENT_HANDOFF.md`: after the existing classification-recovery changes are
+  committed, replace the historical body with the live-ledger structure at the
+  top of this file. Preserve durable evidence in dated audit/recovery documents
+  rather than accumulating it here.
+- Classification-recovery documentation reconciliation: before treating the
+  detailed contract set as current again, remove or revise superseded one-week
+  source retention, projection, in-place migration, compatibility, source-log
+  reconstruction, and historical-reprocessing instructions in
+  `REQUIREMENTS_AND_TESTING.md`,
+  `DATA_COMPATIBILITY_AND_OPERATIONS.md`, `MODEL_QUALITY_AND_PROMOTION.md`,
+  `RELEASE_READINESS.md`, `models/README.md`, and the learner README/AGENTS
+  files. Keep dated ingestion findings as history, not current prescriptions.
+
+This live section is a replace-in-place ledger, not cumulative history. Once
+the working tree is clean, reduce it to the next active task or state that no
+cross-task work remains.
+
+The canonical checkout is `C:\Users\nateb\Documents\ck3chronicle` on `main`,
+tracking `origin/main`. The canonical GitHub repository contains the rebooted
+project state and no obsolete remote branch or tag. The active product plan is
+`PROJECT_PLAN.md`, with Trusted Run first. The evidence and reasoning behind
+this handoff are recorded in `DEVELOPMENT_RESTART_AUDIT_2026-09-08.md`.
+
+The clean remote history begins at parentless commit
+`2613207dbd853e646cb657e55c3166b67c4ec91d`, whose tree is the independently
+verified reboot tree `d3abdcf2981d12bb6c60d7cb1be32191efc8a81e`. The complete
+pre-cutover remote and local histories remain recoverable from checksumed,
+verified bundles outside the workspace under
+`C:\Users\nateb\Documents\ck3chronicle-git-archive\20260910T061315.8214329Z`.
 
 ## Owner decisions in force
 
 - The watcher is a capture-only safety mechanism. After a CK3 process exit it
   protects the live-root `error.log` before CK3 can replace it. It performs no
   hashing, parsing, database work, or pending processing.
-- "More data" currently means more distinct `error.log` captures. It does not
-  authorize routine capture of `debug.log` or `game.log`.
+- Trusted Run itself acquires diagnostic intelligence from `error.log` only.
+  Its first required fast-follow captures the same Run's complete live-root
+  `debug.log` and extracts effective-playset context. General interpretation of
+  the rest of `debug.log`, or capture and interpretation of `game.log` and other
+  CK3 logs, still requires focused research and an owner decision.
 - Every accepted run has one database `session_id`, and that value is its sole
   Run ID. A matching full-file
   `error.log` SHA-256 is an accidental repeated copy/upload and must fail
@@ -31,6 +144,12 @@ in `DEVELOPMENT_RESTART_AUDIT_2026-09-08.md`.
   explicit session bounds, and a read-only plan recorded first.
 - Do not restart the watcher in this handoff task. Review and verification come
   first; startup is an explicit follow-up.
+- “Rehearsal” in the dated recovery material means processing genuine captured
+  CK3 `error.log` files against a verified disposable database/runtime copy. It
+  does not mean fabricated logs or synthetic parser fixtures. Current work
+  should call the inputs the verified real-log evidence set and the resulting
+  database the pre-refactor/legacy-pipeline replay database; only the former is
+  durable acceptance evidence.
 
 ## Completed in the 2026-09-08 recovery
 
@@ -129,6 +248,12 @@ in `DEVELOPMENT_RESTART_AUDIT_2026-09-08.md`.
   The copied pending directory is empty; production still has all 22 originals.
   Together they contain 702,113 source blocks, 720,090 semantic occurrences,
   and 16,271 issue clusters. Three reached CK3's 100,000-entry producer cap.
+  All 22 rows identify parser contract `1.0.2`, classifier contract `2.0.1`,
+  model revision `67303093ecda779d`, and projection catalog
+  `public-semantic-252-contract-evidence-v3`. Those are superseded-pipeline
+  observations, not a correctness oracle. The processing journals did not
+  record an exact Git/source revision, and storage evolved through schema v6
+  during the exercise.
 - Profiled a repeated-block projection cost exposed by session 40. One
   21,287-character persistent-reader block produced 452 semantic units, and
   the old loop normalized and locator-scanned the complete block once per
@@ -300,27 +425,13 @@ The current Codex sandbox cannot execute the optional owner-created
 boundary. That is not a project-verification blocker: the project `.venv` is
 agent-accessible, imports the current editable source, and passed the checks
 listed above. Routine Python verification must be run by the agent through
-`.venv`, not handed back to Nate. The watcher remains stopped until the
-explicit startup decision below.
+`.venv`, not handed back to Nate. Watcher startup and production pending
+processing remain separate operational decisions outside the classification
+recovery exercise.
 
 ## Exact continuation order
 
-The complete source/handoff review and final verification pass are complete:
-14/14 requirement-derived checks, compilation, 52 isolated package imports,
-CLI help, `pip check`, and `git diff --check` all succeeded through the
-repository `.venv`.
-
-1. Make the separate explicit decision to start one capture-only watcher. Do
-   not start processing with it.
-2. Stage, review, commit, and push the complete reboot checkpoint from this
-   canonical repository. Until then, the remote is not a recoverable copy of
-   the current worktree. An isolated throwaway index successfully staged and
-   wrote the whole intended tree, but this task cannot write `.git` and cannot
-   reach GitHub; use a task/environment with those capabilities for the real
-   checkpoint. First restore `remote.origin.fetch` from its current single-branch
-   mapping to the normal all-heads mapping, fetch/prune, and inspect the currently
-   absent `origin/main` before deciding the branch promotion path.
-3. Only after a fresh verified production backup and separate owner approval,
-   execute one exact production pending capture or historical session at a
-   time. Inspect its frozen plan, journal, integrity, and reconciliation before
-   selecting another.
+The live section at the top of this file is the current continuation authority.
+This dated body preserves recovery evidence and reasoning; it does not override
+the current HEAD, owner-intent, retention, terminology, or mini-project-01
+directions recorded above.
