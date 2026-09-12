@@ -1,129 +1,182 @@
 # Architecture and data lineage
 
-Status: active target architecture as of 2026-08-31.
+Status: active target architecture, updated 2026-09-12.
 
-## Recommendation
+This document defines the stable target structure and ownership of data. It
+does not report implementation progress or authorize a migration sequence.
+Current truth belongs in [`PROJECT_STATUS.md`](PROJECT_STATUS.md), delivery
+order belongs in [`PROJECT_PLAN.md`](PROJECT_PLAN.md), and rejected designs are
+recorded in [`BANNED_IDEAS.md`](BANNED_IDEAS.md).
 
-Evolve the canonical standalone package and SQLite database in place. Add one
-explicit configuration authority, lifecycle-gated capture, a finite retained-
-raw hash inventory, compact diagnostic records, and exactly one native review
-shard per successfully processed run.
-
-This is not a rewrite, greenfield database, content-addressed evidence system,
-or service decomposition. Implementation proceeds incrementally through the
-named milestone plan.
-
-## Explicit configured-root architecture
+## End-to-end architecture
 
 ```mermaid
 flowchart LR
-    CLI["Explicit --config path"] --> PICK{"Config-file bootstrap"}
-    DEFAULT["One fixed Windows LocalAppData file"] --> PICK
-    PICK --> PATHS["Supported paths configuration file"]
-    USER["User supplies required roots"] --> PATHS
-    PATHS --> CFG["Central configuration module / global constants"]
-    CFG --> LOGS["CK3 live-logs root"]
-    CFG --> CRASH["CK3 crashes root"]
-    CFG --> DATA["ck3chronicle data root"]
-    DATA --> DERIVED["Derived application subdirectories"]
-    CFG --> DOCTOR["Read-only doctor validation"]
-    DOCTOR -->|"Valid"| READY["Operational commands enabled"]
-    DOCTOR -->|"Invalid"| CLOSED["Fail closed; explicit repair required"]
+    PATHS["Explicit paths configuration"] --> WATCH["Lifecycle watcher"]
+    WATCH -->|"observed CK3 exit"| CAP["Copy-only capture"]
+    MANUAL["Explicit manual/recovery capture"] --> CAP
+    CAP --> PENDING["Protected pending error.log"]
+    PENDING --> VALIDATE["Validate and hash"]
+    VALIDATE -->|"duplicate / invalid"| FAIL["Loud failed attempt; no Run ID"]
+    VALIDATE --> SHARD["Stage one native review shard"]
+    VALIDATE --> EMIT["Recognize log emissions"]
+    EMIT --> SPLIT["Approved source-specific splitting"]
+    SPLIT --> CLASS["Classify against approved error contracts"]
+    CLASS -->|"approved full or permitted partial"| RECORDS["Aggregate diagnostic records"]
+    CLASS -->|"provisional / low confidence / unknown"| SHARD
+    RECORDS --> COMMIT["Finalize Run ID record"]
+    SHARD --> COMMIT
+    COMMIT --> DB[("Current SQLite generation")]
+    DB --> REPORT["Database-only reports and audit"]
 ```
 
-`--config <path>` opens exactly the supplied file. Without the option, the
-only location is the application-owned Windows LocalAppData
-`ck3chronicle/paths.toml` path. The bootstrap never searches for another
-configuration filename or legacy location.
+The time-critical watcher path ends after complete pending publication. Hashing,
+parsing, classification, SQLite access, and reporting belong to deferred
+processing.
 
-No edge enters the central configuration from filesystem scanning, Windows
-registry, Steam libraries, Documents conventions, environment guesses, sibling
-repositories, or fallback defaults. A later milestone adds a root only through
-the same explicit configuration authority.
+## Configuration
 
-## Lifecycle-triggered capture
+An explicit `--config <path>` opens exactly that file. Without it, the only
+bootstrap location is the fixed Windows LocalAppData
+`ck3chronicle/paths.toml`. The user-authored paths file is the sole authority
+for CK3 live logs, crash folders, ck3chronicle data, and any later approved
+operational root.
 
-```mermaid
-flowchart LR
-    CFG["Configured CK3 process and roots"] --> START["Watcher observes process start"]
-    START --> EXIT["Watcher observes matching process exit"]
-    EXIT --> CAP["Protect one error.log in pending"]
-    FILE["File exists / directory changed / old retained data"] -. "never triggers" .-> STOP["No automatic capture"]
-```
+The configuration module validates those roots and derives application-owned
+subdirectories. It does not scan filesystems, query the registry, inspect Steam
+libraries, infer user directories, consult sibling repositories, or fall back
+to another configuration file. `doctor` reports configuration and readiness
+without discovering, initializing, migrating, repairing, or otherwise mutating
+state.
 
-One observed start-to-exit lifecycle triggers one copy. No observed lifecycle
-means no automatic capture. An explicit manual/recovery capture enters the
-capture service separately and may leave lifecycle start/exit unknown.
-Deferred ingestion stores the full-file `error.log` SHA-256 with the Run ID and
-rejects an existing hash before parsing or creating another Run ID.
+## Capture and run identity
 
-## Per-run review-shard architecture
+One observed configured CK3 start-to-exit lifecycle permits one automatic copy
+attempt. File presence, directory change, polling, retry, reconciliation, or
+watcher startup does not create a Run. An explicit manual or recovery capture
+of the same supported files uses the same validation and processing services
+and preserves the same file-derived diagnostics.
 
-```mermaid
-flowchart LR
-    EMIT["Validated log emissions"] --> REC["Recovered diagnostics"]
-    REC --> CLASS{"Approved contract?"}
-    CLASS -->|"Full / permitted partial"| ID["Diagnostic-record identity"]
-    ID --> AGG["Aggregate occurrence count"]
-    AGG --> DB[("Operational production database")]
-    CLASS -->|"Unresolved / provisional / low confidence"| SHARD["One native review shard for this run"]
-    SHARD --> FINAL["Finalize shard hash and provenance with run result"]
-    FINAL --> META["Review emission count / reference / available / hash"]
-    META --> DB
-    DB --> REPORT["Reports query database only"]
-```
+Capture copies the live-root `error.log` first and publishes it completely or
+fails. Only a newly created timestamped crash folder associated with the
+observed lifecycle can add its root `exception.txt`. Crash-folder copies of
+principal logs are outside the product input boundary.
 
-Every successfully processed run has one finalized shard, even when it is
-empty. The shard is separate from both the complete raw `error.log` and compact
-approved diagnostic records. The database never claims an available shard
-that was not safely published.
+Before parsing or Run-ID creation, deferred processing validates the protected
+log and calculates its full-file SHA-256. A hash already attached to a Run ID
+means the same captured file was submitted again and is rejected without an
+override. Missing, unreadable, unstable, empty, or unsupported input produces a
+failed attempt, not a successful run.
 
-## Responsibility boundaries
+A Run is the CK3 gaming session that already occurred. A Run ID is its
+successfully processed database record within one generation. Rebuilds may
+assign generation-local Run IDs; retained full-file hashes and capture
+provenance provide cross-generation correlation without creating a second
+runtime identity system.
 
-| Component | Owns | Must not own/do |
+### Watcher observations and manual capture
+
+Every capture route records its own capture time and trigger. The watcher can
+add facts that are not contained in the captured files: its observed lifecycle-
+boundary times, process name/PID/start identity, and evidence that a timestamped
+crash folder appeared between those boundaries. It also records the association
+status of root `exception.txt`.
+
+A manual or recovery capture can preserve the same `error.log`, `debug.log`
+when supported, and supplied root `exception.txt`. It therefore need not lose
+diagnostic or playset content. Unless separately evidenced, it cannot claim the
+watcher's process observations or prove that a crash folder was newly created
+during that Run. Those optional metadata fields remain unavailable rather than
+being inferred.
+
+## Required playset context after Trusted Run
+
+The first required fast-follow after Trusted Run adds same-Run live-root
+`debug.log` capture. Capture protects the complete file after CK3 exit, with
+`error.log` retaining first priority on the time-critical copy path.
+
+The established extraction method reads three related forms of evidence from
+the captured `debug.log`:
+
+- the DLC inventory and descriptor paths;
+- the enabled-mod inventory and descriptor paths; and
+- timestamped `Mounted Data:` paths emitted by
+  `virtualfilesystem_physfs.cpp`.
+
+Together they produce the effective playset for the Run: ordered active DLCs
+and mods, mount/load order, source kind, descriptor paths, and mounted roots.
+The Run ID stores this derived context plus the `debug.log` hash, extraction
+status, relevant line/byte span, block hash, contract revision, and warnings.
+Complete, partial, absent, malformed, truncated, and ambiguous are explicit
+states.
+
+This context is required to correlate reported errors with the files that were
+active for that Run. Whether the rest of `debug.log`, `game.log`, or another CK3
+log should be captured or interpreted is decided through later focused
+research; playset extraction does not silently authorize general log parsing.
+
+## Parsing, classification, and accounting
+
+A log emission begins at a recognized timestamp-prefixed `error.log` header and
+includes continuation lines until the next recognized header. Separate headers
+remain separate emissions even when their timestamp values match.
+
+The normal mapping is one emission to one recovered diagnostic. Recovering
+multiple diagnostics requires an approved source-specific grammar with
+deterministic boundaries and representative evidence. Generic message length
+or punctuation does not authorize splitting.
+
+The empirical matcher assigns an approved error contract directly. The
+contract owns its error type, typed slots, validation, rendering, and identity
+rules. There is no later semantic-projection or mapping stage.
+
+Approved full and permitted partial/L1 outcomes become compact diagnostic
+records. Equivalent identities within a run aggregate into one record with an
+occurrence count. Provisional, low-confidence, and unknown outcomes retain
+their native emissions in the run's review shard. Every recognized emission
+therefore becomes one or more recovered diagnostics, enters the review shard,
+or produces an explicit parser failure.
+
+## Component responsibilities
+
+| Component | Owns | Does not own |
 |---|---|---|
-| Configuration bootstrap | Open exact `--config` file or the one fixed LocalAppData `ck3chronicle/paths.toml` file | Probe alternate names/locations, search, or fall back after failure |
-| Configuration module | Parse/validate the explicit paths file; expose all operational roots/constants; derive application subdirectories | Search, registry probing, conventional fallbacks, duplicated hardcoded root logic |
-| Read-only `doctor` | Configuration syntax/keys/type/existence/access, live-logs/crashes/data/database/model/retention readiness | Require a current `error.log` for base/watch readiness; validate an explicit manual input instead of its operation; mutate, repair, initialize, or discover paths |
-| Lifecycle watcher | Configured process start/exit and one copy attempt after exit | Capture from file presence/directory change/polling; hash, parse, or access SQLite |
-| Capture service | Copy-first live-root `error.log`, complete pending publication | Database/parse work before protection; crash-folder principal access |
-| Raw-source store | Raw path/size/time while policy retains the source | Run identity or ingestion policy |
-| Run registration | Run identity/chronology and durable `error.log` content hash metadata | Parse/classify source or accept an existing hash |
-| Input boundary | Configured Paradox-managed live source and explicit missing/unreadable/unstable/empty failure | Adversarial validation of fabricated CK3-owned directory contents |
-| Emission recognizer | Timestamp-header/continuation boundaries and counters | Semantic contract choice or path discovery |
-| Source-specific splitter | Reviewed multi-error grammar and exact child recovery | Generic long-message guessing or permanent parent-emission schema |
-| Classifier/aggregation | Approved contracts/slots and diagnostic-record identity/counts | Confident storage of uncertain payload |
-| Native review shard service | One per-run substantially native shard, provenance, hash, finalization, inspect/export, FIFO retention | Diagnostic authority, raw-log replacement, unlimited storage, payload duplication in SQLite |
-| Database repositories | Runs, diagnostic records, lineage, counters, review metadata, retention/audit state | Full review payload, raw-log report dependency, mandatory saved report copies |
-| Report/query service | Deterministic database-only human/structured reports | Opening raw logs, parsing, model execution, routine result persistence |
+| Configuration bootstrap/module | Exact paths-file opening, validation, constants, and derived application paths | Search, fallback discovery, or duplicated root logic |
+| Lifecycle watcher | Configured process start/exit observation and one post-exit capture request | Hashing, parsing, classification, SQLite, or pending processing |
+| Capture service | Stable copy and complete pending publication; bounded root `exception.txt` attachment | Run registration or crash-folder principal logs |
+| Input and run registration | Validation, full-file hash guard, run chronology, and observed capture facts | Classification or acceptance of a duplicate hash |
+| Playset-context service | Same-Run `debug.log` inventory/`Mounted Data:` extraction, ordered DLC/mod context, provenance, and explicit availability state | General `debug.log` diagnostics or causal file attribution |
+| Emission parser and splitters | Header/continuation boundaries, approved multi-error recovery, and accounting | Contract selection or generic speculative splitting |
+| Classifier and aggregator | Approved contracts, typed validation, diagnostic identity, and occurrence counts | A second semantic mapping stage or confident storage of uncertain results |
+| Review-shard service | One native shard per successful Run ID, provenance, integrity, publication, and retention | Diagnostic authority, raw-log replacement, or payload duplication in SQLite |
+| Database repositories | Current-generation runs, compact records, lineage, counters, review metadata, audit, and retention state | Full native review payload or old-schema compatibility |
+| Report/query service | Deterministic human and structured database views | Opening raw logs, parsing, classification, or routine report persistence |
 
-## Data authority and mutability
+## Data authority and retention
 
-| Data | Authority | Mutability/retention rule |
-|---|---|---|
-| Operational roots | User paths file through central configuration | Explicit user repair/change only; no inferred fallback. |
-| Observed lifecycle | Watcher event metadata stored with its accepted Run ID | Observation remains metadata; it is not a separate product identity. |
-| Manual/recovery capture | Explicit capture attempt, mode, capture time, and requested input | Successful processing receives a Run ID; unobserved lifecycle facts remain unknown. |
-| Exact raw `error.log` | Protected live-root capture | Never rewritten; default one week. |
-| `error.log` content hash | Successful Run ID metadata | Durable light-touch duplicate/integrity guard; survives raw expiry and is never compared to a crash copy. |
-| Failed input attempt | Operational failure log | Never appears as a successful diagnostic run. |
-| Log emission/recovered diagnostic | Transient parser pipeline unit | Stored compactly only after approved classification or routed to shard. |
-| Diagnostic record | Approved meaning-bearing identity within one run | Equal identity increments occurrence count. |
-| Native review shard | One per successful run | Append during processing, finalize atomically, then immutable; FIFO age/size pruning. |
-| Review metadata | SQLite emission-count/reference/availability/hash | Updated transactionally with shard finalization/deletion. |
-| Report | Database query result | Never depends on raw source; not durable by default. |
+| Data | Authority and lifecycle |
+|---|---|
+| Operational roots | User-authored paths configuration; changed only explicitly. |
+| Protected `error.log` | Immutable reconstruction authority; retained without automatic expiry during current product development. |
+| Protected `debug.log` | Required for new Runs after the playset fast-follow begins; initially retained without automatic expiry so playset context remains rebuildable. |
+| Capture provenance | Non-derived capture mode/time, observed lifecycle facts, crash facts, file metadata, and hashes needed for audit or rebuild. |
+| `error.log` hash | Durable Run metadata for duplicate detection and correlation, maintained independently of source-file retention within that database generation. |
+| Effective playset | Derived per-Run DLC/mod inventory, order, paths, status, and extraction lineage from captured `debug.log`. |
+| Log emissions and recovered diagnostics | Transient processing units until stored as approved records or routed to the review shard. |
+| Diagnostic records | Derived current-generation SQLite records with contract and model lineage. |
+| Native review shard | Immutable after finalization; associated with one Run ID until a future retention decision or that Run ID is pruned. |
+| Review metadata | SQLite count, reference, availability, and integrity hash kept consistent with shard publication or deletion. |
+| Report | On-demand database query result; not persistently stored unless explicitly exported. |
 
-## Diagnostic-record identity gate
+Every non-derived fact expected to survive a database rebuild must exist in the
+retained capture evidence and provenance, not only in the old derived database.
+A new generation cannot claim history that its retained evidence cannot
+reconstruct unless the owner explicitly accepts that loss.
 
-Before schema migration, approve contract/revision, typed-slot, relevant
-file/line/symbol/locator, normalization, volatile-field, collision, and version
-rules. One approved multi-error fixture must prove `N` distinct identities
-produce `N` records; another must prove `N` clauses with one identity aggregate
-to one record with count `N`.
+## Native review shard
 
-## Review-shard physical design
-
-Approved shape:
+Each successfully processed Run ID finalizes one shard, including an empty
+shard when every emission becomes an approved diagnostic record:
 
 ```text
 review/
@@ -132,89 +185,59 @@ review/
     review-manifest.json
 ```
 
-The native file preserves routed emissions/order/frequency. The sidecar records
-run ID, source-family counts, application/parser/splitter/model revisions,
-routing reasons/confidence states, emission counts, finalization state, and whole-
-shard hash. Lossless compression may follow finalization.
+The native file preserves routed emissions, order, and frequency. The manifest
+records the Run ID, source-family counts, parser/splitter/model/contract
+revisions, routing reasons, emission counts, finalization state, and integrity
+hash. SQLite stores navigation and integrity metadata, not the native payload.
 
-SQLite stores conceptually `review_emission_count`, `review_shard_reference`,
-`review_shard_available`, and `review_shard_hash`, not the native payload.
+## Database generations
 
-Owner-accepted measurement candidate, not an active default: **90 days and
-2 GiB, whichever triggers FIFO deletion first**. Measure representative
-per-run/per-day shard growth, percentiles, unknown-heavy workloads, compression,
-and simulated occupancy before a later default decision. The candidate duration
-is materially longer than the one-week raw-log default.
+SQLite contains derived product state and must match the one current schema.
+Meaning-changing schema, parser, splitter, model, or error-contract revisions
+produce a separately named fresh database generation by replaying the complete
+retained capture set. The candidate is validated before explicit cutover, and
+the prior database remains unchanged as rollback evidence until acceptance.
 
-## Transaction/state model
+There is no in-place schema-migration chain, old-schema reader, compatibility
+view, dual write, backfill, or historical row-repair path. Ordinary SQLite
+transactions and journal recovery remain required for crash safety within one
+generation.
 
-```mermaid
-stateDiagram-v2
-    [*] --> ConfigInvalid
-    ConfigInvalid --> Ready: explicit paths configured and validated
-    Ready --> Observing: watcher observes configured process start
-    Observing --> Capturing: matching process exit
-    Capturing --> FailedAttempt: missing unreadable empty unstable source
-    Capturing --> Validating: protected raw source
-    Validating --> FailedAttempt: unsupported CK3 format
-    Validating --> Processing: valid CK3 error log
-    Processing --> CommitReady: diagnostics plus shard finalized
-    CommitReady --> Reportable: run records and shard metadata committed
-    Processing --> Recoverable: interruption preserves prior truth
-    Recoverable --> Processing: explicit retry on protected pending copy
-    Reportable --> RawExpired: raw policy removes source/hash inventory
-    RawExpired --> Reportable: database reports remain unchanged
-    Reportable --> ShardExpired: later shard policy removes native review file
-    Reportable --> RunPruned: database retention selects whole run
-    ShardExpired --> RunPruned: database retention selects whole run
-    RunPruned --> [*]: DB rows plus solely owned raw attachment shard removed recoverably
-```
+## Classification-model revisions
 
-No native review shard silently outlives a deleted database run. The only
-exception is an explicit export/promotion into a separately governed learner
-corpus, which is no longer the run-owned shard.
+Learner output is a candidate until deliberate review and promotion. Approved
+classification models and error contracts are immutable, hash-verified, and
+stored under version/revision identifiers so runtime selection is explicit and
+a prior approved revision can be restored.
 
-## Current implementation evidence
+Pruning a Run ID does not automatically remove or rewrite a classification-
+model revision whose development used evidence from that Run. The relationship
+between retained training evidence, model provenance, and any future deletion
+request is a separate policy decision.
 
-- Watcher/capture, hashing, capture metadata, SQLite/migrations, emission parsing,
-  persistent-reader splitting, classification, and database reports are useful
-  foundations.
-- The input boundary must reject an existing `error.log` hash and zero-byte
-  source before creating a Run ID.
-- Current review queries over uncertain database payload do not implement the
-  approved per-run shard.
-- Configuration must be audited end to end for a single explicit paths-file
-  authority and zero search/fallback paths.
+## Source reconstruction boundary
 
-## Staged migration proposal
+The current target database cannot reconstruct the original `error.log`.
+Compact diagnostic records aggregate repetitions and do not preserve the full
+native text, ordering, or all non-diagnostic material. Unresolved native
+emissions live in the external review shard, not in SQLite.
 
-No step is authorized here.
+Database reports can reconstruct a diagnostic account of the Run; they cannot
+recreate its source log. Exact replay, a fresh database generation, integrity
+verification, or source export must use the retained captured `error.log`.
 
-1. Ratify configuration schema, required root types, and negative no-search
-   architecture check.
-2. Verify exit-triggered copy and the per-Run-ID `error.log` hash guard.
-3. Ratify input-format/partial-failure contract and acquire a genuine nonempty
-   zero-diagnostic CK3 fixture.
-4. Ratify diagnostic identity and review-shard format/retention measurement.
-5. Migrate current raw/per-occurrence/uncertain payload while preserving valid
-   counts and lineage.
-6. Make database-only reporting enforceable through a raw-path trap regression.
-7. Add explicit source/shard/database retention, backup, restore, and audit.
-8. Migrate later groundwork only after its own detailed gate.
+## Transaction and deletion invariants
 
-Every migration uses explicit configured roots, preflight, verified backup,
-transactional database work, recoverable filesystem staging, post-audit, and a
-recoverable prior state.
-
-## Rejected alternatives
-
-- No root search/autodiscovery or fallback default paths.
-- No automatic capture without a lifecycle.
-- No repeated/polling capture of the same live file.
-- No missing, unreadable, unstable, or empty successful diagnostic run; no
-  adversarial fabricated-input contract for the watcher.
-- No crash-folder principal-log comparison.
-- No indefinite raw-source, review-shard, or database store; compact per-Run-ID
-  hash metadata remains with run history.
-- No report raw-log dependency.
-- No full review payload in diagnostic tables.
+- Processing exposes either the prior accepted state or the complete new run;
+  interruption leaves a recoverable state.
+- SQLite never claims an available review shard before safe publication and is
+  updated truthfully if a shard is later deleted or becomes unavailable.
+- No automatic expiry currently removes captured `error.log` or, once playset
+  capture begins, captured `debug.log`; a later retention change requires an
+  explicit owner decision.
+- Pruning a Run ID and its database record removes that Run ID's review-shard
+  file and review metadata through one recoverable workflow. It does not by
+  itself delete the retained source capture or alter an approved classification-
+  model revision; each has separate retention governance.
+- Reports and ordinary audit operate from the current database generation and
+  never depend on retained raw logs.

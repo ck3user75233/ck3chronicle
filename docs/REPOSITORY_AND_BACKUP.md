@@ -1,60 +1,58 @@
-# Canonical repository and backup boundary
+# Source repository and backup boundary
 
-The canonical repository is:
+Status: active repository policy, updated 2026-09-12.
+
+The ck3chronicle source repository is:
 
 `https://github.com/ck3user75233/ck3chronicle.git`
 
-The checkout at `ck3chronicle` owns its own `.git` directory. It is not a
-worktree of, submodule of, or otherwise dependent on the `ck3raven` Git
-repository. Auxiliary historical worktrees may physically live elsewhere, but
-the canonical branch and object database are owned by `ck3chronicle/.git`.
+The checkout on this machine is:
 
-Current repair note (2026-09-08): the local `origin` fetchspec names only
-`codex/ck3chronicle-reboot`, so this checkout has no `origin/main` tracking ref.
-In a task with `.git` write access and GitHub connectivity, restore the normal
-all-heads fetchspec, fetch/prune, inspect `origin/main`, and only then commit and
-promote the reboot. This is local remote-configuration debt, not object-store
-corruption.
+`C:\Users\nateb\Documents\ck3chronicle`
 
-```powershell
-git config --replace-all remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'
-git fetch --prune origin
-git branch -a -vv
-```
+The repository contains every reusable part of the product and project method.
+A clean clone must not depend on another checkout, historical worktree, or
+untracked local implementation.
 
-Repository-loaded agent instructions live in `AGENTS.md`; the detailed
-ownership map lives in `WORKSPACE_ROUTING.md`; and restart-safe current context
-lives in `CURRENT_HANDOFF.md`. These files must be updated when source
-ownership changes so new agents do not reconstruct moved tooling in WIP.
+## Tracked source
 
-## Included in Git
+Git contains:
 
-- product source and CLI;
-- watcher, capture, archive, pending-metadata, and reconciliation logic;
-- SQLite schema, migrations, repositories, and audits;
-- parser, empirical classifier, semantic projection, reporting, and triage;
-- approved hash-bound model/catalog revisions and their manifests;
-- reusable learner, review, and catalog-generation source under `tools/`;
-- product contracts, plans, and operator documentation;
-- future requirement-derived verification source, when added.
+- product and CLI source, including watcher, capture, parsing, direct error-
+  contract classification, current database schema, reporting, and audit code;
+- approved model and contract revisions with their integrity metadata;
+- reusable learner, review, and model-publication tools;
+- current requirement-derived tests and CI configuration; and
+- product specifications, architecture, plans, status, handoff, and operator
+  documentation.
 
-## Intentionally excluded
+## Local operational data
 
-- CK3 `error.log`, `debug.log`, `game.log`, crash folders, and exceptions;
-- uniquely identified live-session archives and pending copies;
-- local SQLite databases and journals;
-- parsed exports, training/reference corpora, private holdouts, human review
-  workbooks, and generated evaluator/scorer result packages;
+Git does not contain:
+
+- captured CK3 logs, crash folders, exception attachments, pending captures,
+  or retained run archives;
+- SQLite databases, journals, native review shards, or processing journals;
+- machine-specific paths configuration;
+- training or reference corpora, review workbooks, private holdouts, or
+  generated evaluator results; or
 - virtual environments, caches, editor settings, and build products.
 
-These local artifacts live under the ignored `.ck3chronicle/wip/` tree inside
-the canonical checkout so the managed repository sandbox can own capture,
-processing, database audit, and learner review without writing outside its
-boundary. They remain excluded from Git and require their own backup.
+These exclusions protect private gameplay evidence and keep the source clone
+reproducible. Local data may live under configured ignored paths inside the
+managed workspace, but its location does not make it source code.
 
-Those exclusions protect privacy and keep the source repository reproducible.
-They also mean Git is a complete backup of the software and project method,
-not a backup of a user's captured gameplay evidence. A clean-clone verification
-must install the project, load the approved model/catalog, and pass package,
-import, and current requirement-derived checks without consulting ck3raven or
-WIP paths.
+## Backup responsibilities
+
+The Git remote is the recoverable copy of reusable software and project method.
+It is not a backup of operational evidence.
+
+Operational backup must separately preserve the paths configuration, current
+database generation, retained source logs, crash attachments, native review
+shards and manifests, and the hashes and provenance needed to verify them. The
+supported backup and restore contract belongs in
+[`DATA_COMPATIBILITY_AND_OPERATIONS.md`](DATA_COMPATIBILITY_AND_OPERATIONS.md).
+
+A clean-clone check must install the project, load the approved model and
+contracts, initialize the current database schema, and pass current
+requirement-derived verification without consulting local runtime data.

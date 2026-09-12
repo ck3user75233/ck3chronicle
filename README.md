@@ -1,83 +1,90 @@
 # ck3chronicle
 
-ck3chronicle is a standalone, local CK3 run-intelligence product. Its first
-named capability is **Trusted Run**: observe one CK3 start-to-exit lifecycle,
-protect the live `error.log`, associate root `exception.txt` only when a new
-crash folder belongs to that lifecycle, process the run into SQLite, and report
-from stored records.
+ck3chronicle is a standalone, local CK3 run-intelligence product for modders.
+It protects the useful output of completed runs, turns `error.log` into durable
+and reviewable diagnostic history, and will support comparison, bounded source
+context, and cautious action guidance.
 
-## Current development boundary
+The first product milestone is **Trusted Run**: observe one CK3 start-to-exit
+lifecycle, protect its live `error.log`, process it into SQLite, preserve
+unresolved evidence for review, and generate reports from stored records.
 
-- Operational roots come from the repository-local ignored `config.toml`.
-- The watcher is lifecycle-triggered. Existing files, directory changes,
-  watcher startup, retry, and reconciliation do not create sessions.
-- Capture is copy-first. Hashing, SQLite work, parsing, classification, and
-  reporting happen after pending publication.
-- Trusted Run captures only live-root `error.log`. A new associated crash
-  folder may add only its root `exception.txt`; crash-folder principal logs are
-  ignored.
-- Each successful session stores the `error.log` SHA-256 in `session_files`.
-  Every ingest route rejects a matching hash before registration or parsing,
-  with no override.
-- CK3 and mod sources are read-only. Runtime evidence and the SQLite database
-  stay outside Git.
+## Target flow
 
-## Local setup
+1. The watcher observes the configured CK3 process and copies the live
+   `error.log` only after that process exits.
+2. Deferred processing validates and deduplicates the protected copy, recognizes
+   log emissions, and classifies recovered diagnostics against approved error
+   contracts.
+3. Approved diagnostics become compact SQLite records. Unresolved,
+   provisional, and low-confidence emissions go to one native review shard for
+   the resulting Run ID.
+4. Reports query SQLite and do not depend on the retained source log.
 
-Copy `config.example.toml` to ignored `config.toml` and set every path
-explicitly. Codex and other repository automation must use the project-local
-`.venv`; routine compilation, import, CLI, and test checks belong to the agent
-performing the work and must not be delegated to the owner:
+CK3 and mod sources are read-only. A newly associated crash folder may provide
+only its root `exception.txt`; its copies of principal logs are ignored.
+
+The required fast-follow after Trusted Run captures the same Run's `debug.log`
+and extracts its effective playset—active DLCs and mods, mount/load order, and
+paths needed to correlate diagnostics with the files that were active.
+
+## Current development state
+
+Trusted Run is partly implemented but not accepted. Classification-pipeline
+recovery is the active exercise. Consult
+[`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) for current gaps,
+operational restrictions, and the exact continuation point.
+
+The current implementation still reads the ignored repository-root
+`config.toml`, created from `config.example.toml`. The approved target is an
+exact `--config <path>` or one fixed LocalAppData `ck3chronicle/paths.toml`
+bootstrap with no path discovery. Until that transition is implemented, do not
+mistake the current bootstrap for the target contract.
+
+Use the repository `.venv`. Tested PowerShell commands and sandbox guidance are
+in [`docs/DEVELOPMENT_ENVIRONMENT.md`](docs/DEVELOPMENT_ENVIRONMENT.md).
+
+Read-only development commands include:
 
 ```powershell
-Set-Location 'C:\Users\nateb\Documents\ck3chronicle'
 $python = (Resolve-Path -LiteralPath '.\.venv\Scripts\python.exe').Path
-& $python -B -m unittest discover -s tests -v
-& $python -I -B -c "import ck3chronicle; import ck3chronicle.cli"
-& $python -I -B -m pip check
-```
-
-On Nate's current machine, `.venv-owner-20260829` is an optional interpreter
-for an interactive shell. Its base interpreter is outside the Codex sandbox's
-executable boundary, so agents must use `.venv` instead of treating that
-optional environment as the only Python path or reporting routine checks as
-blocked.
-
-The normal application commands are:
-
-```powershell
 & $python -B -m ck3chronicle.cli doctor
-& $python -B -m ck3chronicle.cli watch
 & $python -B -m ck3chronicle.cli latest --json
 ```
 
-Read-only commands never migrate or vacuum the database. If the configured
-database predates the working-tree schema, they fail loudly until an explicit
-writable migration is separately approved and run.
+Before starting the watcher, capturing evidence, processing pending captures,
+or writing to the production database, read the current status and handoff.
+Never use a runtime-mutating command merely as a smoke test.
 
-`process-pending` is currently an exact-one-capture recovery/development
-command, not a background watcher action. It prints a read-only plan and does
-nothing unless `--execute` is supplied. `backfill-session` is the separate
-exact-one-session historical-derived-state command with the same plan-first
-contract. Both remain disabled against the production runtime until the
-fresh-backup/review steps in `docs/CURRENT_HANDOFF.md` are complete and
-production execution is separately approved. The disposable fault-isolation
-and complete 22-item rehearsal have already passed.
+## Project documentation
 
-Do not run `capture`, `watch --once`, or `process-pending` merely as a smoke
-test against the live configured roots; those commands intentionally mutate
-runtime evidence or the database.
+- [Owner product intent](docs/OWNER_PRODUCT_INTENT.md) — governing product
+  purpose, boundaries, vocabulary, and trust rules.
+- [Architecture and data lineage](docs/ARCHITECTURE_AND_DATA_LINEAGE.md) — target
+  components, data ownership, and transaction boundaries.
+- [Project plan](docs/PROJECT_PLAN.md) — milestones and dependencies; explicit
+  delivery-order clarification remains pending.
+- [Project status](docs/PROJECT_STATUS.md) — current implementation truth.
+- [Current handoff](docs/CURRENT_HANDOFF.md) — live uncommitted work and the
+  continuation point.
+- [Banned ideas](docs/BANNED_IDEAS.md) — explicitly rejected designs.
 
-## Project authority
+### Detailed policies pending reconciliation
 
-- [Owner product intent](docs/OWNER_PRODUCT_INTENT.md)
-- [Trusted Run specification](docs/TRUSTED_RUN_SPEC.md)
-- [Architecture and data lineage](docs/ARCHITECTURE_AND_DATA_LINEAGE.md)
-- [Named milestone plan](docs/PROJECT_PLAN.md)
+The following detailed specifications and policies retain useful requirements,
+but their retention, projection, migration, compatibility, and historical-
+reprocessing sections require reconciliation during classification recovery.
+Where they conflict, current owner intent, architecture, and banned-design
+decisions govern.
+
+- [Trusted Run specification](docs/TRUSTED_RUN_SPEC.md) — detailed first-
+  milestone requirements; it requires reconciliation after classification
+  recovery before serving as the next implementation plan.
 - [Requirements and verification](docs/REQUIREMENTS_AND_TESTING.md)
-- [Ingestion operational recovery plan](docs/INGESTION_OPERATIONAL_RECOVERY_PLAN.md)
-- [Current status](docs/PROJECT_STATUS.md)
-- [Current handoff](docs/CURRENT_HANDOFF.md)
+- [Data compatibility and operations](docs/DATA_COMPATIBILITY_AND_OPERATIONS.md)
+- [Model quality and promotion](docs/MODEL_QUALITY_AND_PROMOTION.md)
+- [Release readiness](docs/RELEASE_READINESS.md)
 
-The `tests/` tree contains only checks derived from current owner-directed
-requirements. Historical test expectations never create product scope.
+Runtime logs, databases, review shards, corpora, workbooks, and generated
+evaluation results remain outside Git. Tests derive from current owner-directed
+requirements; historical tests do not create product scope.

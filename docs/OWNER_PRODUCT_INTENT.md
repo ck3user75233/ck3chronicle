@@ -1,175 +1,165 @@
 # Owner product intent and vocabulary
 
-## Authority status
-
-Active as of 2026-08-31. This is the concise repository authority for the
-owner's governing product decisions and latest clarifications.
+Status: active owner authority, updated 2026-09-12.
 
 ## Product intent
 
-ck3chronicle is a standalone-first, local CK3 run-intelligence product for
-human modders and governed tools. It protects the useful output of volatile
-runs, turns one completed run's `error.log` into durable reviewable diagnostic
+ck3chronicle is a standalone, local CK3 run-intelligence product for human
+modders and governed tools. It protects useful output from volatile runs, turns
+completed-run `error.log` evidence into durable and reviewable diagnostic
 history, relates retained history over time, adds bounded source context, and
 eventually supports cautious action triage and governed repair workflows.
 
-The first complete product capability is Trusted Run:
+The first complete product capability is **Trusted Run**:
 
-> A user explicitly configures the operational roots; ck3chronicle observes
-> one CK3 start-to-exit lifecycle, captures and validates its live-root
-> `error.log`, stores compact diagnostic history in the production database,
-> finalizes one native review shard, and generates reports from the database.
+> A user explicitly configures operational roots; ck3chronicle observes one CK3
+> start-to-exit lifecycle, protects and validates its live `error.log`, stores
+> compact diagnostic history in SQLite, finalizes one native review shard, and
+> generates reports from the database.
+
+An explicit manual or recovery capture of the same supported files represents
+the same kind of CK3 Run and receives the same file-derived processing. It may
+lack watcher-only observations such as watcher-observed lifecycle-boundary
+times, process name/PID/start identity, and proof that a crash folder appeared
+during that lifecycle. Those fields remain unavailable unless independently
+evidenced; the diagnostic content is not downgraded merely because capture was
+manual.
+
+The first required fast-follow after Trusted Run is same-Run `debug.log`
+capture and effective-playset extraction. Once that capability begins, each new
+Run ID must record the available active DLCs, enabled mods, mount/load order,
+and paths needed to correlate diagnostics with the files that were active for
+that Run. Earlier Run IDs, or manual/recovery Run IDs without a corresponding
+`debug.log`, report playset context as unavailable.
+
+The named capabilities, intended delivery order, and dependencies belong in
+[`PROJECT_PLAN.md`](PROJECT_PLAN.md). Current implementation truth belongs in
+[`PROJECT_STATUS.md`](PROJECT_STATUS.md).
 
 ## Product boundaries
 
-- The CLI, local database, approved model artifacts, and structured outputs
-  are independently usable product core.
-- CK3 and mod source files are read-only.
-- Integrations are optional consumers, never core runtime dependencies.
-- Runtime logs, databases, native review shards, workbooks, private holdouts, and
-  generated evaluation results remain outside Git.
-- Operation is local-only with no telemetry by default.
-- All operational roots come only from one user-configured paths file and a
-  central configuration module. Root search/autodiscovery is prohibited.
-- The paths file itself is opened only from explicit `--config <path>` or the
-  single fixed Windows LocalAppData application path
-  `ck3chronicle/paths.toml`; no alternate-file discovery is permitted.
+- The standalone CLI, local database, approved model artifacts, and structured
+  outputs are the product core. Integrations are optional consumers.
+- Operation is local, with no telemetry by default.
+- CK3 and mod source files are read-only. Automatic source edits and automatic
+  operating-system startup or service installation are outside Trusted Run.
+- Runtime logs, databases, review shards, corpora, workbooks, private holdouts,
+  and generated evaluation results remain outside Git.
+- All operational roots come from one explicit user-authored paths file and one
+  central configuration module. An explicit `--config <path>` opens that exact
+  file; otherwise only the fixed Windows LocalAppData
+  `ck3chronicle/paths.toml` is used. Root search and fallback discovery are
+  prohibited.
 - Automatic capture requires one observed configured CK3 start-to-exit
-  lifecycle. File presence, directory change, old retained files, retry, or
-  reconciliation do not create a run.
-- Every successful Run ID retains its `error.log` content hash as metadata.
-  Any ingest route rejects a matching hash loudly before parsing or creating
-  another Run ID. There is no override.
-- Missing, unreadable, unstable, or empty `error.log` input fails loudly. A
-  zero-diagnostic success requires a genuine nonempty CK3 log. The automatic
-  watcher trusts the configured Paradox-managed source and is not an arbitrary
-  file-validation queue.
-- CK3/Paradox caps `error.log` at 100,000 timestamped entries. Reaching that
-  exact boundary is expected producer behavior, not parser truncation or
-  corruption. Stored/report totals must identify that they are
-  producer-censored beyond the cap.
-- Trusted Run acquires, parses, classifies, and stores diagnostic intelligence
-  from `error.log` only.
-- Existing capture or parsing of `debug.log` and `game.log` is provisional
-  later-milestone groundwork and does not enlarge Trusted Run.
-- Targeted `debug.log` `Mounted Data:` interpretation belongs to Source
-  Context. Broader other-log research belongs to Extended Log Intelligence.
-- Automatic source edits and automatic operating-system startup/service
-  installation are outside Trusted Run.
+  lifecycle. File presence, directory changes, retained files, retry, startup,
+  or reconciliation do not create a run.
+- The watcher protects the live `error.log` first. Hashing, parsing,
+  classification, SQLite work, and reporting happen after pending publication.
+- Every successful Run ID retains the full-file `error.log` hash. A matching
+  hash means the same captured file was submitted again and is rejected before
+  parsing or creation of another Run ID. There is no override.
+- Missing, unreadable, unstable, or empty `error.log` input fails clearly. A
+  zero-diagnostic success requires a genuine nonempty CK3 log.
+- CK3 caps `error.log` at 100,000 timestamped entries. Reaching that exact limit
+  is producer censoring, not parser truncation or corruption, and reports must
+  say so.
+- Trusted Run acquires and interprets diagnostic intelligence from `error.log`
+  only. Its required fast-follow captures the same Run's live-root `debug.log`
+  and extracts effective playset context from the DLC inventory, enabled-mod
+  inventory, and `Mounted Data:` entries. This is required Source Context, not
+  optional log research.
+- Whether additional `debug.log` content, `game.log`, or other CK3 logs should
+  be captured, parsed, or stored remains an explicit research and owner-decision
+  question under Extended Log Intelligence.
+- Only a newly created timestamped crash folder associated with the observed
+  lifecycle is affirmative crash evidence. It may contribute root
+  `exception.txt`. Crash-folder copies of principal logs are never opened,
+  compared, copied, registered, exposed, parsed, or tested as product inputs.
 
-## Named capability milestones
-
-| Stable semantic ID | Name | Operator outcome |
-|---|---|---|
-| `MILESTONE-TRUSTED-RUN` | Trusted Run | One completed run becomes durable, classified, inspectable `error.log` intelligence in the production database. |
-| `MILESTONE-RUN-COMPARISON` | Run Comparison | Stored runs and baselines yield auditable change states and visible noise annotations. |
-| `MILESTONE-SOURCE-CONTEXT` | Source Context | Supported references resolve within approved active-runtime and override semantics. |
-| `MILESTONE-ACTION-TRIAGE` | Action Triage | Trusted reports, changes, and source context become cautious priorities or an explicit no-recommendation result. |
-| `MILESTONE-EXTENDED-LOG-INTELLIGENCE` | Extended Log Intelligence | Separately justified stable sections or message families from other logs answer approved operator questions. |
-| `MILESTONE-TREND-INTELLIGENCE` | Trend Intelligence | Durable run history yields recurrence, stability, regression, and longer-run analysis. |
-| `MILESTONE-INTEGRATIONS-GUIDED-REPAIR` | Integrations and Guided Repair | Accepted core capabilities support bounded adapters and separately governed repair workflows. |
-
-Reboot Foundation names completed repository takeover, audit, evidence control,
-and design recovery. It is historical foundation work, not product acceptance.
-
-## Corrected product vocabulary
+## Product vocabulary
 
 | Term | Meaning |
 |---|---|
-| Capability milestone | A named, user-meaningful outcome accepted as a coherent whole. |
-| Acceptance check | A requirement-derived check proving one part of a capability milestone. |
-| Milestone accepted | Every ratified check for the milestone passes together against one identified candidate. |
-| Public-release readiness | Packaging, installation, update, documentation, migration, support, and operational checks needed to publish a supported build. |
-| Model promotion | The separate decision that makes a reviewed model/contract revision approved runtime authority. |
-| Implemented | Code or a capability exists, regardless of acceptance or release status. |
-| Run | One successfully processed watcher-observed lifecycle capture or explicit manual/recovery capture. |
-| Run ID | Stable database identity for one successful run. A manual/recovery run records capture mode/time and leaves unobserved lifecycle facts unknown. |
-| Paths configuration | The single explicit user-authored configuration authority for operational roots. No search or fallback discovery supplements it. |
-| Exact source log | The retained original `error.log` acquired for a run while source-retention policy keeps it. |
-| Content-hash guard | Reject an `error.log` whose full-file hash is already attached to a Run ID before registration or parsing; no override is permitted. |
-| Crash attachment | Root `exception.txt` associated with a newly created crash folder when captured. |
-| Log emission | One parser input unit beginning at a recognized timestamp-prefixed `error.log` header and including its continuation lines until the next recognized timestamp-prefixed header. |
-| Recovered diagnostic | One semantic diagnostic extracted from a log emission. The normal mapping is one-to-one; an approved source-specific splitter may recover several. |
-| Diagnostic record | The compact structured database representation of one distinct recovered diagnostic identity within one run. |
-| Occurrence count | Repetition metadata on a diagnostic record for equivalent diagnostics aggregated under the approved identity rule. |
-| Error template | An empirically learned recurring structure. |
-| Error contract | A reviewed template and validation rule approved for runtime assignment. |
-| Native review shard | The single bounded per-run native-format file containing unresolved, provisional, or low-confidence emissions with provenance. It is separate from the raw log and diagnostic database. |
-| Report | An on-demand human or structured view generated from stored database records for selected runs and query parameters. A user export may carry a manifest; routine generation creates no permanent snapshot. |
+| Capability milestone | A named user outcome accepted as one coherent capability. |
+| Acceptance check | A requirement-derived check proving part of a capability milestone. |
+| Milestone accepted | Every ratified check passes together against one identified candidate and revision set. |
+| Implemented | Code or behavior exists; this alone does not mean accepted, supported, or released. |
+| Run | One CK3 gaming session whose evidence is captured automatically after its observed lifecycle or supplied explicitly through manual/recovery capture. The Run has already happened when processing begins. |
+| Run ID | The database-generation identity assigned to one successfully processed Run. Capture-route metadata records only what that route actually observed. |
+| Paths configuration | The single user-authored authority for operational roots, with no search or fallback discovery. |
+| Exact source log | The protected original `error.log`, retained as reconstruction authority. Current policy applies no automatic expiry. |
+| Content-hash guard | Rejection of an `error.log` whose full-file hash already belongs to a Run ID. |
+| Log emission | One recognized timestamp-prefixed `error.log` header and its continuation lines up to the next recognized header. |
+| Recovered diagnostic | One diagnostic extracted from a log emission. An approved source-specific splitter may recover several. |
+| Diagnostic record | The compact SQLite representation of one approved diagnostic identity within one run. |
+| Occurrence count | The number of equivalent diagnostics aggregated under the approved identity rule. |
+| Error template | An empirically learned recurring message structure. |
+| Error contract | A reviewed template with its error type, typed slots, validation, rendering, and identity rules, approved for runtime assignment. |
+| Native review shard | One per-Run-ID native-format file containing unresolved, provisional, or low-confidence emissions and provenance. |
+| Effective playset | The ordered active DLC and mod context reconstructed for a Run from its captured `debug.log` inventory and `Mounted Data:` evidence. |
+| Report | An on-demand human or structured database view for selected runs and query parameters. |
 
-Most log emissions are one physical line. Some have continuation lines.
-Separately timestamp-prefixed rows remain separate emissions even when their
-timestamp values match. A log emission is a parser/completeness-control unit,
-not normally a permanent first-class database entity.
+Most log emissions are one physical line, but some have continuation lines.
+Separate timestamp-prefixed rows remain separate emissions even when their
+timestamp values match. Internal implementation names do not redefine this
+product vocabulary.
 
-Current internal names such as `TimestampedLogBlock`, `source_blocks`, or
-`issue_occurrences` may remain temporarily where a rename would be cosmetic.
-They do not define target product vocabulary or target data ownership.
+## Classification and completeness
 
-## Trust rules
-
-- Every recognized `error.log` emission produces one or more recovered
-  diagnostics, is written to that run's native review shard, or produces an
-  explicit parser failure. No recognized emission silently disappears.
-- The normal path is one log emission to one recovered diagnostic. Multiple
-  diagnostics require a reviewed source-specific splitter, representative
-  fixtures, and deterministic boundaries.
-- Approved full and explicitly permitted approved partial/L1 results become
-  compact diagnostic records with typed slots and contract identity.
-- Repeated equivalent diagnostics aggregate only when all meaning-bearing
-  identity fields agree.
-- Every successfully processed run finalizes one native review shard, including
-  an empty shard when no item routes to review.
-- Low-confidence, provisional, and unresolved native payload is not duplicated
-  into the main database. The database retains review count, shard reference,
-  availability, and integrity hash.
-- Semantic coverage is separate from no-silent-loss completeness.
-- Similarity may nominate a template; reviewed typed validation authorizes an
+- Full, L1+L2, L1-only, provisional, low-confidence, and unknown are legitimate
+  classification outcomes.
+- A finite sample establishes only the templates it contains. It cannot define
+  the complete set of templates CK3 may emit, and later evidence may make a
+  previously unknown template classifiable.
+- Complete occurrence accounting is required; 100% classification coverage is
+  neither expected nor required for usefulness or release.
+- Every recognized emission produces one or more recovered diagnostics, is
+  written to the run's native review shard, or causes an explicit parser
+  failure. No recognized emission silently disappears.
+- Similarity may nominate a template. Reviewed typed validation authorizes an
   assignment.
-- Reports always query the operational database and never open, parse, or
-  depend on raw CK3 logs.
-- Pruning a database run removes every raw source, crash attachment, and native
-  review shard owned solely by that run in the same recoverable workflow. A
-  shard may expire earlier but cannot silently outlive its deleted run unless
-  explicitly exported/promoted under separate learner-corpus governance.
+- An approved error contract directly owns classification meaning. There is no
+  separate semantic-projection or runtime mapping layer.
+- Equivalent diagnostics aggregate only when all meaning-bearing identity
+  fields agree.
+- Approved classification models and contracts are immutable, versioned
+  revisions selected only after deliberate review. Prior approved revisions
+  remain available for rollback unless a separate retention decision changes
+  that policy.
+
+## Storage and trust
+
+- Every successfully processed Run ID finalizes one native review shard,
+  including an empty shard when nothing requires review.
+- Unresolved native payload is not duplicated in SQLite. The database stores
+  only its review count, shard reference, availability, and integrity hash.
+- SQLite is derived, rebuildable product state. A meaning-changing schema,
+  parser, splitter, model, or contract revision is applied through a separately
+  named fresh database generation built from retained captures, verified, and
+  explicitly cut over. It is not applied through in-place migration or
+  historical row repair.
+- Reports query SQLite and never reopen or parse raw CK3 logs.
+- Captured `error.log` archives currently have no automatic age or size expiry;
+  retain them indefinitely during product development so database generations
+  can be rebuilt. Revisit retention only through a later explicit owner
+  decision. Apply the same preservation default to captured `debug.log` once
+  same-Run playset capture begins.
+- If a future authorized operation prunes a Run ID and its database record, it
+  also removes that Run ID's native review shard and review metadata. It does
+  not automatically delete the retained source capture or alter an approved
+  classification-model revision whose development used evidence from that Run.
+  Source-archive and training-evidence retention are separate policy decisions.
+- The database can render diagnostic reports but is not an archive from which
+  the original `error.log` can be reconstructed. Exact replay, rebuild, or
+  source export uses the retained captured log.
 - Observed facts, derived interpretations, correlations, and recommendations
-  remain visibly distinct.
-- A referenced or winning file is evidence, not proof of causal ownership.
+  remain visibly distinct. A referenced or winning file is evidence, not proof
+  of causal ownership.
 
-## Crash rule
+## Trusted Run database requirement
 
-Only a newly created timestamped crash folder associated with the observed run
-is affirmative crash-folder evidence. It may provide root `exception.txt`.
-Crash-folder copies of `error.log`, `debug.log`, and `game.log` are ignored:
-the product does not open, compare, hash, copy, register, expose, parse, or
-test them. No inferred lifecycle stage is persisted.
-
-## Database placement decision
-
-The production database is established in Trusted Run.
-
-> **The production database is a required implemented capability of Trusted
-> Run. Trusted Run cannot be accepted until ck3chronicle can initialize and
-> reopen the database, process a completed `error.log` run into it, and
-> generate the supported Trusted Run reports from the stored records without
-> requiring the original `error.log`.**
-
-Trusted Run establishes durable run and diagnostic history. Run Comparison
-relates that history. Trend Intelligence may later add measured longitudinal
-optimizations. The database is neither an evaluator artifact, a raw-log
-archive, nor an unlimited history store.
-
-## Authority model after ratification
-
-1. ratified owner intent and vocabulary;
-2. focused product, interface, data, retention, model-quality, testing, and
-   release contracts;
-3. the named milestone plan and ratified detailed milestone specifications;
-4. current status and handoff;
-5. generated implementation inventories;
-6. ordinary development tests and candidate-bound acceptance records;
-7. model-evaluation and release records;
-8. Git history.
-
-Each stable fact has one normative home. Status and tests report truth but do
-not create product scope.
+The production database is an implemented part of Trusted Run, not a later
+optimization. Trusted Run cannot be accepted until ck3chronicle can initialize
+and reopen the current database generation, process a completed `error.log`
+into it, and produce supported reports from stored records without requiring
+the original log.

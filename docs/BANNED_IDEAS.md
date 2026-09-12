@@ -1,106 +1,87 @@
 # Banned ideas
 
-This list prevents disproven design artifacts from re-entering product scope.
-It does not replace positive requirements in the owning specification.
+These are designs the owner has explicitly rejected. They prevent known errors
+from re-entering the product; positive requirements remain in their owning
+specifications.
 
-## BAN-001 — Byte-identical error logs as distinct real CK3 sessions
+## BAN-001 — Treating one error log as multiple runs
 
-CK3 timestamps are part of the `error.log` bytes. A matching full-file SHA-256
-means the same captured file was submitted twice through operator or tool error.
-Reject it loudly before parsing or inserting a new run.
+Two genuine nonempty `error.log` files from different CK3 runs cannot be
+byte-identical: their timestamped entries belong to different run times.
 
-Do not build forced-duplicate paths, duplicate overrides, receipt systems,
-one-evidence/many-run identities, reporting scenarios, or acceptance machinery
-for byte-identical logs. This ban does not apply to repeated diagnostics inside
-one log, parser cases with separate headers sharing a timestamp value, CK3
-messages about duplicate keys, or learner-side deduplication of training input.
+A matching full-file SHA-256 therefore means that the same captured file was
+submitted or copied again. Reject it before parsing or creating another Run ID.
+Do not add duplicate overrides, one-log/many-run identities, or receipt systems
+to support this impossible case.
 
-Provenance audit:
+## BAN-002 — Historical tests defining product scope
 
-- `14ed0dd` and `3ca2ae2` began with the legitimate content-hash guard, although
-  the latter also introduced an override.
-- `934cd6d` supplied the pivotal false premise: a test simulated two process
-  exits around the same unchanged fixture and required one content bundle to
-  represent two observations.
-- `af1d583` promoted that fixture artifact into separate run/receipt/file-origin
-  identities. `bc94c05`, `e5cee1a`, `76fb2d5`, and `bae136e` then reinforced it
-  in evaluator, reporting, crash, and audit surfaces.
-
-Those commits remain ordinary historical Git evidence; they are not current
-authority. The reboot working tree deletes their receipt modules and provenance
-tests/docs, removes the override, replaces the second observation-derived ID
-with one `run_metadata` row keyed by the existing Run ID, and removes the
-unused `run_file_origins` projection. Publishing the reboot commit will remove
-those active artifacts from the remote branch tip without rewriting history.
-
-## BAN-002 — Pre-reboot tests as product authority
-
-The pre-reboot test and evaluator tree is deleted wholesale. Do not restore,
-port, rename, or translate its cases into new checks. A new test must trace to
-an active owner-directed requirement and, where CK3 behavior matters, to
+Deleted or superseded tests do not create requirements. Every new test must
+trace to a current owner-directed requirement and, where CK3 behavior matters,
 representative real CK3 evidence.
 
-## BAN-003 — A finite calibration sample as exhaustive runtime taxonomy
+## BAN-003 — Treating a finite sample as the complete template set
 
-A selected calibration sample is evidence for the contracts it actually
-reviews. Absence from that sample is not evidence that another learned template
-is semantically unknown. Do not generate a total runtime catalog by assigning
-`unclassified` / `unknown` to every model contract the sample did not touch.
+A finite sample establishes only the templates represented in that sample. It
+cannot establish the complete set of templates CK3 may emit.
 
-The historical 252-row sample may contribute traceable reviewed decisions, but
-it is not the complete CK3 error-type inventory and cannot downgrade a full or
-partial structural match. Claim-specific calibration and evaluation remain
-separate from runtime authority.
+A template absent from a sample is unknown relative to that sample. It is not
+thereby unclassifiable or permanently unknown; later evidence may support a
+reviewed contract for it.
 
-## BAN-004 — A separate semantic projection or mapping stage
+Do not use one sample to create an exhaustive global taxonomy, downgrade
+existing supported contracts, or claim complete coverage of present or future
+CK3 output. CK3 evolves, so the complete possible template set is neither known
+nor expected to remain fixed.
 
-An approved error contract contains its hierarchical error type, typed slots,
-validation, rendering, and identity rules directly. Do not add a second
-catalog or runtime stage that "projects" or "maps" a recognized contract into
-category/type/tags, and do not retain `project_classification_run()` or a
-projection-run database identity.
+## BAN-004 — A separate semantic-projection stage
 
-Contract authoring may review what a template means. That review changes the
-approved contract; it is not a second runtime interpretation layer.
+Approved error contracts directly own their error type, typed slots,
+validation, rendering, and identity rules. Do not add a second runtime catalog
+or mapping stage that reinterprets classified contracts.
 
 ## BAN-005 — Unrequested legacy compatibility
 
-Do not retain superseded parsers, extractors, schemas, commands, aliases,
-adapters, dual reads/writes, or deprecated internal concepts merely because an
-older implementation once exposed them. No current caller and no active
-owner-directed requirement means removal, not a compatibility wrapper.
+Do not retain an obsolete schema, parser, handler, command, alias, adapter,
+dual read/write path, or compatibility wrapper without an explicit current
+owner-approved requirement.
 
-An explicitly approved, bounded one-time capture/archive evidence conversion
-is permitted only with a named target, rollback boundary, and removal
-condition. It does not authorize an in-place database migration, a permanent
-alternate runtime, or an in-repo archive of retired source.
+Before removing legacy code, identify any owner-required behavior that still
+depends on it. Refactor that behavior onto the current architecture as part of
+the change when possible. If the required refactor cannot be completed safely
+within the task, surface the dependency, its effect, and the recommended
+refactor to the user.
 
-## BAN-006 — Silent fallback to a superseded or inapplicable path
+Do not recommend retaining legacy compatibility as the solution. Existing
+callers and runtime failures reveal dependencies; they do not create or
+preserve product requirements.
 
-Do not silently substitute an old taxonomy, parser, model, schema view, input
-source, configuration root, or broad regex when the intended current path is
-absent, unsupported, or fails. Fail loudly, or produce the explicit current
-outcome required by the owning contract.
+## BAN-006 — Silent fallback
 
-An explicit `unknown`, provisional result, native-review routing, transactional
-rollback, or deliberately specified recovery action is not a banned fallback.
-Those are named product outcomes. The banned behavior is an undeclared
-alternate path that makes obsolete or weak behavior appear successful.
+Do not silently substitute an old parser, model, schema, taxonomy,
+configuration source, or broad heuristic when the intended path is absent or
+fails. Fail clearly or return the explicit current outcome required by the
+owning specification.
 
-## BAN-007 — In-place migration or historical repair of derived SQLite state
+Unknown, provisional, and review-routed results are valid outcomes, not
+fallbacks.
 
-SQLite is a disposable derived database. Do not retain a schema-migration
-chain, old-schema reader, compatibility view, dual write, row translator,
-backfill command, contract-mismatch sweep, or explicit reparse/reclassification
-route that updates historical derived rows in an existing database generation.
+## BAN-007 — In-place migration of derived databases
 
-An existing database must match the one current schema exactly or fail loudly.
-When a schema, parser, splitter, model, or error-contract revision changes
-persisted historical meaning, build a separately named fresh database from the
-verified retained capture archives, validate it, and cut over explicitly. Keep
-the previous database unchanged as rollback evidence until acceptance.
+SQLite contains rebuildable derived state. When a schema, parser, splitter,
+model, or contract change alters stored meaning, build and validate a fresh
+database from retained captures and cut over explicitly.
 
-Fresh schema initialization, full archive replay, and a verified file-level
-cutover are not migrations. Normal SQLite transaction journaling/WAL is also
-not banned; it provides crash safety within one database generation and does
-not translate an old schema.
+Do not maintain schema-migration chains, old-schema readers, compatibility
+views, dual writes, backfills, or historical row-repair paths. Ordinary SQLite
+transaction recovery remains required.
+
+## BAN-008 — Requiring 100% classification coverage
+
+Unclassified, provisional, and low-confidence errors are expected product
+outcomes. Trusted Run requires every recognized emission to be accounted for;
+it does not require every emission to receive a confident classification.
+
+Do not invent classifications, weaken validation, or make 100% classification
+coverage a release requirement. The product may be useful and releasable below
+100% when unresolved evidence is preserved and reviewable.

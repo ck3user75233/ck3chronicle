@@ -1,95 +1,75 @@
-# ck3chronicle agent instructions
+# ck3chronicle agent guide
 
-These instructions apply to the entire repository. A nested `AGENTS.md` may
-add stricter rules for its subtree.
+These instructions apply to the whole repository. A nested `AGENTS.md` may add
+instructions for its own subtree.
 
-## Canonical repository boundary
+## Project
 
-- The Git root containing this file is the only source-of-truth repository for
-  ck3chronicle.
-- The canonical remote is `https://github.com/ck3user75233/ck3chronicle.git`.
-- On Nate's current machine, the canonical checkout is
-  `C:\Users\nateb\Documents\ck3chronicle`.
-- Never implement, stage, commit, or generate ck3chronicle source under the
-  sibling `ck3raven` repository, any `.ck3raven/wip` tree, or an old
-  `ck3chronicle` WIP directory. Those locations may be read only when a task
-  explicitly calls for historical research or external input.
-- Before any write, confirm that `git rev-parse --show-toplevel` identifies
-  this repository. If the task starts from another workspace folder, set the
-  command working directory to this repository first.
-- Do not make ck3chronicle depend on the `ck3raven` Git history, modules,
-  worktrees, or untracked files. A clean clone of this repository must contain
-  all reusable product and project-method source.
+ck3chronicle is a standalone, local run-intelligence tool for Crusader Kings III
+modders. It protects the useful output of completed CK3 runs, turns `error.log`
+into durable and reviewable diagnostic history, compares evidence over time,
+and will later add source context and cautious action guidance.
 
-## Ownership map
+The first product milestone is **Trusted Run**: observe one CK3 start-to-exit
+lifecycle, protect its live `error.log`, process it into SQLite, preserve
+unresolved evidence for review, and report from stored records.
 
-- Product package and CLI: `src/ck3chronicle/`
-- SQLite schema, migrations, and repositories: `src/ck3chronicle/db/`
-- Approved runtime models and projection catalogs: `models/`
-- Empirical learner, review, registry, and catalog-generation tools:
-  `tools/template_learning/`
-- Future requirement-derived regression checks: `tests/`
-- Current plans, contracts, status, and operating guidance: `docs/`
+The governing product decisions are in
+[`docs/OWNER_PRODUCT_INTENT.md`](docs/OWNER_PRODUCT_INTENT.md).
 
-Search these locations before creating a new implementation. Extend the
-existing owned component instead of constructing a parallel copy elsewhere.
+## Architecture
 
-## Source versus local evidence
+The target flow is:
 
-Commit reusable code, schemas, migrations, model/catalog artifacts, tests,
-contracts, and operating documentation. Do not commit captured CK3 logs,
-session archives, pending copies, SQLite runtime databases, parsed exports,
-training/reference corpora, human-review workbooks, generated evaluator
-results, or private holdouts. Pass external evidence through explicit CLI
-paths; never hardcode a local WIP path into reusable source.
+1. A lifecycle watcher observes the configured CK3 process and, after exit,
+   copies the live `error.log` into protected pending storage.
+2. Deferred processing validates and deduplicates that copy, recognizes log
+   emissions, and classifies them against approved error contracts.
+3. Approved diagnostics become compact SQLite records. Unresolved,
+   provisional, or low-confidence emissions go to one native review shard for
+   the resulting Run ID.
+4. Reports query SQLite and do not depend on the original CK3 log.
 
-## Classification policy
+Configuration is explicit, CK3 and mod sources are read-only, and runtime
+evidence remains outside Git. See
+[`docs/ARCHITECTURE_AND_DATA_LINEAGE.md`](docs/ARCHITECTURE_AND_DATA_LINEAGE.md).
 
-The release requirement is complete occurrence accounting, not 100% L1/L2 or
-full-contract attribution. Full, composed L1+L2, L1-only,
-provisional/low-confidence, and unknown are legitimate durable outcomes.
-Preserve confidence and disposition so unresolved patterns can be reviewed
-periodically. Do not manufacture a confident template merely to improve a
-coverage percentage.
+## Current direction
 
-## Workflow and handoff
+Before substantial work, read:
 
-1. Read `README.md`, `docs/CURRENT_HANDOFF.md`, `docs/PROJECT_STATUS.md`, and
-   `docs/PROJECT_PLAN.md` before planning substantial work.
-2. Treat dated restart handoffs and paths outside this repository as historical
-   evidence, not current implementation authority.
-3. Keep current routing, status, and operator documentation in the same commit
-   as a material architecture or workflow change.
-4. Run verification derived from the active requirement. Until the replacement
-   test suite is established, run compilation, package/import/CLI checks, and
-   read-only checks against representative real CK3 evidence. Do not port
-   expectations from historical tests.
-5. Run routine Python verification inside the agent with
-   `.\.venv\Scripts\python.exe`. Do not delegate compilation, imports, CLI
-   checks, or tests to the owner merely because the optional
-   `.venv-owner-20260829` base interpreter is inaccessible to the sandbox. If
-   `.venv` itself fails, diagnose or restore an agent-accessible project
-   environment before declaring the work blocked.
-6. Run `git diff --check` and inspect `git status --short` before committing.
-7. Commit and push only from this repository. `main` on the canonical remote is
-   the official recoverable copy; active `codex/*` branches are development
-   checkpoints, not separate sources of truth.
+- [`docs/PROJECT_PLAN.md`](docs/PROJECT_PLAN.md) for milestones and dependencies;
+- [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) for the active exercise,
+  completed work, gaps, and operational restrictions.
 
-## Verification authority
+If the working tree is not clean or work continues across tasks, also read
+[`docs/CURRENT_HANDOFF.md`](docs/CURRENT_HANDOFF.md) for the live change ledger
+and exact continuation point.
 
-Tests, fixtures, and historical thresholds do not create product scope. Derive
-every future check from an active owner-directed requirement and observed
-supported CK3 behavior. Parser and learner proof uses representative real CK3
-evidence outside Git. A holdout or independent evaluator exists only for a
-separately commissioned empirical claim.
+Use the focused specifications linked from [`README.md`](README.md) when
+changing a particular product boundary. Before reviving a deliberately removed
+design, check [`docs/BANNED_IDEAS.md`](docs/BANNED_IDEAS.md).
 
-## Code review rules
+## Working in this repository
 
-- Treat `docs/BANNED_IDEAS.md` as the register of disproven design artifacts;
-  do not reintroduce an entry without an explicit owner decision overturning it.
-- Flag any ck3chronicle implementation or learner path outside this Git root.
-- Flag hardcoded `.ck3raven/wip` dependencies in active source or guidance.
-- Flag committed gameplay evidence, databases, corpora, workbooks, generated
-  evaluation results, or private oracle material.
-- Flag changes that turn unknown or low-confidence classifications into silent
-  drops or claim 100% semantic coverage as a release requirement.
+The checkout is `C:\Users\nateb\Documents\ck3chronicle`; its source repository
+is `https://github.com/ck3user75233/ck3chronicle.git`.
+
+- Product and CLI code: `src/ck3chronicle/`
+- Database code: `src/ck3chronicle/db/`
+- Approved runtime models: `models/`
+- Empirical learner and review tools: `tools/template_learning/`
+- Requirement-derived checks: `tests/`
+- Product and operating documentation: `docs/`
+
+Extend the owning component rather than creating a parallel implementation.
+Keep captured logs, databases, review material, workbooks, and generated
+evaluation results out of Git.
+
+Unknown and low-confidence classifications are legitimate durable outcomes.
+Preserve them for review; never drop them silently or manufacture confidence.
+
+Sandbox, local runtime, and Python environment instructions are in
+[`docs/DEVELOPMENT_ENVIRONMENT.md`](docs/DEVELOPMENT_ENVIRONMENT.md). Run
+routine Python checks with `.\.venv\Scripts\python.exe` and derive verification
+from current owner-directed requirements.
