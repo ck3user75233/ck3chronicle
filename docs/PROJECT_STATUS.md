@@ -1,51 +1,52 @@
 # Project status
 
-Updated: 2026-09-08
+Updated: 2026-09-11
 
 ## Executive status
 
 ck3chronicle is back in active development in its canonical standalone
 checkout. The one-time runtime relocation is complete and the local Git object
-store is intact. The reboot source/documentation checkpoint is not yet
-committed, so the canonical remote does not yet represent the current working
-tree.
+store is intact. The reboot source/documentation checkpoint is committed and
+published from the canonical checkout. The GitHub repository now represents
+the current project state through a clean `main` history; the displaced remote
+and local histories are retained only in verified external recovery bundles.
 
 Trusted Run remains the first active capability milestone. It is implemented
 in substantial parts but is not accepted. The immediate development checkpoint
 is runtime stabilization. The narrowed watcher is verified and the historical
-session-processing stall is now measured and corrected. The remaining runtime
-rehearsal and interruption/retry proof are complete. Final source/handoff
-review and repository verification are complete. The remaining checkpoint work
-is a recoverable Git checkpoint, the separate watcher-start decision, and an
+session-processing stall is now measured and corrected. The remaining verified
+real-log replay (historically called a rehearsal) and interruption/retry proof
+are complete. Final source/handoff
+review, repository reconciliation, and recovery bundling are complete. The
+remaining operational decisions are the separate watcher start and an
 explicitly approved production procedure.
 
 ## Repository state
 
 - Canonical root: `C:\Users\nateb\Documents\ck3chronicle`.
 - Canonical remote: `https://github.com/ck3user75233/ck3chronicle.git`.
-- Branch: `codex/ck3chronicle-reboot`.
-- Local HEAD and the existing local `origin/codex/ck3chronicle-reboot`
-  tracking ref both identify `a5925fad8c209c206d8da10986d81c3183aa27c7`.
-- The local `origin` fetchspec is narrowed to that one branch
-  (`+refs/heads/codex/ck3chronicle-reboot:refs/remotes/origin/codex/ck3chronicle-reboot`),
-  and no local `origin/main` ref exists. This must be restored to the normal
-  all-branches fetchspec and fetched before the declared canonical `main` can
-  be compared or updated.
-- `git fsck --full` reports no missing or corrupt reachable objects. Its
-  unreachable dangling trees are not repository corruption.
-- The reboot is a large unstaged worktree containing the named-milestone plan,
-  product/DB/capture changes, wholesale removal of the pre-reboot test and
-  evaluator tree, and new current documents. It must be reviewed, staged,
-  committed, and pushed
-  before Git is a complete recoverable copy of this state.
-- A throwaway index/object directory successfully staged the complete intended
-  reboot tree, passed the staged whitespace check, and wrote a complete
-  isolated tree; it was then removed. The separate local sandbox/security
-  transfer package is retained locally but ignored.
-- This task may write the worktree but not `.git`, so it cannot create the real
-  checkpoint. That is an execution-policy boundary, not Git corruption.
-- Outbound GitHub access fails in the current task, so the live remote has not
-  been fetched or independently compared.
+- Branch: `main`, tracking `origin/main`.
+- The normal all-heads fetch mapping is restored
+  (`+refs/heads/*:refs/remotes/origin/*`).
+- The canonical remote advertises only `refs/heads/main` and no tags. Its clean
+  history begins at parentless commit
+  `2613207dbd853e646cb657e55c3166b67c4ec91d`, with verified reboot tree
+  `d3abdcf2981d12bb6c60d7cb1be32191efc8a81e`.
+- The obsolete archive, reboot, and phase-one remote branches were deleted only
+  after exact-OID checks in one atomic, lease-pinned push. The corresponding
+  obsolete local reboot ref was removed after local `main` was aligned to the
+  identical tree.
+- The pre-cutover remote mirror, remote bundle, local checkpoint bundles,
+  manifests, inventories, and SHA-256 records are outside the workspace under
+  `C:\Users\nateb\Documents\ck3chronicle-git-archive\20260910T061315.8214329Z`.
+- `git fsck --full` reported no missing or corrupt reachable objects before
+  cutover. Unreachable dangling objects were not repository corruption.
+- The completed cutover used a verified Windows PowerShell 5.1 native-stderr
+  guard, so ordinary successful Git progress output was not treated as a
+  terminating script failure. The tracked one-time reconciliation script has
+  since been retired; Git history retains it if forensic review is ever needed.
+  The failed untracked post-cutover helper was discarded rather than promoted
+  into source.
 
 ## Relocation state
 
@@ -76,9 +77,6 @@ newly hashed model revision, not by modifying the approved artifact in place.
 - Database integrity: `quick_check=ok`, no foreign-key violations.
 - Registered data: 38 finalized sessions, all with succeeded parse status.
 - Derived-state debt: 15 older sessions lack semantic projection.
-- Known producer limit: six sessions reached CK3/Paradox's 100,000-entry
-  `error.log` cap. Their files were completely captured and parsed; totals are
-  producer-censored beyond the cap.
 - Protected backlog: 22 old-format pending captures, unmodified.
 - Recoverable old metadata: 22/22 matching records; seven verified exception
   attachments.
@@ -92,11 +90,17 @@ newly hashed model revision, not by modifying the approved artifact in place.
   were converted on the copy, with an idempotent zero-change second preview.
 - Pending rehearsal outcomes: all 22 succeeded as session/Run IDs 39–60; the
   copied pending directory is empty. The set contains 702,113 source blocks,
-  720,090 semantic occurrences, and 16,271 issue clusters; three captures
-  reached the 100,000-entry cap. Rehash/reconciliation verified 139 archived
-  files and found no lineage, counter, archive, or duplicate-hash error. The
-  rehearsal database is at storage schema v6 with `quick_check=ok` and no
-  foreign-key violations.
+  720,090 semantic occurrences, and 16,271 issue clusters.
+  Rehash/reconciliation verified 139 archived files and found no lineage,
+  counter, archive, or duplicate-hash error. The rehearsal database is at
+  storage schema v6 with `quick_check=ok` and no foreign-key violations.
+  These outputs came from parser contract `1.0.2`, classifier contract `2.0.1`,
+  model revision `67303093ecda779d`, and projection catalog
+  `public-semantic-252-contract-evidence-v3`—the superseded pipeline now under
+  replacement. Its journals do not record an exact Git/source revision and the
+  schema evolved during the replay. The verified log inputs remain operational
+  evidence; the database totals, clusters, labels, and timings are comparison
+  observations rather than correctness targets.
 - Production `process-pending`: disabled. The CLI now separates one exact
   pending capture from one exact historical-session backfill, prints a
   read-only plan by default, and requires `--execute`; the former wide internal
@@ -111,11 +115,12 @@ newly hashed model revision, not by modifying the approved artifact in place.
 - Read commands: `open_db_readonly` no longer upgrades or vacuums a database.
   It fails loudly when an explicit schema migration is required, preventing a
   report or inspection command from becoming an unapproved production write.
-- Processor recovery plan: the overlooked 2026-08-29 plan was recovered from
-  dangling Git blob `e6084af5a604281ad68fe6da158de1369632ac13`.
-  `INGESTION_OPERATIONAL_RECOVERY_PLAN.md` retains its useful operational
-  method but removes superseded receipt, evaluator, old-test, and stale-count
-  directions.
+- Processor recovery record: the overlooked 2026-08-29 plan was recovered from
+  dangling Git blob `e6084af5a604281ad68fe6da158de1369632ac13` and used during
+  the completed ingestion diagnosis. The obsolete active plan has since been
+  deleted; its mechanisms create no current product requirement or test gate.
+  Dated recovery findings remain in
+  `DEVELOPMENT_RESTART_AUDIT_2026-09-08.md` and this status record.
 - Processor observability: an exclusive OS-held lease, flushed JSONL
   stage/progress journal, current-status snapshot, strict read-only plan, and
   exact-session bounded execution are implemented in the working tree. Journal
@@ -130,8 +135,8 @@ newly hashed model revision, not by modifying the approved artifact in place.
   reparse and advanced `1.0.0` to `1.0.1`; `05afbe2` advanced it to current
   `1.0.2`. Production has 15 sessions at `1.0.0` and 23 at `1.0.2`. The missing
   indexes made replacement of those 15 appear hung.
-- Production-scale proof: a fresh byte-verified copy of the database and Run ID
-  14's 139,932,278-byte archive completed all 100,000 blocks through parse,
+- Stall-fix rehearsal: a fresh byte-verified copy of the database and Run ID
+  14's 139,932,278-byte archive completed every captured block through parse,
   classification, and semantic projection in 159.663 seconds with no failure.
   Post-run `quick_check=ok` and `foreign_key_check` was empty. Production's
   database remained 725,381,120 bytes with SHA-256
@@ -145,7 +150,7 @@ newly hashed model revision, not by modifying the approved artifact in place.
   immutable results only for matching `raw_block_pk` and source family; a real
   22,645-block comparison was exactly equal and improved from 23.411 seconds to
   0.641 seconds (36.52x). Storage schemas v4–v6 add measured deletion and
-  projection-validation access paths. A later capped 100,000-block run prepared
+  projection-validation access paths. A later retained-log run prepared
   classification in 1.909 seconds and completed without a stall.
 - Interruption proof: session 52 was deliberately stopped inside a measured
   projection transaction after its database plus hot rollback journal were
@@ -191,23 +196,30 @@ with no override.
 ## Trusted Run implementation and gaps
 
 Implemented foundations include explicit configuration, copy-first pending
-capture, immutable archive manifests, SQLite schema/migrations/repositories,
-run IDs and file hashes, parsing, classification, semantic projection, audits,
-and provisional database read/report surfaces.
+capture, immutable archive manifests, run IDs and file hashes, parsing,
+classification, SQLite storage, audits, and provisional database read/report
+surfaces. The current migration, semantic-projection, and compatibility layers
+are superseded implementation slated for deletion, not supported foundations.
 
 Still required for Trusted Run acceptance:
 
-- separately approved, one-item-at-a-time production resumption from the
-  successfully rehearsed legacy backlog;
+- completion of the ratified classification-pipeline recovery mini-projects 01
+  through 08;
 - a verified hash rejection before parse/session creation for every ingestion
   entry point;
-- native per-run review shard and compact diagnostic-record migration;
+- direct contract classification, fresh-current-schema database generation,
+  compact diagnostic records, and one native review shard per successful Run;
 - database-only supported report contract and raw-path non-access proof;
 - finite source, review-shard, exception, and database retention/pruning;
 - supported backup/restore and interruption recovery;
-- newly derived verification using representative real CK3 evidence;
+- operational verification using genuine captured CK3 logs and fresh
+  disposable databases;
 - an exact approved candidate/revision set passing the ratified Trusted Run
   checks together.
+
+Production pending processing remains disabled and is not an acceptance method
+for this refactor. Any later production resumption requires its own fresh
+backup and explicit owner approval.
 
 Later milestone code remains provisional and earns no Trusted Run acceptance
 credit.

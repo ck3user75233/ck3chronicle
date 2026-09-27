@@ -1,0 +1,119 @@
+<div id="learner-native-review">
+  <h2>Template review · native evidence</h2>
+  <div class="viz-controls">
+    <label class="form-label">View
+      <select class="form-select" id="lr-view">
+        <option value="cases">Previous problem cases</option>
+        <option value="frequency">Most frequent templates</option>
+        <option value="key_share">Highest KEY proportion</option>
+        <option value="key_chain">Longest adjacent KEY run</option>
+        <option value="sparse">Single-message literal templates</option>
+        <option value="word_params">Undeclared word-bounded PARAMs</option>
+        <option value="ambiguity">Competing templates</option>
+      </select>
+    </label>
+    <label class="form-label">Case or template
+      <select class="form-select" id="lr-item"></select>
+    </label>
+  </div>
+  <div id="lr-ranking"></div>
+  <div id="lr-detail" aria-live="polite"></div>
+  <script type="application/json" id="lr-data">__REVIEW_DATA__</script>
+</div>
+<style>
+#learner-native-review pre { white-space:pre-wrap; overflow-wrap:anywhere; }
+#learner-native-review .lr-comparison { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px; }
+#learner-native-review .lr-pieces { overflow-wrap:anywhere; }
+#learner-native-review .lr-pieces code { display:inline; }
+#learner-native-review .lr-bar { display:block; height:6px; background:var(--viz-series-1); }
+#learner-native-review td { vertical-align:top; }
+@media(max-width:650px) { #learner-native-review .lr-comparison { grid-template-columns:minmax(0,1fr); } }
+</style>
+<script>
+(() => {
+  const root = document.getElementById('learner-native-review');
+  const data = JSON.parse(root.querySelector('#lr-data').textContent);
+  const mode = root.querySelector('#lr-view');
+  const pick = root.querySelector('#lr-item');
+  const ranking = root.querySelector('#lr-ranking');
+  const detail = root.querySelector('#lr-detail');
+  const esc = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const visible = value => String(value).replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g, c => '[U+'+c.charCodeAt(0).toString(16).toUpperCase().padStart(4,'0')+']');
+  const pre = text => '<pre><code>'+esc(visible(text))+'</code></pre>';
+  const fmt = value => Number(value).toLocaleString('en-US');
+  const pct = value => (100*value).toFixed(1)+'%';
+  const patterns = row => row.matches.map(m => data.metrics[m.template_id].display);
+  const provenance = row => '<details><summary>Native provenance</summary>'+pre(JSON.stringify(row.provenance,null,2))+'</details>';
+  function pieces(row) {
+    let cursor=0;
+    return '<details><summary>Raw parser pieces · exact whitespace and punctuation</summary><div class="lr-pieces">'+row.pieces.map(([kind,text]) => {
+      const start=cursor; cursor+=new TextEncoder().encode(text).length;
+      return '<code data-tooltip="'+esc(kind+' · UTF-8 bytes '+start+'–'+cursor)+'">'+esc(JSON.stringify(text))+'</code>';
+    }).join(' | ')+'</div></details>';
+  }
+  function captures(row, tid) {
+    const matches=tid ? row.matches.filter(m=>m.template_id===tid) : row.matches;
+    return matches.map((m,i)=>'<details'+(matches.length===1?' open':'')+'><summary>Captured values'+(matches.length>1?' · candidate '+(i+1):'')+'</summary><table class="table table-sm"><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>'+m.captures.map(c=>'<tr><td>'+esc(c.name+' <'+c.type+'>')+'</td><td>'+pre(c.value===null?'(absent)':c.value)+'</td></tr>').join('')+'</tbody></table></details>').join('');
+  }
+  function native(row, tid) {
+    return '<h3>Native message · '+fmt(row.count)+' occurrences · '+esc(row.outcome)+'</h3>'+pre(row.native)+captures(row,tid)+pieces(row)+provenance(row);
+  }
+  function stats(m) {
+    return '<div class="table-responsive"><table class="table table-sm"><thead><tr><th>Unique matches</th><th>Ambiguous matches</th><th>Distinct support</th><th>KEY share</th><th>Adjacent KEYs</th></tr></thead><tbody><tr><td>'+fmt(m.full)+'</td><td>'+fmt(m.ambiguous)+'</td><td>'+fmt(m.variants)+'</td><td>'+pct(m.key_share)+' ('+m.keys+'/'+m.denominator+')</td><td>'+m.key_chain+'</td></tr></tbody></table></div>'+
+      '<div class="text-small">'+esc(m.source)+' · '+m.support_log_count+' supporting logs · '+m.literal_words+' literal word tokens · global KEY percentile '+m.global_percentile.toFixed(1)+(m.source_percentile===null?' · insufficient same-source peers':' · source percentile '+m.source_percentile.toFixed(1)+' / '+m.source_peers+' templates')+'</div>'+
+      '<details><summary>Template evidence · '+esc(m.candidate_status)+' · training-corpus validation</summary><table class="table table-sm"><tbody><tr><th>Supporting occurrences</th><td>'+fmt(m.support)+'</td></tr><tr><th>Supporting logs</th><td>'+m.support_log_count+'</td></tr><tr><th>Distinct native support</th><td>'+m.variants+'</td></tr><tr><th>Matched forms excluding locators/declared fields</th><td>'+m.diagnostic_forms+'</td></tr>'+Object.entries(m.key_value_counts).map(([field,count])=>'<tr><th>'+esc(field)+' distinct KEY values</th><td>'+count+'</td></tr>').join('')+'</tbody></table></details>';
+  }
+  function renderDetail() {
+    if(mode.value==='cases') {
+      const c=data.cases[Number(pick.value)]; if(!c){detail.textContent='No case';return;}
+      const row=data.records[c.sample];
+      detail.innerHTML='<h3>Original case '+String(c.number).padStart(2,'0')+' · '+esc(row.source)+'</h3>'+pre(row.native)+
+        '<div class="lr-comparison"><section><h3>Before · v21 · '+esc(c.before_outcome)+'</h3>'+c.before.map(pre).join('')+'</section><section><h3>Now · v22 · '+esc(row.outcome)+'</h3>'+patterns(row).map(pre).join('')+'</section></div>'+
+        '<details><summary>Original review result · '+esc(c.original_outcome)+'</summary>'+c.original.map(pre).join('')+'</details>'+captures(row)+pieces(row)+provenance(row);
+    } else {
+      const m=data.metrics[pick.value]; if(!m){detail.textContent='No templates in this view.';return;}
+      const ids=mode.value==='ambiguity'?data.conflicts.filter(id=>data.records[id].matches.some(x=>x.template_id===m.id)||data.records[id].capture_ambiguities.some(x=>x.template_id===m.id)):m.examples;
+      detail.innerHTML='<h3>'+esc(m.source)+'</h3>'+pre(m.display)+stats(m)+ids.map((id,i)=>
+        '<details'+(i===0?' open':'')+'><summary>Native '+(mode.value==='ambiguity'?'ambiguous':'supporting')+' example '+(i+1)+'</summary>'+
+        (mode.value==='ambiguity'?'<h3>Competing templates</h3>'+patterns(data.records[id]).map(pre).join(''):'')+
+        native(data.records[id],mode.value==='ambiguity'?null:m.id)+'</details>').join('');
+    }
+  }
+  function valueFor(m) {
+    return mode.value==='key_share'?m.key_share:mode.value==='key_chain'?m.key_chain:mode.value==='sparse'?m.literal_words:mode.value==='word_params'?m.word_only_params:mode.value==='ambiguity'?m.ambiguous:m.full;
+  }
+  function renderRanking(ids) {
+    const unit={frequency:'Occurrences',key_share:'KEY share',key_chain:'Adjacent KEYs',sparse:'Literal word tokens',word_params:'Word-bounded PARAMs',ambiguity:'Ambiguous occurrences'}[mode.value];
+    const top=ids.slice(0,10), maximum=Math.max(1,...top.map(id=>valueFor(data.metrics[id])));
+    ranking.innerHTML='<h3>Top '+top.length+' · '+unit+'</h3><div class="table-responsive"><table class="table table-sm"><thead><tr><th>Template</th><th>'+unit+'</th><th>Occurrences</th></tr></thead><tbody>'+top.map((id,i)=>{
+      const m=data.metrics[id],v=valueFor(m),label=mode.value==='key_share'?pct(v):fmt(v);
+      return '<tr><td><button class="btn btn-ghost" type="button" data-template="'+id+'">'+(i+1)+'. '+esc(m.source)+'</button>'+pre(m.display)+'</td><td class="tabular-nums">'+label+'<span class="lr-bar" style="width:'+(100*v/maximum)+'%" aria-hidden="true"></span></td><td class="tabular-nums">'+fmt(m.full)+'</td></tr>';
+    }).join('')+'</tbody></table></div>';
+    ranking.querySelectorAll('[data-template]').forEach(button=>button.addEventListener('click',()=>{pick.value=button.dataset.template;renderDetail();save();}));
+  }
+  function render(requested) {
+    if(mode.value==='cases') {
+      pick.innerHTML=data.cases.map((c,i)=>'<option value="'+i+'">'+String(c.number).padStart(2,'0')+' · '+esc(data.records[c.sample].source)+'</option>').join('');
+      ranking.innerHTML='';
+      pick.value=requested!==undefined?requested:String(Math.max(0,data.cases.findIndex(c=>c.number===5)));
+    } else {
+      const ids=data.rankings[mode.value]||[];
+      pick.innerHTML=ids.map((id,i)=>'<option value="'+id+'">'+(i+1)+'. '+esc(data.metrics[id].source)+' · '+fmt(data.metrics[id].full)+' occurrences</option>').join('');
+      pick.value=ids.includes(requested)?requested:(ids[0]||'');
+      renderRanking(ids);
+    }
+    renderDetail();
+  }
+  function save() {
+    if(window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{revision:data.revision,view:mode.value,selection:mode.value==='cases'?data.cases[Number(pick.value)]?.number:pick.value},privateContent:{revision:data.revision,view:mode.value,item:pick.value}}).catch(()=>{});
+  }
+  function restore(state) {
+    const s=state?.privateContent;
+    if(s?.revision===data.revision && [...mode.options].some(o=>o.value===s.view)){mode.value=s.view;render(s.item);}else render();
+  }
+  mode.addEventListener('change',()=>{render();save();});
+  pick.addEventListener('change',()=>{renderDetail();save();});
+  window.addEventListener('openai:set_globals',event=>{if(event.detail?.globals?.widgetState)restore(event.detail.globals.widgetState);});
+  restore(window.openai?.widgetState);
+})();
+</script>

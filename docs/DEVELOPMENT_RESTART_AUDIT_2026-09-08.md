@@ -85,10 +85,10 @@ directly to an active owner-directed requirement.
 Located authority/evidence:
 
 - The overlooked 2026-08-29 plan was recovered byte-for-byte from dangling Git
-  blob `e6084af5a604281ad68fe6da158de1369632ac13`. The active
-  `docs/INGESTION_OPERATIONAL_RECOVERY_PLAN.md` retains its operational method
-  but removes superseded receipt, evaluator, pre-reboot-test, and stale-count
-  directions.
+  blob `e6084af5a604281ad68fe6da158de1369632ac13` and used as an
+  incident-recovery input. The obsolete active plan was later deleted after the
+  ingestion diagnosis completed; its mechanisms do not create current product
+  requirements or test gates.
 - The old `docs/CURRENT_HANDOFF.md` instructed `process-pending --json` but
   contained no failure record.
 - `src/ck3chronicle/processing.py`, `harvester.py`, and `archive_registry.py`
@@ -128,7 +128,7 @@ What is proven:
   `DELETE FROM source_blocks`. Both referencing child tables lacked an index
   beginning with `source_block_pk`, so SQLite scanned roughly 1.5 million child
   rows for every deleted source block. Storage schema v3 adds those indexes.
-- After the fix, the exact 100,000-block run completed parse, classification,
+- After the fix, the affected retained run completed parse, classification,
   and projection in 159.663 seconds with clean SQLite integrity and no foreign
   key errors. The formerly stalled source-block delete took 217.344 ms.
 - All 22 copied pending captures then completed one at a time as Run IDs 39–60.

@@ -103,37 +103,6 @@ class IncrementalTimestampLog:
         )
 
 
-@dataclass
-class ExactBoundaryDetector:
-    """Observe CK3's 100,000-entry error.log cap while game logging advances."""
-
-    stall_seconds: float
-    boundary_seen_at: float | None = None
-    boundary_error_bytes: int | None = None
-    boundary_game_bytes: int | None = None
-    emitted: bool = False
-
-    def observe(self, error: LogProgress, game: LogProgress, now: float) -> bool:
-        if error.timestamp_headers != 100_000:
-            self.boundary_seen_at = None
-            self.boundary_error_bytes = None
-            self.boundary_game_bytes = None
-            self.emitted = False
-            return False
-        if self.boundary_error_bytes != error.bytes:
-            self.boundary_seen_at = now
-            self.boundary_error_bytes = error.bytes
-            self.boundary_game_bytes = game.bytes
-            return False
-        if self.emitted or self.boundary_seen_at is None:
-            return False
-        game_advanced = game.bytes > int(self.boundary_game_bytes or 0)
-        if game_advanced and now - self.boundary_seen_at >= self.stall_seconds:
-            self.emitted = True
-            return True
-        return False
-
-
 def observe_logging_progress(
     *,
     logs_root: Path,
@@ -141,13 +110,12 @@ def observe_logging_progress(
     process_probe: Callable[[], ProcessIdentity | None],
     poll_seconds: float = 2.0,
     heartbeat_seconds: float = 30.0,
-    stall_seconds: float = 60.0,
     stop_requested: Callable[[], bool] = lambda: False,
     sleep: Callable[[float], None] = time.sleep,
     monotonic: Callable[[], float] = time.monotonic,
-) -> tuple[Path, bool]:
+) -> Path:
     """Observe one absent/running/absent lifecycle and journal bounded progress."""
-    if min(poll_seconds, heartbeat_seconds, stall_seconds) <= 0:
+    if min(poll_seconds, heartbeat_seconds) <= 0:
         raise ValueError("observer timing values must be positive")
     journal_root = Path(runtime_root) / "watch"
     journal_root.mkdir(parents=True, exist_ok=True)
@@ -156,10 +124,8 @@ def observe_logging_progress(
     heartbeat_path = journal_root / f"log-progress-heartbeat-{os.getpid()}.json"
     error_log = IncrementalTimestampLog(Path(logs_root) / "error.log")
     game_log = IncrementalTimestampLog(Path(logs_root) / "game.log")
-    detector = ExactBoundaryDetector(stall_seconds)
     active: ProcessIdentity | None = None
     last_heartbeat = monotonic()
-    boundary_observed = False
 
     try:
         with journal_path.open("x", encoding="utf-8", newline="\n") as journal:
@@ -202,15 +168,6 @@ def observe_logging_progress(
                 now = monotonic()
                 error = error_log.poll()
                 game = game_log.poll()
-                if detector.observe(error, game, now):
-                    boundary_observed = True
-                    emit(
-                        "exact_100000_error_boundary_with_game_progress",
-                        process=active.as_dict(),
-                        error=error.__dict__,
-                        game=game.__dict__,
-                        stall_seconds=stall_seconds,
-                    )
                 if now - last_heartbeat >= heartbeat_seconds:
                     emit(
                         "heartbeat",
@@ -218,14 +175,13 @@ def observe_logging_progress(
                         process=active.as_dict(),
                         error=error.__dict__,
                         game=game.__dict__,
-                        exact_boundary_observed=boundary_observed,
                     )
                     last_heartbeat = now
                 sleep(poll_seconds)
-            emit("observer_stopped", exact_boundary_observed=boundary_observed)
+            emit("observer_stopped")
     finally:
         try:
             heartbeat_path.unlink()
         except FileNotFoundError:
             pass
-    return journal_path, boundary_observed
+    return journal_path

@@ -648,13 +648,12 @@ def cmd_observe_logging(args: argparse.Namespace) -> int:
 
     logs_root = Path(args.logs) if args.logs else config.ROOT_LOGS
     try:
-        journal, observed = observe_logging_progress(
+        journal = observe_logging_progress(
             logs_root=logs_root,
             runtime_root=config.ROOT_CK3CHRONICLE,
             process_probe=lambda: find_process(args.process_name),
             poll_seconds=float(args.poll_seconds),
             heartbeat_seconds=float(args.heartbeat_seconds),
-            stall_seconds=float(args.stall_seconds),
         )
     except ProcessProbeError as exc:
         print(f"ERROR [process_probe]: {exc}", file=sys.stderr)
@@ -663,13 +662,6 @@ def cmd_observe_logging(args: argparse.Namespace) -> int:
         print(f"ERROR [logging_observer]: {exc}", file=sys.stderr)
         return 2
     print(f"logging observation journal: {journal}")
-    if observed:
-        print(
-            "OBSERVED: CK3's 100,000-entry error.log cap was reached while "
-            "game.log continued advancing."
-        )
-    else:
-        print("CK3's 100,000-entry error.log cap was not observed during this run.")
     return 0
 
 
@@ -2486,12 +2478,6 @@ def build_parser() -> argparse.ArgumentParser:
     p_observe_logging.add_argument("--process-name", default="ck3.exe")
     p_observe_logging.add_argument("--poll-seconds", type=float, default=2.0)
     p_observe_logging.add_argument("--heartbeat-seconds", type=float, default=30.0)
-    p_observe_logging.add_argument(
-        "--stall-seconds",
-        type=float,
-        default=60.0,
-        help="Required stable error boundary while game.log advances.",
-    )
     p_observe_logging.set_defaults(func=cmd_observe_logging)
 
     # parse

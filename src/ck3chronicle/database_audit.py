@@ -201,7 +201,6 @@ def audit_database(root: Path, *, deep: bool = False) -> dict[str, object]:
         mod_counts = _counts(conn, "session_mounted_mods")
 
         session_summaries: list[dict[str, object]] = []
-        capped_sessions: list[int] = []
         raw_block_total = 0
         for row in session_rows:
             session_id = int(row["session_id"])
@@ -317,9 +316,6 @@ def audit_database(root: Path, *, deep: bool = False) -> dict[str, object]:
                         "issue_occurrence_sum": issue_occurrence_sums.get(session_id, 0),
                     },
                 )
-            if blocks == 100_000:
-                capped_sessions.append(session_id)
-
         if deep:
             per_block_mismatches = int(
                 conn.execute(
@@ -755,16 +751,6 @@ def audit_database(root: Path, *, deep: bool = False) -> dict[str, object]:
                 "index_integrity",
                 "canonical/classification rows have no source-block provenance",
                 details=relational_orphans,
-            )
-
-        if capped_sessions:
-            finding(
-                "warning",
-                "DB-QUALITY-001",
-                "evidence_quality",
-                "sessions reached CK3's 100,000-entry error.log cap; captured totals are producer-censored beyond the cap",
-                session_ids=capped_sessions,
-                details={"producer": "CK3/Paradox", "entry_cap": 100_000},
             )
 
         run_rows = list(

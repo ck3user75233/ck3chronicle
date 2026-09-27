@@ -1,53 +1,35 @@
-# Empirical classification models
+# Published native model
 
-Only reviewed, immutable model revisions belong here. Runtime code must load a
-model using the exact SHA-256 recorded in its manifest; “latest” is never an
-implicit model identity.
+The selected release is **76630685c4a341ca14bf9c7c**. [selection.json](selection.json)
+pins its directory and manifest SHA-256. The immutable release contains model
+schema 4, raw parser **ck3-lossless-v1.7**, parser manifest, owner-rule registry,
+native validation and hash-covered standalone **assignment.py** / **continuations.py**.
+There is no implicit latest-model selection or compatibility fallback.
 
-## Current revision 67303093ecda779d
+Learner v41 rediscovers **418 templates: 232 supported and 186 provisional** from
+thirty complete native logs. Publication preserves those statuses; it does not
+individually confirm templates. Supporting title entries belong to one complete
+error with its opening, regardless of list length. Their displayed title is an
+opaque PARAM and their repeated character reference must match the opening.
 
-- model SHA-256: `0a508eb8056f37d586921bb4441099dcb71fcf89e4a9d1c0e764b1b86d4c1b89`
-- semantic projection catalog SHA-256: `c287849b16447e7b154f067c918afb3e0d30563ce56a9c578b06c006f20032b4`
-- semantic projection revision: `public-semantic-252-contract-evidence-v3`
-- semantic projection schema: `2`
-- normalizer: `ck3-empirical-template-normalizer-v4.11`
-- clusterer: `ordered-token-clusterer-v4-bounded-script-layers`
-- threshold: `0.72`
-- training logs: 8 distinct archived `error.log` files
-- training blocks: 432,847
-- model clusters: 891
-- projection rows: 892 (891 full-model contracts plus one composed L1/L2 contract)
+All 1,143,044 unaffected occurrences retain the v40 assignments and captures.
+Twenty separate messages become nine complete groups with eleven entries. The
+1,143,053 resulting diagnostics replay identically through the learner and runtime,
+with 4,429,930 native bindings verified. Additional native-log coverage limits
+are recorded in the [delivery ledger](../docs/LEARNER_CONTINUATION_MODEL_STATUS.md).
 
-The catalog supplies a total canonical disposition for every approved model
-contract. One hundred reviewed contract projections classify canonical issues;
-the remaining 792 projections preserve evidence explicitly as unclassified.
-Contract-bound reference selectors distinguish symbols, objects, and locators
-without using those values to discover a template.
+Use `ck3chronicle.pipeline.catalog.load_selected_classifier(models_root=...)`.
+The runtime reader validates model schema, artifact hashes and declarations before
+loading the selected parser and standalone helpers. Classifications expose one
+`selected` result and its bindings for both full and provisional outcomes. Keep
+the outcome with the result; a template ID alone does not imply confirmation.
 
-Development calibration against the now-public 252-row semantic authority is
-252/252 exact across accounting, category, error type, severity, confidence,
-primary file/line, referenced symbols, and referenced objects. This is a
-regression result, not an unseen holdout result; the same evidence participated
-in model/projection refinement and is permanently ineligible for the private
-release holdout.
+The wheel packages this selection and all eight release files under
+`share/ck3chronicle/models/`. Model/parser identity remains explicit and immutable.
+Previous directories are historical artifacts, never fallbacks. Captured logs,
+per-occurrence provenance, and generated research reports remain outside Git.
 
-## Historical revision 93196794a7e0115d
-
-- model SHA-256: `3bd189b4c93ad260e925d1a1ac3ece7c79cc63217480b79a939f6f7f5d034db3`
-- normalizer: `ck3-empirical-template-normalizer-v4.6`
-- clusterer: `ordered-token-clusterer-v4-bounded-script-layers`
-- threshold: `0.72`
-- training logs: 7 distinct archived `error.log` files
-- training blocks: 404,716
-- clusters: 822
-
-Independent release evidence excluded from training:
-
-| Evidence | Eligible occurrences | Exact full | L1 or full | Unknown | Locator failures |
-|---|---:|---:|---:|---:|---:|
-| 3 reviewed holdouts | 67,445 | 99.5107% | 99.5923% | 275 | 0 |
-| 2 untouched candidates | 126,577 | 99.9431% | 99.9929% | 9 | 0 |
-
-These measurements authorize versioned, revisable classification. They do not
-authorize discarding raw evidence, suppressing unknowns, or automatic mod
-edits.
+The [existing pipeline handoff](../docs/LEARNER_PARSER_PIPELINE_HANDOFF.md) documents
+component-relative matching and absolute bindings. Application ingestion/storage
+adoption remains separate; publishing and selecting this release starts no watcher
+and performs no production ingestion.

@@ -170,10 +170,11 @@ invented.
 the attempt fails explicitly rather than silently disappearing or becoming a
 normal success. This does not create an adversarial malformed-input promise.
 
-`REQ-INPUT-005`: CK3/Paradox caps `error.log` at 100,000 timestamped entries.
-An exact 100,000-entry file is accepted and completely processed as the source
-CK3 produced; it is not labeled parser-truncated or corrupt. Audits and reports
-identify its diagnostic totals and rates as producer-censored beyond the cap.
+`REQ-INPUT-005`: every valid `error.log` is processed completely as supplied,
+regardless of entry count. No particular count defines a separate input class,
+processing path, report/audit branch, test, benchmark, performance case, or
+acceptance gate. CK3's producer-side limit must not be mistaken for truncation
+performed by ck3chronicle.
 
 An operational failed-attempt log may record input failure but remains outside
 successful run history.

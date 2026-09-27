@@ -1,0 +1,21 @@
+{
+  "build_command": "python -B -m template_learning.publish_native_model --bundle <source-candidate-bundle> --output-dir models",
+  "hashes": {
+    "empirical_template_model.json": "00f6c802c48ebb00fb3b496a87caaaaee748cc482eafb6bbdf5e5d56ab8d65c1",
+    "native-validation.json": "ef3dc3ef1966a9e588a329e8bcee9fba859a97efcee889042a6a589a50f3fd2c",
+    "owner_rules.json": "6456eaba766191c861981c49beb72c73841c1c54e0e323fd3453475b3f2c4300",
+    "parser-manifest.json": "d710b22c33e795487ca558ee2f3b8993bc106f7319b7f56fc4894b1dd2707479",
+    "parser.py": "a9ed06a6c141a184939518c0b64292b1b48fda7f09fccc9067b3ecd944bd96d6"
+  },
+  "parser": {
+    "artifact": "parser.py",
+    "sha256": "a9ed06a6c141a184939518c0b64292b1b48fda7f09fccc9067b3ecd944bd96d6",
+    "version": "ck3-lossless-v1.6"
+  },
+  "publisher_sha256": "e9be352951e43697e58d415b3ee765936cd40581c9cdd44f50022030a0fa84d3",
+  "revision_id": "1d1d6e0389f7235f565b2504",
+  "schema": "ck3chronicle.native-model-release",
+  "schema_version": 1,
+  "source_candidate_manifest_sha256": "05fda9904582af9aef75024a084f03c5fa427b510dcfc6b4b4ca4e520227a832",
+  "source_candidate_revision": "cca96d77f96382f7082a3f73"
+}

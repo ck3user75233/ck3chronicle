@@ -1,0 +1,17 @@
+{
+  "captures_checked": 37456,
+  "changed_matches": 0,
+  "changed_outcomes": 0,
+  "contextual_messages": 7864,
+  "native_evidence_sha256": "697f925a11e3146e13de12cc7f2682a25fbcebad9e4b425f647446c81514ebc7",
+  "occurrences": 352317,
+  "outcomes": {
+    "full": 290888,
+    "provisional": 61429,
+    "unknown": 0
+  },
+  "schema": "ck3chronicle.native-release-validation",
+  "scope": "All actual messages from the complete training logs; export parity is not unseen accuracy.",
+  "source_candidate_revision": "762e1b8d5772b08ca08f1440",
+  "version": 1
+}

@@ -1,9 +1,8 @@
-"""Empirical processing interfaces, independent of diagnostic semantics.
+"""Native byte correspondence and v3 matching results.
 
-Byte offsets are absolute in one protected original log; token offsets are
-local to a normalized view. Both use half-open intervals. Decoded text is for
-matching only: native review must read original bytes through OriginalAccess.
-These types perform no lexing, extraction, normalization, or matching.
+The selected-parser path uses NativeDiagnostic and NativeClassification. Earlier
+framing/view types remain solely for the learner's historical parser comparison;
+they are not consumed by the selected model reader, classifier or bindings.
 """
 
 from __future__ import annotations
@@ -114,9 +113,10 @@ class EvidenceSpan:
 class OccurrenceValue:
     """A concrete, unmasked decoded value, with exact native correspondence.
 
-    origins are ordered, possibly discontiguous original spans. An absent
-    optional value uses empty text and an explicit zero-width origin. No
-    semantic role or learned slot definition is inferred from this value.
+    origins are ordered, possibly discontiguous original spans. No semantic
+    role or supplied slot definition is inferred from this value. An absent
+    template-declared OPTIONAL_KEY has empty text and a zero-width origin at
+    the matched native boundary; normalization never inserts an optional.
     """
 
     text: str
@@ -159,15 +159,15 @@ class RecoveredDiagnostic:
 
 @dataclass(frozen=True)
 class MatchingToken:
-    """One normalized token and its original byte origins.
+    """One literal token and its original byte origins.
 
-    Literal and masked tokens both carry correspondence. A synthetic token
-    uses a zero-width origin at its insertion boundary. A token may map to
-    multiple spans; byte lengths need not equal decoded or normalized lengths.
+    joined_to_previous preserves the absence of intervening whitespace. It
+    describes lexical adjacency, not a slot boundary or a semantic type.
     """
 
     text: str
     origins: tuple[EvidenceSpan, ...]
+    joined_to_previous: bool = False
 
     def __post_init__(self) -> None:
         if not self.origins:
@@ -176,10 +176,9 @@ class MatchingToken:
 
 @dataclass(frozen=True)
 class NormalizedValue:
-    """Value captured before masking, and its resulting token interval.
+    """Preserved value and its matcher-assigned token interval.
 
-    None means the value was removed from matching (e.g. a locator tail),
-    rather than lost. An empty TokenSpan represents an optional empty slot.
+    None denotes recovery evidence that has not been assigned to a slot.
     """
 
     value: OccurrenceValue
@@ -190,9 +189,8 @@ class NormalizedValue:
 class NormalizedView:
     """Matching tokens plus original correspondence, available without rematching.
 
-    values includes preserved recovery values and values extracted during
-    normalization. The normalizer owns this correspondence, not a later
-    classifier searching the original message again.
+    values includes preserved recovery values and complete captures added by
+    binding matcher-supplied spans. Normalization never preassigns slots.
     """
 
     diagnostic: RecoveredDiagnostic
@@ -206,105 +204,127 @@ class NormalizedView:
                 raise ValueError("value lies outside normalized tokens")
 
 
-StructuralPart = Literal["whole", "l1", "l2"]
-AssignmentLevel = Literal["full", "l1_l2", "l1", "unknown"]
+@dataclass(frozen=True)
+class NativeRegion:
+    text: str
+    pieces: tuple[tuple[str, str], ...]
+    span: ByteSpan
+
+    def __post_init__(self):
+        if ''.join(value for _, value in self.pieces) != self.text:
+            raise ValueError('parser pieces do not reproduce the native region')
+        if len(self.text.encode('utf-8', 'surrogateescape')) != self.span.end - self.span.start:
+            raise ValueError('native region byte length disagrees with its span')
 
 
 @dataclass(frozen=True)
-class StructuralIdentity:
-    """A cluster or one of its optional layers in a selected model revision.
-
-    The artifact supplies no independent layer IDs. A layer reference names
-    the cluster supplying its tokens; it does not invent a layer taxonomy or
-    require both assigned layers to come from the same cluster.
-    """
-
-    model_revision: str
-    cluster_id: str
-    part: StructuralPart = "whole"
+class NativeContinuation:
+    body: NativeRegion
+    prefix_span: ByteSpan
+    label_span: ByteSpan
+    value_span: ByteSpan
+    emission_ordinal: int
+    source_tag: str
 
 
 @dataclass(frozen=True)
-class LearnedVariable:
-    """A variable position in the referenced whole/layer template token tuple.
-
-    token_index is zero-based in that template, not in the occurrence.
-    placeholder is the learned token (e.g. <KEY> or <ALT:a|b>), never an
-    observed example value. Validation rules remain model/classifier-owned.
-    """
-
-    structure: StructuralIdentity
-    token_index: int
-    placeholder: str
-
-    def __post_init__(self) -> None:
-        if self.token_index < 0:
-            raise ValueError("invalid learned variable position")
+class NativeDiagnostic:
+    original: OriginalAccess
+    source_family: str
+    source_tag: str
+    emission_ordinal: int
+    message_ordinal: int
+    emission_span: ByteSpan
+    body: NativeRegion
+    context_kind: str
+    contexts: tuple[tuple[str, NativeRegion], ...] = ()
+    continuations: tuple[NativeContinuation, ...] = ()
+    emission_ordinals: tuple[int, ...] = ()
+    recovery_limitation: str | None = None
 
 
 @dataclass(frozen=True)
-class OccurrenceBinding:
-    """A learned variable bound to this occurrence's preserved original value."""
-
-    variable: LearnedVariable
-    occurrence: NormalizedValue
-
-
-@dataclass(frozen=True)
-class StructuralFailure:
-    """Structural non-match/failure information, separate from assignment.
-
-    code/detail are supplied by the matcher, not diagnostic issue categories.
-    candidate may identify an unsuccessful candidate, never an assignment.
-    """
-
-    part: StructuralPart
-    code: str
-    detail: str
-    candidate: StructuralIdentity | None = None
+class Capture:
+    name: str
+    type: str
+    value: str | None
+    span: ByteSpan | None  # relative to the matched region, before binding
 
 
 @dataclass(frozen=True)
-class StructuralClassification:
-    """Empirical assignment only; no diagnostic or persistence semantics.
+class NativeBinding:
+    template_id: str
+    region: str  # message, prefix or suffix
+    name: str
+    type: str
+    value: str | None
+    span: ByteSpan | None  # absolute source bytes; absence has no range
 
-    full requires a whole-template assignment, with optional layer facts.
-    l1_l2 requires both assigned layers. l1 is an exact successful outer-layer
-    assignment with unresolved L2, not a partial whole-template match.
-    unknown has no assigned identity, but the view retains occurrence values.
-    No layer metadata is required for a full result. The classifier owns
-    evidence-based assignment; these checks enforce only result shape.
-    """
 
-    view: NormalizedView
-    model_revision: str
-    classifier_revision: str
-    outcome: AssignmentLevel
-    whole: StructuralIdentity | None = None
-    l1: StructuralIdentity | None = None
-    l2: StructuralIdentity | None = None
-    bindings: tuple[OccurrenceBinding, ...] = ()
-    failures: tuple[StructuralFailure, ...] = ()
-
-    def __post_init__(self) -> None:
-        shape = (self.whole is not None, self.l1 is not None, self.l2 is not None)
-        valid = {
-            "full": {(True, False, False), (True, True, True)},
-            "l1_l2": {(False, True, True)},
-            "l1": {(False, True, False)},
-            "unknown": {(False, False, False)},
-        }
-        if shape not in valid.get(self.outcome, set()):
-            raise ValueError("assignment identities disagree with outcome")
-        for part, identity in (("whole", self.whole), ("l1", self.l1), ("l2", self.l2)):
-            if identity is not None and (identity.part != part or identity.model_revision != self.model_revision):
-                raise ValueError("assignment part or model revision disagrees")
-        for binding in self.bindings:
-            if binding.variable.structure not in (self.whole, self.l1, self.l2):
-                raise ValueError("binding must refer to an assigned structure")
-            if binding.occurrence not in self.view.values:
-                raise ValueError("binding must use a preserved occurrence value")
+@dataclass(frozen=True)
+class RegionMatch:
+    template_id: str
+    region: str
+    capture_count: int
+    witnesses: tuple[tuple[NativeBinding, ...], ...]
 
     @property
-    def source_family(self) -> str:
-        return self.view.diagnostic.parent.source_family
+    def bindings(self) -> tuple[NativeBinding, ...]:
+        return self.witnesses[0] if self.capture_count == 1 else ()
+
+
+@dataclass(frozen=True)
+class CandidateMatch:
+    template_id: str
+    status: str
+    message: RegionMatch
+    contexts: tuple[tuple[str, tuple[RegionMatch, ...]], ...]
+    components: tuple[RegionMatch, ...] = ()
+
+    @property
+    def capture_count(self) -> int:
+        count = self.message.capture_count
+        for _, alternatives in self.contexts:
+            count *= sum(match.capture_count for match in alternatives)
+        for component in self.components:
+            count *= component.capture_count
+        return count
+
+    @property
+    def bindings(self) -> tuple[NativeBinding, ...]:
+        if self.capture_count != 1:
+            return ()
+        return self.message.bindings + tuple(
+            binding for _, alternatives in self.contexts for binding in alternatives[0].bindings) + tuple(
+            binding for component in self.components for binding in component.bindings)
+
+
+@dataclass(frozen=True)
+class NativeClassification:
+    diagnostic: NativeDiagnostic
+    model_revision: str
+    classifier_revision: str
+    outcome: Literal['full', 'provisional', 'unknown']
+    candidates: tuple[CandidateMatch, ...] = ()
+    provisional_reasons: tuple[str, ...] = ()
+    unresolved_reason: str | None = None
+    error_type: str = 'unknown'
+    selected: CandidateMatch | None = None
+    selection: dict | None = None
+
+    @property
+    def template_id(self) -> str | None:
+        return self.selected.template_id if self.selected is not None else None
+
+    @property
+    def bindings(self) -> tuple[NativeBinding, ...]:
+        return self.selected.bindings if self.selected is not None else ()
+
+
+@dataclass(frozen=True)
+class UnresolvedEmission:
+    original: OriginalAccess
+    emission_ordinal: int
+    source_family: str | None
+    span: ByteSpan
+    reason: str

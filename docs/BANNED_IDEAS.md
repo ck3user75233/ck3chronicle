@@ -85,3 +85,65 @@ it does not require every emission to receive a confident classification.
 Do not invent classifications, weaken validation, or make 100% classification
 coverage a release requirement. The product may be useful and releasable below
 100% when unresolved evidence is preserved and reviewable.
+
+## BAN-009 — Treating 100,000-entry logs as a special test category
+
+CK3 itself stops writing additional timestamped `error.log` entries when its
+100,000-entry producer limit is reached. That fact corrects the false inference
+that ck3chronicle truncated or corrupted such a file; it does not create a
+special ck3chronicle input class or user requirement.
+
+Do not create or require a 100,000-entry-specific test, fixture, stress case,
+benchmark, performance threshold, acceptance gate, evidence-set member, or work-
+package precondition. Do not treat that count as having special testing or
+requirements significance. Parsing, classification, storage, review routing,
+reporting, and audit must not branch solely because a log has that exact entry
+count. Every valid `error.log` must instead be processed completely as supplied,
+regardless of size. Every recognized emission must be accounted for through
+recovered diagnostics, preserved review evidence, or an explicit parser
+failure.
+
+## BAN-010 — Unrequested chain-of-custody and marker-validation work
+
+Do not initiate chain-of-custody systems, tamper audits, evidence manifests,
+signed receipts, recurring rehash procedures, identity checkpoints, or similar
+evidence ceremony unless the owner has explicitly requested that capability.
+
+Do not create tests, validation activities, gates, or acceptance conditions
+around content hashes, IDs, counts, timestamps, manifests, schema fingerprints,
+or other markers merely because those markers exist. A marker named by an
+owner requirement may be used and checked only for the purpose that requirement
+defines. Its presence does not authorize a broader integrity regime.
+
+## BAN-011 — Turning agent conclusions into requirements
+
+Historical facts, existing code, existing tests, prior plans, validator
+suggestions, retained evidence, measured timings, archive counts, and ordinary
+engineering preferences do not create product requirements.
+
+Do not turn any of them into a mandatory test, threshold, gate, precondition,
+protocol, artifact, or architecture. Every such obligation must serve an
+owner-defined outcome. When the owner has not chosen among materially different
+designs, present the choice instead of silently promoting one to a requirement.
+
+## BAN-012 — Treating old pipeline output as the correctness oracle
+
+Do not require a replacement pipeline to reproduce the old pipeline's
+classifications, coverage, counts, or dispositions mechanically. The old
+pipeline contains deprecated and incorrect stages, so a difference—including
+lower classification coverage—may be a correction.
+
+Evaluate substantive differences against the source emissions and the current
+owner-defined behavior. Block only an unexplained loss or regression against
+that behavior, not a failure to preserve superseded output.
+
+## BAN-013 — Unrequested recovery and publication machinery
+
+Do not introduce processing journals, hash chains, active-attempt pointers,
+Run-ID reservation or reuse protocols, publication state machines, signed
+receipts, exhaustive crash-injection matrices, or similar recovery machinery
+without an explicit owner requirement that needs it.
+
+Existing or historical machinery does not justify preserving or expanding it.
+Use ordinary filesystem and SQLite guarantees where they satisfy the stated
+product behavior; return a genuinely unresolved design choice to the owner.

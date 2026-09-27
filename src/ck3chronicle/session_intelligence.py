@@ -560,7 +560,6 @@ def _evidence_quality(
         "last_error_time": last,
         "observed_error_span_seconds": span,
         "semantic_occurrences_per_observed_hour": rate,
-        "exact_100000_source_blocks": source_blocks == 100_000,
     }
 
 
@@ -827,12 +826,6 @@ def compare_sessions(
         ("previous", against_session, previous_quality),
         ("current", current_session, current_quality),
     ):
-        if quality["exact_100000_source_blocks"]:
-            quality_warnings.append(
-                f"{label} session {session['session_id']} reached CK3's "
-                "100,000-entry error.log cap; totals and rates are "
-                "producer-censored"
-            )
         if not quality["observed_error_span_seconds"]:
             quality_warnings.append(
                 f"{label} session {session['session_id']} has no measurable error "

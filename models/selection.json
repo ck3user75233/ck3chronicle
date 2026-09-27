@@ -1,0 +1,9 @@
+{
+  "artifact_directory": "76630685c4a341ca14bf9c7c",
+  "handoff": "docs/LEARNER_PARSER_PIPELINE_HANDOFF.md",
+  "integration_status": "published_for_pipeline_integration",
+  "manifest_sha256": "364215904d0b167b94365cb6b666818db15cc1947778acf6511772b9e12943c0",
+  "revision_id": "76630685c4a341ca14bf9c7c",
+  "schema": "ck3chronicle.native-model-selection",
+  "schema_version": 1
+}

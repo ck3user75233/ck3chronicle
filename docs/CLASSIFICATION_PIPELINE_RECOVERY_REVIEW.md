@@ -1,9 +1,10 @@
 # Classification pipeline recovery review
 
-Status: owner-review draft; this document records proposed architecture and
-deletion decisions but does not authorize implementation.
+Status: owner-ratified architecture and deletion decisions. Implementation is
+authorized through the staged execution package in
+`docs/classification_pipeline_recovery_prompts/`.
 
-Updated: 2026-09-09
+Updated: 2026-09-11
 
 ## Purpose
 
@@ -25,7 +26,7 @@ The governing owner direction is:
 - if an obsolete source snapshot is deliberately archived, keep that archive
   outside the canonical workspace and package.
 
-## Proposed decision summary
+## Ratified decision summary
 
 1. The empirical template matcher remains the structural foundation. Its full,
    L1+L2, L1-only, and unknown outcomes remain valid.
@@ -102,7 +103,8 @@ when commit `05afbe2` promoted that finite calibration catalog into mandatory
 runtime authority and allowed it to overwrite the output of the more capable
 template matcher.
 
-The defect is measurable in real rehearsal data:
+The defect is measurable in pre-refactor pipeline output from genuine captured
+logs:
 
 - Run 41 had 2,149 recovered occurrences.
 - The empirical matcher assigned 2,123 at full-contract level, eight at L1, and
@@ -112,6 +114,14 @@ The defect is measurable in real rehearsal data:
   projection layer.
 - Across rehearsal Runs 39–60, 232,998 structurally recognized occurrences
   ended as final `unclassified` records.
+
+All 22 database rows identify parser contract `1.0.2`, classifier contract
+`2.0.1`, model revision `67303093ecda779d`, and projection catalog
+`public-semantic-252-contract-evidence-v3`. Their journals do not identify an
+exact Git/source revision, and storage evolved through schema v6 during the
+exercise. These figures demonstrate the old projection downgrade mechanism;
+they do not certify the correctness of the parser, classifier, model clusters,
+or resulting labels.
 
 The artifact to eliminate is therefore not the existence of 252 useful review
 examples. It is the policy that a finite sample is an exhaustive runtime
@@ -459,14 +469,23 @@ The audit found more than the three originally discussed surfaces.
   to keep the v4.6 model's historical index behavior working. A corrected new
   model revision must remove the need for it, after which the function and dual
   lookup must be deleted.
+
+  > **Owner note:** EXPUNGE THIS MADNESS. NO LEGACY COMPAT / NO FALLBACKS. What historical index are we using and why? I think you will find the anwer to be NONE.
+
 - `parser.log_blocks._HEADER_RE_TWO` is explicitly retained for legacy
   Chronicle fixtures. The rehearsal database contains 2,186,219 stored source
   blocks, all with level `E`, and zero null/empty levels; none used that
   two-bracket compatibility form. Remove it unless a separately reviewed real
   CK3 example proves it current.
+
+  > **Owner note:** what is a legacy chronicle fixture.  NO LEGACY COMPAT / NO FALLBACKS
+
 - `TimestampedLogBlock` provenance defaults are documented as support for older
   unit fixtures. Update the small number of current learner-tool constructors
   to be explicit, then remove those compatibility defaults.
+
+  > **Owner note:** I am not certain why any learner tool constructurs are using 'older unit fixtures' and that sounds like a problem. But - no, we are not keeping the 'compatibility defaults' while we figure that out. NO LEGACY COMPATIBILITY NO FALLBACKS - what 'support for older unit fixtures do we need?' None. None is the answer. Prove me wrong. Sbow me where we are running 'older unit fixtures' and the precise functionality loss we will experiene when those are not supported?
+
 - `repository.replace_canonical_parse()` describes itself as a compatibility
   adapter for callers with complete prepared lists. It has no active caller and
   should be deleted rather than maintained beside the streaming path.
@@ -481,6 +500,9 @@ The audit found more than the three originally discussed surfaces.
   aliases. Current vocabulary has one Run ID, so the aliases should be removed
   unless the owner identifies a current external caller and expressly directs
   a short removal transition.
+
+  > **Owner note:** there is no use case for 'compatibility aliases' and this violates the NO LEGACY COMPAT/ NO FALLBACKS rule
+
 - The current DB-backed `review-queue` is superseded by the approved native
   per-run review shard. It must not be preserved as a second unresolved-payload
   store when the shard is implemented.
@@ -542,6 +564,8 @@ obsolete evaluator assumptions:
   while a fresh generation is built. The temporary pending-metadata conversion
   utility must be deleted after the captures are finalized and verified.
 
+  > **Owner note:** Why is there a temporary one? does that mean there is a permanent one? If so, why wait until "after the captures are finalized" to delete it (sounds like a parallel construction.
+
 Later-milestone modules such as `session_intelligence.py`,
 `source_resolution.py`, and `triage.py` are provisional under the active
 project plan and currently query projection storage. Their existence must not
@@ -581,12 +605,17 @@ not the best-in-class matcher the product should run.
 This is not the ordered execution plan, but the eventual plan must prove at
 least the following before cutover:
 
-- Runs 39–60 retain exact recognized-emission and recovered-diagnostic
-  accounting unless an explicitly reviewed splitter correction explains a
-  difference.
-- Run 41 retains 1,541 source emissions and 2,149 recovered occurrences; the
-  2,131 full/L1 assignments cannot become unknown merely because the 252 sample
-  omitted their contracts.
+- Runs 39–60 retain complete recognized-emission and recovered-diagnostic
+  accounting. Historical totals are comparison evidence, not quotas: every
+  increase, decrease, or classification-disposition change must be traced to
+  exact real blocks and reviewed as a correction or regression.
+- Run 41's historical 1,541 source emissions, 2,149 recovered occurrences, and
+  2,131 full/L1 assignments are baseline observations. A new result may differ
+  when a reviewed parser, splitter, or classifier correction explains why; it
+  may not silently become unknown merely because the 252 sample omitted a
+  contract.
+
+  > **Owner note:** but are these assertions correct? Isn't it just that we do not expect degradation, but we also have no reason to expect precisely same results after fixing these problems, do we?  So, it's more like we need to understand what's driving the ups/downs - did some error blocks go from being classified to being unknown? If so, when we look at those , is that a good thing (i.e. they should not have been classified) or a bad thing (something about our refactor would have damaged the process and we should seek to understand that)
 - Full, L1+L2, L1, provisional, and unknown outcomes remain visible and
   reconcile with the native review shard and diagnostic records.
 - Every approved record has one hierarchical `error_type`, contract identity,
@@ -650,6 +679,8 @@ The next review should confirm:
    hashes used for cross-generation correlation.
 9. The disposition of legacy capture metadata present only in the old database
    is chosen before that database's rollback copy is deleted.
+
+   > **Owner note:** WHAT IS LEGACY CCAPTURE MEDATA
 
 After those decisions are ratified, a separate execution plan can order the
 new contract artifact, code replacement, fresh-database replay, real-evidence
@@ -788,6 +819,8 @@ fallback if needed, normalizes the draft, and writes preliminary issue rows at
 
 The complete extractor-taxonomy directory is:
 
+> **Owner note:** I am not clear - how do we know all of these are expunge, and where is that explained
+
 | Locator | Role | Disposition |
 |---|---|---|
 | `src/ck3chronicle/parser/extractors/__init__.py:1-121` | Log-type registries and dispatch. `ERROR_EXTRACTORS` is `:43-55`; aliases/maps are `:57-93`; live `extract_block()` is `:98-108`; unused multi-log `extract_block_for_log_type()` is `:111-121`. | Expunge entire file/directory with connected parser calls. |
@@ -897,6 +930,8 @@ called by the obsolete generator at
 These are separate from semantic projection but conflict with the accepted
 rebuild-only database policy.
 
+> **Owner note concerning the archive-registry row:** what required archive functions?
+
 | Locator | Exact role | Disposition |
 |---|---|---|
 | `src/ck3chronicle/db/migrations.py:1-919` | Complete migration implementation. Detection is `:40-158`; transaction wrapper `:161-174`; schema/data conversions `:177-618`; compact table rebuild/copy/drop/rename `:621-919`. | Expunge migration chain. Do not replace it with old-schema adapters. |
@@ -997,7 +1032,7 @@ in-place reclassification.
 | `docs/RELEASE_READINESS.md:23-62,91-103` | Makes supported forward migration a public-release gate. |
 | `docs/DATA_COMPATIBILITY_AND_OPERATIONS.md:26,75,129-146,167-196,230-334` | Defines an explicit migration framework and compatibility aliases. |
 | `docs/ARCHITECTURE_AND_DATA_LINEAGE.md:118,179,189-205` | Contains a staged migration proposal. |
-| `docs/INGESTION_OPERATIONAL_RECOVERY_PLAN.md:8,140-206,260-300` | Records projection/migration/backfill operational work. Keep facts historical; supersede prescriptions. |
+| Former ingestion operational recovery plan (deleted) | Recorded projection/migration/backfill incident work. Its surviving dated facts are historical evidence; none of its prescriptions remain current authority. |
 | `docs/CURRENT_HANDOFF.md:43-50,82-109,148-198,263-269` | Current handoff still routes migration/backfill/projection work. |
 | `docs/REPOSITORY_AND_BACKUP.md:34-35` | Lists migrations and semantic projection as active repository assets. |
 | `docs/WORKSPACE_ROUTING.md:25,83` | Routes database migrations as current owned source. |

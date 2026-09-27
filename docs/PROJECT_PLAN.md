@@ -1,11 +1,11 @@
 # Named capability-milestone plan
 
-Status: active project plan as of 2026-09-08.
+Status: active project plan as of 2026-09-11.
 
 ## Immediate checkpoint: development restart stabilization
 
-Status: active as of 2026-09-08. This checkpoint does not replace or accept a
-capability milestone. It restores a safe development/operations baseline for
+Status: complete as of 2026-09-11. This checkpoint does not replace or accept a
+capability milestone. It restored a safe development/operations baseline for
 Trusted Run.
 
 Exit conditions:
@@ -26,7 +26,7 @@ Production `process-pending` is disabled during this checkpoint. Capturing new
 
 Current evidence: conditions 1 and 2 are satisfied in the working tree. The
 historical-session stall portion of condition 4 is isolated and corrected with
-a successful, durably logged rehearsal at CK3's known 100,000-entry cap. The
+a successful, durably logged rehearsal of the affected retained input. The
 22 protected originals have been recovered into a verified readable disposable
 copy, and all 22 metadata records plus seven exception attachments were
 converted there. All 22 captures completed the new exact-one-item path as
@@ -34,11 +34,28 @@ session/Run IDs 39–60. A deliberate mid-transaction interruption restored the
 prior committed state through ordinary SQLite recovery and completed on an
 exact-session retry. Final archive, lineage, counter, duplicate-hash,
 `quick_check`, and foreign-key reconciliation passed, so conditions 3 through
-5 are satisfied. The production and watcher actions remain separate explicit
-decisions under condition 6; condition 7 remains open until the complete
-worktree is reviewed, committed, and pushed. Detailed recovery evidence is in
-`INGESTION_OPERATIONAL_RECOVERY_PLAN.md`; continuation state is in
+5 are satisfied. Condition 7 is satisfied: the complete reboot tree was
+reviewed, externally bundled, published as a clean canonical `main`, and
+verified against the live remote. The production and watcher actions remain
+separate explicit decisions under condition 6. Dated recovery evidence is in
+`DEVELOPMENT_RESTART_AUDIT_2026-09-08.md`; continuation state is in
 `CURRENT_HANDOFF.md`.
+
+## Active exercise: classification pipeline recovery
+
+Status: owner-authorized as of 2026-09-11.
+
+The ratified target removes the legacy regex taxonomy, semantic-projection
+layer, schema migration/backfill paths, compatibility aliases, silent
+fallbacks, and superseded in-repository model revisions. Work proceeds through
+`classification_pipeline_recovery_prompts/MASTER_ORCHESTRATOR_PROMPT.md` and
+numbered mini-projects 01 through 08. Each mini-project must leave genuine
+captured CK3 logs operationally processable; storage-writing proof uses a fresh
+disposable database. Historical tests, synthetic fixtures, and exact old model
+cluster membership do not establish acceptance.
+
+Production `process-pending` remains disabled. The watcher is capture-only and
+its startup is a separate operational decision.
 
 ## Planning rule
 
@@ -144,10 +161,10 @@ Current maturity:
 | Run-ID content-hash guard and input boundary | Implemented in source; verification pending | Supported core; every ingest route rejects an existing `error.log` hash loudly before parsing/Run-ID creation, with no override; missing/unreadable/unstable/empty source also fails loudly |
 | Crash signal and exception attachment | Partial with conflicting old behavior | Supported after categorical correction |
 | Run registration/recovery | Hardened or functionally complete by seam | Supported core |
-| SQLite schema/migration/audit | Hardened foundations | Supported core after operational retention/restore work |
+| SQLite schema/open/audit | Current storage exists; migration path is superseded | Supported core through exact-current create/open and rebuild-only generation |
 | Log-emission recognition | Hardened lexer under current internal naming | Supported core mechanism |
-| Persistent-reader multi-error split | Functionally complete focused groundwork | Supported only after splitter contract/fixtures are approved |
-| Diagnostic-record aggregation identity | Partial/overlapping current issue storage | Supported after identity design/migration |
+| Persistent-reader multi-error split | Functionally complete focused groundwork | Supported only after splitter behavior is verified against genuine captured logs |
+| Diagnostic-record aggregation identity | Partial/overlapping current issue storage | Supported after identity design and fresh-schema rebuild |
 | Classification and typed validation | Functionally complete | Supported core mechanism |
 | Native review shard | Absent; current review reads uncertain DB rows | Supported core after one-shard-per-successful-run implementation |
 | On-demand DB reporting | Functionally complete groundwork | Supported after schema/output narrowing and raw-path non-access proof |

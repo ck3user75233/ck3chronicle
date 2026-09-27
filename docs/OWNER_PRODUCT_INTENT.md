@@ -60,9 +60,10 @@ The named capabilities, intended delivery order, and dependencies belong in
   parsing or creation of another Run ID. There is no override.
 - Missing, unreadable, unstable, or empty `error.log` input fails clearly. A
   zero-diagnostic success requires a genuine nonempty CK3 log.
-- CK3 caps `error.log` at 100,000 timestamped entries. Reaching that exact limit
-  is producer censoring, not parser truncation or corruption, and reports must
-  say so.
+- Every valid `error.log` is processed completely as supplied, regardless of
+  size. No entry count creates special parsing, classification, storage,
+  review, reporting, audit, testing, benchmarking, gating, or acceptance
+  behavior.
 - Trusted Run acquires and interprets diagnostic intelligence from `error.log`
   only. Its required fast-follow captures the same Run's live-root `debug.log`
   and extracts effective playset context from the DLC inventory, enabled-mod

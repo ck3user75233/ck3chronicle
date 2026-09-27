@@ -24,11 +24,22 @@ dependencies = []
 ck3chronicle = "ck3chronicle.cli:main"
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["src", "tools"]
+include = ["ck3chronicle*", "template_learning*"]
+
+[tool.setuptools.package-data]
+"template_learning" = ["owner_rules.json"]
+"template_learning.parsers" = ["v1/parser.py", "v1/manifest.json", "v1_7/parser.py", "v1_7/manifest.json", "v1_7/recovery_rules.json"]
 
 [tool.setuptools.data-files]
-"share/ck3chronicle/models/67303093ecda779d" = [
-  "models/67303093ecda779d/empirical_template_model.json",
-  "models/67303093ecda779d/manifest.json",
-  "models/67303093ecda779d/semantic_projection_catalog.json",
+"share/ck3chronicle/models" = ["models/selection.json"]
+"share/ck3chronicle/models/76630685c4a341ca14bf9c7c" = [
+  "models/76630685c4a341ca14bf9c7c/empirical_template_model.json",
+  "models/76630685c4a341ca14bf9c7c/manifest.json",
+  "models/76630685c4a341ca14bf9c7c/parser.py",
+  "models/76630685c4a341ca14bf9c7c/parser-manifest.json",
+  "models/76630685c4a341ca14bf9c7c/owner_rules.json",
+  "models/76630685c4a341ca14bf9c7c/native-validation.json",
+  "models/76630685c4a341ca14bf9c7c/assignment.py",
+  "models/76630685c4a341ca14bf9c7c/continuations.py",
 ]
