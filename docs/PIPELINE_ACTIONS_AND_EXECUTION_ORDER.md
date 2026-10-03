@@ -1,5 +1,209 @@
 **Pipeline actions and proposed execution order**
 
+## Task 07D implemented — activation remains separate — 2026-09-29
+
+Use the [current Task 07D handoff](TASK07D_DATABASE_REQUEST_HANDLER_HANDOFF.md) for APIs, handler startup/shutdown,
+three-state outcomes, verification and limitations. One dedicated host and sole
+database worker now serve watcher, manual and API clients through Windows named
+pipes. Preparation stays outside the database worker; contention waits internally;
+duplicates are `NOT_COMPLETED`. SQL/review formats remain 3, playset format 1,
+and database arguments are exact SQLite files. Daily maintenance and configurable
+30-day raw expiry are preserved. Receiving repairs 07D-01 through 03 are delivered.
+The final focused suite passed 53 checks with no skips; isolated imports and
+`pip check` passed. Evidence and limitations are in the current handoff.
+
+No production data, configuration, selection or live process was changed.
+Historical activation is reported evidence, not a fresh runtime-status check.
+Next operational work: verify the configured schema-3 file and restart the watcher
+on updated code at a safe boundary, shutting down any older handler for that file.
+Task 08 reports use HandlerClient; Run-result replacement and complete Trusted Run
+acceptance remain separate. Preserve unrelated uncommitted work.
+
+## Historical checkpoints (superseded where they conflict above)
+
+## Rejected database-handler design retired
+
+Do not continue the former shared-handler review/implementation sequence. The
+design has been rejected and deleted; its continuation checklist is withdrawn.
+Stop after this documentation cleanup. Replacement implementation instructions
+will be issued separately. Existing ingestion, playset handling and daily retention
+remain unchanged; older queue follow-up references do not authorize the deleted
+design. See [CURRENT_HANDOFF.md](CURRENT_HANDOFF.md).
+
+## Task 07 implementation checkpoint — 2026-09-28
+
+Ingest, raw retention, manual command, schema 2/playset SQL reads, manifest 2 and
+per-Run processing lineage are implemented and verified against genuine retained
+inputs. [Exact interfaces and evidence](TASK07_INGESTION_AND_RETENTION_HANDOFF.md).
+One closure decision remains: malformed/mismatched completed-playset disposition.
+Rejecting ingestion and preserving the capture is the pending proposal.
+
+1. Settle that owner decision and close Task 07.
+2. Watcher team wires completed-capture ingest and periodic idle-capable retention;
+   hourly checks are proposed. Task 07 made no watcher changes or live activation.
+3. Task 08 builds SQL-only reports against the delivered storage/read boundary.
+4. Perform separately authorized live activation and Trusted Run acceptance.
+
+Explicit same-Run result replacement remains a separately commissioned follow-up.
+The Script location-stack investigation is complete and its representation remains.
+Earlier dated implementation-pending entries below are historical.
+
+## Task 06B cleanup completed — 2026-09-28
+
+The deprecated CLI/provider stack and its exclusive research/test consumers have
+been removed. See [the cleanup handoff](TASK06B_DEPRECATED_CODE_CLEANUP_HANDOFF.md)
+for the exact inventory, portable rollback archive, verification and limits.
+`watch`, `capture`, `doctor` and `observe-logging` remain; `watch --once` remains
+error-only. `harvester.py` remains the capture owner. No processing command is
+active. Task 07 delivers ingest and retention APIs, one manual `ingest` command,
+playset SQL storage and a watcher-team integration handoff. The watcher team owns
+automatic ingest after capture and periodic retention checks, including idle periods.
+See the [current scope](TASK07_SCOPE_REVIEW.md)
+and [revised draft](TASK07_PROMPT.md).
+Task 07 must remove the current database-wide lineage
+lock and record processing versions per Run; compatible selections share one
+database. Schema changes require an explicit reset, without migration or fallback.
+These are instructions for implementation, not completed code. Retention eligibility
+and cadence remain open. Task 08 focuses on SQL reports/read operations.
+The old provider retirement, C1/C2 capture relocation/deletion proposal, parser
+comparison retirement and removed-API research checks are discharged/superseded;
+do not repeat them or restore compatibility providers. Task 06/v45 storage and
+the watcher producer contracts remain intact, as do learner policy limitations
+and the separate Script location-stack investigation. The separately authorized
+live watcher was not stopped, restarted, reconfigured or used for verification.
+Older dated provider-retention and cleanup-pending statements below are historical.
+
+## Next: Task 06B cleanup, then Task 07 — 2026-09-28
+
+The owner authorized disabling unused old CLI paths and removing their deprecated
+providers before Task 07. Execute [Task 06B](06B_DEPRECATED_CODE_CLEANUP.md), then
+[Task 07](TASK07_PROMPT.md) against its completion handoff.
+Keep the working watcher/playset producer and capture owner `harvester.py` in place;
+the earlier plan to relocate capture into `pipeline/capture.py` is superseded.
+The watcher review's Section B supplies specific retirement targets. This checkpoint
+records the assignment and revised prompts, not completed deletion. The live
+watcher's separate operating authorization and Task 06's selected baseline remain.
+Older instructions to retain unused CLI providers until cutover are superseded for
+the explicit 06B scope.
+
+## Task 06 v45 integration complete; Task 07 next — 2026-09-28
+
+Task 06 has integrated and selected learner v45 package
+`68f1ae5db205ab46afef9c4d`, model `f5cde2616f35d563118d3d32`:
+model schema 5 / matcher API v2, `error-contract-v1`, SQLite schema 1.
+The normal source catalog and installed wheel now use the same package.
+The existing SQL design stores the new literal choices correctly; no pipeline
+source edit, extra processing stage or physical database migration was needed.
+
+Seven complete native logs passed preparation, aggregation, SQLite write/readback,
+review completion and separate-process database-only rendering:
+418,168 recovered occurrences,
+19,912 unique records and four native review emissions.
+All original 122 cases / 9,153 emissions are record-eligible. Both line-label
+choices retain their exact native spelling. Duplicate rejection, generation
+isolation and actual read-only SQLite failure preserve accepted state.
+The installed whole-log storage path also passed with checkout resources blocked.
+See [the v45 integration handoff](TASK06_V45_STORAGE_INTEGRATION_HANDOFF.md)
+for exact evidence, storage mappings, changed paths and remaining limits.
+
+The learner assessment's remaining word-run policy issues, two lost matches
+against the thirty-log predecessor, capture regressions and tie behavior remain
+documented; storage does not reinterpret those outcomes. Development selection
+is updated, while production processing and existing application providers remain
+unchanged. Next is Task 07 protected-input/processing/replay composition, followed
+by Task 08 SQL-only reporting/audit. The historical learner/research retirement
+dependencies in the Task 05/06 handoffs remain. No production database writes,
+watcher/capture operation, retained-input deletion, commit or push occurred.
+
+The dated selection and "integration pending" statements below retain their
+historical context and are superseded by this checkpoint.
+
+
+## Task 06 completed; Task 07 is next — 2026-09-27
+
+Task 06 delivers exact-identity aggregation, current-generation SQLite Run storage,
+and the native review log plus manifest for every successful Run, including zero
+review. Template and provisional records remain filterable and render from stored
+definitions/values. `write_run` owns staging, finalization, publication, rollback and
+commit; Tasks 07/08 consume its [public APIs and detailed handoff](TASK06_RUN_STORAGE_AND_NATIVE_REVIEW_HANDOFF.md).
+
+Three complete unmodified Task 05 inventory logs were verified in fresh ignored
+generations: 199,545 recovered occurrences, 190,392 eligible occurrences, 9,396
+aggregated records and 9,153 native review emissions. Verification covers exact
+bytes/order/frequency, both empty-shard files, duplicate rejection, namespaces,
+Run IDs/date basis, count reconciliation, real read-only SQLite rejection and
+separate-process database-only rendering. The detailed handoff distinguishes
+observed failures from unexercised crash/native branches and records scope proof.
+
+Next: Task 07 protected-input preparation and processing/replay composition;
+Task 08 database-only reporting/audit. Operator command choices remain for Task 07
+owner review. Existing application providers remain connected until separately
+commissioned cutover. Production processing remains disabled. No watcher operation,
+live capture, production database write, retained-input deletion, commit or push.
+
+Task 05's named retirement dependencies remain: the historical baseline in
+`tools/template_learning/build_parser_comparison.py`, the removed-API consumer
+in `inspect_cross_emission_recovery.py`, and opt-in
+`test_raw_parser_requirements.py::test_independent_pipeline_replay`. Learner/model
+coverage limitations remain unchanged; storage does not repair unmatched or
+malformed native patterns. The current selection/package is unchanged.
+
+All dated instructions and task orders below are historical where superseded by
+this checkpoint, the approved Error Contract and the Task 06 handoff.
+
+
+## Task 05 implementation delivered — 2026-09-27
+
+Task 05 is complete: the selected schema-2 package is
+`44a0401b8adf0a2953d26705` (unchanged model `76630685c4a341ca14bf9c7c`).
+The pipeline now executes pinned recovery and shared complete selection, binds
+only selected regions once, and prepares serializable `error-contract-v1` data
+with exact identity and standalone rendering. The duplicate pipeline matcher and
+its bound-candidate alternatives are removed. All 31 native inventory logs and
+the disposable installed path passed; see
+[the implementation handoff](TASK05_ERROR_CONTRACT_IMPLEMENTATION_HANDOFF.md)
+for APIs, resources, evidence, coverage limits and exact changes.
+
+Next: Run aggregation, SQL/native-review persistence and stored reporting;
+application/provider cutover remains separately commissioned. Historical
+recovery/view retirement still depends on the learner comparison tool's old
+baseline. Two additional research/test consumers of removed APIs are named in
+the handoff. Production processing remains disabled; no watcher operation,
+learner publication, commit or push occurred. Earlier sections below describe
+historical checkpoints and do not supersede this completion.
+
+**Task 04 complete; current execution order — 2026-09-27**
+
+The owner approved [the complete Error Contract](ERROR_CONTRACT_SPECIFICATION.md),
+including source/emitter through the stored template definition. The learner
+selection dependency is resolved by schema-4 release `76630685c4a341ca14bf9c7c`:
+`selected` supplies one complete assignment for full and provisional outcomes.
+The [Task 04 handoff](TASK04_ERROR_CONTRACT_HANDOFF.md) records interfaces, hashes,
+fresh native verification and remaining coverage limits.
+
+1. Completed: [Task 04(B) audit](04B_PIPELINE_PROCESSING_AUDIT_RESULTS.md), owner
+   review, learner shared-matcher delivery and
+   [independent verification](SHARED_MATCHER_PIPELINE_VERIFICATION.md).
+2. [Revised Task 05](05_ERROR_CONTRACT_IMPLEMENTATION.md): integrate the pinned
+   shared matcher, bind the selected assignment once, retire the duplicate pipeline
+   matcher, and implement contract/result, identity and rendering helpers. Select
+   the package after integration verification and verify installed resources.
+3. Subsequent tasks: Run aggregation/counting, SQL definitions/records, native-review
+   publication and stored-report integration.
+4. Separately commissioned application cutover and retirement of old providers.
+
+P1/P2 and the P3 specification are complete. Error typing remains optional future
+work; `unknown` is valid. Provisional assignments are SQL-eligible. The original
+Task 05 prompt's mandatory new model, L1/L2 gates and semantic-typing dependency
+are superseded by the approved contract. The verified matcher package preserves
+existing model definitions; no relearning or contract sidecar is required.
+Historical recovery/view deletion retains its comparison-tool retirement dependency;
+it is not permission to keep those modules in the active processing path.
+
+**Historical record below — superseded where it conflicts with the current
+specification and handoff. Earlier pins, unresolved dependencies and remaining
+orders describe their dated checkpoints, not today's work.**
+
 **P3 owner decisions and learner assignment dependency — 2026-09-24**
 
 A diagnostic record is the refined, unique error message stored in SQL. Parsing

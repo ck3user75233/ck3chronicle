@@ -3,7 +3,101 @@
 Updated 2026-09-22. The current outer-diagnostic contract below supersedes the
 independent L1/L2/tail descriptions in earlier dated development records.
 
-## Contextual location labels — 2026-09-24, v29
+## Owner clarification: location sections and Unknown — 2026-10-03
+
+This is the current required behavior. The owner subsequently authorized a
+disposable combined implementation/test; production delivery remains pending.
+It supersedes earlier literal-Unknown and
+location-count differentiation guidance, without altering retained releases.
+
+- Keep a location introducer such as `Script location:` as literal wording.
+  A missing introducer differs from a present location section.
+- `near line:` and `line:` identify location fields; recognizing the marker and
+  its following LOCATOR must not depend on the value being numeric. The 104-log
+  inventory found 255,228 near-line mentions, all with numeric values, and no
+  nonnumeric counterexample. That observation is not authority for a numeric
+  recognition gate. This clarification supersedes the numeric prerequisite in
+  older label-equivalence guidance. Exact value boundaries still belong to the
+  enclosing native structure; exact contents still count toward message identity.
+- The number of following file/line/(trace) entries contributes no dissimilarity
+  and must not partition otherwise compatible diagnostic examples. Preserve every
+  entry in order: file and line as individual LOCATOR values, parenthetical
+  interiors as PARAM values. Cardinality is per-message data.
+- Classification similarity excludes both locator contents and locator count.
+  Exact error-message identity includes the complete ordered locator values and
+  their count. Otherwise identical messages with different locator contents or
+  counts are distinct messages, even when classified under the same template.
+  Never reuse the locator-neutral similarity representation to deduplicate
+  messages or aggregate their occurrences; retain the full native evidence.
+- An explicitly emitted `Unknown` in the location-value position is a present
+  LOCATOR with exact value `Unknown`. It is not literal diagnostic wording,
+  an absent field or SQL null. Do not invent file, line or trace subvalues for it.
+  The location marker remains literal and present. Apply this to contextual
+  location values, not arbitrary uses of the word Unknown in diagnostics.
+- `Unknown` normally remains literal. The exception above is positional:
+  immediately after a recognized location marker, including `line:` and
+  `near line:`, it can supply that marker's LOCATOR value. Do not use an
+  earlier marker elsewhere in the message to retype later diagnostic wording.
+  This slot decision must not change existing emission/message recovery.
+- Inventory other genuine markers and unavailable-value spellings before
+  extending their recognition. Missing or empty native values are not silently
+  rewritten to Unknown. The original spelling remains reconstructible.
+
+The experimental `untyped-effect-location-unknown` and
+`untyped-trigger-location-unknown` declarations preserve their diagnostic/REASON
+boundaries while the location recognizer captures Unknown. Retained production
+releases still implement their older rule. Experimental schema 6 / matcher API
+v3 represents repeated trailing entries; full candidate verification and delivery
+are tracked in CURRENT_HANDOFF. Production selection and stored Runs stay unchanged.
+
+## Quoted discovery and duplicate consolidation — v46, 2026-10-03
+
+Owner-approved scope: exclude single-quoted contents from initial similarity,
+retain ordered field-presence evidence, and infer each identical-template union
+once. The discovery threshold stays .72; no second threshold tier is introduced.
+
+- Conservative quote proposals use existing native parser pieces. Matching
+  quotation positions provide no positive similarity credit; absent or differently
+  aligned positions, including empty versus nonempty contents, incur a penalty.
+  Ambiguous, nested, unmatched or multiline quotations retain the existing view.
+- Proposals cannot inspect existing opaque fields or leave the declared diagnostic
+  comparison region. They do not declare KEY/PARAM slots, hide text from inference,
+  alter native matching or relax diagnostic-wording protection. Joint native
+  variation and complete matching still establish ordinary fields.
+- The existing one-sweep region regrouping remains. Subsequent duplicate-template
+  consolidation groups exact template identities, selects the representative and
+  infers all combined members once. Every original constituent enters the wording
+  guard, and all native members and field-support ranges remain required.
+- Consolidation reports its source, identity, group count and member count. It
+  stays after regrouping so the latter's original-group search order is preserved.
+
+Verification uses genuine retained logs; the fresh 20-log candidate and comparison
+are documented in `docs/LEARNER_V46_QUOTED_DISCOVERY_RESULTS.md`. Changed learner
+bytes require a fresh immutable release and fresh model, never an old-state seed.
+
+## Additive applicability correction — v45, 2026-09-28
+
+Retained wording can veto a new proposal only within the shared matcher's existing
+source, context kind, construction and ordered declared-parameter applicability
+boundaries. `Rules.applies_to_record` owns those gates for both matching and the
+additive check. A body-pattern coincidence across incompatible trace structures
+is not evidence that the proposal erases a retained formulation. Refinement
+partitions use complete retained matches, including wrappers and continuations.
+The protected-word list and same-structure wording-loss policies are unchanged.
+This corrects an implementation inconsistency; it adds no vocabulary exemptions
+and does not change support thresholds. v45 requires fresh learning state.
+
+## Contextual location labels — updated 2026-09-28, v44
+
+The owner now requires `line:` and `near line:` to be interchangeable in one
+template before a numeric LOCATOR. Explicit `literal_alternatives` in the rules
+replace the earlier separation for this label group. Recognition precedes
+alignment, so one observation yields both accepted literal spellings without a
+variable slot or invented evidence. Complete matching and rendering retain the
+selected spelling through a declared layout choice. Other labels keep the earlier
+policy below. See [verification](LEARNER_LOCATION_LABEL_EQUIVALENCE_RESULTS.md).
+
+### Earlier exact-form policy (still applies to file labels)
 
 `owner_rules.json.location_label_equivalences` declares the observed `Near file:` /
 `near file:` / `file:` and `near line:` / `line:` location introducers. These are
@@ -46,10 +140,11 @@ for the remaining quoted-expression regression and native checks.
   wording, trace declarations and location recognition remain active; they do
   not depend on the disabled vocabulary. This supersedes the earlier proposed
   contextual relaxation of individual guided identifier positions.
-- Owner-declared trace structures now supply ordinary PARAM spans under
-  `owner_rules.json.parameter_structures`. Complete Script location file/line
-  chains are one span; inline file/line parenthetical interiors are separate
-  spans with literal surrounding parentheses. The recognizer uses exact raw
+- Owner-declared trace structures supply ordinary PARAM spans under
+  `owner_rules.json.parameter_structures`. The current located-parenthetical
+  declaration captures each parenthetical interior separately, with literal
+  surrounding parentheses; file and line remain separate LOCATORs. The old
+  whole-chain PARAM declaration was removed. The recognizer uses exact raw
   boundaries and balanced delimiter scanning, not alternate tokenization.
   Ordinary parentheses and arbitrary trailing text are not trace evidence.
 - Declared PARAMs do not require observed variation, even for singleton messages.
@@ -57,11 +152,12 @@ for the remaining quoted-expression regression and native checks.
   wording and default literals. Undeclared PARAMs retain empirical requirements.
   The ordinary PARAM matcher is unchanged: no TRACE slot, role, spelling list or
   definition-specific capture constraint. Definition IDs are inference provenance.
-- Presence of recognized structures is an outer-message selection condition,
-  alongside source and construction. Ordered declaration IDs are recorded in
-  each candidate's `parameter_structures` and identity. Frame count and internal
-  values do not enter the signature. This keeps Script location: Unknown from
-  matching a trace-present formulation while leaving its bytes/literal intact.
+- The current flat implementation records the ordered, repeated declaration IDs
+  in each candidate's `parameter_structures` and identity. Entry count therefore
+  does enter grouping and matching eligibility; older text claiming otherwise
+  was incorrect. The October 3 requirement above supersedes count-based
+  separation and literal-Unknown treatment. The correction remains pending;
+  other source/construction boundaries are not blanket exemptions.
 - The complete recovered diagnostic is the learning/matching unit. Shared
   wrapper context remains attached; source families remain independent. No
   detached reason or tail pool can supply a candidate's field observations.
@@ -126,7 +222,8 @@ for the remaining quoted-expression regression and native checks.
 - Region regrouping investigates at most 12 nearest later candidates per group
   per iteration, ranked by retained wording. This engineering search bound is
   recorded in `inference_policy`; it does not subsample candidate members.
-  Accepted unions restart consideration. The search is not exhaustive, so a
+  The current pass is one original-group sweep; accepted unions are not reopened.
+  The search is not exhaustive, so a
   remaining separate candidate is not proof that no valid union exists.
 
 See [implementation status](LEARNER_OUTER_DIAGNOSTIC_IMPLEMENTATION.md) and

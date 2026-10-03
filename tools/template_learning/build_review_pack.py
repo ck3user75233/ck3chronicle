@@ -3,7 +3,7 @@ import argparse
 import json
 from pathlib import Path
 from template_learning.artifacts import load_bundle
-from template_learning.incremental_template_registry import all_patterns
+from template_learning.artifacts import all_patterns
 
 
 def main():

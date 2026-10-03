@@ -9,7 +9,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from ck3chronicle import harvester
 from ck3chronicle.harvester import (
@@ -26,7 +26,7 @@ from ck3chronicle.watcher import (
 
 
 class CaptureBoundaryTests(unittest.TestCase):
-    def test_pending_capture_contains_error_log_only(self) -> None:
+    def test_default_manual_capture_contains_error_log_only(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             logs = root / "logs"
@@ -88,6 +88,54 @@ class CaptureBoundaryTests(unittest.TestCase):
 
             self.assertEqual(acl.returncode, 0, msg=acl.stderr)
             self.assertEqual(acl.stdout.strip(), "False")
+
+    def test_pair_callback_sees_full_copies_and_metadata_before_publication(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            logs = root / "logs"
+            logs.mkdir()
+            contents = {"error.log": b"error\r\n", "debug.log": b"debug\r\n\x00all original bytes"}
+            for name, raw in contents.items():
+                (logs / name).write_bytes(raw)
+            callbacks = []
+
+            def after_copies(directory, capture_id, captured_at):
+                self.assertTrue(directory.name.startswith(".copying-"))
+                self.assertFalse((root / "runtime" / "pending" / capture_id).exists())
+                for name, raw in contents.items():
+                    self.assertEqual((directory / name).read_bytes(), raw)
+                metadata = json.loads((directory / CAPTURE_METADATA_NAME).read_text(encoding="utf-8"))
+                self.assertEqual(metadata["captured_at"], captured_at)
+                self.assertEqual(metadata["capture_id"], capture_id)
+                callbacks.append(capture_id)
+
+            result = spool_logs(logs, root / "runtime", include_debug=True, on_logs_copied=after_copies)
+            self.assertEqual(callbacks, [result.dest_dir.name])
+            self.assertEqual(result.file_names, ("error.log", "debug.log"))
+            self.assertEqual(result.files_copied, 2)
+
+    def test_debug_copy_failure_preserves_error_and_does_not_call_extractor(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            logs = root / "logs"
+            logs.mkdir()
+            (logs / "error.log").write_bytes(b"error")
+            (logs / "debug.log").write_bytes(b"debug")
+            copy = harvester._copy_exact
+
+            def fail_debug(source, target):
+                if source.name == "debug.log":
+                    raise PermissionError("cannot copy debug")
+                return copy(source, target)
+
+            callback = Mock()
+            with patch.object(harvester, "_copy_exact", side_effect=fail_debug):
+                result = spool_logs(logs, root / "runtime", include_debug=True, on_logs_copied=callback)
+                callback.assert_not_called()
+            self.assertEqual(result.debug_capture_failure['error_type'], 'PermissionError')
+            self.assertEqual((result.dest_dir / "error.log").read_bytes(), b"error")
+            self.assertFalse(result.dest_dir.name.startswith(".copying-"))
+            self.assertFalse((result.dest_dir / "debug.log").exists())
 
     def test_unavailable_exception_does_not_discard_error_log(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

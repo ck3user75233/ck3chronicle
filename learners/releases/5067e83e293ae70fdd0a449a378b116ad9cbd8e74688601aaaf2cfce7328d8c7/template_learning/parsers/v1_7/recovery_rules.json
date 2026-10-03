@@ -1,0 +1,31 @@
+{
+  "schema": "ck3chronicle.emitter-continuation",
+  "schema_version": 1,
+  "id": "history-colon-title-list-v1",
+  "authority": "Owner 2026-09-26: simplify recovery to emitter/colon framing and opaque prefix equality; character recognition belongs in the learner.",
+  "source_family": "history.cpp",
+  "level": "E",
+  "opening_terminator": ":",
+  "entry_marker": "'s title: ",
+  "prefix_boundary": " ",
+  "minimum_entries": 1,
+  "stop": "first incompatible emission or new opening; no lookahead past it",
+  "evidence": [
+    {
+      "sha256": "10cbdcb23e34a5b571a16eb52d390e5e676663936f000fd43404af19d85027fb",
+      "lines": [
+        48279,
+        48298
+      ]
+    },
+    {
+      "sha256": "9d3622ab1b6c85cbab45d83767bb870b06c6fb9d6da50ee44f5eba3674d98cbc",
+      "lines": [
+        3478,
+        3479,
+        9841,
+        9842
+      ]
+    }
+  ]
+}

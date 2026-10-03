@@ -1,6 +1,337 @@
 # Named capability-milestone plan
 
-Status: active project plan as of 2026-09-11.
+## Canonical logging direction and provisional 09A — 2026-10-03
+
+[Canonical Logging System v1](CANONICAL_LOGGING_SYSTEM_V1.md) records the owner's
+real-code/checkpoint architecture and supersedes the earlier phase-based learner
+logging proposal. [09A](TASK09A_PROMPT.md) is planning only, ending with
+`CANONICAL_LOGGING_V1_IMPLEMENTATION_PLAN.md`; implementation is not commissioned
+by this preparation. Numbering and rollout remain for incoming-advisor/owner review.
+
+Recommendation: plan alongside 08B, then consider a bounded shared-owner/learner
+implementation, with wider runtime conversion separately justified. Do not expand
+08B or automatically make logging a Trusted Run gate. The
+[advisor briefing](ADVISORY_HANDOFF_TRUSTED_RUN.md) includes alternatives, receiving
+ownership and source-preserving refactor guidance. No source or production changed.
+
+Latest delivery (2026-10-03): the known-path source traversal repair is now
+implemented and verified against genuine data. Only unscoped searches default to
+all roots; member/directory/exact-path constraints narrow work. See the current
+[08B receiving delta](TASK08A_MULTIRUN_VERIFICATION_HANDOFF.md); earlier acceptance
+and open-defect statements below are superseded. Assignment prompts unchanged.
+
+Latest source-scope decision (2026-10-03): the owner accepted whole-selected-root
+inventory as the default without explicit directory scope. Code documentation
+now explains it. This supersedes the default-narrowing defect classification
+immediately below; receive the update through the handoff, not a rewritten prompt.
+
+Completion qualification (2026-10-03): 08A libraries are delivered with an open
+08A.2 known-path traversal-scope defect. Its assignment as 08B's first receiving
+repair does not count as completed 08A.2 work. See the
+[requirement reconciliation](TASK08A_MULTIRUN_VERIFICATION_HANDOFF.md) before
+using older “delivered” milestone headings as an unconditional completion claim.
+
+Current reporting correction (2026-10-03): [included-window newness delivery](TASK08A_MULTIRUN_VERIFICATION_HANDOFF.md).
+Median-based comparisons and the novelty-unavailable gate were removed by owner
+direction. 08B receives actual counts/fractions and newness over included
+predecessors, with no replacement notability formula.
+
+## Tasks 08A.1 and 08A.2 delivered; 08B next — 2026-10-02
+
+[08A.2's handoff](TASK08A_2_SOURCE_SEARCH_HANDOFF.md) completes source roots,
+recorded members, file/content search, all candidates and excerpts integrated
+with [08A.1](TASK08A_1_DIAGNOSTIC_QUERY_HANDOFF.md). Nine source checks and six
+diagnostic checks passed using real SQL/source data only. The 133-member
+performance/evidence exercise is recorded; unavailable real cases remain
+unverified. No synthetic checks or additional requirements were introduced.
+Proceed to [08B reports and CLI](TASK08B_PROMPT.md) using both library deliveries.
+Live acceptance and other excluded work remain separate. Older checkpoints below
+do not supersede this delivery.
+
+## Task 08A.1 delivered; 08A.2 next — 2026-10-02
+
+[08A.1's handoff](TASK08A_1_DIAGNOSTIC_QUERY_HANDOFF.md) delivers reusable stored
+diagnostic queries, exact identity/history, source-time Run selection/exclusions,
+notability and complete pre-limit totals. After owner review, 14 synthetic or
+injected reporting checks were removed; the six remaining genuine-data checks
+passed. SQL integration covers one eligible Run. Multi-Run behavior and threshold
+boundaries remain unverified by real data; synthetic passes are not acceptance
+evidence. The seven-check synthetic logging suite was also deleted at the
+owner's direction; historical handoffs must not restore it.
+
+Execute [08A.2](TASK08A_2_PROMPT.md) against the delivered query/source interface,
+then [08B](TASK08B_PROMPT.md) after actual source integration. Source-dependent
+filters are explicitly unavailable until 08A.2. Live Trusted Run acceptance,
+Run-result replacement and other follow-ups remain separate. No production state
+was changed. Prompt-preparation checkpoints below are retained as history.
+
+## Owner-updated reporting split — 2026-10-02
+
+The current sequence is [08A.1 diagnostic queries/analysis](TASK08A_1_PROMPT.md),
+[08A.2 playset source search/context](TASK08A_2_PROMPT.md), then
+[08B reports/CLI](TASK08B_PROMPT.md). The owner's supplied revisions are the
+baseline; changes are limited to task division, receiving boundaries and requested
+search-library guidance. They supersede conflicting older planning text below.
+Prompts are prepared, not implemented. See [the split review](TASK08_SPLIT_REVIEW.md)
+for the scope mapping and separate unapplied recommendations. Documentation only;
+no runtime actions or installations.
+
+
+## Reporting and Analysis — 08A then 08B — 2026-09-30
+
+The next implementation sequence is [08A library capabilities](TASK08A_PROMPT.md),
+then [08B reports and CLI](TASK08B_PROMPT.md), owned by Reporting and Analysis.
+Both prompts are prepared; neither implementation is claimed here. Together they
+deliver filtered Run investigations, same-package exact recurrence, unresolved
+all-candidate source context and optional linked excerpts. Ordering uses only
+`facts.error_log_source_modified_at`; missing-time Runs are excluded and fewer
+than five eligible neighbors is normal. Audit is excluded. The
+[syntax research handoff](CK3_SYNTAX_DIAGNOSTICS_RESEARCH.md#concrete-selector-handoff)
+supplies verified selectors for review when building that preset. See the
+[decision ledger](TASK08_SCOPE_REVIEW.md) for current scope and later work.
+
+These assignments supersede older Task 08 planning below. Full live Trusted Run
+acceptance, Run-result replacement and later correlation features remain separate.
+
+## Task 07E live activation - 2026-09-30 08:28 Hong Kong
+
+Following owner authorization, the updated watcher was started hidden at
+00:27:53 UTC. The previous PID was absent, its heartbeat was stale, the runtime
+lease was free, and no old handler was listening. The exact configured database
+passed read-only schema-3 verification. CK3 was already running, so the new
+watcher attached to that process without interrupting the game.
+
+Watcher PID 34340 (launcher 9792) observed CK3 PID 44816; a fresh heartbeat at
+00:28:23 UTC confirmed `running`. Handler PID 308 reported `handler_ready`, with
+instance `71d783fe8dc34ea6b4b0f7140de130b2`. Startup ingestion found all five
+readable retained captures already stored and returned ordinary duplicate
+non-completion. Twenty-two older inaccessible captures remain unavailable;
+permissions were not changed. No watcher/handler ERROR events were observed;
+bootstrap stderr was empty. Configuration, model selection and database identity
+were unchanged; no reset or forced expiry was performed.
+
+Evidence: ignored `.codex-tmp/task07e/activation.json`. Logs now use the 07E
+paths in [the handoff](TASK07E_RUNTIME_LOGGING_HANDOFF.md). The attached game's
+exit was subsequently observed at 01:26:28 UTC and ingestion completed at
+01:26:36 UTC as Run `20260930-BYVZUV`, request
+`3f5002c984d94334b65205052b4916ed`. Its merged trace is retained under
+`.codex-tmp/task07e/live-session-20260930-BYVZUV/`. Capture and ingestion took
+7.657 seconds, with no warning/error/contention events for that request.
+Attachment after game startup does not establish complete observed start-to-exit
+Trusted Run acceptance. Task 08 and
+Run-result replacement remain separate. The following implementation-delivery
+checkpoint predates this separately authorized activation.
+
+## Task 07E delivered — activation remains separate — 2026-09-30
+
+[Task 07E's handoff](TASK07E_RUNTIME_LOGGING_HANDOFF.md) documents the shared
+standard-library logging owner, bounded UTF-8 JSONL files, watcher/request-ID
+correlation, preparation/database timing, compact contention episodes, tracebacks
+and durable bootstrap stderr. EventJournal preserves lifecycle vocabulary and
+the replaceable heartbeat. Runtime logging failures do not change Run outcomes.
+Future runtime code uses `runtime_logging.py`; run `tools/check_runtime_logging.py`.
+
+Fresh verification passed **66 checks, no failures, errors or skips**, in 86.156
+seconds: the 59 receiving checks were rerun alongside seven focused logging
+checks, using genuine retained CK3 inputs and disposable storage. Static ownership,
+isolated imports and `pip check` passed. This is distinct from the inherited
+September 30 07D handoff's 59-check result. Evidence is ignored under
+`.codex-tmp/task07e/`; the handoff records coverage and limitations.
+
+The [07D API contract](TASK07D_DATABASE_REQUEST_HANDLER_HANDOFF.md) is preserved:
+one dedicated handler, one preparation thread, one database worker, exactly three
+public states, all unfinished requests plus the latest 256 terminal outcomes,
+`LookupError` for unavailable results, `exception_class`, and internal-only
+`cleanup_unaccepted`. Watcher `ingestion_outcome_unavailable` still creates no
+outcome or eviction retry. SQL/review/playset formats and ingestion/retention
+semantics are unchanged. Logging does not recover outcomes after abrupt termination.
+
+No production configuration, selection, storage, captures or live processes were
+changed; nothing was committed or pushed. The unrelated dirty tree is preserved.
+Next operational step: follow the 07E handoff's separate procedure to stop the
+watcher at a quiet boundary, shut down the old handler for the configured file,
+verify that file read-only, and start the updated watcher. Startup ingestion and
+daily retention keep their existing behavior. Task 08 SQL reports, Run-result
+replacement and complete Trusted Run acceptance remain separate assignments.
+
+## Historical checkpoints (superseded where they conflict above)
+
+## Rejected database-handler design retired
+
+The rejected shared-database-request-handler design and its implementation plan
+are withdrawn. The design document has been deleted. Replacement implementation
+instructions will be issued separately; no replacement architecture is specified
+here. Existing delivered capabilities remain unchanged. See
+[CURRENT_HANDOFF.md](CURRENT_HANDOFF.md) for the cleanup record.
+
+## Watcher operational integration completed — 2026-09-29
+
+Automatic ingestion and daily maintenance are live against the approved named
+database. Current storage APIs use database terminology and explicit file paths;
+see [the operational handoff](WATCHER_LIVE_ACTIVATION_HANDOFF.md). Shared pipeline
+queuing, SQL reports and separately commissioned Run-result replacement remain.
+
+## Watcher caller implemented — 2026-09-29
+
+Post-publication ingestion, startup submission and daily maintenance are wired
+and native-verified; see [the delivery](WATCHER_INGESTION_WIRING_HANDOFF.md).
+Missing/invalid playsets do not reject otherwise valid error logs. The pipeline
+queue and approved database naming change are separate follow-ups, not blockers
+to implementing the caller. Current-schema production storage initialization,
+live activation and Task 08 reports remain outstanding.
+
+## Task 07 interfaces implemented and verified — 2026-09-28
+
+The [Task 07 handoff](TASK07_INGESTION_AND_RETENTION_HANDOFF.md) now supplies working
+ingest/retention APIs, manual ingest, schema 2, manifest 2, ordered playsets and
+per-Run package lineage. Genuine native-input verification passed. The remaining
+Task 07 closure choice is disposition of malformed/mismatched completed playsets;
+the rejection-and-preservation proposal awaits the owner.
+
+Next: settle that choice; watcher team wires post-publication ingestion and periodic
+retention independently of new captures; Task 08 builds SQL reports. Live activation
+and Trusted Run acceptance remain separate. Run-result replacement is a bounded
+follow-up, not delivered here. Completed location-stack findings require no
+representation change. Earlier dated “Task 07 unimplemented” entries are historical.
+
+## Task 07 advisory checkpoint after 07C — 2026-09-28
+
+07C is delivered; Task 07 is the next implementation assignment. Use its
+[revised prompt](TASK07_PROMPT.md) and
+[current decision/task ledger](TASK07_SCOPE_REVIEW.md). No new ingestion-side
+learner identity or historical release recovery is needed. Raw-log expiry now
+covers all completed captures, including failed/unprocessed ones, after 30 elapsed
+days from capture time. Resolve malformed-playset disposition before that receiving
+behavior. After Task 07, watcher-team wiring and Task 08 SQL reports can proceed
+against its stable APIs; live activation and complete Trusted Run acceptance remain
+separate. This is an advisory checkpoint, not an implementation-completion claim.
+
+## Task 06B cleanup completed — 2026-09-28
+
+The deprecated CLI/provider stack and its exclusive research/test consumers have
+been removed. See [the cleanup handoff](TASK06B_DEPRECATED_CODE_CLEANUP_HANDOFF.md)
+for the exact inventory, portable rollback archive, verification and limits.
+`watch`, `capture`, `doctor` and `observe-logging` remain; `watch --once` remains
+error-only. `harvester.py` remains the capture owner. No processing command is
+active. Task 07 delivers ingest and retention APIs, one manual `ingest` command,
+playset SQL storage and a watcher-team integration handoff. The watcher team owns
+automatic ingest after capture and periodic retention checks, including idle periods.
+See the [current scope](TASK07_SCOPE_REVIEW.md)
+and [revised draft](TASK07_PROMPT.md).
+Task 07 must remove the current database-wide lineage
+lock and record processing versions per Run; compatible selections share one
+database. Schema changes require an explicit reset, without migration or fallback.
+These are instructions for implementation, not completed code. Retention eligibility
+and cadence remain open. Task 08 focuses on SQL reports/read operations.
+The old provider retirement, C1/C2 capture relocation/deletion proposal, parser
+comparison retirement and removed-API research checks are discharged/superseded;
+do not repeat them or restore compatibility providers. Task 06/v45 storage and
+the watcher producer contracts remain intact, as do learner policy limitations
+and the separate Script location-stack investigation. The separately authorized
+live watcher was not stopped, restarted, reconfigured or used for verification.
+Older dated provider-retention and cleanup-pending statements below are historical.
+
+## Next: Task 06B cleanup, then Task 07 — 2026-09-28
+
+The owner authorized disabling unused old CLI paths and removing their deprecated
+providers before Task 07. Execute [Task 06B](06B_DEPRECATED_CODE_CLEANUP.md), then
+[Task 07](TASK07_PROMPT.md) against its completion handoff.
+Keep the working watcher/playset producer and capture owner `harvester.py` in place;
+the earlier plan to relocate capture into `pipeline/capture.py` is superseded.
+The watcher review's Section B supplies specific retirement targets. This checkpoint
+records the assignment and revised prompts, not completed deletion. The live
+watcher's separate operating authorization and Task 06's selected baseline remain.
+Older instructions to retain unused CLI providers until cutover are superseded for
+the explicit 06B scope.
+
+## Task 06 v45 integration complete; Task 07 next — 2026-09-28
+
+Task 06 has integrated and selected learner v45 package
+`68f1ae5db205ab46afef9c4d`, model `f5cde2616f35d563118d3d32`:
+model schema 5 / matcher API v2, `error-contract-v1`, SQLite schema 1.
+The normal source catalog and installed wheel now use the same package.
+The existing SQL design stores the new literal choices correctly; no pipeline
+source edit, extra processing stage or physical database migration was needed.
+
+Seven complete native logs passed preparation, aggregation, SQLite write/readback,
+review completion and separate-process database-only rendering:
+418,168 recovered occurrences,
+19,912 unique records and four native review emissions.
+All original 122 cases / 9,153 emissions are record-eligible. Both line-label
+choices retain their exact native spelling. Duplicate rejection, generation
+isolation and actual read-only SQLite failure preserve accepted state.
+The installed whole-log storage path also passed with checkout resources blocked.
+See [the v45 integration handoff](TASK06_V45_STORAGE_INTEGRATION_HANDOFF.md)
+for exact evidence, storage mappings, changed paths and remaining limits.
+
+The learner assessment's remaining word-run policy issues, two lost matches
+against the thirty-log predecessor, capture regressions and tie behavior remain
+documented; storage does not reinterpret those outcomes. Development selection
+is updated, while production processing and existing application providers remain
+unchanged. Next is Task 07 protected-input/processing/replay composition, followed
+by Task 08 SQL-only reporting/audit. The historical learner/research retirement
+dependencies in the Task 05/06 handoffs remain. No production database writes,
+watcher/capture operation, retained-input deletion, commit or push occurred.
+
+The dated selection and "integration pending" statements below retain their
+historical context and are superseded by this checkpoint.
+
+
+## Task 06 completed; Task 07 is next — 2026-09-27
+
+Task 06 delivers exact-identity aggregation, current-generation SQLite Run storage,
+and the native review log plus manifest for every successful Run, including zero
+review. Template and provisional records remain filterable and render from stored
+definitions/values. `write_run` owns staging, finalization, publication, rollback and
+commit; Tasks 07/08 consume its [public APIs and detailed handoff](TASK06_RUN_STORAGE_AND_NATIVE_REVIEW_HANDOFF.md).
+
+Three complete unmodified Task 05 inventory logs were verified in fresh ignored
+generations: 199,545 recovered occurrences, 190,392 eligible occurrences, 9,396
+aggregated records and 9,153 native review emissions. Verification covers exact
+bytes/order/frequency, both empty-shard files, duplicate rejection, namespaces,
+Run IDs/date basis, count reconciliation, real read-only SQLite rejection and
+separate-process database-only rendering. The detailed handoff distinguishes
+observed failures from unexercised crash/native branches and records scope proof.
+
+Next: Task 07 protected-input preparation and processing/replay composition;
+Task 08 database-only reporting/audit. Operator command choices remain for Task 07
+owner review. Existing application providers remain connected until separately
+commissioned cutover. Production processing remains disabled. No watcher operation,
+live capture, production database write, retained-input deletion, commit or push.
+
+Task 05's named retirement dependencies remain: the historical baseline in
+`tools/template_learning/build_parser_comparison.py`, the removed-API consumer
+in `inspect_cross_emission_recovery.py`, and opt-in
+`test_raw_parser_requirements.py::test_independent_pipeline_replay`. Learner/model
+coverage limitations remain unchanged; storage does not repair unmatched or
+malformed native patterns. The current selection/package is unchanged.
+
+All dated instructions and task orders below are historical where superseded by
+this checkpoint, the approved Error Contract and the Task 06 handoff.
+
+
+## Current implementation checkpoint — 2026-09-27
+
+Task 05 is complete: the selected schema-2 package is
+`44a0401b8adf0a2953d26705` (unchanged model `76630685c4a341ca14bf9c7c`).
+The pipeline now executes pinned recovery and shared complete selection, binds
+only selected regions once, and prepares serializable `error-contract-v1` data
+with exact identity and standalone rendering. The duplicate pipeline matcher and
+its bound-candidate alternatives are removed. All 31 native inventory logs and
+the disposable installed path passed; see
+[the implementation handoff](TASK05_ERROR_CONTRACT_IMPLEMENTATION_HANDOFF.md)
+for APIs, resources, evidence, coverage limits and exact changes.
+
+Next: Run aggregation, SQL/native-review persistence and stored reporting;
+application/provider cutover remains separately commissioned. Historical
+recovery/view retirement still depends on the learner comparison tool's old
+baseline. Two additional research/test consumers of removed APIs are named in
+the handoff. Production processing remains disabled; no watcher operation,
+learner publication, commit or push occurred. Earlier sections below describe
+historical checkpoints and do not supersede this completion.
+
+Status: active project plan, updated 2026-09-27. Dated checkpoints below retain
+their historical context; the active exercise section gives current task order.
 
 ## Immediate checkpoint: development restart stabilization
 
@@ -44,6 +375,19 @@ separate explicit decisions under condition 6. Dated recovery evidence is in
 ## Active exercise: classification pipeline recovery
 
 Status: owner-authorized as of 2026-09-11.
+
+2026-09-27 checkpoint: Task 04 is complete and the owner approved the
+[Error Contract](ERROR_CONTRACT_SPECIFICATION.md). The next implementation is
+[revised Task 05](05_ERROR_CONTRACT_IMPLEMENTATION.md), using the
+[Task 04 handoff](TASK04_ERROR_CONTRACT_HANDOFF.md). This current contract and
+prompt supersede older contract/routing instructions in the dated prompt sets.
+The [Task 04(B) audit](04B_PIPELINE_PROCESSING_AUDIT_RESULTS.md) is complete.
+Following review and [independent shared-matcher verification](SHARED_MATCHER_PIPELINE_VERIFICATION.md),
+the owner assigned package integration, selected-only binding and duplicate-matcher
+retirement to Task 05, alongside contract/result, identity and rendering helpers.
+Task 05 also selects the verified package after integration and verifies installed
+resources. Aggregation, SQL/review persistence and application cutover remain
+subsequent work. The current Task 05 prompt supersedes the earlier review hold.
 
 The ratified target removes the legacy regex taxonomy, semantic-projection
 layer, schema migration/backfill paths, compatibility aliases, silent

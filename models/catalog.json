@@ -1,0 +1,196 @@
+{
+  "schema": "ck3chronicle.model-release-catalog",
+  "schema_version": 1,
+  "retention_floor_distinct_production_models": 10,
+  "releases": [
+    {
+      "family": "model",
+      "release_id": "44a0401b8adf0a2953d26705",
+      "package_id": "44a0401b8adf0a2953d26705",
+      "model_revision_id": "76630685c4a341ca14bf9c7c",
+      "retained_path": "releases/44a0401b8adf0a2953d26705",
+      "manifest_sha256": "2a768c9d9729025da2874671dfc5952b703019f57a36a68e8437e1242122aca1",
+      "matcher_api_version": "ck3-native-matcher-v1",
+      "parser": {
+        "artifact": "parser.py",
+        "sha256": "a8005254df58daf20e000e454c9e3e9b40304be4cd0962e1fa88e90cea86baab",
+        "version": "ck3-lossless-v1.7"
+      },
+      "selector_version": "complete-assignment-v2",
+      "availability": "available",
+      "publication_status": "production",
+      "production_order": 5,
+      "publication_evidence": "docs/TASK05_ERROR_CONTRACT_IMPLEMENTATION_HANDOFF.md",
+      "source_artifact_path": "76630685c4a341ca14bf9c7c"
+    },
+    {
+      "family": "model",
+      "release_id": "68f1ae5db205ab46afef9c4d",
+      "package_id": "68f1ae5db205ab46afef9c4d",
+      "model_revision_id": "f5cde2616f35d563118d3d32",
+      "retained_path": "releases/68f1ae5db205ab46afef9c4d",
+      "manifest_sha256": "2a84fe9c734a558e757df54649eac0812ea380a80ac8a2d0fe17129d50f24a5f",
+      "matcher_api_version": "ck3-native-matcher-v2",
+      "parser": {
+        "artifact": "parser.py",
+        "sha256": "a8005254df58daf20e000e454c9e3e9b40304be4cd0962e1fa88e90cea86baab",
+        "version": "ck3-lossless-v1.7"
+      },
+      "selector_version": "complete-assignment-v2",
+      "availability": "available",
+      "publication_status": "production",
+      "production_order": 6,
+      "publication_evidence": "docs/TASK06_V45_STORAGE_INTEGRATION_HANDOFF.md"
+    },
+    {
+      "family": "model",
+      "release_id": "0a61f6c93657948e0ca20b35",
+      "model_revision_id": "0a61f6c93657948e0ca20b35",
+      "package_id": null,
+      "retained_path": "0a61f6c93657948e0ca20b35",
+      "manifest_sha256": "a0b4624795819c60e21462bf066fc793440b1d3a67535e7531e04cdfdb16e197",
+      "availability": "unavailable",
+      "production_order": 4,
+      "publication_status": "production",
+      "publication_evidence": "docs/LEARNER_PARSER_PIPELINE_HANDOFF.md",
+      "gap": "No authenticated standalone matcher/bootstrap package for this model. Existing pipeline consumes native-matcher-package; do not apply current matcher to these definitions.",
+      "receiving_owner": "learner release inventory / pipeline catalog and model boundary",
+      "missing_runtime_files": [
+        "matcher_loader.py",
+        "native_matching.py",
+        "matching_primitives.py",
+        "matching_validation.py",
+        "full_ids.py",
+        "assignment.py",
+        "continuations.py"
+      ]
+    },
+    {
+      "family": "model",
+      "release_id": "1d1d6e0389f7235f565b2504",
+      "model_revision_id": "1d1d6e0389f7235f565b2504",
+      "package_id": null,
+      "retained_path": "1d1d6e0389f7235f565b2504",
+      "manifest_sha256": "110ca10dc94bd9e2cdaebb0c0dfe5f9f4e1c0b86e1285dad82a8d909cb43e3b1",
+      "availability": "unavailable",
+      "production_order": 2,
+      "publication_status": "production",
+      "publication_evidence": "docs/LEARNER_PARSER_PIPELINE_HANDOFF.md",
+      "gap": "No authenticated standalone matcher/bootstrap package for this model. Existing pipeline consumes native-matcher-package; do not apply current matcher to these definitions.",
+      "receiving_owner": "learner release inventory / pipeline catalog and model boundary",
+      "missing_runtime_files": [
+        "matcher_loader.py",
+        "native_matching.py",
+        "matching_primitives.py",
+        "matching_validation.py",
+        "full_ids.py",
+        "assignment.py",
+        "continuations.py"
+      ]
+    },
+    {
+      "family": "model",
+      "release_id": "43634d23e619ecb4",
+      "model_revision_id": "43634d23e619ecb4",
+      "package_id": null,
+      "retained_path": "43634d23e619ecb4",
+      "manifest_sha256": "b0b755c1f23038f78f26d5ca05d59bf272bef7dd2599845793e63a80eb021b67",
+      "availability": "unavailable",
+      "production_order": null,
+      "publication_status": "historical-status-unverified",
+      "publication_evidence": "docs/CLASSIFICATION_PIPELINE_RECOVERY_REVIEW.md",
+      "gap": "No authenticated standalone matcher/bootstrap package for this model. Existing pipeline consumes native-matcher-package; do not apply current matcher to these definitions.",
+      "receiving_owner": "learner release inventory / pipeline catalog and model boundary",
+      "missing_runtime_files": [
+        "versioned raw parser",
+        "complete matcher/bootstrap closure",
+        "native Error Contract declarations"
+      ]
+    },
+    {
+      "family": "model",
+      "release_id": "67303093ecda779d",
+      "model_revision_id": "67303093ecda779d",
+      "package_id": null,
+      "retained_path": "67303093ecda779d",
+      "manifest_sha256": "60333c277ee5dacb61763e2f6846596fa9cccbec6dd9d37e507296cd6b37980f",
+      "availability": "unavailable",
+      "production_order": null,
+      "publication_status": "production",
+      "publication_evidence": "docs/CLASSIFICATION_PIPELINE_RECOVERY_REVIEW.md",
+      "gap": "No authenticated standalone matcher/bootstrap package for this model. Existing pipeline consumes native-matcher-package; do not apply current matcher to these definitions.",
+      "receiving_owner": "learner release inventory / pipeline catalog and model boundary",
+      "missing_runtime_files": [
+        "versioned raw parser",
+        "complete matcher/bootstrap closure",
+        "native Error Contract declarations"
+      ]
+    },
+    {
+      "family": "model",
+      "release_id": "93196794a7e0115d",
+      "model_revision_id": "93196794a7e0115d",
+      "package_id": null,
+      "retained_path": "93196794a7e0115d",
+      "manifest_sha256": "eb8c2a13773e4255da7de5763777a8c76585a84dc0b23012baa3ff14c66baf7f",
+      "availability": "unavailable",
+      "production_order": null,
+      "publication_status": "historical-status-unverified",
+      "publication_evidence": "docs/CLASSIFICATION_PIPELINE_RECOVERY_REVIEW.md",
+      "gap": "No authenticated standalone matcher/bootstrap package for this model. Existing pipeline consumes native-matcher-package; do not apply current matcher to these definitions.",
+      "receiving_owner": "learner release inventory / pipeline catalog and model boundary",
+      "missing_runtime_files": [
+        "versioned raw parser",
+        "complete matcher/bootstrap closure",
+        "native Error Contract declarations"
+      ]
+    },
+    {
+      "family": "model",
+      "release_id": "a9fa27a85ccd066285b99fdb",
+      "model_revision_id": "a9fa27a85ccd066285b99fdb",
+      "package_id": null,
+      "retained_path": "a9fa27a85ccd066285b99fdb",
+      "manifest_sha256": "072e4af61179d8f853ddbd4f2a169e34c2f28ed26e0286a03941c3ce2755fbdb",
+      "availability": "unavailable",
+      "production_order": 3,
+      "publication_status": "production",
+      "publication_evidence": "docs/LEARNER_PARSER_PIPELINE_HANDOFF.md",
+      "gap": "No authenticated standalone matcher/bootstrap package for this model. Existing pipeline consumes native-matcher-package; do not apply current matcher to these definitions.",
+      "receiving_owner": "learner release inventory / pipeline catalog and model boundary",
+      "missing_runtime_files": [
+        "matcher_loader.py",
+        "native_matching.py",
+        "matching_primitives.py",
+        "matching_validation.py",
+        "full_ids.py",
+        "assignment.py",
+        "continuations.py"
+      ]
+    },
+    {
+      "family": "model",
+      "release_id": "b1965fa4408ca1bcf36763c9",
+      "model_revision_id": "b1965fa4408ca1bcf36763c9",
+      "package_id": null,
+      "retained_path": "b1965fa4408ca1bcf36763c9",
+      "manifest_sha256": "ce2d0b29b0ff95a3074229aa09b7d31be48bc4f381bc4dc402c84f0ea594399a",
+      "availability": "unavailable",
+      "production_order": 1,
+      "publication_status": "production",
+      "publication_evidence": "docs/LEARNER_PARSER_PIPELINE_HANDOFF.md",
+      "gap": "No authenticated standalone matcher/bootstrap package for this model. Existing pipeline consumes native-matcher-package; do not apply current matcher to these definitions.",
+      "receiving_owner": "learner release inventory / pipeline catalog and model boundary",
+      "missing_runtime_files": [
+        "matcher_loader.py",
+        "native_matching.py",
+        "matching_primitives.py",
+        "matching_validation.py",
+        "full_ids.py",
+        "assignment.py",
+        "continuations.py"
+      ]
+    }
+  ],
+  "production_order_basis": "Explicit documented native publication sequence: v25, v26, v27, v29, v41, v45. Earlier empirical-model order remains unverified; never use this partial historical order for pruning."
+}

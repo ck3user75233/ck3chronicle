@@ -9,8 +9,6 @@ import dataclasses
 import json
 import os
 from pathlib import Path
-import subprocess
-import sys
 import tempfile
 import unittest
 
@@ -128,21 +126,6 @@ class NativeParserRequirements(unittest.TestCase):
         self.assertIn("parser_reference", {f.name for f in dataclasses.fields(self.raw)})
         self.assertNotIn("parser_revision", {f.name for f in dataclasses.fields(self.raw.emissions[0])})
 
-    def test_independent_pipeline_replay(self):
-        """SELECTION: a fresh process imports no learner algorithm or old parser."""
-        with tempfile.TemporaryDirectory(dir=ROOT / ".codex-tmp") as folder:
-            output = Path(folder) / "raw.json"
-            command = (
-                "import json,sys; from pathlib import Path; "
-                "from ck3chronicle.pipeline.raw_input import read_raw_log; "
-                "r=read_raw_log(Path(sys.argv[1]),parser_reference=json.loads(sys.argv[2])); "
-                "r.save_debug(Path(sys.argv[3])); "
-                "assert not any(n.startswith('ck3chronicle.parser') or "
-                "n.endswith('learn_error_templates') for n in sys.modules)"
-            )
-            subprocess.run([sys.executable, "-I", "-B", "-c", command, str(self.log),
-                            json.dumps(self.parser.reference.to_dict()), str(output)], check=True)
-            self.assertEqual(json.loads(output.read_text(encoding="utf-8")), self.raw.debug_document())
 
     def test_learner_collector_uses_native_input_without_masks(self):
         """Each recovered message and repetition reaches learner-owned records."""

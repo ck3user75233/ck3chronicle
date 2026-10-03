@@ -15,11 +15,12 @@ import time
 
 from template_learning import artifacts
 from template_learning.incremental_template_registry import (
-    all_patterns, combine_training_records, load_registry)
+    combine_training_records, load_registry)
+from template_learning.artifacts import all_patterns
 from template_learning.literal_guidance import LITERAL_GUIDANCE
 from template_learning.parsers import load_parser, reference_from_manifest
 from template_learning.research_matching import evaluate_records
-from template_learning.inspect_incremental_learning import native_evidence_rows
+from template_learning.evidence_serialization import native_evidence_rows
 
 
 def write_json(path, value):

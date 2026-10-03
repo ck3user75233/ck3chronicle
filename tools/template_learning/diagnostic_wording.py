@@ -5,7 +5,8 @@ pieces and verified template captures; no language tagger runs during inference.
 """
 from template_learning.literal_guidance import guided_ranges
 from template_learning.owner_rules import DIAGNOSTIC_WORDING_LOSS, LOSS_REFERENCE_WORDING, INFERENCE_POLICY
-from template_learning.patterns import match_pattern, pattern_identity
+from template_learning.matching_defaults import match_pattern
+from template_learning.matching_primitives import pattern_identity
 from template_learning.records import identity
 from template_learning.regions import enclosing_pair
 

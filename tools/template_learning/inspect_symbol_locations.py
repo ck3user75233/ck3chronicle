@@ -5,9 +5,11 @@ import json
 from pathlib import Path
 
 from template_learning.artifacts import load_bundle
-from template_learning.inspect_incremental_learning import native_evidence_rows
+from template_learning.evidence_serialization import native_evidence_rows
 from template_learning.literal_guidance import guided_piece_indices
-from template_learning.patterns import path_piece_ranges, location_piece_ranges, literal_anchor_indices, filename_sequence
+from template_learning.patterns import literal_anchor_indices
+from template_learning.matching_defaults import location_piece_ranges
+from template_learning.matching_primitives import path_piece_ranges, filename_sequence
 from template_learning.records import SequenceRecord
 from template_learning.parsers import load_parser, reference_from_manifest
 

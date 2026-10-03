@@ -2,6 +2,9 @@
 
 Status: active target architecture, updated 2026-09-12.
 
+Contract/storage routing amended 2026-09-27 to the owner-approved
+[Error Contract](ERROR_CONTRACT_SPECIFICATION.md).
+
 This document defines the stable target structure and ownership of data. It
 does not report implementation progress or authorize a migration sequence.
 Current truth belongs in [`PROJECT_STATUS.md`](PROJECT_STATUS.md), delivery
@@ -20,19 +23,35 @@ flowchart LR
     VALIDATE -->|"duplicate / invalid"| FAIL["Loud failed attempt; no Run ID"]
     VALIDATE --> SHARD["Stage one native review shard"]
     VALIDATE --> EMIT["Recognize log emissions"]
-    EMIT --> SPLIT["Approved source-specific splitting"]
+    EMIT --> SPLIT["Pinned message/group recovery"]
     SPLIT --> CLASS["Classify against approved error contracts"]
-    CLASS -->|"approved full or permitted partial"| RECORDS["Aggregate diagnostic records"]
-    CLASS -->|"provisional / low confidence / unknown"| SHARD
+    CLASS -->|"selected template or provisional"| RECORDS["Aggregate diagnostic records"]
+    CLASS -->|"unassigned / unresolved"| SHARD
     RECORDS --> COMMIT["Finalize Run ID record"]
     SHARD --> COMMIT
-    COMMIT --> DB[("Current SQLite generation")]
+    COMMIT --> DB[("Current SQLite database")]
     DB --> REPORT["Database-only reports and audit"]
 ```
 
 The time-critical watcher path ends after complete pending publication. Hashing,
 parsing, classification, SQLite access, and reporting belong to deferred
 processing.
+
+## Runtime database requests
+
+Runtime watcher, manual CLI and application/report callers use
+`pipeline.request_handler.HandlerClient` with the exact SQLite file path. One
+`pipeline.database_handler` process serves the canonical path over a Windows
+named pipe and owns one serial database worker/connection. Clients can launch
+that module when absent; they never host it. Preparation stays outside that worker.
+Complete repository operations retain the existing `Database.write_run` SQL/review
+completion boundary.
+
+Requests remain in memory, with `ENQUEUED`, `COMPLETED`, `NOT_COMPLETED` states.
+Duplicate ingestion returns non-completion with the existing Run ID; successful
+empty reads remain completed. Contention waits internally. See the
+[current handoff](TASK07D_DATABASE_REQUEST_HANDLER_HANDOFF.md) for operations,
+startup/shutdown, optional playsets and daily maintenance.
 
 ## Configuration
 
@@ -69,10 +88,13 @@ override. Missing, unreadable, unstable, empty, or unsupported input produces a
 failed attempt, not a successful run.
 
 A Run is the CK3 gaming session that already occurred. A Run ID is its
-successfully processed database record within one generation. Rebuilds may
-assign generation-local Run IDs; retained full-file hashes and capture
-provenance provide cross-generation correlation without creating a second
-runtime identity system.
+successfully ingested database record. Generate IDs as
+`YYYYMMDD-XXXXXX`, with six random uppercase alphanumeric characters rather than
+database counters. Use the reliably supplied original log creation date,
+or the processing date when unavailable; retain the precise timestamp, timezone
+and its basis in Run metadata. Retained full-file hashes and capture provenance
+provide source-file correlation. Task 06 implements this owner-approved
+format; existing storage has not yet been cut over.
 
 ### Watcher observations and manual capture
 
@@ -121,21 +143,28 @@ A log emission begins at a recognized timestamp-prefixed `error.log` header and
 includes continuation lines until the next recognized header. Separate headers
 remain separate emissions even when their timestamp values match.
 
-The normal mapping is one emission to one recovered diagnostic. Recovering
-multiple diagnostics requires an approved source-specific grammar with
-deterministic boundaries and representative evidence. Generic message length
-or punctuation does not authorize splitting.
+The normal mapping is one emission to one recovered message. The pinned parser
+can recover multiple message parts or one group spanning several emissions under
+approved recovery rules. These are transient pieces/spans; the diagnostic record
+is the refined unique SQL result. Supporting entries belong to the complete error.
 
 The empirical matcher assigns an approved error contract directly. The
 contract owns its error type, typed slots, validation, rendering, and identity
 rules. There is no later semantic-projection or mapping stage.
 
-Approved full and permitted partial/L1 outcomes become compact diagnostic
-records. Equivalent identities within a run aggregate into one record with an
-occurrence count. Provisional, low-confidence, and unknown outcomes retain
-their native emissions in the run's review shard. Every recognized emission
-therefore becomes one or more recovered diagnostics, enters the review shard,
-or produces an explicit parser failure.
+Selected full and provisional assignments become compact diagnostic records with
+reporting status `template` or `provisional`. The release selector resolves ties;
+a deterministic tie-break remains provisional and record-eligible. Equal selected
+template/literal layouts and ordered binding values aggregate within a Run with
+an occurrence count. Unassigned/unresolved evidence retains its native emissions
+in the review shard. Every recognized emission contributes to an assigned error,
+enters review, or produces an explicit parser failure.
+
+SQL stores each used definition's literal/slot layout and source/emitter once.
+Records reference it and retain ordered values, selected layouts and supporting
+entries. Rendering uses these stored facts alone. Source applicability belongs in
+matching; aggregation needs no second source comparison. Lineage is Run metadata;
+individual occurrence timestamps and competing-candidate lists are unnecessary.
 
 ## Component responsibilities
 
@@ -147,9 +176,9 @@ or produces an explicit parser failure.
 | Input and run registration | Validation, full-file hash guard, run chronology, and observed capture facts | Classification or acceptance of a duplicate hash |
 | Playset-context service | Same-Run `debug.log` inventory/`Mounted Data:` extraction, ordered DLC/mod context, provenance, and explicit availability state | General `debug.log` diagnostics or causal file attribution |
 | Emission parser and splitters | Header/continuation boundaries, approved multi-error recovery, and accounting | Contract selection or generic speculative splitting |
-| Classifier and aggregator | Approved contracts, typed validation, diagnostic identity, and occurrence counts | A second semantic mapping stage or confident storage of uncertain results |
+| Classifier and aggregator | Complete selected assignments, explicit template/provisional status, approved identity and counts | A second semantic mapping stage or concealment of provisional status |
 | Review-shard service | One native shard per successful Run ID, provenance, integrity, publication, and retention | Diagnostic authority, raw-log replacement, or payload duplication in SQLite |
-| Database repositories | Current-generation runs, compact records, lineage, counters, review metadata, audit, and retention state | Full native review payload or old-schema compatibility |
+| Database repositories | Runs, compact records, lineage, counters, review metadata, audit, and retention state | Full native review payload or old-schema compatibility |
 | Report/query service | Deterministic human and structured database views | Opening raw logs, parsing, classification, or routine report persistence |
 
 ## Data authority and retention
@@ -157,26 +186,26 @@ or produces an explicit parser failure.
 | Data | Authority and lifecycle |
 |---|---|
 | Operational roots | User-authored paths configuration; changed only explicitly. |
-| Protected `error.log` | Immutable reconstruction authority; retained without automatic expiry during current product development. |
-| Protected `debug.log` | Required for new Runs after the playset fast-follow begins; initially retained without automatic expiry so playset context remains rebuildable. |
+| Protected `error.log` | Original at its capture location; configurable retention initially one month. No extra archive created by ingestion. |
+| Protected `debug.log` | Paired capture used by the watcher to produce the playset; the same configurable raw-log retention applies. SQL playset reads do not need it. |
 | Capture provenance | Non-derived capture mode/time, observed lifecycle facts, crash facts, file metadata, and hashes needed for audit or rebuild. |
-| `error.log` hash | Durable Run metadata for duplicate detection and correlation, maintained independently of source-file retention within that database generation. |
+| `error.log` hash | Durable Run metadata for duplicate detection and correlation, maintained independently of source-file retention within the database. |
 | Effective playset | Derived per-Run DLC/mod inventory, order, paths, status, and extraction lineage from captured `debug.log`. |
-| Log emissions and recovered diagnostics | Transient processing units until stored as approved records or routed to the review shard. |
-| Diagnostic records | Derived current-generation SQLite records with contract and model lineage. |
+| Log emissions and recovered messages/groups | Transient processing units until selected content becomes diagnostic records or native evidence routes to review. |
+| Diagnostic records | Derived SQLite records with contract and model lineage. |
 | Native review shard | Immutable after finalization; associated with one Run ID until a future retention decision or that Run ID is pruned. |
 | Review metadata | SQLite count, reference, availability, and integrity hash kept consistent with shard publication or deletion. |
 | Report | On-demand database query result; not persistently stored unless explicitly exported. |
 
 Every non-derived fact expected to survive a database rebuild must exist in the
 retained capture evidence and provenance, not only in the old derived database.
-A new generation cannot claim history that its retained evidence cannot
+A reset database cannot claim history that its retained evidence cannot
 reconstruct unless the owner explicitly accepts that loss.
 
 ## Native review shard
 
-Each successfully processed Run ID finalizes one shard, including an empty
-shard when every emission becomes an approved diagnostic record:
+Each successfully processed Run ID finalizes one shard with two required parts:
+a native review log and its metadata manifest.
 
 ```text
 review/
@@ -185,23 +214,31 @@ review/
     review-manifest.json
 ```
 
-The native file preserves routed emissions, order, and frequency. The manifest
-records the Run ID, source-family counts, parser/splitter/model/contract
-revisions, routing reasons, emission counts, finalization state, and integrity
-hash. SQLite stores navigation and integrity metadata, not the native payload.
+The native review log preserves only routed emissions, their order and frequency.
+It is separate from the protected complete `error.log`. The manifest
+records the Run ID, processing lineage, source-family and review counts,
+routing reasons, original spans/ordinals, shard offsets, affected children/groups,
+finalization state, and native-review-log integrity hash. SQLite stores navigation and
+integrity metadata, not the native payload.
 
-## Database generations
+When no emissions require review, the native review log contains zero emissions; the
+manifest still records the Run, lineage, completion and zero review count.
+Task 06 must implement and verify both parts and their integration with Run
+persistence. A Run is successful only after both parts are safely published.
 
-SQLite contains derived product state and must match the one current schema.
-Meaning-changing schema, parser, splitter, model, or error-contract revisions
-produce a separately named fresh database generation by replaying the complete
-retained capture set. The candidate is validated before explicit cutover, and
-the prior database remains unchanged as rollback evidence until acceptance.
+## Database schema and per-Run processing versions
+
+SQLite must match the explicitly versioned current schema. Compatible pinned
+model/parser/matcher revisions add new Runs to the same database. Each Run
+records its processing combination; there is no database-wide lineage lock.
+
+A physical schema change requires an explicit reset to the current schema.
+Generation replay and parallel-generation cutover are banned. If the owner
+chooses to reprocess retained logs after resetting, use ordinary ingest.
 
 There is no in-place schema-migration chain, old-schema reader, compatibility
 view, dual write, backfill, or historical row-repair path. Ordinary SQLite
-transactions and journal recovery remain required for crash safety within one
-generation.
+transactions and journal recovery remain required for crash safety.
 
 ## Classification-model revisions
 
@@ -223,7 +260,7 @@ native text, ordering, or all non-diagnostic material. Unresolved native
 emissions live in the external review shard, not in SQLite.
 
 Database reports can reconstruct a diagnostic account of the Run; they cannot
-recreate its source log. Exact replay, a fresh database generation, integrity
+recreate its source log. Exact re-ingestion, integrity
 verification, or source export must use the retained captured `error.log`.
 
 ## Transaction and deletion invariants
@@ -232,12 +269,12 @@ verification, or source export must use the retained captured `error.log`.
   interruption leaves a recoverable state.
 - SQLite never claims an available review shard before safe publication and is
   updated truthfully if a shard is later deleted or becomes unavailable.
-- No automatic expiry currently removes captured `error.log` or, once playset
-  capture begins, captured `debug.log`; a later retention change requires an
-  explicit owner decision.
+- Raw error/debug retention is configurable, initially one month, at the
+  existing capture location. Expiry eligibility and cadence remain to be
+  settled before live automatic deletion. SQL history and review shards are separate.
 - Pruning a Run ID and its database record removes that Run ID's review-shard
   file and review metadata through one recoverable workflow. It does not by
   itself delete the retained source capture or alter an approved classification-
   model revision; each has separate retention governance.
-- Reports and ordinary audit operate from the current database generation and
+- Reports and ordinary audit operate from the current database and
   never depend on retained raw logs.

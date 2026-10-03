@@ -1,4 +1,4 @@
-"""Version-isolated evidence cache and cumulative batch builds for the learner.
+"""Version-isolated evidence cache and additive cumulative learner builds.
 
 This module never reads CK3's live log directory.  It inventories protected
 ck3chronicle session/pending copies, hashes a protected path only when its
@@ -23,10 +23,10 @@ import uuid
 from pathlib import Path
 from typing import Callable, Iterable
 
-from ck3chronicle import config as project_config
 
 from template_learning import records, inventory, artifacts
 from template_learning.parsers import SelectedParser, load_parser, reference_from_manifest
+from template_learning.learner_loader import selected_release
 
 
 REGISTRY_SCHEMA = "ck3chronicle.incremental-template-registry"
@@ -34,6 +34,10 @@ REGISTRY_SCHEMA_VERSION = 4
 FEATURE_SCHEMA = "ck3chronicle.empirical-sequence-evidence"
 FEATURE_SCHEMA_VERSION = 4
 ROLES = frozenset({"candidate", "training", "holdout", "ignored"})
+
+
+def parser_identity(parser):
+    return dict(version=parser.reference.version, sha256=parser.reference.sha256, artifact='parser.py')
 
 
 def utc_now() -> str:
@@ -93,6 +97,7 @@ def empty_registry() -> dict:
         "schema": REGISTRY_SCHEMA,
         "schema_version": REGISTRY_SCHEMA_VERSION,
         "learner": artifacts.learner_identity(),
+        "learner_release": selected_release(),
         "feature_version": records.FEATURE_VERSION,
         "path_inventory": {},
         "evidence": {},
@@ -102,6 +107,8 @@ def empty_registry() -> dict:
 
 
 def load_registry(state_root: Path) -> dict:
+    from template_learning.learner_loader import selected_release
+    selected_release()
     path = state_root / "registry.json"
     if not path.is_file():
         return empty_registry()
@@ -111,13 +118,15 @@ def load_registry(state_root: Path) -> dict:
         or registry.get("schema_version") != REGISTRY_SCHEMA_VERSION
     ):
         raise ValueError(f"unsupported registry schema; create a fresh learner registry: {path}")
+    if registry.get("learner_release") != selected_release():
+        raise ValueError("registry belongs to another selected learner release")
     if registry.get("learner") != artifacts.learner_identity():
         raise ValueError(f"registry belongs to a different learner implementation; create a fresh registry: {path}")
     return registry
 
 
 def check_registry_parser(registry, parser):
-    if registry.get("parser") not in (None, parser.reference.to_dict()):
+    if registry.get("parser") not in (None, parser_identity(parser)):
         raise ValueError("registry is pinned to another parser; create a fresh registry")
 
 
@@ -145,7 +154,7 @@ def candidate_paths(runtime_root: Path) -> list[tuple[str, str, Path]]:
 def feature_key(parser: SelectedParser) -> str:
     return sha256_bytes(canonical_bytes({"learner": artifacts.learner_identity(),
                                         "feature_version": records.FEATURE_VERSION,
-                                        "parser": parser.reference.to_dict()}))
+                                        "parser": parser_identity(parser)}))
 
 
 def feature_cache_path(state_root: Path, evidence_sha256: str, *, parser: SelectedParser) -> Path:
@@ -158,7 +167,7 @@ def feature_from_log(item: inventory.ProtectedLog, *, parser: SelectedParser) ->
     detail = stats[item.sha256]
     return {"schema": FEATURE_SCHEMA, "schema_version": FEATURE_SCHEMA_VERSION,
         "learner": artifacts.learner_identity(),
-        "feature_version": records.FEATURE_VERSION, "parser": parser.reference.to_dict(),
+        "feature_version": records.FEATURE_VERSION, "parser": parser_identity(parser),
         "record_scope": "message", "evidence_sha256": item.sha256, "bytes": item.bytes,
         "timestamped_blocks": detail["timestamped_blocks"],
         "eligible_occurrences": detail["recovered_messages"], "evidence_stats": detail,
@@ -169,7 +178,7 @@ def validate_feature(feature: dict, evidence_sha256: str, *, parser: SelectedPar
     if (feature.get("schema") != FEATURE_SCHEMA or feature.get("schema_version") != FEATURE_SCHEMA_VERSION
         or feature.get("learner") != artifacts.learner_identity()
         or feature.get("feature_version") != records.FEATURE_VERSION
-        or feature.get("parser") != parser.reference.to_dict()
+        or feature.get("parser") != parser_identity(parser)
         or feature.get("record_scope") != "message" or feature.get("evidence_sha256") != evidence_sha256):
         raise ValueError(f"invalid or stale feature cache for {evidence_sha256}")
     restored = [records.SequenceRecord.from_dict(row) for row in feature["records"]]
@@ -180,7 +189,8 @@ def validate_feature(feature: dict, evidence_sha256: str, *, parser: SelectedPar
     stats = feature["evidence_stats"]
     if stats["recovered_messages"] != feature["eligible_occurrences"] or stats["sha256"] != evidence_sha256:
         raise ValueError("feature evidence statistics disagree")
-    recovered = {o["emission_ordinal"] for r in restored for o in r.native_occurrences}
+    recovered = {ordinal for r in restored for o in r.native_occurrences
+                 for ordinal in o.get('emission_ordinals', [o['emission_ordinal']])}
     unresolved = {ordinal for r in stats["unresolved_emissions"]
                   for ordinal in r.get("emission_ordinals", [r["emission_ordinal"]])}
     if stats['deferred_recovered_messages'] != sum(
@@ -291,7 +301,7 @@ def sync_registry(
                 }
                 summary["new_feature_caches"] += 1
         registry["feature_version"] = records.FEATURE_VERSION
-        registry["parser"] = parser.reference.to_dict()
+        registry["parser"] = parser_identity(parser)
         write_json(state_root / "registry.json", registry)
         summary["distinct_evidence"] = len(evidence)
         summary["roles"] = dict(
@@ -337,10 +347,6 @@ def combine_training_records(state_root: Path, entries: Iterable[dict], *, parse
     return records.merge_records(rows), evidence_stats
 
 
-def all_patterns(model):
-    return {p["template_id"]:p for p in model["templates"]}
-
-
 def build_revision(state_root: Path, threshold: float = .72, *, parser: SelectedParser) -> dict:
     with state_lock(state_root):
         registry = load_registry(state_root)
@@ -348,11 +354,17 @@ def build_revision(state_root: Path, threshold: float = .72, *, parser: Selected
         training = [row for row in registry["evidence"].values() if row["role"] == "training"]
         if not training:
             raise ValueError("no evidence selected for training")
+        previous_model = None
+        if registry['current_revision'] is not None:
+            previous_folder = state_root/'revisions'/registry['current_revision']
+            previous_model, _ = artifacts.load_bundle(previous_folder)
+            if previous_model['algorithm']['cluster_threshold'] != threshold:
+                raise ValueError('additive learning requires the same inference threshold')
         grouped, stats = combine_training_records(state_root, training, parser=parser)
         excluded = [dict(sha256=row["sha256"], role=row["role"], bytes=row["bytes"])
                     for row in registry["evidence"].values() if row["role"] != "training"]
         model, evidence = artifacts.build_model(grouped, stats, parser=parser, threshold=threshold,
-            excluded_evidence=sorted(excluded, key=lambda row:row["sha256"]))
+            excluded_evidence=sorted(excluded, key=lambda row:row["sha256"]), previous_model=previous_model)
         import sys
         folder = artifacts.write_bundle(state_root/"revisions", model, evidence, parser=parser,
             build_command=[sys.executable,"-m","template_learning.incremental_template_registry",*sys.argv[1:]])
@@ -398,14 +410,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--state-root",
         type=Path,
-        default=project_config.ROOT_LEARNER_STATE / (learner['version'] + '-' + learner['sha256'][:12]),
+        required=True,
     )
     commands = parser.add_subparsers(dest="command", required=True)
     sync = commands.add_parser("sync")
     sync.add_argument(
         "--runtime-root",
         type=Path,
-        default=project_config.ROOT_CK3CHRONICLE,
+        required=True,
     )
     sync.add_argument("--parser-manifest", type=Path, required=True)
     sync.add_argument("--default-role", choices=sorted(ROLES), default="candidate")

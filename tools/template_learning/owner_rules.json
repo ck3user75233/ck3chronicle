@@ -2,7 +2,7 @@
   "schema": "ck3chronicle.learner-owner-rules",
   "version": 1,
   "updated": "2026-09-26",
-  "scope": "Learner-owned declarations. Selected raw parser code remains versioned independently. No source-code injection, template catalog, optional literals or example-specific ordinary slot-type overrides. Approved structural fields are declared under constructions.",
+  "scope": "Learner-owned declarations. Selected raw parser code remains versioned independently. No source-code injection, optional literals or unapproved example-specific slot-type overrides. Approved structures and explicitly owner-confirmed formulations are declared under constructions; observed native evidence is still required to produce a candidate.",
   "default_literals": {
     "id": "literal-wording",
     "authority": "Owner: supplied wording remains literal; CK3 symbol-type defaults accept either case of the first letter only, on exact complete parser tokens. Type identity must be established independently of directory or path occurrence. No substring or attached-string matches. Preserve native casing in templates.",
@@ -483,6 +483,8 @@
     "language_survey": "Offline research only: use a language-library POS tagger on existing raw-parser tokens in native literal/PARAM regions to nominate negative adjectives for review; exclude LOCATOR contents. Keep native contexts, tags and counts. POS labels alone do not establish negative diagnostic meaning. No adjective reference or language-library dependency is active in inference or runtime matching."
   },
   "slot_position_cues": {
+    "unavailable_location_pattern": "(?:\\bScript location:|\\blocation:|\\bFrom:|\\bStack trace:|\\bNew Location:|\\bPrevious Location:)[ \\t]*[\\x22\\x27]?$",
+    "unavailable_location_authority": "Owner 2026-10-03: Unknown is a LOCATOR only immediately after a recognized location marker; elsewhere it normally remains literal. Preserve section labels, nested file/line labels, exact native value, and message identity. Numeric contents are not required for labelled LOCATOR recognition or line/near-line literal equivalence.",
     "id": "native-slot-labels",
     "authority": "Owner requires file/line labels outside LOCATOR captures and no forced numeric conversion for identifier fields. The existing regexes are implementation heuristics, not owner-prescribed regex syntax or new example-specific typing rules. Owner 2026-09-21: the value following Database: in Key <KEY> not found at Database: is a LOCATOR; its label remains literal. Owner follow-up: recognized locations must remain LOCATOR, not literal wording, even when observations share one path spelling, including words within paths. Recognition uses known labels and complete parser tokens; never colon-to-line-end masking.",
     "location_pattern": "(?:\\bdatabase\\s*:|\\bfile\\s*:|\\bline\\s*:|\\blines\\s*:)\\s*[\"']?$",
@@ -502,6 +504,7 @@
     "filename_authority": "Owner: .txt, .yml, .md and .py establish filename evidence without a directory separator. These explicit examples are suffix cues, not a folder whitelist or a claim that every dotted CK3 key is a filename. Other extensions can be recognized in path/file contexts or filename:line notation. Explicit file context bounds names containing spaces; do not join spaced slash lists without location context.",
     "line_suffix_authority": "Owner: file.txt:6 is filename, colon punctuation, line reference. The path and line are separate LOCATOR fields with the colon literal between them. Native GUI .gui:number and dynasty .txt:number forms support the generic boundary; existing scope:key and dotted identifiers remain intact."
   },
+  "location_sequence_authority": "Owner 2026-10-03 authorized a disposable combined experiment: ignore the contents and count of trailing location entries for classification similarity while preserving every exact LOCATOR and trace PARAM in ordered bindings and message identity. Script location and Stack trace are evidenced section introducers; they remain literal. Whole recovered messages and existing cross-emission continuations remain unchanged. Repeated-entry layouts are learned from complete native entries, not substituted source text.",
   "architectural_requirements": [
     {
       "id": "source-partition",
@@ -572,6 +575,26 @@
   ],
   "constructions": [
     {
+      "id": "untyped-effect",
+      "authority": "Owner 2026-09-27 explicitly confirmed this complete formulation, preserving effect as literal wording and the bracketed interior as one opaque REASON. Owner 2026-10-03 supersedes the old Unknown typing: the location marker remains literal and Unknown is a LOCATOR value. Native leading spaces and line endings remain exact.",
+      "source": "jomini_script_system.cpp",
+      "pattern": "(?P<prefix> Script system error!\\n  Error: untyped effect \\[ )(?P<reason>[\\s\\S]*?)(?P<tail> \\]\\n  Script location:[\\s\\S]+)",
+      "region_order": ["prefix", "reason", "tail"],
+      "comparison_regions": ["prefix", "tail"],
+      "fields": {"reason": {"type": "REASON", "meaning": "Complete native bracketed reason", "allow_empty": true}},
+      "evidence": "Complete retained log 9d3622ab1b6c85cbab45d83767bb870b06c6fb9d6da50ee44f5eba3674d98cbc; Task 06 review case 1."
+    },
+    {
+      "id": "untyped-trigger",
+      "authority": "Owner 2026-09-27 explicitly confirmed this complete formulation, preserving trigger as literal wording and the bracketed interior as one opaque REASON. Owner 2026-10-03 supersedes the old Unknown typing: the location marker remains literal and Unknown is a LOCATOR value. Native leading spaces and line endings remain exact.",
+      "source": "jomini_script_system.cpp",
+      "pattern": "(?P<prefix> Script system error!\\n  Error: untyped trigger \\[ )(?P<reason>[\\s\\S]*?)(?P<tail> \\]\\n  Script location:[\\s\\S]+)",
+      "region_order": ["prefix", "reason", "tail"],
+      "comparison_regions": ["prefix", "tail"],
+      "fields": {"reason": {"type": "REASON", "meaning": "Complete native bracketed reason", "allow_empty": true}},
+      "evidence": "Complete retained log 10cbdcb23e34a5b571a16eb52d390e5e676663936f000fd43404af19d85027fb."
+    },
+    {
       "id": "script-system-reason",
       "authority": "Owner 2026-09-22 approved recommendation 2 and requires declarative common constructions: capture the bracketed reason intact within the outer diagnostic; no independent L2 or detached tail learning.",
       "source": "jomini_script_system.cpp",
@@ -595,6 +618,7 @@
           "empty_authority": "Owner 2026-09-24: fix the native empty-reason failure. A present reason field may contain zero characters; keep complete surrounding whitespace runs, including line endings, literal and every raw gap whole. Empty is not absent, not an optional literal, and not a reason to invent content."
         }
       },
+      "excludes": ["untyped-effect", "untyped-trigger"],
       "evidence": "docs/LEARNER_OUTER_DIAGNOSTIC_IMPLEMENTATION.md"
     },
     {
@@ -612,14 +636,16 @@
       ],
       "fields": {},
       "excludes": [
-        "script-system-reason"
+        "script-system-reason",
+        "untyped-effect",
+        "untyped-trigger"
       ],
       "evidence": "Native development-8 bundle 602fc7bae41bf40895cf0d5b: Event target link scope returned an unset scope; Failed to fetch variable for at_artifacts_window_selected_artifact due to not being set; Character Xingben Miao has no capital. Exact native rows and the broad competing template are preserved in that ignored bundle. docs/LEARNER_OUTER_DIAGNOSTIC_IMPLEMENTATION.md records the cause and correction."
     }
   ],
   "location_label_equivalences": {
     "authority": "Owner 2026-09-24: handle Near file:/file: and near line:/line: as contextual location wording through learner rules, without requiring variation among present OPTIONAL_KEY values. Preserve original wording and bytes; regenerate exact template forms during learning.",
-    "scope": "Complete same-source candidate messages only. Match complete raw tokens immediately before an independently recognized LOCATOR, outside declared PARAM/REASON contents. Equivalence identifies the label function, not equivalence of arbitrary error messages. Retain each observed exact label formulation as an ordinary template; no optional literals or input normalization.",
+    "scope": "Complete same-source candidate messages only. Match complete raw tokens immediately before an independently recognized LOCATOR, outside opaque fields. Line-location labels use the owner-approved literal alternatives in one template, even with only one spelling observed; record the selected literal choice for exact rendering. File-location labels retain observed exact formulations. No input normalization or variable label slots.",
     "groups": [
       {
         "id": "file-location",
@@ -642,6 +668,8 @@
       },
       {
         "id": "line-location",
+        "literal_alternatives": ["line:", "near line:"],
+        "literal_alternatives_authority": "Owner 2026-09-28: near line: and line: are interchangeable immediately before a line LOCATOR; preserve exact native spelling and all remaining wording.",
         "forms": [
           [
             "near",
@@ -658,6 +686,17 @@
     "evidence": "73 complete native logs: 1255 Near file: mentions and 652 near file: mentions precede locations; 143966 near line: mentions precede numeric line/range values. Labels are exact case-sensitive token sequences; internal horizontal whitespace is preserved. This finite census is not a universal CK3 grammar claim."
   },
   "inference_policy": {
+    "field_similarity": {
+      "authority": "Owner 2026-09-27 reiterates that a corresponding field at the correct position counts once, like one matching token, irrespective of its contents. Slot contents must not contribute individual word matches or become diagnostic wording.",
+      "mechanic": "Retain ordered literal-word units and one typed unit per recognized present field. Declared fields participate from recognition; inferred fields participate only after complete capture validation. Hypothesized unaccepted regions receive no field credit. Existing source/structure partitions and diagnostic-wording-loss protection still apply."
+    },
+    "date_keys": {
+      "id": "native-dotted-date-key",
+      "authority": "Owner 2026-09-27: dates in the 1178.10.1 format must never be template diagnostic wording; infer KEY even when the observed date is constant.",
+      "token_pattern": "[0-9]+\\.[0-9]{1,2}\\.[0-9]{1,2}",
+      "scope": "A complete native year.month.day token outside existing opaque fields and LOCATOR ranges. Preserve spelling and surrounding punctuation; do not validate the calendar, split full IDs, or infer other date formats.",
+      "matching": "Ordinary KEY constraints; this is an inference declaration, not a new runtime field type or date validator. Template support still requires independent native examples."
+    },
     "established_wording_key_run_loss": {
       "enabled": true,
       "minimum_words": 2,
@@ -719,10 +758,10 @@
       "malformed_references": "Owner 2026-09-23: malformed scope:title:... references can occupy KEY fields. No game-validity check or one-colon-per-dotted-step restriction. A colon-adjacent prose fragment is not independently a field; candidate context and retained surrounding wording still govern inference. Existing PARAM and REASON interiors remain opaque."
     },
     "template_support": {
-      "authority": "Owner 2026-09-23: a single learning example must remain provisional; repeated occurrences are not independent learning examples.",
+      "authority": "Owner 2026-09-23: a single learning example must remain provisional; repeated occurrences are not independent learning examples. Owner 2026-09-27: distinct slot values are distinct examples of the same template; excluding field contents from positive wording similarity must not discard their variation from message identity.",
       "minimum_distinct_examples": 2,
-      "counting": "Distinct native member messages after masking LOCATOR values, within the same source and candidate. No minimum log count; separate examples in one log suffice. Declared structures do not waive this requirement.",
-      "excludes": "LOCATOR and declared trace-only variation; occurrence repetitions"
+      "counting": "Distinct complete native member bodies and ordered continuation contents, within the same source and candidate. Preserve variation in every slot type, including LOCATOR and declared PARAM. No minimum log count; separate examples in one log suffice. Declared structures do not waive this requirement.",
+      "excludes": "Exact occurrence repetitions; timestamp/source-line headers and occurrence provenance"
     },
     "coverage_absorption": {
       "authority": "Owner-approved PARAM context correction plan; owner 2026-09-26 follow-up confirms removal rather than a dormant toggle.",

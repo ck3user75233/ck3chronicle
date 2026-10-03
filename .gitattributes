@@ -1,1 +1,5 @@
 * text=auto eol=lf
+
+# Immutable distributions are authenticated as bytes, including original newlines.
+/learners/releases/** -text
+/models/** -text

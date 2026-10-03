@@ -2,6 +2,10 @@
 
 Status: active first-capability specification as of 2026-08-31.
 
+Contract/storage requirements amended 2026-09-27 by the owner-approved
+[Error Contract](ERROR_CONTRACT_SPECIFICATION.md). Older unrelated implementation
+and migration sections remain subject to the current architecture and banned ideas.
+
 ## Milestone identity and outcome
 
 Stable ID: `MILESTONE-TRUSTED-RUN`
@@ -205,10 +209,10 @@ chronology. A watcher run derives from its observed lifecycle and successful
 processing record. A manual/recovery run derives from its explicit capture
 attempt and successful processing record; it does not invent lifecycle facts.
 
-`REQ-RUN-IDENTITY-002`: store capture mode and capture time for every run,
-observed process start/exit times only when actually observed, and first/last
-diagnostic timestamps when available. Manual/recovery lifecycle facts may be
-unknown and remain unknown.
+`REQ-RUN-IDENTITY-002`: store capture mode and capture time for every run and
+observed process start/exit times only when actually observed. Manual/recovery
+lifecycle facts may be unknown and remain unknown. Diagnostic occurrence times
+are not required by the approved Error Contract.
 
 `REQ-RECOVERY-001`: finalization, registration, parsing, classification,
 aggregation, review-shard publication, and database commit expose the prior
@@ -230,17 +234,18 @@ identical timestamp values. Preamble/malformed material follows an explicit
 parser-error contract.
 
 `REQ-LOG-EMISSION-003`: after input-format validation, every recognized
-emission produces one or more recovered diagnostics, is written to the run's
-native review shard, or produces explicit parser failure. Nothing silently
-disappears.
+emission contributes to recovered messages/groups, is written to the Run's native
+review shard, or produces explicit parser failure. Nothing silently disappears.
 
 `REQ-LOG-EMISSION-004`: run counters cover emissions seen, ordinary emissions,
-multi-error emissions, diagnostics recovered, review emissions written, and
-parser failures. Exact names may differ; reconciliation may not.
+multi-error emissions, recovered messages/groups, supporting entries, review
+emissions written, and parser failures. These differ from final unique SQL record
+counts. Exact names may differ; reconciliation may not.
 
-`REQ-MULTI-ERROR-001`: the default is one emission to one recovered diagnostic.
-Multiple recovery requires an approved source family/message grammar,
-representative fixtures, deterministic boundaries, and exact count/value tests.
+`REQ-MULTI-ERROR-001`: the default is one emission to one recovered message.
+Splitting or grouping requires the approved pinned recovery rules, representative
+native evidence, deterministic boundaries and exact count/value verification.
+Recovered pieces/groups are not finalized SQL diagnostic records.
 
 `REQ-MULTI-ERROR-002`: the initial known case is the
 `pdx_persistent_reader.cpp` wrapper with repeated clauses such as `Unknown
@@ -252,35 +257,44 @@ provenance. No permanent parent-emission database model is required.
 
 ## Diagnostic records and classification
 
-`REQ-DIAGNOSTIC-IDENTITY-001`: before database implementation/migration,
-approve deterministic diagnostic-record identity over every meaning-bearing
-contract field, including contract revision, typed slots, relevant file, and
-contract-defined line/symbol/locator values.
+`REQ-DIAGNOSTIC-IDENTITY-001`: within a Run, equal selected templates/literal
+layouts and all ordered typed binding values define one diagnostic record.
+Include optional presence and supporting-entry count/order/content. Run lineage
+scopes the definition revision. Source applicability is resolved by assignment;
+aggregation performs no additional source comparison.
 
 `REQ-DIAGNOSTIC-IDENTITY-002`: volatile repetition metadata does not split
 equal records. Equal identities within one run aggregate into one diagnostic
-record with `occurrence_count` and first/last observed timestamps.
+record with `occurrence_count`. Individual occurrence and diagnostic first/last
+timestamps are unnecessary; Run capture/lifecycle facts remain separate.
 
-`REQ-CLASSIFICATION-001`: an approved hash-bound model and reviewed contracts
-classify recovered diagnostics. Similarity nominates; typed validation
-authorizes.
+`REQ-CLASSIFICATION-001`: the verified published model validates complete native
+matches and its selector returns one selected assignment. Common approved contract
+rules consume that assignment without rematching or adding semantic typing gates.
 
-`REQ-CLASSIFICATION-002`: approved full or explicitly permitted partial/L1
-results create/update compact diagnostic records with contract revision and
-typed slots. Stable text renders from the versioned contract.
+`REQ-CLASSIFICATION-002`: full and provisional selected assignments create/update
+records with reporting status `template` or `provisional`. Store typed values and
+selected layout choices, including ordered supporting entries. Store definition
+literals/slot placements and source/emitter in SQL so records render and expose
+their source without external logs/models. Error type initially remains unknown.
 
-`REQ-CLASSIFICATION-003`: provisional, low-confidence, and unresolved results
-do not become confident diagnostic records. Their original emissions route to
-the run's native review shard with reason/provenance.
+`REQ-CLASSIFICATION-003`: unassigned/unresolved native evidence routes to the Run's
+review shard with reason/provenance. Deterministically selected provisional ties
+are SQL-eligible; their status remains visible. SQL does not store competing
+candidate lists. Original evidence for a complete unassigned group includes all
+contributing emissions.
 
-`REQ-CLASSIFICATION-004`: record application, parser/splitter/normalizer,
-model, contract, and schema revisions required to interpret results. Failed
-approved refresh preserves prior accepted state.
+`REQ-CLASSIFICATION-004`: Run metadata records model revision/manifest hash,
+parser identity/hash, assignment-policy version, classifier/application revision,
+contract-rules version and database schema version. Failed approved refresh
+preserves prior accepted state.
 
 ## Production database and review-shard separation
 
-`REQ-DATABASE-002`: schema versioning and supported migrations are explicit,
-transactional, restart-safe, compatibility-checked, and recoverable.
+`REQ-DATABASE-002`: the database schema is explicitly versioned. Compatible
+processing-component revisions coexist through per-Run lineage. Schema changes
+require an explicit reset; migrations, old-schema compatibility, fallbacks and
+generation replay are banned. Ordinary transaction recovery remains required.
 
 `REQ-DATABASE-003`: Trusted Run durably represents run chronology, crash facts,
 compact diagnostic records/counts, approved lineage, processing counters,
@@ -336,10 +350,10 @@ orphans, broken shard references/hashes, invalid revisions, contradictory
 counters/states, duplicate content hashes, and retention damage. Deep raw-byte
 audit is explicit and may report source unavailable.
 
-`REQ-SOURCE-RETENTION-001`: exact raw `error.log` defaults to one week and is
-configurable by duration, storage allocation, or both. Eligibility begins only
-after database/shard commit. Raw expiry removes the retained source bytes but
-not the content-hash metadata attached to the successful Run ID.
+`REQ-SOURCE-RETENTION-001`: raw error/debug logs remain at their capture location
+under configurable retention, initially one month. Eligibility for unprocessed
+or failed captures and the automation cadence remain to be settled. Expiry removes
+raw bytes, not successful Run hash metadata, SQL history or native review shards.
 
 `REQ-DATABASE-RETENTION-001`: derived database history is bounded by configurable
 retention period, maximum allocation, or both. Safe finite defaults are
@@ -418,7 +432,7 @@ flowchart LR
 | Full-file hash | Current capture/archive hashing foundations exist. | Use only for retained-raw duplicate/integrity guard; no indefinite history or crash comparison. |
 | Emission recognition | `parser/log_blocks.py` streams timestamp-led units. | Reuse after input-format validation. |
 | Multi-error | Current classifier has persistent-reader multi-result groundwork. | Verify approved splitting against representative real CK3 evidence. |
-| Operational SQLite | Current schema/migrations/report queries are substantial. | Migrate rather than redesign greenfield. |
+| Operational SQLite | Current schema/report queries are substantial. | Use the current versioned schema; explicitly reset on schema changes. |
 | Native review | Current review queries use uncertain DB rows/samples. | One shard per successful run is approved but not implemented. |
 | Reporting | Current reports query database rows. | Derive minimal database-only proof from the ratified report requirement. |
 
@@ -450,8 +464,8 @@ configuration schema, parser/splitter, model/contract, and output revision.
 | `TRUSTED-RUN-NO-SILENT-LOSS-01` | Counters reconcile every recognized emission to recovered diagnostics, the run's review shard, or explicit parser failure with zero silent disappearance. |
 | `TRUSTED-RUN-AGGREGATION-01` | Repeated equivalent diagnostics in representative real CK3 evidence aggregate to one record with the exact observed count; every ratified meaning-bearing identity difference prevents improper aggregation. |
 | `TRUSTED-RUN-CLASSIFICATION-01` | Approved contracts apply only after typed validation; near misses route conservatively. |
-| `TRUSTED-RUN-REVIEW-01` | Each successfully processed run has exactly one safely finalized native review shard; unresolved/provisional/low-confidence emissions and required provenance live there while SQLite holds lightweight navigation metadata only. |
-| `TRUSTED-RUN-DATABASE-01` | Explicit initialization, current-schema open/close/reopen, supported migration, failed-migration rollback, foreign-key validation, and restart recovery pass. |
+| `TRUSTED-RUN-REVIEW-01` | Each successfully processed run has exactly one safely finalized native review shard for unassigned/unresolved evidence and required provenance; SQLite holds lightweight shard metadata. Selected provisional assignments are diagnostic records with visible status. |
+| `TRUSTED-RUN-DATABASE-01` | Explicit initialization, current-schema open/close/reopen, explicit schema-reset behavior, incompatible-schema rejection, foreign-key validation, and restart recovery pass. |
 | `TRUSTED-RUN-DATABASE-02` | A valid run commits compact diagnostic records, one shard reference/hash, counters, and queryable metadata; reports regenerate after application/database reopen. |
 | `TRUSTED-RUN-REPORT-01` | Human and structured reports query the operational production database only, agree on shared meaning, and identify the required application, database schema, model/contract, query, and generation metadata. An associated negative-access regression fails if report generation attempts to open a raw `error.log` path. |
 | `TRUSTED-RUN-READ-01` | Report/query, review status, retention status/preview, `doctor`, and audit remain read-only on a current database/configuration. |
@@ -462,7 +476,7 @@ configuration schema, parser/splitter, model/contract, and output revision.
 | `TRUSTED-RUN-BACKUP-01` | Backup/restore to an explicit configured root preserves configuration, the database including per-Run-ID `error.log` hashes, retained raw-source inventory, crash attachments, and native review shards/sidecars. After restore, audit passes and ordinary reports regenerate from the restored database. Explicit user-exported report artifacts are outside the core backup contract unless deliberately included. |
 | `TRUSTED-RUN-SAFETY-01` | Before/after hashes prove CK3/mod sources unchanged and an enforceable negative check proves no root-search/autodiscovery path is invoked. |
 | `TRUSTED-RUN-MODEL-01` | Exact runtime model/contracts have an approved promotion record. |
-| `TRUSTED-RUN-PERFORMANCE-01` | Owner-ratified budgets for capture, processing, database/shard growth, reports, pruning, migration, backup, and restore pass on documented hardware. |
+| `TRUSTED-RUN-PERFORMANCE-01` | Owner-ratified budgets for capture, processing, database/shard growth, reports, pruning, backup, and restore pass on documented hardware. |
 
 ## Review-shard default measurement plan
 

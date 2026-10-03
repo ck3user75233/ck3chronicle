@@ -3,16 +3,15 @@ import argparse
 from collections import Counter, defaultdict
 import hashlib
 import html
-import importlib.util
 import json
 from pathlib import Path
-from types import MappingProxyType
 
 from template_learning.artifacts import load_bundle
-from template_learning.inspect_incremental_learning import native_evidence_rows
-from template_learning.publish_native_model import compact_model, compact_template
-from ck3chronicle.pipeline.model import EmpiricalModel, _freeze, _validate_rules, _validate_template
-from ck3chronicle.pipeline.classifier import Classifier
+from template_learning.evidence_serialization import native_evidence_rows
+from template_learning.publish_native_model import compact_model
+from template_learning.native_matching import Matcher, assignment_candidates
+from template_learning.records import SequenceRecord
+from template_learning import assignment as frozen
 
 
 def check_layout(pattern, captures, text):
@@ -44,19 +43,9 @@ def main():
     args=ap.parse_args();args.output.mkdir(exist_ok=True,parents=True)
     old=json.loads((args.before/'empirical_template_model.json').read_text())
     new,parser=load_bundle(args.after)
-    spec=importlib.util.spec_from_file_location('frozen_assignment',args.after/'assignment.py')
-    frozen=importlib.util.module_from_spec(spec);spec.loader.exec_module(frozen)
-    component_spec=importlib.util.spec_from_file_location('frozen_components',args.after/'continuations.py')
-    components=importlib.util.module_from_spec(component_spec);component_spec.loader.exec_module(components)
     oldtemplates={t['template_id']:t for t in old['templates']};templates={t['template_id']:t for t in new['templates']}
-    _validate_rules(new['owner_rules'])
-    declarations={d['id']:d for d in new['owner_rules']['constructions']}
-    definitions={d['id']:d for d in new['owner_rules']['parameter_structures']}
-    for t in templates.values():_validate_template(compact_template(t),declarations,definitions)
-    compact=compact_model(new);data=_freeze(compact)
-    by_source={s:tuple(t for t in data['templates'] if t['source_family']==s) for s in new['by_source']}
-    classifier=Classifier(EmpiricalModel(new['revision_id'],'unpublished-research',data,parser,MappingProxyType(by_source),
-                                        frozen.select_assignment,components.match_components))
+    compact=compact_model(new)
+    matcher=Matcher(compact)
     previous={r['example_id']:(r,n) for r,n in native_evidence_rows(args.before/'native_evidence.json')}
     input_rows=json.loads(args.selection.read_text())['logs'];paths={r['sha256']:r['path'] for r in input_rows}
     weights={}
@@ -75,22 +64,11 @@ def main():
         stats['selected_existing_capture_assignment']+=n
         assert not r['unmatched_complete_message']
         stats['selected_'+selected['selection']['reason']]+=n
-        contexts=tuple((name,c[name]['text'],tuple(map(tuple,c[name]['pieces'])))
-                       for c in r['contexts'].values() for name in ('prefix','suffix'))
-        matches,issue=classifier._match_content(r['source_family'],r['context_kind'],r['native'],tuple(map(tuple,r['pieces'])),contexts)
-        assert issue is None
-        actual=[]
-        for tid,status,body,wrapper in matches:
-            kept=[];component_witnesses=[]
-            for witness in body['witnesses']:
-                values=components.match_components(templates[tid]['continuation'],r['continuations'],witness)
-                if values is not None:kept.append(witness);component_witnesses.append(values)
-            if kept:
-                actual.append(dict(template_id=tid,body=dict(count=len(kept),witnesses=kept),
-                    component_witnesses=component_witnesses,
-                    contexts={name:[dict(template_id=pid,**a) for pid,a in alts] for name,alts in wrapper}))
+        record=SequenceRecord(r['source_family'],r['native'],tuple(map(tuple,r['pieces'])),
+            r['context_kind'],r['contexts'],continuations=tuple(r['continuations']))
+        matches,ambiguities,replay=matcher.inspect_record(record)
+        actual=assignment_candidates(matches,ambiguities)
         assert {m['template_id'] for m in actual}=={m['template_id'] for m in [*r['matches'],*r['capture_ambiguities']]}
-        replay=frozen.select_assignment(compact,actual)
         assert replay==selected, r['example_id']
         assert frozen.select_assignment(compact,list(reversed(actual)))==selected
         check_layout(templates[selected['template_id']],selected['captures'],r['native'])

@@ -1,8 +1,9 @@
 # Template-learning tool instructions
 
 This directory is the sole source-controlled home of ck3chronicle learner,
-incremental-registry, review-pack, blind-review, symbol-mining, and projection-
-catalog generation code.
+incremental-registry, review-pack, blind-review and symbol-mining code.
+Task 06B retired the old parser comparison and semantic projection catalog
+generators; current learner/parser/matcher/publication code remains the owner.
 
 - Modify or extend these tools here; never create the next learner generation
   under `.ck3raven/wip`, `ck3raven`, or another scratch tree.

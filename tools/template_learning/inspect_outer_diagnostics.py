@@ -13,8 +13,8 @@ import json
 from pathlib import Path
 
 from template_learning.artifacts import load_bundle
-from template_learning.inspect_incremental_learning import native_evidence_rows
-from template_learning.patterns import match_pattern
+from template_learning.evidence_serialization import native_evidence_rows
+from template_learning.matching_defaults import match_pattern
 
 
 def row_key(row):
@@ -216,7 +216,7 @@ def inspect(baseline,bundle,output,focus_review=None,focus_cases=(),focus_text=(
             body.append('<details><summary>Actual raw parser pieces of this complete message</summary>'+pre('\n'.join(f'{i}: {k} {t!r}' for i,(k,t) in enumerate(raw)))+'</details>')
             for match in x['matches']:
                 pattern=patterns[match['template_id']]
-                body.append('<p>Learning support: '+html.escape(str(pattern['learning_support']['distinct_nonlocation_examples']))+' distinct examples after masking locations; status '+html.escape(pattern['status'])+'.</p>')
+                body.append('<p>Learning support: '+html.escape(str(pattern['learning_support']['distinct_diagnostic_examples']))+' distinct native examples, including slot variation; status '+html.escape(pattern['status'])+'.</p>')
                 for part in pattern['parts']:
                     if part.get('type')!='PARAM':continue
                     values={}

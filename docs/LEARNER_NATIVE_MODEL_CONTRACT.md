@@ -1,5 +1,113 @@
 # Native outer-diagnostic model contract
 
+2026-10-03 owner clarification (disposable combined implementation/test authorized):
+location markers such as `Script location:` remain literal. Following entry count
+must not cause dissimilarity or split otherwise compatible diagnostic patterns.
+Retain every file and line as separate LOCATOR values and every parenthetical
+trace as PARAM, in native order. An explicit `Unknown` after a location marker
+is one present LOCATOR value containing the exact emitted text, not a literal,
+absence or SQL null. This supersedes older literal-Unknown requirements below.
+Outside the immediate value position of a recognized location marker, Unknown
+normally remains literal. `line:` and `near line:` are also location markers;
+this contextual slot exception does not redefine continuation recovery.
+Further owner clarification: recognition of `line:` / `near line:` and their
+LOCATOR values must not depend on numeric content. Older numeric prerequisites
+below describe delivered implementations, not the current required boundary.
+Existing packages and stored Runs remain unchanged; candidate delivery is still
+under review. Experimental schema 6 / matcher API v3 declares a final repeated
+location-entry part. Each assignment supplies ordered entry-layout choices and
+separate LOCATOR/PARAM captures within the original body region. Storage renders
+those declared layouts and retains them in exact identity; it performs no new
+recognition. See LEARNER_INFERENCE_RULES.md and CURRENT_HANDOFF for verification.
+The disposable v48 package passed exact reconstruction on 766,420 selected
+stored occurrences from 18 Runs, retaining all existing locator values and
+distinct message identities. Fifty-six occurrences remain unmatched. This is
+experimental verification, not production activation; see CURRENT_HANDOFF for
+package identity, four disclosed template-to-provisional changes and report links.
+
+Owner identity clarification: locator contents and count do not affect
+classification similarity, but both remain part of exact error-message identity.
+Preserve the complete ordered values. Messages differing in any locator value
+or count must not be combined as occurrences of the same message merely because
+they share a template. A locator-neutral comparison view is not a storage,
+deduplication or occurrence-aggregation identity.
+
+2026-09-28 delivery v45: additive wording comparisons now apply the shared
+matcher's source/context/construction/ordered-parameter applicability gates;
+refinement uses complete retained matches. This corrects an implementation defect
+without changing wording-protection or support policy. The immutable 73-log
+replacement targets schema 5 / API v2. See the
+[release assessment](LEARNER_RELEASE_V45_RESULTS.md) and
+[pipeline delivery handoff](LEARNER_PARSER_PIPELINE_HANDOFF.md). Active selection
+and Task 06 integration remain separate.
+
+2026-09-28 owner-directed v44: `line:` and `near line:` immediately before an
+independently recognized numeric LOCATOR are finite literal alternatives in one
+template. One observed spelling suffices for this declared equivalence; it does
+not invent examples or promote support. The labels are not KEY/OPTIONAL_KEY slots.
+Inference compares one label position, preserves opaque fields and retains all
+other wording. Model schema 5 / matcher API v2 declare these alternatives and
+return the selected literal indices for exact stored rendering. See
+[implementation and verification](LEARNER_LOCATION_LABEL_EQUIVALENCE_RESULTS.md).
+The selected schema-4 / API-v1 package remains unchanged; v44 requires fresh
+learning state and cannot import v43 templates.
+
+2026-09-27 owner-directed continuation v43: within one exact learner
+implementation, rule set, threshold and pinned parser, learning is cumulative
+and additive. A complete, unique supported assignment is settled. Its definition
+remains available in the successor model, and its newly matched evidence need
+not be used to rediscover it. Cumulative provisional, ambiguous and unmatched
+evidence remains open to inference. Provisional definitions can gain support or
+retire through the existing proved-specialization rule, with an explicit
+predecessor/successor history. Low frequency is not grounds for deletion.
+
+The incremental registry continues its current candidate by default. A changed implementation/parser/rule
+set requires fresh state, and removing cumulative inputs or changing the threshold
+requires a fresh build. The explicit batch CLI still builds from all supplied
+native evidence, providing a comparison route. Both produce one complete model;
+incremental and fresh-batch inference need not choose identical definitions.
+No cross-version frozen-template imports or runtime selection change is implied.
+Supported and provisional definitions both retain established literal-wording
+protection. A rejected broader proposal is reconsidered in smaller native groups;
+provisional status is not permission to erase diagnostic words.
+
+Historical v43 behavior: constructions `untyped-effect-location-unknown` and
+`untyped-trigger-location-unknown` preserve their complete observed native layout,
+literal effect/trigger and Unknown, and one opaque REASON. They take precedence
+over the generic script-system construction. They do not create candidates in
+the absence of native evidence or bypass empirical support requirements. The
+October 3 clarification supersedes the literal treatment of Unknown; current
+executable declarations have not yet received that correction.
+
+Similarity and support are separate. A recognized field contributes one typed
+position to ordered similarity, regardless of its contents; the words inside it
+contribute nothing individually. An unaccepted region hypothesis earns no field
+credit. Distinct native examples, including different slot values, determine
+empirical support. Repeating an identical body does not establish diversity.
+The [73-log experiment and verification](LEARNER_ALL_LOGS_V42_RESULTS.md) records
+implementation status and limitations.
+
+2026-09-27 owner-directed inference v42: a complete native `year.month.day`
+token (ASCII digits, one or two digits for month/day) is KEY from its first
+observation, even when all sampled occurrences have the same value. Repeated
+observations do not establish a date as diagnostic wording. No assumption about
+CK3 evaluation frequency is made. `inference_policy.date_keys` declares the syntax;
+inference excludes its value from wording comparison and preserves punctuation.
+Existing opaque fields and LOCATOR ranges keep ownership. Runtime uses ordinary
+KEY matching; there is no new date type or calendar validation. A single native
+example remains provisional. This changes learner inference only; the selected
+package remains unchanged until a separately reviewed model publication.
+
+2026-09-27 shared matcher extraction: model definitions/schema/IDs and the active
+selection are unchanged. A separate immutable candidate package pins all matching
+dependencies alongside the schema-4 model and parser. Its public operation returns
+one selected complete assignment, exact wrapper/component layout references and
+region-relative captures, or explicit no-match. See the
+[API contract](SHARED_MATCHER_API.md) and
+[current delivery](LEARNER_PARSER_PIPELINE_HANDOFF.md). This package is not active
+until the pipeline reader supports it. Later owner decisions in the approved
+Error Contract govern over the historical sections below.
+
 Current development: learner v41 / schema 4 adds a repeated supporting-component
 contract for parser v1.7 groups. See [the continuation ledger](LEARNER_CONTINUATION_MODEL_STATUS.md).
 The body remains the opening's original region; `continuation` defines ordered
@@ -166,8 +274,11 @@ ordered literal/slot parts, candidate member record IDs, support occurrence and
 unique-message counts, inference refinements, hypotheses and unresolved members.
 
 Each outer candidate has learning_support: distinct_messages,
-distinct_nonlocation_examples, minimum_distinct_examples (2), and eligible.
-Exact repeats and LOCATOR-only variation do not increase independent support.
+distinct_diagnostic_examples, minimum_distinct_examples (2), and eligible.
+Following the owner's 2026-09-27 clarification, variation in any slot type,
+including LOCATOR and declared PARAM, counts toward distinct native examples.
+Exact repeated bodies do not. Field contents still have zero weight in
+diagnostic-wording comparison after field recognition.
 Different examples within one log can suffice; multiple logs are not required.
 All hypotheses remain in templates for inspection, with explicit status:
 provisional (insufficient support), supported (enough empirical examples),
@@ -175,12 +286,12 @@ confirmed (explicit review), or unresolved (failed inference validation).
 Supported does not mean semantically correct or promoted. Summary counts separate
 supported_templates and provisional_templates from total hypotheses.
 
-Only supported/confirmed candidates can produce full outcomes. Provisional matches
-retain captures in matches, but the row has no accepted template_id/captures.
-provisional_reasons distinguishes insufficient_distinct_learning_examples from
-competing_templates and ambiguous_capture_boundaries. v30 has no confirmation
-command or template-seed loading. Context-wrapper patterns
-remain structural components, not separately accepted diagnostics.
+The shared complete-assignment policy selects supported or provisional records.
+Insufficient empirical support does not prevent a complete provisional assignment.
+Ambiguous or competing assignments retain the policy's provisional status where
+eligible. Context-wrapper patterns remain structural components, not separately
+accepted diagnostics. Explicit owner construction declarations do not replace the
+shared matcher or its complete-assignment checks.
 
 Each slot retains observed values, ordinary inference basis and `field_support`:
 member record identities, raw-piece ranges, UTF-8 byte ranges, token-count and

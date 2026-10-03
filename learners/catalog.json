@@ -1,0 +1,153 @@
+{
+  "releases": [
+    {
+      "availability": "available",
+      "family": "learner",
+      "learner_identity": "d412f3e0368b0fe3a34fd161b236f98cfa5b8dd7051638fb1e0e5467e1b5475b",
+      "learner_version": "outer-diagnostic-consensus-v45",
+      "manifest_sha256": "3d10ccc9a1a41acd6fb734b514dbb0a64a27e7ab4858d5e60e1a397c061f4a2d",
+      "operations": [
+        "compare",
+        "evaluate",
+        "learn",
+        "publish",
+        "registry",
+        "review",
+        "visual-review"
+      ],
+      "production_order": 7,
+      "publication_evidence": "Owner Task07C: new complete learner distribution; no production-model rebuild or activation",
+      "publication_status": "production",
+      "release_id": "cdbd72475baf238d5a44a7ef37c2a266a71179d780dbaf71aa35d5a91b3d5a0f",
+      "retained_path": "releases/cdbd72475baf238d5a44a7ef37c2a266a71179d780dbaf71aa35d5a91b3d5a0f"
+    },
+    {
+      "availability": "partial",
+      "family": "learner",
+      "learner_identity": "6621d644feab8c343b76354e83900f4c82d3ae91fef03f01643d93e1f7f9909b",
+      "learner_version": "outer-diagnostic-consensus-v41",
+      "manifest_sha256": "cce56b334da8fd1896fac560c9b98646b1c080b4860b87e3618248b43d5801f4",
+      "operations": [
+        "evaluate"
+      ],
+      "production_order": 5,
+      "publication_evidence": "docs/LEARNER_PARSER_PIPELINE_HANDOFF.md: production model 76630685c4a341ca14bf9c7c",
+      "publication_status": "production",
+      "release_id": "bac89011106e2fcd8e48ebc5a14f9c3dd4304e68d35d79ac3401a7c749c76f0b",
+      "retained_path": "releases/bac89011106e2fcd8e48ebc5a14f9c3dd4304e68d35d79ac3401a7c749c76f0b",
+      "gap": "Historical source bytes retained and selectable for authenticated candidate evaluation; original creation/registry/publication operations are not exposed because they lack release-bound candidate provenance and retain application/config dependencies. No historical workflow was rebuilt or silently upgraded."
+    },
+    {
+      "availability": "partial",
+      "family": "learner",
+      "learner_identity": "025c98f6ca84cab8b6ea3b81e76f9517d166ee2090a81ed4878313122ae6a088",
+      "learner_version": "outer-diagnostic-consensus-v45",
+      "manifest_sha256": "d405b1f2b6532fe2ef4c9a5245b9b7742430aa141b12552608676a9113a9fa2a",
+      "operations": [
+        "evaluate"
+      ],
+      "production_order": 6,
+      "publication_evidence": "docs/TASK06_V45_STORAGE_INTEGRATION_HANDOFF.md",
+      "publication_status": "production",
+      "release_id": "cff09dcdc1ef6ea063c589850ad37d1d2711a52e7bc766877422ffda96e1452e",
+      "retained_path": "releases/cff09dcdc1ef6ea063c589850ad37d1d2711a52e7bc766877422ffda96e1452e",
+      "gap": "Historical source bytes retained and selectable for authenticated candidate evaluation; original creation/registry/publication operations are not exposed because they lack release-bound candidate provenance and retain application/config dependencies. No historical workflow was rebuilt or silently upgraded."
+    },
+    {
+      "availability": "partial",
+      "family": "learner",
+      "learner_identity": "0150da52b03a3dfd1c75e4fad3485e7f75e2c18a47d8a7a81f59a0674fe0ecd0",
+      "learner_version": "outer-diagnostic-consensus-v42",
+      "manifest_sha256": "37720e142f115f79cef9b3b1bf6b8a91ebfd4aea59d0a7cd4ada9c4841913045",
+      "operations": [
+        "evaluate"
+      ],
+      "production_order": null,
+      "publication_evidence": null,
+      "publication_status": "research",
+      "release_id": "9f25e4221f50320960db70ecbc6c2a04f0727d160469c19dd2ca65a1a44df032",
+      "retained_path": "releases/9f25e4221f50320960db70ecbc6c2a04f0727d160469c19dd2ca65a1a44df032",
+      "gap": "Historical source bytes retained and selectable for authenticated candidate evaluation; original creation/registry/publication operations are not exposed because they lack release-bound candidate provenance and retain application/config dependencies. No historical workflow was rebuilt or silently upgraded."
+    },
+    {
+      "availability": "partial",
+      "family": "learner",
+      "learner_identity": "8a1d1b067008a3d776b4496209e4b36c6bb7523923b28a7081be8deae216cbcc",
+      "learner_version": "outer-diagnostic-consensus-v43",
+      "manifest_sha256": "53ddbb00583fb6cc7869ecc36b9d001bb11f7258e6bfb8de5c7fe0cc693670bc",
+      "operations": [
+        "evaluate"
+      ],
+      "production_order": null,
+      "publication_evidence": null,
+      "publication_status": "research",
+      "release_id": "5067e83e293ae70fdd0a449a378b116ad9cbd8e74688601aaaf2cfce7328d8c7",
+      "retained_path": "releases/5067e83e293ae70fdd0a449a378b116ad9cbd8e74688601aaaf2cfce7328d8c7",
+      "gap": "Historical source bytes retained and selectable for authenticated candidate evaluation; original creation/registry/publication operations are not exposed because they lack release-bound candidate provenance and retain application/config dependencies. No historical workflow was rebuilt or silently upgraded."
+    }
+  ],
+  "retention_floor_production_learners": 10,
+  "schema": "ck3chronicle.learner-release-catalog",
+  "schema_version": 1,
+  "historical_unavailable": [
+    {
+      "family": "learner",
+      "learner_version": "outer-diagnostic-consensus-v29",
+      "source_model": "0a61f6c93657948e0ca20b35",
+      "production_order": 4,
+      "learner_identity": null,
+      "availability": "unavailable",
+      "missing_recorded_bytes": [
+        "artifacts.py",
+        "clustering.py",
+        "owner_rules.json",
+        "owner_rules.py",
+        "patterns.py"
+      ],
+      "gap": "No complete matching retained source located; older model records file hashes but no aggregate learner identity. Do not reconstruct missing bytes with current source."
+    },
+    {
+      "family": "learner",
+      "learner_version": "outer-diagnostic-consensus-v26",
+      "source_model": "1d1d6e0389f7235f565b2504",
+      "production_order": 2,
+      "learner_identity": null,
+      "availability": "unavailable",
+      "missing_recorded_bytes": [
+        "clustering.py",
+        "owner_rules.json",
+        "patterns.py"
+      ],
+      "gap": "No complete matching retained source located; older model records file hashes but no aggregate learner identity. Do not reconstruct missing bytes with current source."
+    },
+    {
+      "family": "learner",
+      "learner_version": "outer-diagnostic-consensus-v27",
+      "source_model": "a9fa27a85ccd066285b99fdb",
+      "production_order": 3,
+      "learner_identity": null,
+      "availability": "unavailable",
+      "missing_recorded_bytes": [
+        "artifacts.py",
+        "clustering.py",
+        "owner_rules.json",
+        "patterns.py"
+      ],
+      "gap": "No complete matching retained source located; older model records file hashes but no aggregate learner identity. Do not reconstruct missing bytes with current source."
+    },
+    {
+      "family": "learner",
+      "learner_version": "outer-diagnostic-consensus-v25",
+      "source_model": "b1965fa4408ca1bcf36763c9",
+      "production_order": 1,
+      "learner_identity": null,
+      "availability": "unavailable",
+      "missing_recorded_bytes": [
+        "clustering.py",
+        "owner_rules.json"
+      ],
+      "gap": "No complete matching retained source located; older model records file hashes but no aggregate learner identity. Do not reconstruct missing bytes with current source."
+    }
+  ],
+  "production_order_basis": "Same explicit documented native learner publication sequence as models; Task07C closure release is order 7. Research v42 copies have no production order."
+}

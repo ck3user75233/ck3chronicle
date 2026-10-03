@@ -12,8 +12,8 @@ from pathlib import Path
 import hashlib
 
 from template_learning.artifacts import load_bundle
-from template_learning.incremental_template_registry import all_patterns
-from template_learning.inspect_incremental_learning import native_evidence_rows
+from template_learning.artifacts import all_patterns
+from template_learning.evidence_serialization import native_evidence_rows
 from template_learning.records import identity
 
 
@@ -65,7 +65,10 @@ def build(bundle, output, top=20, examples=3):
                 rank_samples(full_samples[tid], sample, examples, distinct_unit=False)
         if row["outcome"] == "provisional":
             key = conflict_key(row)
-            assert key[2]
+            # A single complete provisional definition need not be ambiguous.
+            # Its support examples above still belong in the ordinary review.
+            if not key[2]:
+                continue
             conflicts[key] += count
             conflict_rows[key] += 1
             rank_samples(conflict_samples[key], dict(row=row, occurrences=count, unit=row["native"]),
@@ -127,7 +130,7 @@ def build(bundle, output, top=20, examples=3):
     for tid in sorted(used_patterns):
         p = patterns[tid]
         exported_patterns[tid] = dict(source=p["source_family"], region=p["context_kind"], display=p["display"],
-            status=p['status'],parts=[{k: v for k, v in part.items() if k in {"kind", "text", "type", "name", "prefix", "suffix", "optional"}}
+            status=p['status'],parts=[{k: v for k, v in part.items() if k in {"kind", "text", "type", "name", "prefix", "suffix", "optional", "alternatives", "location_label"}}
                    for part in p["parts"]], support=p["support_occurrences"], variants=p["unique_messages"])
     result = dict(revision=model["revision_id"], parser=model["parser"]["version"], bundle=str(bundle.resolve()),
         summary=model["summary"], views=views, patterns=exported_patterns, records=records,
@@ -171,8 +174,8 @@ def build_diagnostics(bundle, output, previous_review, baseline, html_output=Non
     from template_learning.parsers import load_parser, reference_from_manifest
     from template_learning.inspect_outer_diagnostics import row_key
 
-    model, _ = load_bundle(bundle)
-    lexer = load_parser(reference_from_manifest(bundle / 'parser-manifest.json')).implementation
+    model, selected_parser = load_bundle(bundle)
+    lexer = selected_parser.implementation
     manifest = json.loads((baseline / 'manifest.json').read_text(encoding='utf-8'))
     for name, digest in manifest['hashes'].items():
         path = (baseline / name).resolve()

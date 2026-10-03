@@ -2,9 +2,9 @@
 from collections import defaultdict
 import json
 
-from template_learning.patterns import pattern_identity
+from template_learning.matching_primitives import pattern_identity
 from template_learning.records import identity
-from template_learning.research_matching import match_record
+from template_learning.matching_defaults import RULES
 from template_learning.owner_rules import OWNER_RULES
 
 
@@ -12,7 +12,8 @@ def shape(parts):
     result = []
     for part in pattern_identity(parts):
         part = {k: v for k, v in part.items() if k != 'name'}
-        if part['kind'] == 'literal' and result and result[-1]['kind'] == 'literal':
+        if (part['kind'] == 'literal' and result and result[-1]['kind'] == 'literal'
+                and 'alternatives' not in part and 'alternatives' not in result[-1]):
             result[-1]['text'] += part['text']
         elif part.get('text') != '':
             result.append(part)
@@ -31,7 +32,7 @@ def fixed_fields(general, narrow, general_match, narrow_match):
     captures = {c['name']: c for c in general_match['captures']}
     replacement, fixed = [], {}
     for part in general['parts']:
-        if part['kind'] == 'literal':
+        if part['kind'] in {'literal','repeat'}:
             replacement.append(part)
             continue
         capture = captures[part['name']]
@@ -51,7 +52,7 @@ def fixed_fields(general, narrow, general_match, narrow_match):
     return fixed if fixed and shape(replacement) == shape(narrow['parts']) else None
 
 
-def retire_fixed_observations(templates, records):
+def retire_fixed_observations(templates, records, *, protected_template_ids=()):
     members = {identity(r.key): r for r in records}
     decisions, superseded = [], {}
     by_structure = defaultdict(list)
@@ -62,26 +63,26 @@ def retire_fixed_observations(templates, records):
     for pool in by_structure.values():
         slot_count = lambda t: sum(p['kind']=='slot' for p in t['parts'])
         for narrow in sorted(pool, key=lambda t: (slot_count(t), t['template_id'])):
-            if narrow['status']=='unresolved':
+            if narrow['status']=='unresolved' or narrow['template_id'] in protected_template_ids:
                 continue
             native = [members[rid] for rid in narrow['evidence_record_ids']]
             if not native:
                 continue
-            old = match_record(narrow, native[0])
+            old = RULES.match_record(narrow, native[0])
             if old is None:
                 continue
             options = []
             for general in pool:
                 if general['status'] != 'supported' or slot_count(general) <= slot_count(narrow):
                     continue
-                first = match_record(general, native[0])
+                first = RULES.match_record(general, native[0])
                 if first is None:
                     continue
                 fixed = fixed_fields(general, narrow, first, old)
                 if not fixed:
                     continue
                 for record in native[1:]:
-                    gm, nm = match_record(general, record), match_record(narrow, record)
+                    gm, nm = RULES.match_record(general, record), RULES.match_record(narrow, record)
                     if gm is None or nm is None or fixed_fields(general,narrow,gm,nm) != fixed:
                         break
                 else:

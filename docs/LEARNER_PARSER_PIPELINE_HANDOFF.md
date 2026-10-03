@@ -1,12 +1,328 @@
 # Formal reply: published native model and shared parser
 
-Updated 2026-09-26. This is the formal reply to
+## Script location stack investigation — 2026-09-28
+
+See [the investigation results](LEARNER_SCRIPT_LOCATION_STACK_INVESTIGATION_RESULTS.md)
+for complete retained-log measurement, saved SQL sample 17, native short/long
+examples, ordered location bindings, review-evidence checks and an assessed
+variable-length design. Current selection is the Task 06-integrated v45 package
+`68f1ae5db205ab46afef9c4d`, model `f5cde2616f35d563118d3d32`.
+The recommendation is to retain the active representation; proposed repeat-node
+model/API work and conditional pipeline dependencies are separate owner-review
+items. No representation or activation change is part of the investigation, and
+Task 07 need not wait for one. Earlier delivery-time selection statements below
+retain their historical meaning.
+
+Fresh replay of 73 complete native logs found **zero demonstrated length-caused
+misses or lost location fields** across 1,174,361 Script location diagnostics
+(1,807,351 file/line entries; observed lengths 1–30, 33, 41 and 55). All four
+corpus-wide no-matches are unrelated travel diagnostics preserved byte-for-byte
+in existing Task 06 review shards. The result is in-corpus coverage, not proof of
+unseen-length generalization. The focused shared-primitive probe also shows why
+simply dropping the ordered-structure gate would be unsafe: a one-frame body
+pattern can absorb later locations into PARAM, while current complete matching
+correctly rejects that assignment.
+
+## Learner v45 release delivery for Task 06 integration — 2026-09-28
+
+The owner separated learner release delivery from Task 06 integration, with a
+shared target of **model schema 5 / `ck3-native-matcher-v2`**. The learner has
+fixed the demonstrated additive applicability defect and built a replacement
+from the agreed 73 complete native logs, using 20 + 20 + 20 + 13 cumulative
+batches. This supersedes the two-log candidate as the proposed replacement.
+
+| Identity | Delivered value |
+|---|---|
+| Runtime package | `68f1ae5db205ab46afef9c4d` |
+| Published model | `f5cde2616f35d563118d3d32` |
+| Source candidate | `c4f174d947fbc531aba35fb7` |
+| Learner | `outer-diagnostic-consensus-v45` |
+| Learner implementation SHA-256 | `025c98f6ca84cab8b6ea3b81e76f9517d166ee2090a81ed4878313122ae6a088` |
+| Parser | `ck3-lossless-v1.7` |
+| Parser implementation SHA-256 | `a8005254df58daf20e000e454c9e3e9b40304be4cd0962e1fa88e90cea86baab` |
+| Model schema / matcher API | `5` / `ck3-native-matcher-v2` |
+| Package manifest / selection schemas | `1` / `2` |
+| Selector | `complete-assignment-v2` |
+
+Package directory:
+[`models/candidates/68f1ae5db205ab46afef9c4d/`](../models/candidates/68f1ae5db205ab46afef9c4d/).
+Externally pin this manifest SHA-256:
+`2a84fe9c734a558e757df54649eac0812ea380a80ac8a2d0fe17129d50f24a5f`.
+The [manifest](../models/candidates/68f1ae5db205ab46afef9c4d/manifest.json) contains
+the exact hashes of the model, parser, shared matcher primitives/public API,
+validator, selector, full-ID/continuation helpers, rules and bootstrap.
+[Proposed selection metadata](../models/candidates/selection.v45.proposed.json)
+is a separate file; active `models/selection.json` remains unchanged.
+
+The complete [release assessment](LEARNER_RELEASE_V45_RESULTS.md) leads with
+native before/after results, evolution, changed captures and remaining issues.
+The final model assigns 2,439,711 occurrences as template and 154,873 as
+provisional, leaving four unmatched. All original 122 review bodies / 9,153
+occurrences have complete assignments through 28 definitions. There are two
+lost matches versus the thirty-log baselines, no additional lost matches versus
+the prior 73-log additive model, and documented capture/status regressions.
+These limits are part of the delivery, not hidden behind a test-pass claim.
+
+### Schema/API change and callable boundary
+
+Authenticate the externally pinned manifest and its bootstrap before executing
+the package. [matcher_example.py](../tools/template_learning/matcher_example.py)
+demonstrates this without installed development packages. The callable interface
+is unchanged in shape:
+
+```python
+package = authenticated_loader.load_package(folder, expected_manifest_sha256=pin)
+raw = package.parse_file(complete_native_log)
+for unit in package.iter_units(raw):
+    result = package.match(unit, inspect=True)
+```
+
+Ordinary matching omits `inspect=True`; inspection adds alternatives without
+changing selection. Complete `template` and `provisional` assignments are both
+eligible records. `no_match` remains explicit. Byte spans are relative to each
+original region in UTF-8/surrogateescape; provenance belongs to the caller.
+See the [API-v2 contract](SHARED_MATCHER_API.md) for inputs, layouts and failures.
+
+Schema 5 represents the owner-approved line-label equivalence as a literal part:
+
+```json
+{"kind":"literal","text":"line:","alternatives":["line:","near line:"],"location_label":"line-location"}
+```
+
+Validation requires the exact declared alternatives immediately before a
+mandatory numeric LOCATOR, with only horizontal whitespace between them. These
+are literals, not slots or preprocessing. Opaque fields and all other wording
+retain their existing rules. A selected body/wrapper layout with choices adds
+`literal_choices: [[part_index, alternative_index], ...]`. Persist those indices
+with the layout and use them for exact rendering; do not substitute canonical
+`text` or infer the spelling later. Choices participate in exact diagnostic
+identity. Missing/invalid choice data fails explicitly.
+
+The package is self-contained. It needs no learner registry, mutable rules,
+training corpus or development imports. The API-v2 loader validates schema 5;
+the old selected API-v1 package continues using its own immutable loader and
+model. No cross-version training-state import or old-package rewrite occurred.
+
+### Verification and integration disposition
+
+[Immutable export validation](../models/candidates/68f1ae5db205ab46afef9c4d/native-validation.json)
+replayed all 91,925 contextual inputs representing 2,594,588 occurrences and
+found zero changed matches/outcomes/capture assignments after compaction. It
+records the native evidence digest and 378,434 body/component capture-byte checks.
+The independent `-I -S` [whole-log package replay](../.codex-tmp/learner-release-v45/delivery-replay.json)
+completed all 73 genuine inputs: 2,439,711 template / 154,873 provisional / four
+no-match occurrences, with zero discrepancies against the complete build
+inspection results. It reparsed every original log and checked 2,882,529 selected
+regions and 10,285,082 present captures against native bytes. Both declared
+line-label spellings occurred. No development modules were imported, and active
+selection remained unchanged. Coverage comparisons cache matching by distinct
+complete input (91,925); native occurrence associations and bytes were checked
+throughout, with additional fresh calls for the original review cases.
+
+All original case/ordinal associations reconcile: 118 template / four provisional
+cases, weighted 267 / 8,886 occurrences. The entire affected log gives 15,101
+template / 9,011 provisional / zero no-match across 24,112 occurrences.
+[Original-case public results](../.codex-tmp/learner-release-v45/original-122-public.json)
+and [native layout/capture examples](../.codex-tmp/learner-release-v45/delivery-examples.json)
+retain the exact values and provenance. The
+[final artifact audit](../.codex-tmp/learner-release-v45/final-audit.json) verifies
+all 12 runtime payload hashes and 28 frozen learner-source hashes. This proves
+delivery parity; the assessment's semantic limitations remain.
+
+Task 06 integration should exercise this explicit proposed selection in isolated
+verification storage, preserve choice indices through preparation, aggregation,
+SQLite and rendering, retain both final assignment statuses, and reconcile native
+review associations. Existing records retain their own immutable definitions and
+identities. The current contract remains `error-contract-v1`; no database migration,
+production processing or active-selection change is part of this learner delivery.
+The policy questions about word-run protection, grouping-sensitive captures and
+tie-breaking remain for owner review. They were not broadened to fit this corpus.
+
+## Earlier two-log Pipeline Team response — 2026-09-28
+
+[Task 06 unmatched-review formal reply](LEARNER_TASK06_UNMATCHED_REVIEW_REPLY.md)
+closes the original 122-case investigation and demonstrates complete candidate
+assignments for all 9,153 emissions. It does not announce production deployment.
+The then-current v44 additive candidate `39cb19ab0ea10a48ebb98a46` is isolated/unpublished,
+uses model schema 5 / matcher API v2, and gives 114 template / 8 provisional cases.
+The owner-highlighted date/full-ID and untyped-effect/Unknown examples have full
+worked before/after traces; the complete case ledger retains original associations.
+
+**Actual active selection:** Task 05 selected schema-2 package
+`44a0401b8adf0a2953d26705`, model `76630685c4a341ca14bf9c7c` (schema 4 / API v1).
+It remains selected and still produces the original unmatched shard. The delivery
+text below describes the earlier pre-Task-05 state; its schema-1/not-activated
+statements are historical, not current operating instructions. Current integration
+authority is the [Task 05 handoff](TASK05_ERROR_CONTRACT_IMPLEMENTATION_HANDOFF.md)
+and [Task 06 handoff](TASK06_RUN_STORAGE_AND_NATIVE_REVIEW_HANDOFF.md).
+
+## Earlier delivery record — 2026-09-27
+
+Updated 2026-09-27. This is the formal reply to
 [LEARNER_MODEL_DEPENDENCIES.md](LEARNER_MODEL_DEPENDENCIES.md), incorporating the
 owner's subsequent decisions. It supersedes the dated development checkpoints
 previously accumulated in this document. Historical research remains in the
 [implementation ledger](LEARNER_OUTER_DIAGNOSTIC_IMPLEMENTATION.md).
 
-## Current delivery: learner v41, parser v1.7, complete continuation groups
+## Historical delivery: shared model-pinned matcher candidate — 2026-09-27
+
+**Delivered, not activated:** package `44a0401b8adf0a2953d26705` at
+[`models/candidates/44a0401b8adf0a2953d26705/`](../models/candidates/44a0401b8adf0a2953d26705/).
+Manifest SHA-256: `2a768c9d9729025da2874671dfc5952b703019f57a36a68e8437e1242122aca1`.
+[Proposed selection metadata](../models/candidates/selection.proposed.json) uses
+selection schema 2 and is **not** `models/selection.json`. The active schema-1
+selection and original release remain byte-for-byte unchanged; the pipeline
+reader must support the new package before activation.
+
+Model **76630685c4a341ca14bf9c7c**, schema **4**, all **418 templates**, IDs,
+definitions, support evidence and declarations are unchanged. Model JSON hash:
+`897468f7b247c96ea29d7b28c944de1ff65c46e429ac6e06efebfbe93a6bf0db`.
+Parser **ck3-lossless-v1.7** and selector **complete-assignment-v2** are unchanged.
+Matcher API: **ck3-native-matcher-v1**. Package format:
+**ck3chronicle.native-matcher-package v1**. All twelve payload hashes are in the
+[manifest](../models/candidates/44a0401b8adf0a2953d26705/manifest.json).
+Executable dependency hashes are:
+
+| Artifact | SHA-256 |
+|---|---|
+| `matcher_loader.py` | `5af9fa3f0d7cfd36cd9133630a4183787be18c14b0a7e04d09786a0a7430f17c` |
+| `native_matching.py` | `5262ed2944a85e8ffe34ce23ab6e11b3c5b47976cae157711532c87158d5ff4d` |
+| `matching_primitives.py` | `b10fb86cac48c73c376a50da07379633f2f508d036a33bbbe4203a37a31693be` |
+| `matching_validation.py` | `3d66d2e7ec9ff175d2bbdde778e97fd04bd080b4c4ad464fc27ae873bbcc57fc` |
+| `full_ids.py` | `d91a646cde7887c5fe497e4c76a4bd4cd5ca59277c06c55995cdb5116d22dc28` |
+| `assignment.py` | `29e3bc8f54ac678988a3dc3e0023ce7c1dc76403900a44805ef958fbd47be235` |
+| `continuations.py` | `11e4d8b146367c6374508a29b802a143288b973760620babc02c8f9f9760d6ce` |
+| `parser.py` | `a8005254df58daf20e000e454c9e3e9b40304be4cd0962e1fa88e90cea86baab` |
+
+The old model's learner implementation hashes remain training lineage. The new
+manifest pins runtime matching code. `native-validation.json` is the unchanged
+source-release record; the fresh extraction proof is linked below.
+
+### Callable contract and runnable example
+
+Authenticate the manifest and bootstrap, then call
+`matcher_loader.load_package(folder, expected_manifest_sha256=pin)`.
+`package.parse_file(path)` uses the pinned parser; `package.iter_units(raw)`
+projects its complete regions. `package.match(unit, inspect=False)` returns one
+`assignment` with final `match_status: template|provisional`, or
+`status: no_match, assignment: null`. Inspection alternatives are opt-in.
+
+Input supplies parser version/hash, source family/emitter, context kind, original
+body text/pieces, complete prefix/suffix regions where required, ordered original
+continuations and caller provenance. The selected result supplies template ID,
+wrapper IDs, actual component `layout_index`, ordered `component_index`, and
+ordered captures `{slot_id,type,value,present,span}` per named region. Provenance
+associations pass through unchanged. No absolute occurrence binding is performed.
+
+Every span is a half-open **UTF-8/surrogateescape byte interval relative to the
+start of its own original region**, excluding the log header. Each wrapper and
+continuation has its own origin. Absence is `false/null/null`; present empty is
+`true/""/[p,p]`. Render directly from the selected layout references. Package
+integrity/compatibility, matcher declarations/input and inconsistent-result
+errors are explicit exceptions, distinct from no-match. Full input/result/error
+schemas and layout lookups: [Shared matcher API](SHARED_MATCHER_API.md).
+
+This command runs the standalone example over the **complete** identified
+continuation-bearing native log. It needs only Python's standard library and the
+package; it works with learner/site imports disabled:
+
+```powershell
+.\.venv\Scripts\python.exe -I -S -B tools/template_learning/matcher_example.py --package models/candidates/44a0401b8adf0a2953d26705 --manifest-sha256 2a768c9d9729025da2874671dfc5952b703019f57a36a68e8437e1242122aca1 --log .codex-tmp/learner-refactor/at-symbol-incremental-review/inputs/sessions/10cbdcb23e34a5b571a16eb52d390e5e676663936f000fd43404af19d85027fb/error.log
+```
+
+Observed: 49,560 template and 26,949 provisional results, including complete
+supporting groups. [Example source](../tools/template_learning/matcher_example.py)
+and [saved output](../.codex-tmp/shared-matcher/example-result.json).
+
+### Learner changes and native verification
+
+Matching bodies were extracted from `patterns.py`, `research_matching.py`,
+`constructions.py`, `parameter_structures.py`, `literal_guidance.py` and
+`regions.py` into `matching_primitives.py`. `native_matching.py` connects those
+primitives, the existing continuation helper and unchanged selector. The only
+component-helper output extension is the selected literal `layout_index`.
+`matching_defaults.py` supplies explicit current learner rules for inference;
+it is not packaged. Full-ID mechanics are unchanged and now release-hashed.
+No independent fallback matcher remains in learner code.
+
+Remaining caller paths:
+
+- Evaluation and publication validation use `Matcher.inspect_record`; the
+  existing incremental/candidate/unseen-session tools reach that evaluator.
+- Pattern derivation, clustering, wording checks, selection evidence and
+  template retirement use shared primitives through explicit learner defaults.
+- Native/outer/symbol-location inspection uses the same primitives.
+  `review_assignment_changes.py` no longer invokes the pipeline matcher.
+- `publish_native_model.py` now publishes matcher packages from an explicit
+  reviewed release or a newly validated candidate; existing releases are never
+  overwritten. No inference or template-policy redesign was performed.
+
+Fresh baseline and learner after replay: **31 complete, unmodified logs**, all
+30 selected-release evidence hashes plus the additional handoff log; none
+unavailable. **78,869 distinct complete inputs within logs**, representing
+**1,167,165 diagnostics**. Independently loaded final-package replay agrees on
+eligibility, every complete capture alternative, selected templates/wrappers,
+components and final status. Unpublished-candidate replay also agrees; compacting
+it reproduces the selected model exactly.
+
+Final counts: **712,271 template / 445,741 provisional / 9,153 no-match**.
+**4,447,658 present captures and 59,054 absences** agree with original bytes;
+all selected layouts reconstruct their native regions. All nine slot types,
+**one present-empty REASON**, **55,268 wrappers**, **11 continuation groups /
+13 entries**, and **1,086 evidence-ranked competing-template occurrences** are
+covered. Instrumentation observed **102,371 selected-region materializations**
+across distinct inputs, exactly once per selected region, with none for losing
+candidates and zero absolute binding calls. Ordinary results omit alternatives.
+The standalone example additionally invoked ordinary matching on all 76,509
+occurrences of its complete log.
+
+Human-readable examples (full original bodies, wrappers, templates, captures,
+statuses and provenance in the [native appendix](../.codex-tmp/shared-matcher/NATIVE_EXAMPLES.md)):
+
+- `Failed to read key reference: : , near line: 3` selects
+  `b35f3708de13620311279395`, template. Its two OPTIONAL_KEY captures are absent;
+  LOCATOR `"3"` is present at body bytes `[45,46]`. Required wrapper IDs and
+  wrapper captures remain in the selected assignment.
+- The native `equip_artifact_to_owner_replace effect [  ]` diagnostic selects
+  `b40e4648e0d25bfd2b9857e0`, provisional. REASON is present `""` at `[73,73]`;
+  the full file, line `1005` and PARAM `wedding_gift:effect` remain captured.
+- `House 'Ashikaga (Internal ID: 33577602 - Internal Key: )' ...` selects
+  `d93bb7bf10986cf39a125334`, template. HOUSE_FULL_ID retains the entire opaque
+  ID, including its empty internal key; that is not an absent or empty slot.
+- The two-entry native title group selects `0875e8c46afb0b47271a8341`, template,
+  with both original components in order and layout index 0. Unmatched evidence
+  remains: 9,153 occurrences / 122 distinct inputs in the additional log,
+  including the original formatted already-has-trait diagnostic.
+
+No semantic differences were found. The sole legacy-shaped result difference
+is additive component layout metadata, explicitly accounted for in comparison.
+New public presence/layout/provenance fields expose the same selected assignment.
+
+[Verification and limitations](../.codex-tmp/shared-matcher/VERIFICATION.md),
+[fresh baseline and input provenance](../.codex-tmp/shared-matcher/baseline/baseline.json),
+[final independent replay](../.codex-tmp/shared-matcher/independent-final.json),
+[learner after replay](../.codex-tmp/shared-matcher/baseline/after.json),
+[unpublished parity](../.codex-tmp/shared-matcher/unpublished.json).
+Generated native evidence remains ignored. No native capture ambiguity, template
+or capture tie, alternative component layout, >2-entry group, declaration error,
+corrupt-package input or unresolved recovery was available. Those branches are
+not claimed empirically verified. Deterministic provisional tie handling remains
+in the byte-unchanged selector. Parser recovery limitations are unchanged and
+separate from matcher no-match; see the API contract.
+
+### Pipeline actions
+
+1. Add support for the proposed selection/package schema; load and verify the
+   package and its parser/model/matcher/selector pins.
+2. Replace local matching with `package.match` on each complete recovered unit.
+3. Bind only its selected assignment **once**, preserving final match status,
+   exact values, presence, layout references, order and caller provenance.
+4. Verify against complete native logs, then retire the superseded pipeline
+   matcher. Keep error typing `unknown`.
+5. Activate the candidate only after reader integration. SQL, production
+   ingestion, application cutover and watcher operation remain separate work.
+
+## Active older release: learner v41, parser v1.7, complete continuation groups
 
 Published and pinned revision **76630685c4a341ca14bf9c7c** in
 `models/selection.json`. Manifest SHA-256:

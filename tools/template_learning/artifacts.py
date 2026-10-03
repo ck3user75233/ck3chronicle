@@ -2,11 +2,16 @@
 from __future__ import annotations
 import json
 import hashlib
+from copy import deepcopy
+import os
+import tempfile
 from pathlib import Path
 from template_learning.clustering import CLUSTERER_VERSION, cluster_source_records
 from template_learning.inventory import sha256_file
 from template_learning import constructions
-from template_learning.patterns import SLOT_DEFINITIONS, display_pattern, parameter_piece_ranges
+from template_learning.patterns import SLOT_DEFINITIONS
+from template_learning.matching_defaults import parameter_piece_ranges
+from template_learning.matching_primitives import display_pattern
 from template_learning.literal_guidance import LITERAL_GUIDANCE
 from template_learning.owner_rules import OWNER_RULES, CONSTRUCTIONS, INFERENCE_POLICY
 from template_learning.records import FEATURE_VERSION, SequenceRecord, identity
@@ -16,24 +21,14 @@ from template_learning.selection_evidence import independent_support, selection_
 from template_learning.template_retirement import retire_fixed_observations
 
 MODEL_SCHEMA = "ck3chronicle.native-message-model"
-MODEL_VERSION = 4
+MODEL_VERSION = 6
 
-LEARNER_IMPLEMENTATION_FILES = (
-    "records.py", "clustering.py", "patterns.py", "regions.py", "literal_guidance.py", "diagnostic_wording.py",
-    "owner_rules.py", "owner_rules.json", "constructions.py", "parameter_structures.py", "full_ids.py",
-    "artifacts.py", "inventory.py", "evidence.py", "research_matching.py",
-    "incremental_template_registry.py", "learn_error_templates.py",
-    "assignment.py", "selection_evidence.py", "template_retirement.py",
-    "continuations.py",
-)
+from template_learning.learner_loader import (FILES as LEARNER_IMPLEMENTATION_FILES,
+    implementation_identity, selected_release, require_candidate)
 
 
 def learner_identity():
-    """Pin evidence state to the actual learner, not just its display version."""
-    hashes = {name: sha256_file(Path(__file__).with_name(name))
-              for name in LEARNER_IMPLEMENTATION_FILES}
-    return dict(version=CLUSTERER_VERSION, implementation_hashes=hashes,
-                sha256=identity((CLUSTERER_VERSION, hashes)))
+    return implementation_identity(Path(__file__).parent)
 
 
 def canonical_bytes(value):
@@ -70,7 +65,7 @@ def _pattern(cluster):
 
 def _continuation_contract(cluster):
     from template_learning.continuations import native_layout, match_components
-    from template_learning.patterns import match_pattern
+    from template_learning.matching_defaults import match_pattern
     if not cluster.medoid.continuations:
         return None
     rule = next((r for r in OWNER_RULES['continuation_structures']
@@ -119,13 +114,39 @@ def _learn_pool(source, records, threshold, review):
 
 
 def build_model(records_by_source, evidence_stats, *, parser, threshold=.72,
-                duplicates=(), excluded_evidence=()):
+                duplicates=(), excluded_evidence=(), previous_model=None):
+    from template_learning import additive_learning
+    release = selected_release()
+    prior_matcher = None
+    update_sources = []
+    if previous_model is not None:
+        if previous_model['algorithm'].get('learner_identity') != learner_identity():
+            raise ValueError('additive learning requires the same learner implementation')
+        if previous_model['algorithm']['cluster_threshold'] != threshold:
+            raise ValueError('additive learning requires the same inference threshold')
+        if (previous_model['owner_rules'] != OWNER_RULES or
+                any(previous_model['parser'][key] != parser.reference.to_dict()[key]
+                    for key in ('version', 'sha256'))):
+            raise ValueError('additive learning requires the same rules and pinned parser')
+        if not set(previous_model['evidence']) <= set(evidence_stats):
+            raise ValueError('additive learning requires cumulative evidence; use a fresh build to remove inputs')
+        from template_learning.native_matching import Matcher
+        prior_matcher = Matcher(previous_model)
     templates, source_summary, discovery_review, retirement_review = [], {}, [], []
+    if previous_model is not None:
+        retirement_review = deepcopy(previous_model['template_retirement'])
     sources = set(records_by_source)
     for source in sorted(sources):
         records = records_by_source.get(source,[])
-        complete = _learn_pool(source,records,threshold,discovery_review)
-        complete,retired=retire_fixed_observations(complete,records)
+        protected = ()
+        if previous_model is None:
+            complete = _learn_pool(source,records,threshold,discovery_review)
+        else:
+            previous = [t for t in previous_model['templates'] if t['source_family'] == source]
+            complete, protected, detail = additive_learning.learn_source(
+                source, records, previous, prior_matcher, threshold, _learn_pool, discovery_review)
+            update_sources.append(detail)
+        complete,retired=retire_fixed_observations(complete,records,protected_template_ids=protected)
         retirement_review.extend(retired)
         templates.extend(complete)
         source_summary[source] = dict(unique_messages=len(records),templates=len(complete),
@@ -133,7 +154,7 @@ def build_model(records_by_source, evidence_stats, *, parser, threshold=.72,
         print(f"Learned {source}: {len(records)} distinct messages -> {len(complete)} outer message candidates",flush=True)
     all_patterns = templates
     unresolved = [dict(evidence_sha256=sha,**row) for sha,stats in evidence_stats.items() for row in stats["unresolved_emissions"]]
-    model = dict(schema=MODEL_SCHEMA,schema_version=MODEL_VERSION,record_scope="message",
+    model = dict(learner_release=release, schema=MODEL_SCHEMA,schema_version=MODEL_VERSION,record_scope="message",
         parser={**parser.reference.to_dict(),"artifact":"parser.py"},
         algorithm=dict(feature_version=FEATURE_VERSION,clusterer_version=CLUSTERER_VERSION,
             implementation_hashes=learner_identity()['implementation_hashes'],
@@ -143,7 +164,10 @@ def build_model(records_by_source, evidence_stats, *, parser, threshold=.72,
             medoid_selection="deterministic spread: up to 40 candidates against up to 100 distinct variants; all variants enter template alignment",
             occurrence_weighting=False,additional_preprocessing=[],case_sensitive_retrieval=True,
             literal_refinement="case-only substitutions and empirically supported wording retained; presumed-literal guidance enabled="+str(LITERAL_GUIDANCE['enabled']),
-            template_imports=False,discovery_scope="all selected native evidence"),
+            template_imports=False,
+            build_strategy=additive_learning.STRATEGY_VERSION if previous_model is not None else 'fresh-native-batch',
+            discovery_scope="cumulative unsettled native evidence; retain same-version settled definitions"
+                if previous_model is not None else "all selected native evidence"),
         slot_definitions=SLOT_DEFINITIONS,owner_overrides=[],literal_guidance=LITERAL_GUIDANCE,owner_rules=OWNER_RULES,
         assignment_policy=OWNER_RULES['assignment_policy'], template_retirement=retirement_review,
         region_discovery=dict(decisions=discovery_review,
@@ -161,8 +185,12 @@ def build_model(records_by_source, evidence_stats, *, parser, threshold=.72,
         excluded_evidence=list(excluded_evidence), duplicates=list(duplicates),
         status="research_candidate_not_promoted",
         diagnostic_policy=dict(learning_unit="complete outer message",reason_fields="intact owner-declared content",
-            template_support="At least two distinct native examples after replacing locations and declared traces; repetitions do not increase support. Redundant fixed KEY observations retire without re-inference. One complete assignment is selected; evidence ties remain provisional.",
+            template_support="At least two distinct native messages, including variation in every slot type; exact repetitions do not increase support. Redundant fixed KEY observations retire without re-inference. One complete assignment is selected; evidence ties remain provisional.",
             slot_evidence="candidate member messages only",detached_component_learning=False))
+    if previous_model is not None:
+        model['learning_update'] = dict(strategy=additive_learning.STRATEGY_VERSION,
+            parent_revision=previous_model['revision_id'], sources=update_sources,
+            transitions=additive_learning.lifecycle(previous_model['templates'], templates, retirement_review))
     evaluation_summary,evaluated,_ = evaluate_records(model,records_by_source,evidence_stats)
     model["summary"]["training_outcomes"] = evaluation_summary["counts"]
     model["revision_id"] = identity(model)[:24]
@@ -195,38 +223,48 @@ def write_report(model, path):
 
 
 def write_bundle(root, model, evidence, *, parser, build_command):
+    from template_learning.evidence_serialization import write_native_evidence
     root = Path(root)
+    root.mkdir(parents=True, exist_ok=True)
     folder = root/model["revision_id"]
     payloads = {"empirical_template_model.json":canonical_bytes(model),
-        "native_evidence.json":canonical_bytes(evidence),
         "parser.py":Path(parser.implementation.__file__).read_bytes(),
         "parser-manifest.json":canonical_bytes(model["parser"]),
         "assignment.py":Path(__file__).with_name('assignment.py').read_bytes(),
         "continuations.py":Path(__file__).with_name('continuations.py').read_bytes()}
-    manifest = dict(schema="ck3chronicle.native-candidate-bundle",schema_version=1,
-        revision_id=model["revision_id"], parser=model["parser"], build_command=build_command,
-        hashes={name:hashlib.sha256(data).hexdigest() for name,data in payloads.items()})
-    # Immutable revision contents. Reproduction commands are metadata, not a
-    # reason to overwrite a previous bundle with the same learned model.
-    if folder.exists():
-        current = json.loads((folder/"manifest.json").read_text(encoding="utf-8"))
-        if current["hashes"] != manifest["hashes"]:
-            raise ValueError(f"immutable candidate revision disagrees: {folder}")
+    descriptor, temporary_name = tempfile.mkstemp(prefix='.native-evidence-', dir=root)
+    os.close(descriptor)
+    temporary = Path(temporary_name)
+    try:
+        evidence_hash = write_native_evidence(temporary, evidence)
+        manifest = dict(schema="ck3chronicle.native-candidate-bundle",schema_version=2,
+            revision_id=model["revision_id"], learner_release=model["learner_release"], parser=model["parser"], build_command=build_command,
+            hashes={**{name:hashlib.sha256(data).hexdigest() for name,data in payloads.items()},
+                    'native_evidence.json':evidence_hash})
+        # Immutable revision contents. Reproduction commands are metadata, not a
+        # reason to overwrite a previous bundle with the same learned model.
+        if folder.exists():
+            current = json.loads((folder/"manifest.json").read_text(encoding="utf-8"))
+            if current["hashes"] != manifest["hashes"]:
+                raise ValueError(f"immutable candidate revision disagrees: {folder}")
+            load_bundle(folder)
+            return folder
+        folder.mkdir()
+        for name,data in payloads.items():
+            (folder/name).write_bytes(data)
+        os.replace(temporary, folder/'native_evidence.json')
+        (folder/"manifest.json").write_bytes(canonical_bytes(manifest))
+        write_report(model,folder/"REVIEW.md")
         load_bundle(folder)
         return folder
-    folder.mkdir(parents=True)
-    for name,data in payloads.items():
-        (folder/name).write_bytes(data)
-    (folder/"manifest.json").write_bytes(canonical_bytes(manifest))
-    write_report(model,folder/"REVIEW.md")
-    load_bundle(folder)
-    return folder
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 def load_bundle(folder):
     folder = Path(folder).resolve()
     manifest = json.loads((folder/"manifest.json").read_text(encoding="utf-8"))
-    if manifest.get("schema")!="ck3chronicle.native-candidate-bundle" or manifest.get("schema_version")!=1:
+    if manifest.get("schema")!="ck3chronicle.native-candidate-bundle" or manifest.get("schema_version")!=2:
         raise ValueError("unsupported native bundle schema")
     if set(manifest["hashes"])!={"empirical_template_model.json","native_evidence.json","parser.py","parser-manifest.json","assignment.py","continuations.py"}:
         raise ValueError("incomplete native bundle hash manifest")
@@ -237,6 +275,9 @@ def load_bundle(folder):
     model = json.loads((folder/"empirical_template_model.json").read_text(encoding="utf-8"))
     if model.get("schema")!=MODEL_SCHEMA or model.get("schema_version")!=MODEL_VERSION or model.get("record_scope")!="message":
         raise ValueError("unsupported native model schema")
+    require_candidate(model)
+    if manifest["learner_release"] != model["learner_release"]:
+        raise ValueError("candidate learner release disagreement")
     if model["constructions"] != CONSTRUCTIONS:
         raise ValueError("candidate construction declarations differ from the selected learner rules")
     if model['algorithm']['clusterer_version']!=CLUSTERER_VERSION or model['owner_rules']!=OWNER_RULES:
@@ -245,5 +286,11 @@ def load_bundle(folder):
         raise ValueError("model/parser manifest disagreement")
     if model["revision_id"]!=manifest["revision_id"] or model["revision_id"]!=identity({k:v for k,v in model.items() if k!="revision_id"})[:24]:
         raise ValueError("model revision identity disagreement")
-    parser = load_parser(reference_from_manifest(folder/"parser-manifest.json"))
+    parser = load_parser(reference_from_manifest(Path(__file__).parent/"parsers/v1_7/manifest.json"))
+    if any(parser.reference.to_dict()[k] != model["parser"][k] for k in ("version", "sha256")):
+        raise ValueError("candidate parser differs from selected learner release")
     return model,parser
+
+
+def all_patterns(model):
+    return {p["template_id"]: p for p in model["templates"]}

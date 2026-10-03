@@ -5,47 +5,96 @@ from dataclasses import dataclass, field
 import difflib
 from functools import lru_cache
 from template_learning.records import SequenceRecord, identity
-from template_learning.patterns import derive_pattern, inference_units, literal_anchor_signature, match_pattern, pattern_identity, punctuation_piece, parameter_piece_ranges, UnsupportedField, field_structure, location_label_forms
-from template_learning import constructions, regions
+from template_learning.patterns import derive_pattern, inference_units, literal_anchor_signature, UnsupportedField, field_structure, location_label_forms
+from template_learning.matching_defaults import match_pattern, parameter_piece_ranges
+from template_learning.matching_primitives import pattern_identity, punctuation_piece
+from template_learning import constructions, regions, parameter_structures
+from template_learning.location_sequences import sequence as location_sequence
 from template_learning.owner_rules import INFERENCE_POLICY
 from template_learning.literal_guidance import guided_piece_indices
 from template_learning.diagnostic_wording import reject_wording_loss
 
-CLUSTERER_VERSION = "outer-diagnostic-consensus-v41"
+CLUSTERER_VERSION = "outer-diagnostic-consensus-v48"
 
 
 @lru_cache(maxsize=32768)
 def sequence_similarity(left,right):
     if not left or not right:
         return float(left == right)
-    matched = sum(b.size for b in difflib.SequenceMatcher(None,left,right,autojunk=False).get_matching_blocks())
+    blocks = difflib.SequenceMatcher(None,left,right,autojunk=False).get_matching_blocks()
+    if any(unit[0] == 'quoted-value' for unit in (*left, *right)):
+        # Quotation positions guide ordered alignment without agreement credit.
+        # Missing/aligned-empty-vs-present positions penalize the comparison.
+        matched = sum(left[b.a+i][0] != 'quoted-value' for b in blocks for i in range(b.size))
+        quote_matches = sum(left[b.a+i][0] == 'quoted-value' for b in blocks for i in range(b.size))
+        quotes_left, quotes_right = (sum(u[0] == 'quoted-value' for u in seq) for seq in (left, right))
+        shortest, longest = sorted((len(left)-quotes_left, len(right)-quotes_right))
+        missing = max(quotes_left, quotes_right)-quote_matches
+        if not shortest:
+            return 0.0
+        return .55*matched/(longest+missing) + .35*matched/(shortest+missing) + .10*shortest/(longest+missing)
+    matched = sum(b.size for b in blocks)
     shortest,longest = sorted((len(left),len(right)))
     return .55*matched/longest + .35*matched/shortest + .10*shortest/longest
 
 
 def learning_tokens(record, parts=None):
     # Initial discovery compares the outside of probable balanced regions.
-    # After inference every accepted field is opaque. Its value can neither
-    # reward nor penalize agreement in the diagnostic wording. Unaccepted
-    # interiors return to comparison; field structure is checked by inference.
+    # An accepted field contributes one typed position, never its value words.
+    # Probable regions have not established a field and receive no such credit.
     if parts is None and hasattr(record,'_comparison_tokens'):
         return record._comparison_tokens
     excluded = []
+    fields = []
+    repeated = location_sequence(tuple(record.pieces))
+    tail_start = len(record.text[:repeated['start']].encode('utf-8','surrogateescape')) if repeated else None
     if parts is not None:
         captures = match_pattern(parts, record.text, pieces=record.pieces)
         if captures is None:
             raise ValueError("only supported captures can affect similarity")
         excluded = [c["span"] for c in captures if c["span"] is not None]
+        fields = [(c['span'][0], 0, ('field', c['type'])) for c in captures
+                  if c['span'] is not None and (tail_start is None or c['span'][0] < tail_start)]
     offsets, cursor = [0], 0
     for _, text in record.pieces:
         cursor += len(text.encode("utf-8", "surrogateescape"))
         offsets.append(cursor)
     keys, spans = inference_units(record,region_first=parts is None)
     diagnostic=constructions.comparison_ranges(record.source_family,record.text)
-    result=tuple(key for key,(a,b) in zip(keys,spans)
-                 if key[0] == "token" and any(c.isalnum() for c in key[1])
-                 and any(x<=offsets[a] and offsets[b]<=y for x,y in diagnostic)
-                 and not any(x <= offsets[a] and offsets[b] <= y for x,y in excluded))
+    units = list(fields)
+    quotes = ()
+    if parts is None:
+        proposed, _ = regions.discovery_quote_ranges(record.pieces)
+        opaque = [(a,b) for key,(a,b) in zip(keys,spans) if key[0] not in {'token','gap'}]
+        quotes = [(a,b) for a,b in proposed
+                  if not any(x < b and a < y for x,y in opaque)
+                  and any(x <= offsets[a] and offsets[b] <= y for x,y in diagnostic)]
+        units.extend((offsets[a], 0, ('quoted-value',
+            'present' if ''.join(t for _,t in record.pieces[a+1:b-1]).strip() else 'empty'))
+            for a,b in quotes)
+    for key, (a, b) in zip(keys, spans):
+        if any(x <= a and b <= y for x,y in quotes):
+            continue
+        if any(x <= offsets[a] and offsets[b] <= y for x, y in excluded):
+            continue
+        if key[0] == 'location-label':
+            units.append((offsets[a], 1, key))
+        elif key[0] == 'token' and any(c.isalnum() for c in key[1]):
+            if any(x <= offsets[a] and offsets[b] <= y for x, y in diagnostic):
+                units.append((offsets[a], 1, key))
+        elif parts is None:
+            kind = None
+            if key[0] == 'declared':
+                kind = key[3]
+            elif key[0] == 'parameter':
+                kind = parameter_structures.BY_ID[key[1]].get('slot_type', 'PARAM')
+            elif key[0] == 'location':
+                kind = 'LOCATOR'
+            elif key[0] == 'date-key':
+                kind = 'KEY'
+            if kind is not None:
+                units.append((offsets[a], 0, ('field', kind)))
+    result = tuple(key for _, _, key in sorted(units))
     if parts is None:
         record._comparison_tokens=result
     return result
@@ -75,6 +124,8 @@ def comparable(left,right,threshold):
     """Short formulations may propose a group; joint field evidence must accept it."""
     if not left or not right:
         return left==right
+    if any(unit[0] == 'quoted-value' for unit in (*left, *right)):
+        return sequence_similarity(left,right)>=threshold
     if len(left)==len(right)<=INFERENCE_POLICY['short_form_max_tokens']:
         shared=sum(a==b for a,b in zip(left,right))
         return shared>0 and shared/len(left)>=INFERENCE_POLICY['short_form_shared_fraction']
@@ -243,7 +294,7 @@ def refine_supported_wording(cluster, peers, review=None):
     if cluster.failures:
         return [cluster]
     for index,part in enumerate(cluster.parts):
-        if (part["kind"] != "literal" or index == 0 or index == len(cluster.parts)-1
+        if (part["kind"] != "literal" or 'alternatives' in part or index == 0 or index == len(cluster.parts)-1
                 or cluster.parts[index-1]["kind"] != "slot"
                 or cluster.parts[index-1]["optional"]
                 or not any(c.isalpha() for c in part["text"])):
@@ -299,6 +350,9 @@ def wording_shape(parts):
     result = []
     for index,part in enumerate(parts):
         if part["kind"] == "literal":
+            if 'alternatives' in part:
+                result.append(('literal-choice', part['location_label'], tuple(part['alternatives'])))
+                continue
             text = part["text"]
             if index and parts[index-1].get("type") in text_types:
                 text = text.lstrip()
@@ -306,6 +360,8 @@ def wording_shape(parts):
                 text = text.rstrip()
             if text:
                 result.append(("literal",text))
+        elif part['kind']=='repeat':
+            result.append(('repeated-location',))
         elif part["type"] in text_types:
             result.append(("text-field",))
         else:
@@ -355,6 +411,7 @@ def erased_supported_wording(cluster, proposed):
     variables=[c['span'] for c in old if c['span'] is not None]
     fields={p['name']:p for p in proposed if p['kind']=='slot'}
     parameters=[c['span'] for c in new if c['type']=='PARAM' and c['span'] is not None
+                and c['name'] in fields
                 and not fields[c['name']].get('field_support',{}).get('assessment',{}).get('paired_boundaries')]
     runs, words, cursor = [], [], 0
     for kind,text in cluster.medoid.pieces:
@@ -442,7 +499,7 @@ def refine_region_groups(clusters, threshold, review):
                 erased = erased_supported_wording(left,candidate.parts)+erased_supported_wording(right,candidate.parts)
                 event.update(score_after_supported_regions=score,
                     diagnostic_comparison=dict(left=list(a),right=list(b),
-                        excluded='all accepted slot captures; field contents supply no wording evidence'),
+                        excluded='all slot value contents; each recognized field contributes one typed position'),
                     proposed_pattern=pattern_identity(candidate.parts),hypotheses=concise(candidate.hypotheses))
                 if reject_wording_loss([left, right], candidate, path='refine_region_groups', review=review):
                     event.update(decision='rejected', reason='established diagnostic wording would be lost to proposed variable fields')
@@ -450,8 +507,8 @@ def refine_region_groups(clusters, threshold, review):
                     event.update(decision="divided",reason="independent variable examples retain distinct literal wording; reject the broader PARAM",preserved_wording=erased)
                 elif not supported:
                     event.update(decision="rejected",reason="no observed variable region; insufficient evidence for regrouping")
-                elif not set(a)&set(b):
-                    event.update(decision="rejected",reason="insufficient common diagnostic wording outside accepted fields; field existence has no weight")
+                elif not {u for u in a if u[0] == 'token'} & {u for u in b if u[0] == 'token'}:
+                    event.update(decision="rejected",reason="no shared diagnostic word outside accepted fields; field positions alone do not establish a formulation")
                 elif not comparable(a,b,threshold):
                     event.update(decision="rejected",reason="remaining case-sensitive wording is below the similarity threshold")
                 else:
@@ -468,6 +525,42 @@ def refine_region_groups(clusters, threshold, review):
         review.append(dict(decision="stopped", reason="one original-group sweep completed; merged groups are not reopened",
             source=clusters[0].source_family if clusters else None, iteration=iteration, groups=len(clusters)))
     return clusters
+
+
+def consolidate_identical_templates(clusters, *, review=None):
+    """Infer each identical-contract evidence union once, preserving all members.
+
+    Keep this after the one-sweep regrouping pass: moving it earlier changes
+    proposal ranking. Every original constituent still enters the wording guard.
+    """
+    groups = defaultdict(list)
+    for cluster in clusters:
+        groups[cluster.template_id].append(cluster)
+    result = []
+    duplicate_groups = sum(len(peers)>1 for peers in groups.values())
+    if duplicate_groups:
+        print(f"Consolidating {clusters[0].source_family}: {len(clusters)} groups, "
+              f"{duplicate_groups} duplicate identities", flush=True)
+    for key, peers in groups.items():
+        if len(peers) == 1:
+            result.append(peers[0])
+            continue
+        records = [r for peer in peers for r in peer.records]
+        print(f"Consolidating {peers[0].source_family}: identity {key}, "
+              f"{len(peers)} groups, {len(records)} records", flush=True)
+        child = TemplateCluster(peers[0].source_family, peers[0].context_kind,
+            records, choose_medoid(records),
+            refinements=[r for peer in peers for r in peer.refinements])
+        child.parts, child.failures = derive_pattern(records, child.medoid, hypotheses=child.hypotheses)
+        if reject_wording_loss(peers, child, path='duplicate_id_consolidation', review=review):
+            raise ValueError('identical-template consolidation unexpectedly erased diagnostic wording')
+        result.append(child)
+        if review is not None:
+            review.append(dict(decision='consolidated', path='duplicate_id_consolidation',
+                source=child.source_family, previous_template_id=key,
+                template_id=child.template_id, groups=len(peers), records=len(records),
+                reason='all identical-contract members inferred once; every original constituent checked'))
+    return sorted(result, key=lambda cluster:cluster.template_id)
 
 
 def cluster_source_records(source_family, records, threshold=.72, *, review=None):
@@ -499,18 +592,4 @@ def cluster_source_records(source_family, records, threshold=.72, *, review=None
     # Separate discovery groups can converge to exactly the same pattern.
     # Merge that evidence into one candidate rather than reporting repeated
     # copies of an identical contract as competing alternatives.
-    unique = {}
-    for cluster in clusters:
-        key = cluster.template_id
-        if key not in unique:
-            unique[key] = cluster
-            continue
-        previous = unique[key]
-        child = TemplateCluster(source_family,previous.context_kind,[*previous.records,*cluster.records],previous.medoid,
-            refinements=[*previous.refinements,*cluster.refinements])
-        child.medoid=choose_medoid(child.records)
-        child.parts,child.failures=derive_pattern(child.records,child.medoid,hypotheses=child.hypotheses)
-        if reject_wording_loss([previous,cluster],child,path='duplicate_id_consolidation',review=review):
-            raise ValueError('identical-template consolidation unexpectedly erased diagnostic wording')
-        unique[key]=child
-    return sorted(unique.values(),key=lambda c:c.template_id)
+    return consolidate_identical_templates(clusters, review=review)

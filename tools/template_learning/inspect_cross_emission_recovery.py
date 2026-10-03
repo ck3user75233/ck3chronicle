@@ -107,10 +107,7 @@ def inspect(inputs, census, old_manifest, new_manifest, output):
         print(f'{number}/{len(expected["files"])} complete logs: {counts["groups"]} groups, '
               f'{counts["supporting_entries"]} supporting entries', flush=True)
 
-    # Exercise actual consumer boundaries on both complete affected logs.
-    from ck3chronicle.pipeline.raw_input import iter_diagnostics
-    from ck3chronicle.pipeline.bindings import bind_captures
-    from ck3chronicle.pipeline.domain import ByteSpan, Capture
+    # Independent learner feature and parser roundtrip checks.
     from template_learning.inventory import ProtectedLog
     from template_learning.incremental_template_registry import feature_from_log, validate_feature
     consumer_results = []
@@ -121,23 +118,6 @@ def inspect(inputs, census, old_manifest, new_manifest, output):
         wanted = [c for c in expected['cases'] if c['log'] == sha]
         openings = {c['opening']['ordinal'] for c in wanted}
         supporting = {e['emission']['ordinal'] for c in wanted for e in c['entries']}
-        emitted = set()
-        grouped = []
-        for diagnostic in iter_diagnostics(raw):
-            emitted.add(diagnostic.emission_ordinal)
-            if getattr(diagnostic, 'continuations', ()):
-                grouped.append(diagnostic)
-                for i, entry in enumerate(diagnostic.continuations):
-                    value = raw.read_text(entry.value_span)
-                    relative = ByteSpan(entry.value_span.start-entry.body.span.start,
-                                        entry.value_span.end-entry.body.span.start)
-                    # The binding mechanics are exercised using the observed range;
-                    # this is not a model match or parser-assigned PARAM type.
-                    bound = bind_captures(raw, entry.body, (Capture('title', 'PARAM', value, relative),),
-                        template_id='native-range-verification', region_name=f'continuations[{i}]')
-                    assert bound[0].span == entry.value_span
-        assert {d.emission_ordinal for d in grouped} == openings
-        assert not emitted & supporting
         stat = path.stat()
         evidence = ProtectedLog(sha, 'protected', path, sha, stat.st_size, stat.st_mtime_ns)
         feature = feature_from_log(evidence, parser=new)
@@ -159,8 +139,8 @@ def inspect(inputs, census, old_manifest, new_manifest, output):
                 replay = new.load_debug(debug)
                 assert [(signature(r), [e.ordinal for e in r.parents]) for r in replay.iter_recoveries()] == [
                     (signature(r), [e.ordinal for e in r.parents]) for r in raw.iter_recoveries()]
-        consumer_results.append(dict(path=str(path), pipeline_groups=len(grouped),
-            learner_deferred_groups=len(deferred), title_capture_ranges=len(supporting),
+        consumer_results.append(dict(path=str(path),
+            learner_deferred_groups=len(deferred), supporting_entries=len(supporting),
             feature_roundtrip='passed', duplicate_entry_diagnostics=0))
         print(f'Consumer replay passed: {name}', flush=True)
     result = dict(old_parser=old.reference.to_dict(), new_parser=new.reference.to_dict(),

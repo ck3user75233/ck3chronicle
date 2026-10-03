@@ -12,7 +12,10 @@ import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable, TextIO, TypeVar
+from typing import Any, Callable, TypeVar
+
+from .runtime_logging import (configure_runtime_logging, close_runtime_logging,
+                              get_logger, runtime_log_path, watcher_event)
 
 from .harvester import (
     InvalidCaptureInput,
@@ -358,20 +361,29 @@ def is_process_running(process_name: str = "ck3.exe") -> bool:
 class EventJournal:
     """Persist lifecycle events while keeping only the latest heartbeat."""
 
-    def __init__(self, dest_root: Path):
+    def __init__(self, dest_root: Path, *, cleanup_heartbeat: bool = True):
+        import threading
         watch_root = Path(dest_root) / "watch"
         watch_root.mkdir(parents=True, exist_ok=True)
-        stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
-        self.path = watch_root / f"events-{stamp}-{os.getpid()}.jsonl"
+        self._root = dest_root
+        self._startup_pid = None if cleanup_heartbeat else os.getpid()
+        self.path = runtime_log_path(runtime_root=dest_root, startup_pid=self._startup_pid)
         self.heartbeat_path = watch_root / "watcher-heartbeat.json"
-        self._stream: TextIO | None = None
+        self._handler = None
+        self._logger = get_logger('watcher')
+        self._cleanup_heartbeat = cleanup_heartbeat
+        self._event_lock = threading.RLock()
 
     def __enter__(self) -> EventJournal:
-        self._stream = self.path.open("x", encoding="utf-8", newline="\n")
+        self._handler = configure_runtime_logging(runtime_root=self._root, startup_pid=self._startup_pid)
         return self
 
     def emit(self, event: str, fields: dict[str, Any]) -> None:
-        if self._stream is None:
+        with self._event_lock:
+            self._emit(event, fields)
+
+    def _emit(self, event: str, fields: dict[str, Any]) -> None:
+        if self._handler is None:
             raise RuntimeError("event journal is not open")
         record = {
             "schema_version": EVENT_VERSION,
@@ -383,10 +395,7 @@ class EventJournal:
         if event == "heartbeat":
             self._replace_json(self.heartbeat_path, record)
             return
-        self._stream.write(
-            json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n"
-        )
-        self._stream.flush()
+        watcher_event(self._logger, event, {key: value for key, value in record.items() if key != 'event'})
 
     @staticmethod
     def _replace_json(path: Path, record: dict[str, Any]) -> None:
@@ -403,9 +412,11 @@ class EventJournal:
                 temporary.unlink()
 
     def __exit__(self, exc_type, exc, traceback) -> None:
-        if self._stream is not None:
-            self._stream.close()
-            self._stream = None
+        if self._handler is not None:
+            close_runtime_logging(self._handler)
+            self._handler = None
+        if not self._cleanup_heartbeat:
+            return
         try:
             self.heartbeat_path.unlink()
         except FileNotFoundError:
@@ -473,6 +484,7 @@ def watch_sessions(
     event_sink: EventSink | None = None,
     on_capture: Callable[[T, str], None] | None = None,
     on_error: Callable[[Exception, str], None] | None = None,
+    on_tick: Callable[[], None] | None = None,
     poll_seconds: float = 1.0,
     heartbeat_seconds: float = 30.0,
     stop_requested: Callable[[], bool] = lambda: False,
@@ -603,6 +615,8 @@ def watch_sessions(
                         ),
                     )
 
+            if on_tick is not None:
+                on_tick()
             now = monotonic()
             if now - last_heartbeat >= heartbeat_seconds:
                 emit(

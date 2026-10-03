@@ -11,3 +11,17 @@ root_crashes = 'C:\path\to\Paradox Interactive\Crusader Kings III\crashes'
 root_wip = '.ck3chronicle\wip'
 root_ck3chronicle = '.ck3chronicle\wip\runtime'
 root_learner_state = '.ck3chronicle\wip\learner'
+
+[watcher]
+# Exact file returned by pipeline.repository.create_database at initialization.
+# Initialization supplies this path once; normal operation needs no prompt.
+database = '.ck3chronicle\wip\runtime\ck3chronicle-schema3-20260929T000000Z.sqlite3'
+ingest_enabled = true
+retention_enabled = true
+maintenance_hours = 24
+retention_days = 30
+
+[logging]
+level = 'INFO'
+max_bytes = 10485760
+backup_count = 5

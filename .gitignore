@@ -65,3 +65,7 @@ htmlcov/
 
 # Local archives
 *.zip
+
+# Generated learned-model data stays local until selected for publication.
+# Keep versioned processing code, resources, manifests and pins visible.
+/models/**/empirical_template_model.json

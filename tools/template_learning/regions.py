@@ -1,4 +1,5 @@
 """Empirical boundary evidence over aligned native pieces; no CK3 format rules."""
+from .matching_primitives import balanced, punctuation_piece
 import string
 import unicodedata
 from functools import lru_cache
@@ -7,6 +8,42 @@ from template_learning.owner_rules import INFERENCE_POLICY
 PAIRS = {a:b for a,b in INFERENCE_POLICY['marker_pairs'].items() if a!=b}
 # These are proposal exclusions, not lexer separators or deleted literals.
 EXCLUDED_MARKERS = frozenset(INFERENCE_POLICY['excluded_region_markers'])
+
+
+@lru_cache(maxsize=16384)
+def discovery_quote_ranges(pieces):
+    """Propose unambiguous single-quoted ranges for discovery comparison only.
+
+    Interior words provide no similarity evidence. No slot type is established
+    here: inference still sees every native piece. Nested, unmatched or ambiguous
+    quotes abstain for the message; word-internal apostrophes inside a proposed
+    quotation remain interior data. Existing opaque-field ownership is checked
+    by the comparison consumer.
+    """
+    ranges, opened = [], None
+    for index, piece in enumerate(pieces):
+        if piece != ('token', "'"):
+            continue
+        left = pieces[index-1] if index else None
+        right = pieces[index+1] if index+1 < len(pieces) else None
+        can_open = left is None or left[0] == 'gap' or punctuation_piece(*left)
+        can_close = right is None or right[0] == 'gap' or punctuation_piece(*right)
+        if opened is None:
+            if not can_open or (can_close and right != ('token', "'")):
+                return (), 'ambiguous_quote_boundaries'
+            opened = index
+        elif can_close:
+            if can_open and index != opened + 1:
+                return (), 'ambiguous_quote_boundaries'
+            if any('\n' in text or '\r' in text for _, text in pieces[opened+1:index]):
+                return (), 'multiline_quote_boundaries'
+            ranges.append((opened, index+1))
+            opened = None
+        elif can_open:
+            return (), 'nested_quote_boundaries'
+    if opened is not None:
+        return (), 'unclosed_quote'
+    return tuple(ranges), None
 
 
 def enclosing_pair(records, spans):
@@ -167,24 +204,9 @@ def supported_anchors(sequences, maps, stable, mandatory):
     return retained, decisions
 
 
-def balanced(pieces, pairs):
-    mapping = dict(pairs)
-    closers = set(mapping.values())
-    stack = []
-    for kind, text in pieces:
-        if kind != "token":
-            continue
-        if text in mapping:
-            stack.append(mapping[text])
-        elif text in closers:
-            if not stack or stack.pop() != text:
-                return False
-    return not stack
-
-
 def supported_balance(piece_values):
     """Record only nesting properties actually supported by every observed value."""
-    pairs = list(PAIRS.items())
+    pairs = [list(pair) for pair in PAIRS.items()]
     return pairs if any(t in PAIRS or t in PAIRS.values() for p in piece_values for _, t in p) and all(
         balanced(p, pairs) for p in piece_values) else []
 

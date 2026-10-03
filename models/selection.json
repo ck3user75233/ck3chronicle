@@ -1,9 +1,11 @@
 {
-  "artifact_directory": "76630685c4a341ca14bf9c7c",
-  "handoff": "docs/LEARNER_PARSER_PIPELINE_HANDOFF.md",
-  "integration_status": "published_for_pipeline_integration",
-  "manifest_sha256": "364215904d0b167b94365cb6b666818db15cc1947778acf6511772b9e12943c0",
-  "revision_id": "76630685c4a341ca14bf9c7c",
   "schema": "ck3chronicle.native-model-selection",
-  "schema_version": 1
+  "schema_version": 2,
+  "revision_id": "f5cde2616f35d563118d3d32",
+  "package_id": "68f1ae5db205ab46afef9c4d",
+  "artifact_directory": "candidates/68f1ae5db205ab46afef9c4d",
+  "manifest_sha256": "2a84fe9c734a558e757df54649eac0812ea380a80ac8a2d0fe17129d50f24a5f",
+  "matcher_api_version": "ck3-native-matcher-v2",
+  "integration_status": "integrated_verified",
+  "handoff": "docs/TASK06_V45_STORAGE_INTEGRATION_HANDOFF.md"
 }

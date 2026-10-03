@@ -6,6 +6,13 @@ authorized through the staged execution package in
 
 Updated: 2026-09-11
 
+Current contract authority (2026-09-27): the owner approved
+[ERROR_CONTRACT_SPECIFICATION.md](ERROR_CONTRACT_SPECIFICATION.md).
+This dated review preserves the original recovery investigation. Its L1/L2,
+semantic-type gating, provisional routing and contract-authoring proposals are
+superseded where they conflict with that specification. Current interfaces and
+verification are in [the Task 04 handoff](TASK04_ERROR_CONTRACT_HANDOFF.md).
+
 ## Purpose
 
 This review explains why structurally recognized CK3 errors are currently

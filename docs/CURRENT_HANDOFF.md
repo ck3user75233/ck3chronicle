@@ -1,5 +1,1219 @@
 # Current handoff
 
+## Canonical logging planning handoff — 2026-10-03
+
+The owner supplied an execution-journal design using actual code identities,
+bare source-position checkpoints and optional caller-owned counts. Read
+[CANONICAL_LOGGING_SYSTEM_V1.md](CANONICAL_LOGGING_SYSTEM_V1.md) and
+[TASK09A_PROMPT.md](TASK09A_PROMPT.md). The latter commissions a plan only;
+`CANONICAL_LOGGING_V1_IMPLEMENTATION_PLAN.md` is its future deliverable, not a
+completed artifact. Earlier learner phase-logging prompts are superseded.
+
+Advisor source inspection confirmed the shared logger's config import and existing
+release-mapping seam. `derive_pattern` is defined in `patterns.py`; registry
+`paths_seen` increments before processing, so placement must preserve honest
+completed counts. No runtime code changed or campaign ran. Source-preservation,
+immutable-candidate and bounded rollback guidance is in 09A. The
+[incoming briefing](ADVISORY_HANDOFF_TRUSTED_RUN.md) proposes learner-first adoption
+and separate consideration of runtime conversion; owner decisions remain open.
+The agreed 08B prompt is untouched. Ongoing locator work below remains independent.
+
+## Disposable combined locator experiment — 2026-10-03
+
+The owner now explicitly authorizes implementing/testing BOTH marker/Unknown
+recognition and count-independent trailing locators in a disposable candidate,
+using genuine ingested data. This supersedes the review-only/design-paused
+boundary below, but does not authorize production registration, pinning,
+replacement of stored Runs or runtime restarts.
+
+Completed disposable experiment: v48 adds a repeated location-entry part (schema 6 / matcher API
+v3) inside the existing body. `location_sequences.py` recognizes complete trailing
+Script location / Stack trace sections; actual entry layouts come from genuine
+members. Marker literals remain outside the repeated part; all file/line LOCATORs
+and trace PARAMs expand into individually named ordered captures. Selection,
+rendering and exact identity retain per-occurrence layout choices and values.
+The parser, source records, deduplication key and cross-emission recovery are
+unchanged. `pipeline/contracts.py` renders the new declared layout without
+performing recognition; existing production definitions still render normally.
+
+Ignored experiment: `.codex-tmp/locator-marker-candidate/`. An unchanged database
+backup was read through its own HandlerClient: 18 genuine Runs, 48,772 diagnostic
+records / 766,476 occurrences. Seventeen logs match retained inventory hashes;
+all 18 Runs can be tested from stored definitions and values. Build uses the
+corrected 20-log set, including IS3QON and the rare house_head witness. Only
+IS3QON among the stored Runs belongs to that training set.
+
+The earlier marker-only build failed because model validation still demanded a
+numeric LOCATOR for line-label alternatives; the failure log/release/receipt are
+retained with `marker-only-` prefixes. The combined source removes that stale
+condition. A second attempt was stopped to remove repeated deep copying of large
+inference metadata; another failed on a stale fixed-field lookup for dynamic
+trace captures. Their logs/releases are retained with `aborted-count-` and
+`count-integration-failure-` prefixes. Both defects were corrected before the
+successful immutable build. Do not describe the earlier attempts as successes.
+
+Successful candidate `56d4dbeca2c0da99a25a0d85`, published model
+`e36f6ce8aa9803738d5b6237`, disposable package `4c2069e688e0a62d82222838`;
+manifest SHA-256 `60bf1616772fd49fbd83a7b383a8f1a75772fa515e1dbcebc033d3b2d3267fd3`.
+Frozen learner release `77d04126bfa24d588ed49bc9a5c968a40dcd02115365958cab4e472d48cfb1dc`
+has completed learn and publish execution receipts. Training/export replay covers
+731,529 messages: 600,244 template, 131,285 provisional, zero unmatched. Export
+checked 191,357 captures with zero changed assignments/outcomes. Runtime logging
+ownership and scoped whitespace checks passed.
+
+Stored-data comparison against the same-20-log v46 package: 766,476 occurrences,
+1,376 no_match -> template, 171 provisional -> template, 4 template -> provisional,
+56 still unmatched, and no complete match lost. All selected native regions
+reconstruct exactly; existing locator captures and distinct message identities
+are preserved. Thirty occurrences now capture explicit Unknown as LOCATOR.
+The four status reductions use two one-example provisional effect definitions
+instead of the old two-example generic KEY-effect definition; there are no
+capture/selection ties. They are disclosed, not silently called an unqualified
+improvement. Genuine wrappers and the hardcoded history continuation still
+recover the same messages and captures.
+
+Genuine 1/2/3-entry scope examples share template `0213bb363ad56f39d7e953a5`,
+retain 2/4/6 individual LOCATOR captures, and have distinct identities. Full
+original IS3QON capture replay yields 59,168 template + 145 provisional, zero
+unmatched: scope mismatch now supported; both travel messages remain provisional
+with literal bodies. Date equivalence / reusable short character identity are
+not implemented by this locator experiment. Parser v1.7 remains unchanged,
+including its numeric recovery predicates; no genuine nonnumeric near-line
+example was available to verify that recovery path.
+
+Owner requested a human-readable delta report: `CHANGES.html` includes 15 new
+definitions, 15 removed definitions with observed replacements, 15 previously
+unmatched stored-message examples and their new assignments, plus the three
+original production no_match diagnostics. Inventory changes: 381 -> 283 total,
+144 unchanged IDs, 139 new IDs, 237 removed IDs. These are definition identities,
+not counts of wholly new/lost error families. `changes.json` retains observed
+crosswalks; `RESULTS.html` / `verification.json` retain full verification and the
+56 unmatched occurrences. Replacement observations cover stored Runs, not an
+exhaustive semantic-equivalence proof for every removed definition.
+
+Production selection/catalog hashes, all training logs and the read-only backup
+are unchanged; no production package registration, activation or runtime restart.
+Research drivers: `location_candidate_experiment.py`, `verify_location_candidate.py`,
+`report_locator_candidate_changes.py`. Generated artifacts remain ignored.
+
+Latest numeric-gate clarification: `line:` and `near line:` identify location
+fields; numeric content is not a prerequisite for LOCATOR recognition. All
+255,228 near-line mentions in the 104-log inventory have numeric values; no
+nonnumeric counterexample was found. Do not present that observation as grounds
+for retaining a numeric gate. Prior cautions below about not silently changing
+recovery do not authorize treating the old numeric predicate as a requirement.
+Preserve established message boundaries while correcting marker/value handling.
+The actual locator contents continue to count toward exact message identity.
+
+Latest owner identity clarification: exact locator contents and count DO count
+toward error-message identity and deciding whether two instances are occurrences
+of the same message. Only classification similarity ignores those values/counts.
+Preserve all ordered values and do not use a locator-neutral comparison view as
+a deduplication or occurrence-aggregation key. Different locations can share one
+template while remaining distinct messages. Guidance and HTML review updated;
+no executable behavior or stored identities changed.
+
+Latest continuation double-check: Unknown normally remains literal; only its
+immediate value position after a recognized location marker permits LOCATOR
+typing (`line:` and `near line:` included). Do not change recovery boundaries
+as a side effect. A complete 104-log audit using the recorded package's verified
+parser is at `.codex-tmp/location-variability-review/continuation-overlap.json`;
+the HTML review includes every existing structure and native examples. Current
+parser bytes and continuation declarations equal the recorded package; the
+corrected v46 candidate has the same parser/declaration too.
+
+Only `history-colon-title-list-v1` joins separate timestamped emissions: 11 groups,
+13 title entries, no inventoried location markers in any group. Existing local
+recovery overlaps location-bearing messages: 1,837,757 script-error emissions
+(including all 9,055 Script location: Unknown occurrences), 87,346 quoted reader
+wrappers yielding 167,882 messages, 244 participant forms with file/line in the
+opening and Cheater:/With: following it, ten From forms, and six Stack trace forms.
+All except reader wrappers remain one message per emission. Other multiline
+envelopes are scope context (15), formatted reason (13), and quoted multiline
+value (7); no inventoried markers observed there. Single-line recovery and one
+unresolved unit complete the inventory. Every one of 3,344,830 original emissions
+was consumed exactly once, yielding 3,425,352 messages, matching the earlier census.
+
+Current implementation: reader wrapper recovery requires numeric near-line values; file/line envelopes
+also require a numeric line. Unknown is currently accepted specially only after
+Script location in that envelope. These are implementation facts, not required
+numeric recognition gates (superseded by the clarification above). No genuine
+Unknown-after-line witness was found. Preserve shared wrapper context, ordered history title components,
+and whole script-error bodies while designing repeated locator storage.
+Research helper: `tools/template_learning/review_continuation_location_overlap.py`.
+Only research tooling, guidance and ignored reports changed; no executable
+parser/learner/matcher rules, model release or production state changed.
+
+Latest owner clarification: retain location markers (e.g. `Script location:`) as
+literals; following entry count contributes no dissimilarity or grouping veto.
+Store all actual file/line LOCATORs and trace PARAMs in order. An explicit Unknown
+in the location-value position is itself one present LOCATOR value, not literal
+wording, an absent location section or SQL null. This supersedes the September 27
+literal-Unknown rule. Current guidance/model-contract documentation records the
+new requirement; executable rules and production packages still have the old
+behavior. Continue the review before implementing the representation change.
+
+The marker inventory is complete over the same 104 logs:
+`.codex-tmp/location-variability-review/location-markers.json`. Among the probed
+location labels and unavailable-value spellings, only `Script location: Unknown`
+was observed as an explicit unavailable value (9,055 mentions). Other observed
+section markers include `location:`, `From:`, `Stack trace:`, `New Location:` and
+`Previous Location:`; file/line aliases and Database were also inventoried. These
+are physical marker counts, not new recovered-message classifications or an
+exhaustive grammar. Empty filenames are separate evidence, not Unknown values.
+`unknown-current-behavior.json` confirms an actual recorded-package provisional
+assignment with REASON only and no LOCATOR capture for Unknown. The HTML report
+now distinguishes the new required typing from the older positive file/line-entry
+census. Current implementation still requires correction; no model was released.
+
+Follow-up: the owner emphasizes that fixed counts after an existing recovery split
+do not establish fixed counts in original emissions. Continue using recovered
+messages for the variability census, and reserve existing recovery forms for
+manual comparison with the problem case. `recovery-examples.json` now retains
+original and recovered examples: the 1/2/3-entry scope-mismatch witnesses each
+remain one `script-error` message, with 2/4/6 body LOCATOR fields; a genuine reader
+wrapper becomes two messages; a genuine history continuation combines three
+emissions into one message with two attached title entries. The HTML review now
+shows these distinctions. No additional full-corpus pass or model change was needed.
+
+The owner paused the proposed repeated-location correction to first measure
+variability within the **same diagnostic template wording/slot pattern**, allowing
+slot values to vary. The final requested unit is **recovered error messages**,
+not original emissions. Original emission provenance remains available for review.
+Neither a repeated-entry representation nor splitting one message into several
+has been approved by this investigation; do not implement either based on the
+earlier proposal. Leading date-literal equivalence remains pending separately.
+
+Read `.codex-tmp/location-variability-review/REVIEW.html` and `incidence.json`.
+All 104 retained distinct logs were examined: 3,344,830 original emissions,
+3,425,352 recovered message occurrences, one unresolved recovery unit. Comparing
+exact existing literal/slot prefixes before complete trailing location lists
+finds 66 overlapping variable-count patterns, all from
+`jomini_script_system.cpp:303`. They cover 1,828,067 message occurrences counted
+once, including 596,837 with multiple entries. They are measurement groups, not
+66 independent error families or newly accepted complete templates. References
+are the original recorded package and the isolated corrected v46 20-log candidate;
+the latter supplies the general three-KEY scope-mismatch opening. The original
+package's behavior is unchanged.
+
+That scope-mismatch pattern has 77 occurrences across 29 logs: one with one
+entry (story_owner), one with two (war), and 75 with three. A separate Stack trace
+form from `jomini_effect_impl.cpp:495` occurs six times, always with two entries;
+no count variability was demonstrated there. The reader supplement records
+329 expanded-from annotations across Unexpected token / Unknown trigger /
+Unknown effect, including 48 empty filenames. These add literal annotation wording
+and are not silently equated with a freely repeating trailing list.
+
+Research tools: `tools/template_learning/investigate_message_location_variability.py`
+and `report_message_location_variability.py`. All output is ignored. Counting
+agrees with the earlier 73-log detailed location inventory on 1,165,336 native
+message occurrences / 1,807,351 entries, with zero differences. No learner/matcher
+algorithm, parser, package selection, source log, stored Run or runtime process
+was changed. The next step is owner review of the incidence and native examples,
+before deciding whether or how to change message boundaries or representations.
+
+## Corrected rare-case 20-log experiment — 2026-10-03
+
+[Evidence-selection correction and results](LEARNER_V46_QUOTED_DISCOVERY_RESULTS.md).
+The first v46 training set excluded the three original diagnostics and house_head;
+IS3QON was only evaluated afterward. That was insufficient for the target question.
+Execution receipts nevertheless confirm the changed v46 code ran.
+
+Rebuilt frozen v45 and v46 on the same corrected 20 logs, explicitly including all
+rare witnesses. Both yield complete provisional assignments for war and the two
+travel errors, and a full shared assignment for house_head. All selected assignments
+and captures agree on 731,529 messages. Travel identities/dates and war's scope text
+remain singleton literals; these are not solved reusable formulations. Eight
+alternative IDs differ. No additional learner implementation change was made.
+
+Review artifacts: `.codex-tmp/learner-v46-targeted20/RESULTS.html`. The exported
+candidate and read-only pipeline checks passed; production remains unchanged.
+Continue from these corrected results, not the earlier missing-target experiment.
+Keep the existing review boundary for further recognition/location-stack changes.
+
+## Known-path source-scope repair delivered — 2026-10-03
+
+[Latest receiving delta and evidence](TASK08A_MULTIRUN_VERIFICATION_HANDOFF.md):
+unscoped default is all recorded-playset roots; supplied scope must narrow work.
+SourceSearch now selects members before disk probes and derives nonrecursive
+parent scopes for known paths. Explicit directory restrictions remain effective.
+41 genuine scope comparisons and four multi-Run source investigations / 93
+comparisons passed, preserving candidates and counts without a directory workaround.
+08B receives this completed repair; do not repeat or replace it. Prior blanket
+default-acceptance and open-repair notes below are historical. Prompts unchanged.
+
+## Default inventory behavior accepted — 2026-10-03
+
+Owner accepts default enumeration of all selected recorded-playset roots.
+Code docstrings now explain that omitted directories mean whole roots; filenames
+and references filter afterward; explicit roots/members/directories narrow scope;
+inventories contain paths and are reused within the investigation. No runtime
+change. [Receiving clarification](TASK08A_MULTIRUN_VERIFICATION_HANDOFF.md) supersedes
+the automatic-narrowing defect/open-repair classification below. 08B should
+document the accepted default and retain explicit controls. Prompts were not edited.
+
+## Do not claim unconditional 08A completion — 2026-10-03
+
+[Requirement-by-requirement reconciliation](TASK08A_MULTIRUN_VERIFICATION_HANDOFF.md)
+separates delivered capabilities, owner-directed median/newness changes, genuine
+verification limits and the open 08A.2 known-path traversal defect. Assigning that
+defect to 08B does not fulfil the original source-scoping requirement. The latest
+passing source queries explicitly supplied directory scope; automatic narrowing
+is still outstanding. Prompt edits were restored and no prompt was changed by
+this reconciliation. The prior blanket completion wording was too broad.
+
+## Included-window newness correction complete — 2026-10-03
+
+[API changes and checks](TASK08A_MULTIRUN_VERIFICATION_HANDOFF.md). Newness is
+selected count positive and no observation in any included predecessor. Removed
+the unavailable-read veto/`QueryEvidenceError`, median/baseline fields and derived
+notability labels. Counts and fractions remain; no replacement formula was added.
+Consumers must use `history.newly_observed` and actual `history.counts`.
+
+Reverified the unchanged four-Run backup: 18 investigations, 359 comparisons,
+zero mismatches, plus two genuine single-Run checks. Logging/imports/pip passed.
+Current report: `.codex-tmp/task08-multirun/WINDOW_NEWNESS_REPORT.md`.
+Evidence: `.codex-tmp/task08-multirun/2624478c0021411d861144eaff16e3c6/presence-review/`.
+No synthetic checks, runtime failure special cases, added dependency, production
+write or new requirement. The verification handoff lists the required 08B
+consumer changes. Median/newness edits to task prompts were restored per owner
+direction; future receiving changes belong in the handoff. The separate
+automatic traversal-scope correction remains open.
+
+## Genuine timestamped history validated — 2026-10-03
+
+[Verification results](TASK08A_MULTIRUN_VERIFICATION_HANDOFF.md) supersede the
+earlier blocked outcome: four eligible Runs in package `68f1ae5db205ab46afef9c4d`,
+17 completed investigations, 340 actual-data comparisons, zero mismatches.
+Unchanged backup/evidence: `.codex-tmp/task08-multirun/2624478c0021411d861144eaff16e3c6/`.
+Readable queries/results: `.codex-tmp/task08-multirun/TIMESTAMPED_MULTIRUN_REPORT.md`.
+
+Latest `20261003-74G2EB` has three eligible predecessors. Whole-message
+`failed context switch` returns 51 diagnostics / 245 occurrences; the exact
+sea_minority file scope returns 2 / 64 and selected EB+EC724 mod returns 15 / 84.
+Each Run's filtered identity/count maps and recorded members were verified.
+Stored template references select ingestion assignments with OR; no template
+wording search substitutes for whole-message content including slot values.
+
+No runtime changes or new requirements. No synthetic data or failures.
+One premature report-generation command failed, then succeeded after the final
+integrity evidence was written; data comparisons all passed. Logging/imports/pip
+checks passed. Failed-read/duplicate-timestamp/unavailable-source cases remain
+unexercised. Continue 08B separately; its known traversal-scope repair is still open.
+
+## Learner v46: approved changes and fresh 20-log candidate — 2026-10-03
+
+[Results and continuation boundary](LEARNER_V46_QUOTED_DISCOVERY_RESULTS.md).
+Implemented quoted-content-neutral discovery and one batch per identical-template
+identity after the existing regrouping sweep. Threshold .72 and inference/matching
+guards remain. Fresh 20-log build completed in 211.85 seconds; all 671,898 selected
+assignments and capture bindings match the same-input v45 baseline. Seven unused
+alternative definitions change; review details are in the ignored HTML report.
+
+Candidate/package and authenticated learner release live only under
+`.codex-tmp/learner-v46-20logs/`. Export validation checked 153,431 captures and all
+35,362 contextual messages. Production catalogs/pin/processes/Runs/logs are unchanged.
+All three original IS3QON diagnostics remain unmatched in this limited 20-log model.
+No 104-log rerun or production activation was performed. Review this candidate
+before deciding the next corpus/classification step; preserve the prior investigation.
+
+## Genuine multi-Run verification — timestamp prerequisite absent — 2026-10-02
+
+[Latest verification handoff](TASK08A_MULTIRUN_VERIFICATION_HANDOFF.md).
+Configured current database: 14 genuine Runs / package `68f1ae5db205ab46afef9c4d`,
+38,269 record rows / 683,608 occurrences, but **no Run has the required source
+timestamp**. All 14 exclusions and explicit/latest selection failures were
+verified on an unchanged disposable backup through `HandlerClient`.
+
+The requested chronological acceptance is incomplete. Do not use Run IDs,
+processing times or capture times as an alternate order; do not backfill facts.
+An existing database with eligible timestamped history is needed. The owner was
+asked whether another database was intended. Readable report and precise queries:
+`.codex-tmp/task08-multirun/MULTIRUN_VERIFICATION_REPORT.md`; full evidence/backup:
+`.codex-tmp/task08-multirun/049e5d1d395f4ad6b31008f177e9edab/`.
+
+Real source/identity components were independently checked across all 14 Runs,
+using each recorded playset. Their expected/actual filtered counts agree and
+exclude out-of-scope identities; raw exact counts remain separate. 253 actual
+data comparisons had no mismatches. No runtime changes were needed by those
+checks. No synthetic evidence or new requirements were added. The ignored report
+generator had one string-literal error, corrected before producing the report.
+Logging ownership/imports/pip check passed. Only documentation and ignored
+verification artifacts changed; no production writes or live restarts.
+
+## Advisor receiving review — 08B ready with first repair — 2026-10-02
+
+[Receiving review](TASK08B_RECEIVING_REVIEW.md): inspected both 08A deliveries and
+reran all 15 retained genuine-data checks successfully. A public-handler syntax
+selector probe returned the two actually present matches, including provisional
+status. Static logging ownership, isolated imports and pip check passed.
+
+[08B's prompt](TASK08B_PROMPT.md) now receives the actual APIs, available syntax
+research and owner-directed real-evidence verification policy. It explicitly
+assigns the remaining source-scope correction as its first bounded receiving
+repair: apply known exact path/directory constraints before enumeration, without
+widening scope to populate a cache. The correction is not yet implemented.
+Multi-Run and absent real failure scenarios remain unverified. The fresh broad
+content search took 181.405 seconds; no fixed performance threshold is inferred.
+See the review for evidence paths and limits. Runtime code and production state
+were unchanged; only disposable verification handlers were used.
+
+## Task 08A.2 implementation delivery — 2026-10-02
+
+Latest owner review concerns inventory memory and actual traversal scope.
+Measurements/recommendations are in the 08A.2 handoff and ignored
+`.codex-tmp/task08a2/memory/MEMORY_REVIEW.md`: full path inventory 11.54 MiB;
+single-reference parent scope 96 KiB; all-reference parent scopes 2.68 MiB.
+Full and parent-scoped inventories find exactly the same real candidate pairs.
+Direct file checks reach the same files with one recorded/on-disk case-spelling
+difference, verified with `Path.samefile`. No runtime strategy changed, packages
+installed or synthetic checks added. Automatic lookup still needs its directory
+constraints pushed ahead of traversal; preserve the owner's prohibition on
+widening a narrower requested scope to fill a cache. 08B itself remains unimplemented.
+
+Owner follow-up: the readable report now shows all 133 stored members in a
+load-order table and includes explicit load-order numbers beside candidate names
+and excerpt headings. Outside-playset roots show recorded order unavailable.
+The 08A.2 handoff, 08B prompt and reporting ledger preserve this display requirement.
+Regenerated from saved genuine evidence; no runtime code or new tests needed.
+
+Delivered [source search/context and its 08A.1 integration](TASK08A_2_SOURCE_SEARCH_HANDOFF.md).
+Public API: `SourceSearch(client=None, ripgrep=..., context=..., excerpts=...)`
+(options keyword-only), `read_playset`, `search`, `resolve`, `excerpts_for`,
+`clear`, and `source_references(record)`. Pass it as `DiagnosticAnalysis`'s
+`source_resolver`. Required source predicates now work; optional source context
+leaves SQL totals usable. 08B receives both deliveries and owns presentation.
+
+Added reporting `source_query.py`, `source_references.py`, `source_search.py`;
+extended `query.py`, `analysis.py`, `__init__.py`; added only genuine-data checks
+in `tests/test_source_search_genuine.py`; updated both handoffs and current docs.
+No handler/watcher/learner/schema changes. Unrelated dirty work is preserved.
+
+Nine new checks passed twice; final run 64.248 seconds. Six existing genuine
+diagnostic checks passed in 31.454 seconds. No failures/skips, synthetic scenarios
+or injected errors. Full evidence and disposable SQL backup:
+`.codex-tmp/task08a2/7db8b47229564e748a47221366512b0b/`.
+Readable filters/results/excerpts:
+`.codex-tmp/task08a2/SOURCE_SEARCH_REAL_DATA_REPORT.md`.
+The handoff names each precise check, measured scope/timings and genuine cases
+not exercised. Initial inspection encountered a console Unicode print error and
+found a reference-slot provenance overlap; both are documented. No requirements
+beyond the task were introduced.
+
+The 133-member playset supplied 105,603 inventory entries; large content search
+covered 11,914 text files in 66 Windows ripgrep batches. The 2,475 diagnostics /
+4,182 occurrences remain unchanged despite 2,651 candidate associations. No
+dependency installation was needed: ripgrep 15.2.0 already exists on PATH.
+Logging ownership, isolated imports and pip check passed. No live processes were
+restarted or production state modified. Do not restore removed synthetic tests;
+missing real evidence stays explicitly unverified. Earlier checkpoints follow.
+
+## Task 08A.1 implementation continuation — 2026-10-02
+
+Delivered [diagnostic query/analysis library and handoff](TASK08A_1_DIAGNOSTIC_QUERY_HANDOFF.md).
+New files are `src/ck3chronicle/reporting/{__init__,query,analysis}.py`,
+`tests/test_reporting_query_requirements.py` and that handoff. This task also
+updates the opening status/plan/reporting-ledger sections; all unrelated dirty
+changes remain. No existing pipeline/handler/watcher/learner code was changed.
+
+Public entry point is `DiagnosticAnalysis(HandlerClient(database_file))` with
+`investigate(run, package_id=..., query=...)` and eligibility-first `list_runs`.
+Results include effective filters, exact totals/rollups, stored rendering,
+historical zero-count entries, requested/obtained windows, unavailable evidence,
+review metadata and chronology exclusions. A required source filter fails
+explicitly until 08A.2 supplies `SourceResolver`; no temporary search engine exists.
+
+Owner review removed all 12 synthetic/scalar reporting checks plus the injected
+request-failure and file/import-guard checks. Six genuine-data checks remain and
+passed with no failures or skips. No invented metadata, counts, mock clients or
+failure injection remains in this reporting test file. Its misleading syntax-test
+name is now `test_record_selector_and_positive_occurrence_filter`; it does not
+claim to verify the syntax preset. Do not restore the removed checks or turn their
+scenarios into owner requirements. Report failures and proposed scope additions.
+
+Current evidence is `.codex-tmp/task08a1/verification-after-synthetic-removal.txt`
+and `35906eab57f24c338148dddc4803eadc/baseline.json` beneath that directory. All six
+checks passed again in 9.732 seconds, with no failures or skips; logging ownership,
+isolated imports and dependency checks passed again too. The unchanged
+SQL exercise contains one eligible Run, 2,475 records and 4,182 occurrences.
+Multi-Run behavior, threshold boundaries and failed-read behavior remain unverified
+by genuine data. Earlier synthetic passes are not acceptance evidence. The owner
+subsequently directed removal of the pre-existing synthetic logging suite too:
+`tests/test_runtime_logging_requirements.py` and all seven checks are deleted.
+Do not restore it from older handoffs or ignored runners. The arbitrary 32-level
+query nesting cap was removed. Source inspection found no reporting branches
+keyed to mock clients or fabricated messages; handling of documented handler
+errors and unavailable comparisons follows the original task. No logging, handler
+or watcher runtime code was changed. Earlier execution logs remain historical.
+
+Continue with 08A.2's prompt and this delivered source/query boundary. Implement
+and verify reference extraction, explicit roots/optional members, all-candidate
+search, incomplete-coverage errors, file rollups and excerpts before 08B. The syntax
+research handoff is available; the shared OR-selector interface can express its
+exact conditions. CLI/presets remain 08B's task. Production operation restrictions
+remain in force; nothing was committed or pushed.
+
+## Source-search and 08B receiving corrections — 2026-10-02
+
+Updated [08A.1](TASK08A_1_PROMPT.md), [08A.2](TASK08A_2_PROMPT.md) and
+[08B](TASK08B_PROMPT.md): source roots need not belong to a playset; content
+conditions evaluate across a file; unavailable required source associations
+produce explicit errors with partial coverage/results retained. Optional context
+remains distinct from a required filter. Added ripgrep configuration isolation,
+structured output, match/no-match/error handling, missing-executable guidance
+and actual Windows invocation verification to 08A.2's assignment.
+
+08B names both split prompts and `TASK08A_1_DIAGNOSTIC_QUERY_HANDOFF.md` /
+`TASK08A_2_SOURCE_SEARCH_HANDOFF.md`. It starts after both deliveries and their
+query/source integration are complete. Removed rejected timestamp and mandatory
+playset recommendations from the separate review; the owner's session-end
+wording is unchanged. Documentation edits only; checked ripgrep help/documentation
+and document links, not runtime implementation or production behavior.
+
+
+## 08A.1 / 08A.2 prompts finalized — 2026-10-02
+
+[08A.1](TASK08A_1_PROMPT.md) now explicitly supports OR selection of multiple
+stored matched-template references and uses diagnostic-record search terminology.
+[08A.2](TASK08A_2_PROMPT.md) requires efficient disk search from the start:
+ripgrep bulk search, reused in-memory filename/path inventory, batching, early
+filters, bounded streaming, explicit coverage settings and representative large
+real-playset timings. The remaining prompt policies were preserved. The template
+representation recommendation is withdrawn; unrelated recommendations remain
+unapplied in [the separate review](TASK08_SPLIT_REVIEW.md). No implementation,
+installations or runtime actions were performed; 08B was unchanged in this pass.
+
+## Owner-updated reporting split — 2026-10-02
+
+The current sequence is [08A.1 diagnostic queries/analysis](TASK08A_1_PROMPT.md),
+[08A.2 playset source search/context](TASK08A_2_PROMPT.md), then
+[08B reports/CLI](TASK08B_PROMPT.md). The owner's supplied revisions are the
+baseline; changes are limited to task division, receiving boundaries and requested
+search-library guidance. They supersede conflicting older planning text below.
+Prompts are prepared, not implemented. See [the split review](TASK08_SPLIT_REVIEW.md)
+for the scope mapping and separate unapplied recommendations. Documentation only;
+no runtime actions or installations.
+
+
+## Syntax research ready for Reporting and Analysis — 2026-09-30
+
+[CK3 syntax diagnostics research](CK3_SYNTAX_DIAGNOSTICS_RESEARCH.md#concrete-selector-handoff)
+supplies nine explicit selectors over existing stored definitions/values for
+package `68f1ae5db205ab46afef9c4d`, including the exact REASON condition needed
+to distinguish assignment errors from semantic errors sharing a template.
+It includes genuine excerpts, source hashes, citations, exclusions and limited
+extent/cascade findings. Both stored match statuses remain eligible.
+
+The owner requested verified findings only. Unverified brace-balance formulations
+have been removed from the proposed list; the observed `Unexpected token: =`
+and `Malformed token: {` remain with their precise meanings. Context-dependent
+messages are research evidence, not syntax-preset selectors. The recorded
+eight-Run research snapshot yields 16 records; this is not a new live query.
+
+The [2026-10-01 brace follow-up](CK3_SYNTAX_DIAGNOSTICS_RESEARCH.md#brace-token-follow-up--2026-10-01)
+searched 82 distinct retained logs. It verifies quoted `'}'` in event-ID,
+namespace and missing-theme messages, but finds no `token: '}'` spelling.
+Exact template IDs and native excerpts are recorded as contextual clues;
+brace imbalance remains unproved and the nine proposed selectors are unchanged.
+
+Research delivery only: Reporting and Analysis reviews this handoff when building
+08A/08B. Updated the report and receiving-document links; no runtime code,
+classification, ingestion, storage, model selection or reporting implementation
+was changed. No production ingestion or service restart was performed.
+
+## Reporting and Analysis prompt handoff — 2026-09-30
+
+Prepared [08A](TASK08A_PROMPT.md) and [08B](TASK08B_PROMPT.md) together. Execute
+08A's reusable investigation/history/search services first; 08B consumes its
+actual handoff to deliver presets, CLI and HTML/text/JSON with linked excerpts.
+The [reporting ledger](TASK08_SCOPE_REVIEW.md) records ownership, dependencies
+and drafting rationale. Old Task 08 audit instructions are superseded.
+
+The timestamp field is already confirmed by the receiving check below. Exact
+recurrence stays within a selected package; missing timestamps exclude Runs,
+and short history is valid. Disappearance analysis includes historical identities
+with selected count zero without creating stored records. The syntax research
+delivery above now supplies that preset's selectors for receiving review.
+
+Updated the two prompts and planning pointers only. Inspected focused source and
+handoffs; did not rerun runtime checks, open the live database, change processes,
+ingest captures, alter selection, reset/expire data, commit or push. Rejected
+handler design documents were not read. Implementation is not claimed.
+
+## Pipeline source modification timestamp receiving check — 2026-09-30
+
+The existing capture-metadata → handler-owned write → `runs.facts_json` →
+public Run facts path preserves `error_log_source_modified_at` exactly.
+Read it as `run["facts"]["error_log_source_modified_at"]` when present;
+historical/manual absence remains unavailable. See the
+[current pipeline handoff](TASK07D_DATABASE_REQUEST_HANDLER_HANDOFF.md#source-modification-timestamp-receiving-check--2026-09-30)
+for the exact path and evidence distinction.
+
+Reviewed the inherited watcher source-mtime suite's 43-check result; did not
+rerun it. Ran two additional focused checks on disposable copies: all public
+Run reads preserved the nine-digit string, and a duplicate with conflicting
+capture metadata preserved the entire stored Run. Both passed without skips.
+Evidence and reproducer are ignored under
+`.codex-tmp/pipeline-source-mtime-receiving/`. No preservation gap or implementation
+change was needed. This follow-up changes only that pipeline handoff and this
+ledger, plus ignored verification artifacts. Existing unrelated work is preserved.
+No production ingestion, live restart, historical mutation, commit or push.
+
+## Watcher source modification time — 2026-09-30
+
+`spool_logs` now records `error_log_source_modified_at` from the validated
+original source stat in the existing capture metadata. The existing ingestion
+path preserves it in SQL Run facts without a schema change. See the
+[focused handoff](WATCHER_SOURCE_MTIME_HANDOFF.md) for the field, genuine-input
+checks and ignored disposable evidence. Changed files for this follow-up are
+`harvester.py`, the new `test_capture_source_mtime_requirements.py`, that handoff
+and this ledger. Existing unrelated changes are preserved. No historical
+captures/Runs, production configuration or live processes were modified;
+activation remains separate. Nothing was committed or pushed.
+
+## Task 07E live activation - 2026-09-30 08:28 Hong Kong
+
+Following owner authorization, the updated watcher was started hidden at
+00:27:53 UTC. The previous PID was absent, its heartbeat was stale, the runtime
+lease was free, and no old handler was listening. The exact configured database
+passed read-only schema-3 verification. CK3 was already running, so the new
+watcher attached to that process without interrupting the game.
+
+Watcher PID 34340 (launcher 9792) observed CK3 PID 44816; a fresh heartbeat at
+00:28:23 UTC confirmed `running`. Handler PID 308 reported `handler_ready`, with
+instance `71d783fe8dc34ea6b4b0f7140de130b2`. Startup ingestion found all five
+readable retained captures already stored and returned ordinary duplicate
+non-completion. Twenty-two older inaccessible captures remain unavailable;
+permissions were not changed. No watcher/handler ERROR events were observed;
+bootstrap stderr was empty. Configuration, model selection and database identity
+were unchanged; no reset or forced expiry was performed.
+
+Evidence: ignored `.codex-tmp/task07e/activation.json`. Logs now use the 07E
+paths in [the handoff](TASK07E_RUNTIME_LOGGING_HANDOFF.md). The attached game's
+exit was subsequently observed at 01:26:28 UTC and ingestion completed at
+01:26:36 UTC as Run `20260930-BYVZUV`, request
+`3f5002c984d94334b65205052b4916ed`. Its merged trace is retained under
+`.codex-tmp/task07e/live-session-20260930-BYVZUV/`. Capture and ingestion took
+7.657 seconds, with no warning/error/contention events for that request.
+Attachment after game startup does not establish complete observed start-to-exit
+Trusted Run acceptance. Task 08 and
+Run-result replacement remain separate. The following implementation-delivery
+checkpoint predates this separately authorized activation.
+
+## Task 07E delivered — activation remains separate — 2026-09-30
+
+[Task 07E's handoff](TASK07E_RUNTIME_LOGGING_HANDOFF.md) documents the shared
+standard-library logging owner, bounded UTF-8 JSONL files, watcher/request-ID
+correlation, preparation/database timing, compact contention episodes, tracebacks
+and durable bootstrap stderr. EventJournal preserves lifecycle vocabulary and
+the replaceable heartbeat. Runtime logging failures do not change Run outcomes.
+Future runtime code uses `runtime_logging.py`; run `tools/check_runtime_logging.py`.
+
+Fresh verification passed **66 checks, no failures, errors or skips**, in 86.156
+seconds: the 59 receiving checks were rerun alongside seven focused logging
+checks, using genuine retained CK3 inputs and disposable storage. Static ownership,
+isolated imports and `pip check` passed. This is distinct from the inherited
+September 30 07D handoff's 59-check result. Evidence is ignored under
+`.codex-tmp/task07e/`; the handoff records coverage and limitations.
+
+The [07D API contract](TASK07D_DATABASE_REQUEST_HANDLER_HANDOFF.md) is preserved:
+one dedicated handler, one preparation thread, one database worker, exactly three
+public states, all unfinished requests plus the latest 256 terminal outcomes,
+`LookupError` for unavailable results, `exception_class`, and internal-only
+`cleanup_unaccepted`. Watcher `ingestion_outcome_unavailable` still creates no
+outcome or eviction retry. SQL/review/playset formats and ingestion/retention
+semantics are unchanged. Logging does not recover outcomes after abrupt termination.
+
+No production configuration, selection, storage, captures or live processes were
+changed; nothing was committed or pushed. The unrelated dirty tree is preserved.
+Next operational step: follow the 07E handoff's separate procedure to stop the
+watcher at a quiet boundary, shut down the old handler for the configured file,
+verify that file read-only, and start the updated watcher. Startup ingestion and
+daily retention keep their existing behavior. Task 08 SQL reports, Run-result
+replacement and complete Trusted Run acceptance remain separate assignments.
+
+## Historical checkpoints and separately scoped proposals
+
+## Task 08/09 look-ahead proposal — 2026-09-29
+
+[TASK08_TASK09_SCOPE_PROPOSAL.md](TASK08_TASK09_SCOPE_PROPOSAL.md) recommends
+rewriting 08 as complete SQL reports/bounded audit over delivered 07D APIs and
+retiring the old 09 offline reconnection/deletion draft. The proposed command
+surface and sequencing are recommendations, not owner-approved implementation
+instructions. Existing storage read/render APIs and 07C learner operations were
+source-inspected; no runtime/learner campaign was rerun. The rejected database
+handler design was not opened. 07D remains the active implementation assignment;
+Run-result replacement and final Trusted Run acceptance remain separate.
+
+## Task 07 receiving review and separate 07D assignment — 2026-09-29
+
+Use [TASK07D_PROMPT.md](TASK07D_PROMPT.md) for the new team's implementation
+assignment and [TASK07_QUALITY_REVIEW_FOR_07D.md](TASK07_QUALITY_REVIEW_FOR_07D.md)
+for independent source/verification findings. The rejected design/copies were not
+opened for this receiving review and are prohibited reading for 07D. The owner's
+new in-memory, three-state direction supersedes the old design-review/stop gates.
+
+Five receiving checks passed with no skips in 102.916 seconds, including three
+complete genuine inputs, both packages in one database, SQL/review/playset
+agreement, native rendering and disposable retention/initialization. Evidence is
+ignored under `.codex-tmp/task07d-advisory-review/`. No core ingest/storage rewrite
+was identified. Assignments 07D-01 through 03 cover shared runtime routing,
+caller outcome reconciliation and current API/handoff repairs.
+
+07D code/integration/verification remain to be delivered; this pass prepared
+instructions and reviewed existing code. No product code, production data,
+configuration, selected package or live process was changed. Historical activation
+does not establish current live status. Task 08 and Run-result replacement remain
+separate. Older rejected-design continuation text below is historical only.
+
+## Rejected database-handler design retired
+
+The owner rejected the shared-database-request-handler design as materially
+over-scoped. `PIPELINE_QUEUED_INGESTION_DESIGN.md` has been deleted. Its review,
+continuation and implementation instructions are withdrawn; no replacement design
+or implementation is authorized by this cleanup. A replacement instruction will
+be issued separately. Earlier queue follow-up references below do not authorize
+implementation of the deleted design.
+
+Repository inspection found no implementation derived from it: no request handler,
+named-pipe transport, owner-election/request-recovery machinery, expanded request
+states, or related schema/runtime integration. Ingest still opens the repository
+directly; the watcher uses its existing local executor. SQL/review version 3 and
+existing capture locks predate the rejected design and remain unchanged.
+
+Only documentation was changed. No production data, configuration, runtime code or
+live process was changed; current live-process status was not checked. Cleanup is
+complete; stop here pending the separate replacement instruction.
+
+## Watcher live ingestion activated; database naming implemented — 2026-09-29
+
+The owner directed completion rather than leaving operational setup outstanding.
+See [WATCHER_LIVE_ACTIVATION_HANDOFF.md](WATCHER_LIVE_ACTIVATION_HANDOFF.md).
+The watcher was restarted at 21:19:39 UTC with worker PID 5032 and launcher PID
+51116. It now ingests completed captures into the explicitly configured database
+`ck3chronicle-schema3-20260928T211854Z.sqlite3` in the existing runtime directory.
+Startup ingestion accepted all five readable captures (12,449 diagnostic records);
+SQL/playset/review agreement and the new heartbeat are verified. Daily retention is enabled, first due one
+day after startup. Twenty-two inaccessible older capture directories were
+reported and skipped; permissions and the old legacy DB were not changed.
+
+The approved storage naming is implemented in its owning APIs: `create_database`,
+`open_database`, `open_database_readonly`, `Database`, `database_info` and
+`database_id`. Open/ingest/config now take an exact SQLite file path. Schema and
+review manifest are version 3; playset format stays 1. No compatibility alias,
+migration, replay or newest-file discovery was introduced. Forty-five checks
+passed before activation. Shared pipeline queuing remains the separate pipeline
+follow-up; the actual watcher caller and operational activation are delivered.
+
+## Watcher-to-ingest caller implemented — 2026-09-29
+
+See [WATCHER_INGESTION_WIRING_HANDOFF.md](WATCHER_INGESTION_WIRING_HANDOFF.md).
+The actual `cmd_watch` -> published capture -> completion callback now invokes
+the existing ingest API on a serial worker outside lifecycle polling. Startup
+submission, daily maintenance/retention, journaled outcomes and config defaults
+are implemented. Protected error logs publish even when debug capture or playset
+extraction fails. A narrow pipeline correction accepts malformed/mismatched
+playsets as unavailable, with explicit `IngestResult.warnings`; supplied JSON is
+preserved. These changes were verified through the actual watcher caller using
+genuine inputs and disposable SQL storage. The pipeline's shared request queue
+remains separate work and no longer blocks the watcher caller's implementation.
+
+The owner approved `ck3chronicle-schema<N>-YYYYMMDDTHHMMSSZ.sqlite3` naming;
+the pipeline filename/API terminology change is not yet implemented. No existing
+database was deleted or renamed. The ignored config now contains explicit watcher
+defaults, but current-schema production storage has not been initialized. The
+live watcher started earlier still runs the previously loaded capture-only code;
+this delivery has not restarted it or activated production ingestion/retention.
+
+## Owner ingestion/retention decisions and pipeline queue request — 2026-09-29
+
+The owner approved processing otherwise valid new error logs with missing,
+malformed or mismatched playsets: report the problem, preserve source JSON and
+store the existing unavailable-playset representation. A debug-copy failure must
+also not block publication/ingestion of an already protected error log; that
+capture change belongs to the watcher. Extract playsets only from copied pairs.
+All completed captures enter ingestion, with startup identification and another
+attempt for captures not accepted into SQL. Retention cadence is DAILY, with
+the already-approved 30-day expiry policy unchanged. Configuration must have
+sensible defaults and require no routine interactive setup.
+
+This checkpoint's queue follow-up was later covered by the now-rejected handler
+design. The [former prompt](PIPELINE_QUEUED_INGESTION_FOLLOWUP_PROMPT.md) is retired;
+its queue/durability review and implementation instructions no longer apply.
+Replacement instructions will be issued separately. The existing watcher caller
+and its contention handling are unchanged.
+
+The owner also questions legacy generation terminology and wants a consistent
+database filename incorporating schema and initialization date/hour. A precise
+UTC naming convention is proposed in the prompt, pending confirmation. No database
+deletion, reset, rename or migration is authorized by that naming discussion.
+This checkpoint and the prompt are documentation only; no live watcher, pipeline
+code, operational config or production data was changed. Earlier malformed-playset
+rejection and hourly-retention proposals below are superseded by these decisions.
+
+## Task 07 implementation and verification checkpoint — 2026-09-28
+
+Continue from [TASK07_INGESTION_AND_RETENTION_HANDOFF.md](TASK07_INGESTION_AND_RETENTION_HANDOFF.md).
+Working ingest/retention APIs and the manual command are implemented. SQL schema 2
+and review manifest 2 store ordered playsets and per-Run processing lineage. Three
+genuine complete inputs passed API/CLI ingestion, cross-package duplicates, both
+packages in one DB, native rendering/review accounting, playset agreement, explicit
+schema-reset refusal, failure cleanup and disposable retention. Two native requirement
+checks passed; evidence and limitations are in the handoff.
+
+Exact continuation: obtain the already-requested owner disposition for malformed or
+mismatched completed playset JSON. The current reviewable proposal raises PlaysetError
+and preserves the capture; missing JSON is allowed. Do not claim Task 07 fully closed
+before that decision. After closure the watcher team wires both automatic triggers;
+Task 08 reports and separate live activation remain outstanding. No watcher trigger
+or production change was made. Explicit Run replacement is separate follow-up work.
+
+Task 07 changed `pipeline/schema.py`, `repository.py`, `review.py`, added
+`ingestion.py`, `playsets.py`, `capture_access.py`, `retention.py`, added the ingest
+handler/arguments in `cli.py`, native requirement checks, and the handoff/status/plan/
+execution-order/scope/README documentation. Preserve the substantial pre-existing
+dirty tree. Harvester, watcher, models, learners, selection and live configuration
+remain untouched by this task. Scratch evidence is under `.codex-tmp/task07/`.
+The completed Script location-stack findings remain context, not a pending task.
+This checkpoint supersedes earlier implementation-pending continuation points below.
+
+## Task 07 advisory review after 07C — 2026-09-28
+
+Reviewed current source and delivery documents; Task 07 remains unimplemented.
+The [prompt](TASK07_PROMPT.md) now uses 07C package selection
+and existing `contracts.run_lineage`, removes ingestion-side learner-provenance
+follow-up and recognizes the completed location-stack investigation. The
+[scope review](TASK07_SCOPE_REVIEW.md#current-task-ledger) holds the compact task
+ledger: the owner chose expiry of all completed captures, including failed/unprocessed
+ones, after 30 elapsed days from capture time; malformed-playset disposition remains
+pending. Current selection remains unchanged. Next: settle that choice, execute Task 07, then watcher-team
+wiring and Task 08 SQL reports. This pass changed documentation only; no runtime
+checks, production operations or independent rerun of delivery verification.
+
+## Advisory transfer — 2026-09-28
+
+Use the [Task 07 onward advisory transfer prompt](ADVISORY_HANDOFF_TASK07_ONWARD.md)
+for the new planning/advisory task. It incorporates the delivered 07C release
+handoff and completed Script location-stack investigation, distinguishes them
+from older open-item wording below, and records current owner decisions and
+remaining team boundaries. This transfer is documentation work, not Task 07
+implementation or independent re-execution of 07C verification.
+
+## Task 06B cleanup completed — 2026-09-28
+
+The deprecated CLI/provider stack and its exclusive research/test consumers have
+been removed. See [the cleanup handoff](TASK06B_DEPRECATED_CODE_CLEANUP_HANDOFF.md)
+for the exact inventory, portable rollback archive, verification and limits.
+`watch`, `capture`, `doctor` and `observe-logging` remain; `watch --once` remains
+error-only. `harvester.py` remains the capture owner. No processing command is
+active. Task 07 delivers ingest and retention APIs, one manual `ingest` command,
+playset SQL storage and a watcher-team integration handoff. The watcher team owns
+automatic ingest after capture and periodic retention checks, including idle periods.
+See the [current scope](TASK07_SCOPE_REVIEW.md)
+and [revised draft](TASK07_PROMPT.md).
+Task 07 must remove the current database-wide lineage
+lock and record processing versions per Run; compatible selections share one
+database. Schema changes require an explicit reset, without migration or fallback.
+These are instructions for implementation, not completed code. Retention eligibility
+and cadence remain open. Task 08 focuses on SQL reports/read operations.
+The old provider retirement, C1/C2 capture relocation/deletion proposal, parser
+comparison retirement and removed-API research checks are discharged/superseded;
+do not repeat them or restore compatibility providers. Task 06/v45 storage and
+the watcher producer contracts remain intact, as do learner policy limitations
+and the separate Script location-stack investigation. The separately authorized
+live watcher was not stopped, restarted, reconfigured or used for verification.
+Older dated provider-retention and cleanup-pending statements below are historical.
+
+## Next: Task 06B cleanup, then Task 07 — 2026-09-28
+
+The owner authorized disabling unused old CLI paths and removing their deprecated
+providers before Task 07. Execute [Task 06B](06B_DEPRECATED_CODE_CLEANUP.md), then
+[Task 07](TASK07_PROMPT.md) against its completion handoff.
+Keep the working watcher/playset producer and capture owner `harvester.py` in place;
+the earlier plan to relocate capture into `pipeline/capture.py` is superseded.
+The watcher review's Section B supplies specific retirement targets. This checkpoint
+records the assignment and revised prompts, not completed deletion. The live
+watcher's separate operating authorization and Task 06's selected baseline remain.
+Older instructions to retain unused CLI providers until cutover are superseded for
+the explicit 06B scope.
+
+The owner additionally requires 06B to archive every pre-edit/deleted file through
+PowerShell before cleanup, delivering a portable archive with `cleanup.ps1`,
+standalone `rollback.ps1`, inventory and restore README. Keep the archive available
+for the owner to zip and move outside the repo; rehearse rollback on disposable
+copies from a relocated archive. The Task 06B prompt contains the full requirements.
+
+## Live watcher started at owner request — 2026-09-28
+
+Started the updated continuous watcher in a hidden background process at
+06:55:46 UTC using `.venv/Scripts/python.exe -B -m ck3chronicle.cli watch`
+from the repository root. Worker PID: 46516; virtual-environment launcher PID:
+61708. The worker holds the runtime lease and its journal reports
+`watcher_ready` / `awaiting_game_start`; CK3 was absent at startup.
+The worker's heartbeat was verified at 06:56:17 UTC.
+Journal: `.ck3chronicle/wip/runtime/watch/events-20260928T065546.589644Z-46516.jsonl`.
+New observed exits will publish paired logs and playset templates to the
+configured pending directory. Pipeline processing remains a separate task.
+This operating checkpoint supersedes the earlier statements that the live
+watcher had not yet been started; no autostart or scheduled task was installed.
+
+## Watcher active-playset producer delivered — 2026-09-28
+
+The owner approved implementation of the watcher plan. Continuous `cmd_watch`
+now copies the full error/debug pair, extracts the emitted active playset,
+resolves descriptor names, hashes both protected files and writes `playset.json`
+before existing pending publication. The joined identifier is
+`sha256:<error_log_sha256>:<debug_log_sha256>`. Outcomes and metadata problems
+go to the watcher journal without continuous-watcher terminal messages.
+
+Production changes are confined to new `src/ck3chronicle/playset.py`, capture
+support in `harvester.py`, actual watcher wiring in `cli.py`, and a small
+`EventJournal` option in `watcher.py` for safe startup-failure logging. No root
+configuration changes were required. Manual commands keep their existing behavior.
+Tests were added/extended in the two watcher/playset capture requirement files.
+
+39 focused checks passed, including existing processing-recovery coverage.
+An isolated demonstration on recent real log copies produced 133 members,
+zero UNKNOWN names and zero resolution warnings; both copied files and their
+serialized hashes verified. Generated evidence is ignored under
+`.codex-tmp/watcher-playset-implementation/`.
+
+See [WATCHER_ACTIVE_PLAYSET_HANDOFF.md](WATCHER_ACTIVE_PLAYSET_HANDOFF.md) for the
+complete producer format, generated example and precise Task 07 receiving work.
+Task 07 was held for this delivery and has not been started here. Its receiving
+path must consume the watcher template and preserve pair provenance in Run-owned
+SQL and the review manifest; the old pending inspector currently rejects the new
+JSON artifact. No pipeline/schema implementation, live watcher startup, production
+capture processing, production DB write, commit or push was performed. Existing
+unrelated working-tree changes were preserved.
+
+## Task 06 v45 integration complete; Task 07 next — 2026-09-28
+
+Task 06 has integrated and selected learner v45 package
+`68f1ae5db205ab46afef9c4d`, model `f5cde2616f35d563118d3d32`:
+model schema 5 / matcher API v2, `error-contract-v1`, SQLite schema 1.
+The normal source catalog and installed wheel now use the same package.
+The existing SQL design stores the new literal choices correctly; no pipeline
+source edit, extra processing stage or physical database migration was needed.
+
+Seven complete native logs passed preparation, aggregation, SQLite write/readback,
+review completion and separate-process database-only rendering:
+418,168 recovered occurrences,
+19,912 unique records and four native review emissions.
+All original 122 cases / 9,153 emissions are record-eligible. Both line-label
+choices retain their exact native spelling. Duplicate rejection, generation
+isolation and actual read-only SQLite failure preserve accepted state.
+The installed whole-log storage path also passed with checkout resources blocked.
+See [the v45 integration handoff](TASK06_V45_STORAGE_INTEGRATION_HANDOFF.md)
+for exact evidence, storage mappings, changed paths and remaining limits.
+
+The learner assessment's remaining word-run policy issues, two lost matches
+against the thirty-log predecessor, capture regressions and tie behavior remain
+documented; storage does not reinterpret those outcomes. Development selection
+is updated, while production processing and existing application providers remain
+unchanged. Next is Task 07 protected-input/processing/replay composition, followed
+by Task 08 SQL-only reporting/audit. The historical learner/research retirement
+dependencies in the Task 05/06 handoffs remain. No production database writes,
+watcher/capture operation, retained-input deletion, commit or push occurred.
+
+The dated selection and "integration pending" statements below retain their
+historical context and are superseded by this checkpoint.
+
+
+## Learner v45 release delivered; Task 06 integration separate — 2026-09-28
+
+The owner authorized the demonstrated additive applicability fix, a replacement
+over the complete retained 73-log corpus in cumulative 20 + 20 + 20 + 13 batches,
+native before/after assessment and immutable schema-5 / matcher-API-v2 delivery.
+That replacement is package `68f1ae5db205ab46afef9c4d`, published model
+`f5cde2616f35d563118d3d32`, from candidate `c4f174d947fbc531aba35fb7`.
+Manifest SHA-256:
+`2a84fe9c734a558e757df54649eac0812ea380a80ac8a2d0fe17129d50f24a5f`.
+Task 06 integration and active selection remain separate. Earlier no-publication
+statements describe earlier scope, not this delivery assignment.
+
+Learner v45 extracts the existing source/context/construction/parameter applicability
+gates into the shared matcher and uses them before additive wording protection.
+Refinement partitions use complete retained matches. The same-structure wording
+rules are unchanged. Native retained decisions demonstrate that the one-frame
+comparison proposal survives while the travel/activity policy conflicts remain.
+Fresh state and exact provenance are under
+`.codex-tmp/learner-release-v45/`; this is a new build, not an import of v43/v44
+learned definitions. Learner SHA-256:
+`025c98f6ca84cab8b6ea3b81e76f9517d166ee2090a81ed4878313122ae6a088`.
+
+The final model has 689 definitions (492 supported / 197 provisional), assigning
+2,439,711 occurrences as template and 154,873 as provisional, with four unmatched.
+It gains 43,624 complete assignments versus the prior 73-log additive build with
+no additional lost matches. Versus the selected thirty-log model it gains 119,114
+and loses two. All original 122 cases / 9,153 occurrences match through 28
+definitions: 118 bodies / 267 occurrences template; four / 8,886 provisional.
+
+The [release assessment](LEARNER_RELEASE_V45_RESULTS.md) records native examples,
+28 contextual inputs / 63 occurrences with changed captures versus the prior
+73-log build, four remaining wording-policy conflicts, grouping regressions and
+representation-sensitive ties. Within v45, all earlier supported definitions
+survive, 30 promote and 50 retire with recorded successors/reasons. No prior
+match becomes unmatched, but competing complete assignments make 21 previously
+supported occurrences provisional at the 60-log checkpoint. Coverage gains do
+not establish uniform semantic improvement or model acceptance.
+
+The [pipeline handoff](LEARNER_PARSER_PIPELINE_HANDOFF.md) supplies exact parser,
+matcher/validator/selector identities, callable interfaces, native export evidence
+and schema-5 literal-choice requirements. Proposed selection is
+`models/candidates/selection.v45.proposed.json`; read-only catalog loading resolves
+it successfully. Active package `44a0401b8adf0a2953d26705` remains unchanged.
+Next: Task 06 isolated integration of this explicit package, including choice
+indices in storage/rendering, both statuses and native review associations, before
+separate selection/cutover. Production processing remains disabled. No commit/push.
+
+The independent immutable-package replay completed all 73 original logs without
+development imports: zero discrepancies against 91,925 complete build inspection
+results, 10,285,082 capture-byte checks and every original 122-case ordinal
+reconciled. Exact results are in
+`.codex-tmp/learner-release-v45/delivery-replay.json`; native examples and public
+case results are alongside it. Active selection and all frozen source/package
+hashes were reverified. This delivery makes no universal accuracy or performance
+improvement claim; remaining policy/capture issues stay explicit in the assessment.
+
+## Formal Pipeline Team reply: original unmatched shard — 2026-09-28
+
+The owner requested closure against the original 122-case / 9,153-emission task.
+[Formal reply](LEARNER_TASK06_UNMATCHED_REVIEW_REPLY.md): investigation and
+candidate-level coverage are resolved; production deployment is not performed.
+Fresh whole-original-log replay of current v44 additive candidate
+`39cb19ab0ea10a48ebb98a46` and fresh candidate `6afef6948c1535e6d96126f5`
+gives 114 template / 8 provisional cases, weighted 263 / 8,890 emissions, zero
+no-match, using 28 definitions. Every original case/ordinal association reconciles.
+The actually selected package remains `44a0401b8adf0a2953d26705` and still gives
+the original 9,153 no-matches. Do not describe this reply as a deployed fix.
+The reply links the historical causes, current before/after ledger, two worked
+cases, multi-log answer and remaining out-of-scope learner limitations.
+No publication, selection change, production processing, commit or push.
+
+## Line-label equivalence implementation — 2026-09-28
+
+Owner challenged the initial report's reliance on agent-chosen checks. The report
+now leads with a procedure-matched v43/v44 audit, native examples, complete template
+ledgers and additive evolution. There is no observed native coverage gain or loss:
+fresh builds both have 203 templates; additive builds both have 208. All paired
+definitions preserve memberships, support and capture behavior apart from the
+declared label alternatives. Fresh-versus-additive differences affect 116 native
+occurrences in four families, including one supported-versus-provisional difference;
+these predate v44. Passing implementation checks is not owner acceptance. No
+learner/runtime code was changed during this report audit. See the report for
+concrete evidence/limits.
+
+Owner authorized interchangeability of `line:` and `near line:` before LOCATOR.
+Learner v44 represents these as declared literal alternatives in one template,
+including from one native observation. Model schema 5 / matcher API v2 carry the
+selected literal choice through exact rendering and identity; opaque fields,
+source/context checks, complete assignment and support thresholds remain in force.
+File-label policy is unchanged. Fresh same-version learning state is required.
+See [implementation and verification](LEARNER_LOCATION_LABEL_EQUIVALENCE_RESULTS.md).
+All 19 focused/native regression checks pass. The isolated two-log candidate
+`6afef6948c1535e6d96126f5` accounts for 100,621 recovered occurrences; explicit
+spelling-swap controls preserve template identity across 100 selected definitions.
+Learner SHA-256: `2988d6fb02b51f4226fd6e025a21496062a518227f81607c4f45cc72fa1313cf`.
+This does not fix the separate additive applicability defect recorded below.
+No package publication, active selection change or production processing.
+
+## Learner same-version additive exercise — 2026-09-27
+
+Owner directs batches of 10–20 complete logs, retaining supported templates with
+complete unambiguous assignments and refining cumulative provisional/unmatched
+evidence. Do not tune inference from the 73-log run's behavior. The all-at-once
+v42 attempt was stopped with its partial timing/recovery evidence retained;
+the fresh thirty-log baseline completed. The v43 experiment completed
+20 + 20 + 20 + 13 native logs and one cumulative successor model per checkpoint.
+See [the experiment report](LEARNER_ALL_LOGS_V42_RESULTS.md), ignored
+`.codex-tmp/learner-all-logs-v42/additive/` and `additive.log` for results.
+
+v43 adds same-identity continuation, explicit provisional promotion/retirement
+history, protection of provisional literal wording, and streamed native-evidence
+serialization. The owner confirmed separate complete untyped effect/trigger
+Unknown-location constructions, with opaque REASON and literal Unknown. Different
+slot values count as distinct examples; repeated bodies do not. Each recognized
+field contributes one typed similarity position, never its internal words.
+No unchanged-evidence shortcut remains. Eight native additive and four date checks
+pass. Frozen learner SHA-256 is
+`8a1d1b067008a3d776b4496209e4b36c6bb7523923b28a7081be8deae216cbcc`.
+
+The prior date-build issues are resolved: balanced-pair metadata uses lists, and
+learner-only inference_rule metadata is excluded from executable field identity.
+Final candidate `28cac50bf1249077100d12d5` has 492 supported / 199 provisional
+definitions and matches all original 122 review cases. Its overall 73-log outcomes
+are 2,396,084 supported, 154,876 provisional and 43,628 unmatched occurrences.
+Those unmatched occurrences are eight bodies; the largest family demonstrates an
+additive-guard applicability defect (one-frame proposals judged against four-frame
+reference structures despite complete-matcher incompatibility). The other two
+families expose incidental-value wording protection. Do not promote this candidate
+or tune rules to its coverage. The report records targeted follow-up recommendations
+and native proof; no inference changes were made during the frozen experiment.
+
+All previous supported definitions survived; 30 provisional definitions promoted
+and 53 fixed observations retired with successors. No previously matched training
+evidence became unmatched within the same-version chain. The final comparison,
+checkpoint audit and rejection traces are complete in the ignored directory.
+The native-evidence inspector now reads ordinary JSON independently of indentation,
+verified against both compact and indented complete exports; learner identity is
+unchanged by this viewer correction.
+
+No selected package, production state or existing research evidence was changed;
+no commit, push, watcher or publication. Earlier dated sections remain historical.
+
+## Learner date-token inference — 2026-09-27
+
+Owner requires native dates such as `1178.10.1` to be KEYs, never diagnostic
+wording, without waiting for variation in sampled values. Learner v42 adds the
+declaration in `owner_rules.json`, recognizes the existing complete parser token
+before grouping/alignment, and preserves it as KEY during field coalescing.
+Selection evidence recognizes that declared field even with one observed value;
+template support rules are unchanged. Opaque fields remain intact. The owner's
+possible long evaluation interval is an explanation to consider, not an established
+game behavior or a rule prerequisite.
+
+Verification and native inputs are under `.codex-tmp/learner-date-key/`; the
+requirement checks are `tests/test_learner_date_requirements.py`. No package,
+active selection, parser, production state or existing research artifact was
+changed. The previously reported in-memory balance-pair validation defect is
+separate and remains unresolved; no full model build/publication was attempted.
+
+## Task 06 completed; Task 07 is next — 2026-09-27
+
+Task 06 delivers exact-identity aggregation, current-generation SQLite Run storage,
+and the native review log plus manifest for every successful Run, including zero
+review. Template and provisional records remain filterable and render from stored
+definitions/values. `write_run` owns staging, finalization, publication, rollback and
+commit; Tasks 07/08 consume its [public APIs and detailed handoff](TASK06_RUN_STORAGE_AND_NATIVE_REVIEW_HANDOFF.md).
+
+Three complete unmodified Task 05 inventory logs were verified in fresh ignored
+generations: 199,545 recovered occurrences, 190,392 eligible occurrences, 9,396
+aggregated records and 9,153 native review emissions. Verification covers exact
+bytes/order/frequency, both empty-shard files, duplicate rejection, namespaces,
+Run IDs/date basis, count reconciliation, real read-only SQLite rejection and
+separate-process database-only rendering. The detailed handoff distinguishes
+observed failures from unexercised crash/native branches and records scope proof.
+
+Next: Task 07 protected-input preparation and processing/replay composition;
+Task 08 database-only reporting/audit. Operator command choices remain for Task 07
+owner review. Existing application providers remain connected until separately
+commissioned cutover. Production processing remains disabled. No watcher operation,
+live capture, production database write, retained-input deletion, commit or push.
+
+Task 05's named retirement dependencies remain: the historical baseline in
+`tools/template_learning/build_parser_comparison.py`, the removed-API consumer
+in `inspect_cross_emission_recovery.py`, and opt-in
+`test_raw_parser_requirements.py::test_independent_pipeline_replay`. Learner/model
+coverage limitations remain unchanged; storage does not repair unmatched or
+malformed native patterns. The current selection/package is unchanged.
+
+All dated instructions and task orders below are historical where superseded by
+this checkpoint, the approved Error Contract and the Task 06 handoff.
+
+
+## Task 05 completed; storage is next — 2026-09-27
+
+Task 05 is complete: the selected schema-2 package is
+`44a0401b8adf0a2953d26705` (unchanged model `76630685c4a341ca14bf9c7c`).
+The pipeline now executes pinned recovery and shared complete selection, binds
+only selected regions once, and prepares serializable `error-contract-v1` data
+with exact identity and standalone rendering. The duplicate pipeline matcher and
+its bound-candidate alternatives are removed. All 31 native inventory logs and
+the disposable installed path passed; see
+[the implementation handoff](TASK05_ERROR_CONTRACT_IMPLEMENTATION_HANDOFF.md)
+for APIs, resources, evidence, coverage limits and exact changes.
+
+Next: Run aggregation, SQL/native-review persistence and stored reporting;
+application/provider cutover remains separately commissioned. Historical
+recovery/view retirement still depends on the learner comparison tool's old
+baseline. Two additional research/test consumers of removed APIs are named in
+the handoff. Production processing remains disabled; no watcher operation,
+learner publication, commit or push occurred. Earlier sections below describe
+historical checkpoints and do not supersede this completion.
+
+## Next implementation: revised Task 05 — 2026-09-27
+
+The owner assigned the verified shared matcher integration to
+[Task 05](05_ERROR_CONTRACT_IMPLEMENTATION.md). Execute its ordered steps:
+load the pinned package; replace local matching and bind only the selected result
+once; implement Error Contract preparation/identity/rendering; verify complete
+native inputs; then select the package and verify installed resources.
+Delete the superseded pipeline matcher and its unused result machinery.
+The earlier Task 05 review hold is superseded for this defined scope.
+
+[Independent pipeline verification](SHARED_MATCHER_PIPELINE_VERIFICATION.md)
+passed across 31 logs / 1,167,165 occurrences, including every selected capture's
+original-byte check. Candidate `44a0401b8adf0a2953d26705` is ready for integration;
+selection remains unchanged in this prompt-revision pass. No source, package or
+model implementation was changed. SQL/review persistence and application cutover
+remain later. Historical recovery/view retirement still requires retiring the
+learner comparison tool's old-baseline path; carry that dependency forward.
+
+The delivery and earlier checkpoints below retain their dated evidence. Use this
+section and the revised prompt for current execution scope and order.
+
+## Shared matcher candidate delivered — 2026-09-27
+
+Owner-directed learner extraction is complete. Candidate package
+`models/candidates/44a0401b8adf0a2953d26705/`, manifest
+`2a768c9d9729025da2874671dfc5952b703019f57a36a68e8437e1242122aca1`, supplies
+`ck3-native-matcher-v1` with the unchanged schema-4 model
+`76630685c4a341ca14bf9c7c`, parser v1.7 and assignment policy v2. The old release
+and active `models/selection.json` remain byte-identical. Proposed metadata is
+`models/candidates/selection.proposed.json`; it is not activation.
+
+Fresh before/after learner and independent package replay agree on all 31
+complete logs: 1,167,165 diagnostics, 78,869 distinct complete inputs within logs,
+712,271 template / 445,741 provisional / 9,153 no-match. All nine slot types,
+present empty versus absent, wrappers and 11 groups/13 entries are exercised.
+4,447,658 present captures and 59,054 absences retain exact original bytes.
+Unpublished-model parity also passes. New layout indices are the sole additive
+legacy-result difference; no definitions, IDs, support or policy were changed.
+
+Matching bodies are extracted into `matching_primitives.py`; learner callers,
+evaluation and publication use the shared mechanics. `native_matching.py`,
+`matching_validation.py` and `matcher_loader.py` provide the standalone contract.
+Publication now creates immutable packages. Full-ID dependencies are hashed.
+Research assignment review no longer imports the pipeline matcher. Generated
+evidence is ignored under `.codex-tmp/shared-matcher/`.
+
+Next owner: pipeline team. Implement package/selection reading, call the shared
+entry point, bind only the selected assignment once, preserve final status and
+layout references, verify on native logs, then retire its duplicate matcher.
+Pipeline source, active/wheel selection, SQL and production operation were not
+changed. Pre-existing product/pipeline documentation edits are preserved; no
+commit/push was requested. See the [formal delivery and exact invocation](LEARNER_PARSER_PIPELINE_HANDOFF.md)
+and [API/error/offset contract](SHARED_MATCHER_API.md). Ties, capture ambiguity,
+alternative component layouts, >2 entries and malformed/failure paths have no
+genuine witnesses in this corpus and remain explicit verification limits.
+
+## Historical Task 04 closeout before audit/shared-matcher review — 2026-09-27
+
+Owner approved the [full Error Contract](ERROR_CONTRACT_SPECIFICATION.md), including
+source/emitter stored with the template definition and exposed through each record.
+[Task 04 completion handoff](TASK04_ERROR_CONTRACT_HANDOFF.md) supplies the current
+pin/interfaces, native checks, coverage limits and exact continuation point.
+At this checkpoint the owner commissioned [Task 04(B)](04B_PIPELINE_PROCESSING_AUDIT.md)
+before deciding repairs or Task 05 amendments. That audit, subsequent review and
+shared-matcher delivery are now complete. The current scope at the top of this
+document supersedes the original hold and bounded-local-matcher repair proposal.
+The historical recovery/view retirement dependency remains separate.
+
+The learner assignment dependency is resolved in selected model
+76630685c4a341ca14bf9c7c, schema 4 / parser v1.7 / assignment-v2 / classifier-v7.
+Both full and provisional outcomes expose one selected complete assignment.
+Fresh Task 04 replay: 100,621 results on two complete logs, 173,247 present bindings
+checked against source bytes, 4,350 absences, 11 groups / 13 supporting entries.
+No SQL persistence or application cutover was performed.
+
+This closeout adds the approved specification, completion handoff and revised
+prompt, and reconciles active guidance. Code, models, learner files and protected
+evidence remain unchanged. Pre-existing LEARNER_PIPELINE_MATCHING_INVESTIGATION_PROMPT.md
+is preserved. Task 04(B) was the next step at that checkpoint. Run aggregation,
+SQL/review publication and stored reporting
+remain later implementation work. No commit or push is part of this closeout.
+
 ## Published: continuation-aware learner v41 and parser v1.7
 
 2026-09-26. Owner authorized completing continuation support then publishing.

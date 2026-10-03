@@ -13,11 +13,12 @@ from pathlib import Path
 from template_learning.artifacts import canonical_bytes, load_bundle, MODEL_SCHEMA, MODEL_VERSION
 from template_learning.inventory import sha256_file
 from template_learning.parsers import load_parser, reference_from_manifest
-from template_learning.patterns import pattern_identity
+from template_learning.matching_primitives import pattern_identity
 from template_learning.records import SequenceRecord, identity
-from template_learning.research_matching import match_record, assignment_candidates
-from template_learning.assignment import select_assignment
-from template_learning.inspect_incremental_learning import native_evidence_rows
+from template_learning.native_matching import Matcher, API_VERSION
+from template_learning.matcher_loader import (RUNTIME_FILES, SCHEMA as PACKAGE_SCHEMA,
+    canonical, load_package)
+from template_learning.evidence_serialization import native_evidence_rows
 
 RELEASE_SCHEMA = 'ck3chronicle.native-model-release'
 ARTIFACTS = {'empirical_template_model.json', 'parser.py', 'parser-manifest.json',
@@ -37,7 +38,7 @@ def compact_template(template):
 
 
 def compact_model(candidate):
-    keys = ('schema', 'schema_version', 'record_scope', 'parser', 'algorithm',
+    keys = ('learner_release', 'schema', 'schema_version', 'record_scope', 'parser', 'algorithm',
             'slot_definitions', 'owner_rules', 'literal_guidance', 'constructions',
             'diagnostic_policy', 'summary', 'by_source', 'assignment_policy')
     result = {k: candidate[k] for k in keys}
@@ -60,16 +61,14 @@ def verify_reference_implementation(model):
     root = Path(__file__).parent
     for name, digest in model['algorithm']['implementation_hashes'].items():
         path = (root / name).resolve()
-        if path.parent != root.resolve() or sha256_file(path) != digest:
+        if not path.is_relative_to(root.resolve()) or sha256_file(path) != digest:
             raise ValueError(f'reference implementation differs: {name}')
 
 
 def validate_native_export(model, bundle):
     """Replay every complete contextual message, preserving all alternatives."""
     verify_reference_implementation(model)
-    by_source = {}
-    for template in model['templates']:
-        by_source.setdefault(template['source_family'], []).append(template)
+    matcher = Matcher(model)
     counts = Counter(full=0, provisional=0, unknown=0)
     rows = captures = 0
     for row, occurrences in native_evidence_rows(bundle / 'native_evidence.json'):
@@ -78,13 +77,10 @@ def validate_native_export(model, bundle):
             continuations=tuple(row['continuations']))
         if ''.join(t for _, t in record.pieces) != record.text:
             raise ValueError('native piece reconstruction differs')
-        ambiguities = []
-        matches = [m for t in by_source.get(record.source_family, [])
-                   if (m := match_record(t, record, capture_ambiguities=ambiguities)) is not None]
+        matches, ambiguities, selected = matcher.inspect_record(record)
         # Includes exact captures, wrapper alternatives, template IDs and statuses.
         if matches != row['matches'] or ambiguities != row['capture_ambiguities']:
             raise ValueError(f'compact export changes matching: {row["record_id"]}')
-        selected = select_assignment(model,assignment_candidates(matches,ambiguities))
         if selected != row['selected_assignment']:
             raise ValueError('compact export changes selected assignment')
         outcome = ('full' if selected and selected['match_status']=='template' else
@@ -124,7 +120,8 @@ def load_release(folder, *, expected_manifest_sha256):
 
     The expected manifest digest is supplied by selection/configuration, not
     accepted from an unverified manifest. No current-rule dependency for loading.
-    Call verify_reference_implementation before using the research matcher.
+    This reader authenticates the source release for explicit repackaging.
+    Runtime consumers use matcher_loader.load_package and its pinned matcher.
     """
     folder = Path(folder).resolve()
     if sha256_file(folder / 'manifest.json') != expected_manifest_sha256:
@@ -163,15 +160,32 @@ def publish(bundle, output):
                 'native-validation.json': canonical_bytes(verification),
                 'assignment.py': (bundle/'assignment.py').read_bytes(),
                 'continuations.py': (bundle/'continuations.py').read_bytes()}
+    return publish_package(payloads, output, source_manifest_sha256=sha256_file(bundle / 'manifest.json'))
+
+
+def publish_package(payloads, output, *, source_manifest_sha256):
+    """Package existing definitions without changing their model identity."""
     import hashlib
-    manifest = dict(schema=RELEASE_SCHEMA, schema_version=1, revision_id=model['revision_id'],
-        parser=model['parser'], source_candidate_revision=candidate['revision_id'],
-        source_candidate_manifest_sha256=sha256_file(bundle / 'manifest.json'),
-        build_command='python -B -m template_learning.publish_native_model --bundle <source-candidate-bundle> --output-dir models',
-        publisher_sha256=sha256_file(Path(__file__)),
+    from template_learning.learner_loader import selected_release
+    executed_release = selected_release()
+    payloads = dict(payloads)
+    # Executable matching dependencies come from this one implementation. Parser
+    # and model bytes remain the explicitly supplied source artifacts.
+    for name in RUNTIME_FILES:
+        payloads[name] = Path(__file__).with_name(name).read_bytes()
+    model = json.loads(payloads['empirical_template_model.json'])
+    Matcher(model)
+    manifest = dict(schema=PACKAGE_SCHEMA, schema_version=1,
+        model_revision_id=model['revision_id'], model_schema_version=model['schema_version'],
+        parser=model['parser'], matcher_api_version=API_VERSION,
+        selector_version=model['assignment_policy']['version'],
+        source_manifest_sha256=source_manifest_sha256,
+        delivery_status='candidate_not_activated',
+        publication_learner_release=executed_release,
         hashes={name: hashlib.sha256(data).hexdigest() for name, data in payloads.items()})
+    manifest['package_id'] = hashlib.sha256(canonical(manifest)).hexdigest()[:24]
     payloads['manifest.json'] = canonical_bytes(manifest)
-    folder = output / model['revision_id']
+    folder = Path(output).resolve() / manifest['package_id']
     if folder.exists():
         if any(not (folder / name).is_file() or (folder / name).read_bytes() != data
                for name, data in payloads.items()):
@@ -181,17 +195,64 @@ def publish(bundle, output):
         for name, data in payloads.items():
             (folder / name).write_bytes(data)
     digest = sha256_file(folder / 'manifest.json')
-    load_release(folder, expected_manifest_sha256=digest)
-    return dict(revision_id=model['revision_id'], folder=str(folder), manifest_sha256=digest,
-                summary=model['summary'], validation=verification)
+    load_package(folder, expected_manifest_sha256=digest)
+    return dict(package_id=manifest['package_id'], revision_id=model['revision_id'],
+                folder=str(folder), manifest_sha256=digest,
+                proposed_selection=dict(schema='ck3chronicle.native-model-selection',
+                    schema_version=2, revision_id=model['revision_id'],
+                    package_id=manifest['package_id'], artifact_directory='candidates/' + manifest['package_id'],
+                    manifest_sha256=digest, matcher_api_version=API_VERSION,
+                    integration_status='candidate_pending_pipeline_reader',
+                    handoff='docs/LEARNER_PARSER_PIPELINE_HANDOFF.md'))
+
+
+def package_release(source, output, *, expected_manifest_sha256, validation_logs):
+    """Explicit new implementation plus retained definitions; validate this combination."""
+    from template_learning.learner_loader import selected_release
+    executed = selected_release()
+    if not validation_logs:
+        raise ValueError('changed-implementation packaging requires native validation logs')
+    source = Path(source).resolve()
+    model, parser = load_release(source, expected_manifest_sha256=expected_manifest_sha256)
+    matcher = Matcher(model)
+    from template_learning.native_matching import iter_native_units
+    validations = []
+    for path in validation_logs:
+        counts = Counter()
+        raw = parser.parse_file(path)
+        for unit in iter_native_units(raw):
+            if unit['recovery_status'] != 'recovered':
+                counts['unresolved'] += 1
+            else:
+                result = matcher.match(unit)
+                counts[result['assignment']['match_status'] if result['assignment'] else 'no_match'] += 1
+        validations.append(dict(sha256=sha256_file(path), counts=dict(counts)))
+    payloads = {name: (source / name).read_bytes() for name in ARTIFACTS}
+    payloads['native-validation.json'] = canonical_bytes(dict(
+        schema='ck3chronicle.native-target-validation', version=1,
+        source_manifest_sha256=expected_manifest_sha256, learner_release=executed,
+        inputs=validations, scope='Selected target implementation on supplied complete native logs; not historical parity.'))
+    return publish_package(payloads, output, source_manifest_sha256=expected_manifest_sha256)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--bundle', type=Path, required=True)
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('--bundle', type=Path)
+    group.add_argument('--source-release', type=Path)
+    parser.add_argument('--expected-manifest-sha256')
+    parser.add_argument('--validation-log', type=Path, action='append', default=[])
     parser.add_argument('--output-dir', type=Path, required=True)
     args = parser.parse_args()
-    print(json.dumps(publish(args.bundle, args.output_dir), indent=2))
+    if args.source_release:
+        if not args.expected_manifest_sha256:
+            parser.error('--source-release requires --expected-manifest-sha256')
+        result = package_release(args.source_release, args.output_dir,
+                                 expected_manifest_sha256=args.expected_manifest_sha256,
+                                 validation_logs=args.validation_log)
+    else:
+        result = publish(args.bundle, args.output_dir)
+    print(json.dumps(result, indent=2))
 
 
 if __name__ == '__main__':

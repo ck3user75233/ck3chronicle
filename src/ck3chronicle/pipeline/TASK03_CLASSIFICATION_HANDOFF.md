@@ -1,5 +1,12 @@
 # Task 04 supplement: repair template matching
 
+## Historical supplement
+
+This predecessor instruction is superseded by the completed
+[Task 05 implementation](../../../docs/TASK05_ERROR_CONTRACT_IMPLEMENTATION_HANDOFF.md).
+The shared package now owns matching/selection; `pipeline/matching.py` and
+bound-candidate alternatives have been removed. Use the current handoff APIs.
+
 Repair the pipeline so it uses the supplied error templates directly, then
 complete the Task 04 Error Contract specification. Pipeline source edits needed
 for this repair are authorized.

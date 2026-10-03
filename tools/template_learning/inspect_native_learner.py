@@ -10,7 +10,8 @@ import sys
 from template_learning import artifacts, inventory, records
 from template_learning import incremental_template_registry as registry
 from template_learning.clustering import cluster_source_records
-from template_learning.patterns import match_pattern, SLOT_TYPES
+from template_learning.matching_primitives import SLOT_TYPES
+from template_learning.matching_defaults import match_pattern
 from template_learning.parsers import load_parser, reference_from_manifest
 from template_learning.research_matching import evaluate_records
 

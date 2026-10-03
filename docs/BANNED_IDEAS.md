@@ -68,13 +68,36 @@ fallbacks.
 
 ## BAN-007 — In-place migration of derived databases
 
-SQLite contains rebuildable derived state. When a schema, parser, splitter,
-model, or contract change alters stored meaning, build and validate a fresh
-database from retained captures and cut over explicitly.
+SQLite has one explicitly versioned current schema. A schema change requires
+explicitly discarding the old database and initializing the current schema.
+Opening an incompatible database must not silently reset it.
+
+New compatible models, parsers and matchers can process new logs into the same
+database. Record their exact versions per Run; do not require a database-wide
+processing-version match or a reset just because processing components changed.
 
 Do not maintain schema-migration chains, old-schema readers, compatibility
 views, dual writes, backfills, or historical row-repair paths. Ordinary SQLite
 transaction recovery remains required.
+
+## BAN-014 — Database generation replay
+
+Do not implement named processing generations, parallel-generation rebuilds,
+replay/cutover workflows or dedicated replay/rebuild commands. After an owner-chosen
+whole-database reset, reprocess retained logs through the same ingest operation.
+Keep schema versioning and per-Run processing provenance.
+
+The owner requires an explicit option to re-ingest the same log with a different
+package and replace its processing result while preserving its Run ID. Keep one
+current result; ordinary duplicate ingestion still returns the existing Run ID
+unchanged. Replace all old Run-owned diagnostics, counts, processing lineage and
+native review log/manifest; preserve original capture/playset facts and other Runs.
+SQL deletion/insertion must share one transaction, with review-file replacement
+coordinated so failure preserves the previously accepted result. This bounded
+production reprocessing is permitted; generation replay remains banned. Delivery
+is unassigned and outside the current Task 07 prompt; see the
+[database policy and task ledger](TASK07_SCOPE_REVIEW.md#database-policy).
+Comparative model evaluation remains learner-team work without database storage.
 
 ## BAN-008 — Requiring 100% classification coverage
 

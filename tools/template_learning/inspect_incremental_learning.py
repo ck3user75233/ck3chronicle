@@ -19,6 +19,7 @@ from template_learning import incremental_template_registry as registry
 from template_learning import inventory, records
 from template_learning.parsers import load_parser, reference_from_manifest
 from template_learning.research_matching import evaluate_records
+from template_learning.evidence_serialization import native_evidence_rows
 
 
 def write_json(path, value):
@@ -26,49 +27,6 @@ def write_json(path, value):
         json.dump(value, stream, ensure_ascii=True, indent=2)
         stream.write("\n")
 
-
-def native_evidence_rows(path, *, retain_occurrences=False):
-    """Stream our indented evidence export, retaining one occurrence per row.
-
-    Large repeated-message lists need not be loaded to inspect model outcomes.
-    Counts still include every occurrence. Set retain_occurrences for provenance
-    aggregation: the default deliberately keeps only the first example and must
-    not be used to count distinct supporting logs. This consumes the canonical
-    export, not arbitrary JSON layouts or another model schema.
-    """
-    with path.open(encoding="utf-8") as stream:
-        for line in stream:
-            if line == '  "records": [\n':
-                break
-        else:
-            raise ValueError("missing canonical evidence records")
-        buffer = None
-        occurrences = 0
-        for line in stream:
-            if line == '  ],\n':
-                return
-            if line == '    {\n':
-                buffer,occurrences = [line],0
-            elif line == '      "native_occurrences": [\n':
-                buffer.append(line)
-                for occurrence_line in stream:
-                    if occurrence_line == '      ],\n':
-                        buffer.append(occurrence_line)
-                        break
-                    if occurrence_line == '        {\n':
-                        occurrences += 1
-                    if retain_occurrences:
-                        buffer.append(occurrence_line)
-                    elif occurrences == 1:
-                        # A retained first occurrence must not keep its comma
-                        # when the rest of the list is omitted.
-                        buffer.append('        }\n' if occurrence_line == '        },\n' else occurrence_line)
-            elif line in {'    },\n','    }\n'}:
-                buffer.append('    }\n')
-                yield json.loads(''.join(buffer)),occurrences
-                buffer = None
-            elif buffer is not None:
-                buffer.append(line)
 
 
 def summarize_native_outcomes(step, output):

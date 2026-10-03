@@ -2,6 +2,11 @@
 
 Status: active owner authority, updated 2026-09-12.
 
+Contract/storage amendment approved 2026-09-27:
+[Error Contract specification](ERROR_CONTRACT_SPECIFICATION.md). The vocabulary,
+classification and storage rules below incorporate that approval; other product
+decisions retain their existing scope.
+
 ## Product intent
 
 ck3chronicle is a standalone, local CK3 run-intelligence product for human
@@ -86,17 +91,17 @@ The named capabilities, intended delivery order, and dependencies belong in
 | Milestone accepted | Every ratified check passes together against one identified candidate and revision set. |
 | Implemented | Code or behavior exists; this alone does not mean accepted, supported, or released. |
 | Run | One CK3 gaming session whose evidence is captured automatically after its observed lifecycle or supplied explicitly through manual/recovery capture. The Run has already happened when processing begins. |
-| Run ID | The database-generation identity assigned to one successfully processed Run. Capture-route metadata records only what that route actually observed. |
+| Run ID | The identity assigned to one successfully ingested Run. Capture-route metadata records only what that route actually observed. |
 | Paths configuration | The single user-authored authority for operational roots, with no search or fallback discovery. |
-| Exact source log | The protected original `error.log`, retained as reconstruction authority. Current policy applies no automatic expiry. |
+| Exact source log | The original `error.log` at the protected capture location, subject to configurable retention initially set to one month; expiry eligibility is still being settled. |
 | Content-hash guard | Rejection of an `error.log` whose full-file hash already belongs to a Run ID. |
 | Log emission | One recognized timestamp-prefixed `error.log` header and its continuation lines up to the next recognized header. |
-| Recovered diagnostic | One diagnostic extracted from a log emission. An approved source-specific splitter may recover several. |
-| Diagnostic record | The compact SQLite representation of one approved diagnostic identity within one run. |
+| Recovered message/group | Transient native message pieces/spans recovered by the pinned parser; this is not a finalized diagnostic record. Existing code may call this a recovered diagnostic. |
+| Diagnostic record | The refined, unique error message stored in SQLite within one Run, with template/provisional status and occurrence count. |
 | Occurrence count | The number of equivalent diagnostics aggregated under the approved identity rule. |
 | Error template | An empirically learned recurring message structure. |
-| Error contract | A reviewed template with its error type, typed slots, validation, rendering, and identity rules, approved for runtime assignment. |
-| Native review shard | One per-Run-ID native-format file containing unresolved, provisional, or low-confidence emissions and provenance. |
+| Error contract | A published template definition plus approved common acceptance, identity and rendering rules; error type initially remains unknown. |
+| Native review shard | One per-Run-ID native-format file containing unassigned/unresolved evidence and provenance. Selected provisional assignments are record-eligible. |
 | Effective playset | The ordered active DLC and mod context reconstructed for a Run from its captured `debug.log` inventory and `Mounted Data:` evidence. |
 | Report | An on-demand human or structured database view for selected runs and query parameters. |
 
@@ -107,22 +112,25 @@ product vocabulary.
 
 ## Classification and completeness
 
-- Full, L1+L2, L1-only, provisional, low-confidence, and unknown are legitimate
-  classification outcomes.
+- Full, provisional and unknown are current complete-message assignment outcomes.
+  The published selector returns one complete assignment for both full and
+  provisional outcomes, including deterministic provisional tie-breaks.
 - A finite sample establishes only the templates it contains. It cannot define
   the complete set of templates CK3 may emit, and later evidence may make a
   previously unknown template classifiable.
 - Complete occurrence accounting is required; 100% classification coverage is
   neither expected nor required for usefulness or release.
-- Every recognized emission produces one or more recovered diagnostics, is
-  written to the run's native review shard, or causes an explicit parser
-  failure. No recognized emission silently disappears.
-- Similarity may nominate a template. Reviewed typed validation authorizes an
-  assignment.
+- Every recognized emission contributes to recovered messages/groups, is written
+  to the run's native review shard, or causes an explicit parser failure. A group
+  may include several emissions. No recognized emission silently disappears.
+- Complete literal/slot validation and the published selector authorize an
+  assignment; storage consumes the selected result without rematching.
 - An approved error contract directly owns classification meaning. There is no
   separate semantic-projection or runtime mapping layer.
-- Equivalent diagnostics aggregate only when all meaning-bearing identity
-  fields agree.
+- Equal selected templates/literal layouts and all ordered typed binding values
+  aggregate within a Run. Supporting-entry count/order/content participates;
+  timestamps and original byte offsets do not. Source applicability is resolved
+  during assignment, not compared again during aggregation.
 - Approved classification models and contracts are immutable, versioned
   revisions selected only after deliberate review. Prior approved revisions
   remain available for rollback unless a separate retention decision changes
@@ -130,28 +138,35 @@ product vocabulary.
 
 ## Storage and trust
 
-- Every successfully processed Run ID finalizes one native review shard,
-  including an empty shard when nothing requires review.
+- Both selected template and provisional assignments become diagnostic records,
+  with a filterable match status and occurrence count. Individual occurrence and
+  diagnostic first/last timestamps are unnecessary; Run lifecycle times remain.
+- Store template literals/slot placements and source/emitter once per definition,
+  with ordered values and selected layout choices on each record. Reports expose
+  source/emitter through that relationship and render entirely from SQL.
+- Processing lineage belongs in Run metadata. Record error type may remain
+  unknown. SQL does not need competing-template lists or ranking evidence.
+- Every successfully processed Run ID finalizes one two-part native review shard:
+  a native review log and metadata manifest, including when there are zero review emissions.
 - Unresolved native payload is not duplicated in SQLite. The database stores
   only its review count, shard reference, availability, and integrity hash.
-- SQLite is derived, rebuildable product state. A meaning-changing schema,
-  parser, splitter, model, or contract revision is applied through a separately
-  named fresh database generation built from retained captures, verified, and
-  explicitly cut over. It is not applied through in-place migration or
-  historical row repair.
+- SQLite has one explicitly versioned current schema. Compatible processing
+  revisions add new Runs to the same database with their own component versions
+  in Run metadata. A schema change requires an explicit database reset, without
+  migration, legacy compatibility or fallback. Generation replay is banned.
+  Reprocessing retained logs after an owner-chosen reset uses ordinary ingest.
 - Reports query SQLite and never reopen or parse raw CK3 logs.
-- Captured `error.log` archives currently have no automatic age or size expiry;
-  retain them indefinitely during product development so database generations
-  can be rebuilt. Revisit retention only through a later explicit owner
-  decision. Apply the same preservation default to captured `debug.log` once
-  same-Run playset capture begins.
+- Captured error/debug logs stay where the watcher put them. Use configurable
+  retention, initially one month; ingestion creates no additional archive.
+  Expiry eligibility for unprocessed/failed captures and automation cadence
+  remain open. This raw-log policy does not expire SQL history or review shards.
 - If a future authorized operation prunes a Run ID and its database record, it
   also removes that Run ID's native review shard and review metadata. It does
   not automatically delete the retained source capture or alter an approved
   classification-model revision whose development used evidence from that Run.
   Source-archive and training-evidence retention are separate policy decisions.
 - The database can render diagnostic reports but is not an archive from which
-  the original `error.log` can be reconstructed. Exact replay, rebuild, or
+  the original `error.log` can be reconstructed. Exact re-ingestion or
   source export uses the retained captured log.
 - Observed facts, derived interpretations, correlations, and recommendations
   remain visibly distinct. A referenced or winning file is evidence, not proof
@@ -161,6 +176,6 @@ product vocabulary.
 
 The production database is an implemented part of Trusted Run, not a later
 optimization. Trusted Run cannot be accepted until ck3chronicle can initialize
-and reopen the current database generation, process a completed `error.log`
+and reopen the current database, process a completed `error.log`
 into it, and produce supported reports from stored records without requiring
 the original log.

@@ -1,0 +1,30 @@
+{
+  "delivery_status": "candidate_not_activated",
+  "hashes": {
+    "assignment.py": "29e3bc8f54ac678988a3dc3e0023ce7c1dc76403900a44805ef958fbd47be235",
+    "continuations.py": "11e4d8b146367c6374508a29b802a143288b973760620babc02c8f9f9760d6ce",
+    "empirical_template_model.json": "897468f7b247c96ea29d7b28c944de1ff65c46e429ac6e06efebfbe93a6bf0db",
+    "full_ids.py": "d91a646cde7887c5fe497e4c76a4bd4cd5ca59277c06c55995cdb5116d22dc28",
+    "matcher_loader.py": "5af9fa3f0d7cfd36cd9133630a4183787be18c14b0a7e04d09786a0a7430f17c",
+    "matching_primitives.py": "b10fb86cac48c73c376a50da07379633f2f508d036a33bbbe4203a37a31693be",
+    "matching_validation.py": "3d66d2e7ec9ff175d2bbdde778e97fd04bd080b4c4ad464fc27ae873bbcc57fc",
+    "native-validation.json": "076be4069855f8cabd2b0c96fcb4a31f0c3d65046a54e0ccceed0c0375d5a8b4",
+    "native_matching.py": "5262ed2944a85e8ffe34ce23ab6e11b3c5b47976cae157711532c87158d5ff4d",
+    "owner_rules.json": "3d7e3da60625554f67f9ebf258514172c12a6c5315acb30fe7309f2db340fc77",
+    "parser-manifest.json": "8ecc55cbdfb4d5601e4cc2c2f11b278b4b0962f9f6e9c62c739f6fd5248f79bb",
+    "parser.py": "a8005254df58daf20e000e454c9e3e9b40304be4cd0962e1fa88e90cea86baab"
+  },
+  "matcher_api_version": "ck3-native-matcher-v1",
+  "model_revision_id": "76630685c4a341ca14bf9c7c",
+  "model_schema_version": 4,
+  "package_id": "44a0401b8adf0a2953d26705",
+  "parser": {
+    "artifact": "parser.py",
+    "sha256": "a8005254df58daf20e000e454c9e3e9b40304be4cd0962e1fa88e90cea86baab",
+    "version": "ck3-lossless-v1.7"
+  },
+  "schema": "ck3chronicle.native-matcher-package",
+  "schema_version": 1,
+  "selector_version": "complete-assignment-v2",
+  "source_manifest_sha256": "364215904d0b167b94365cb6b666818db15cc1947778acf6511772b9e12943c0"
+}

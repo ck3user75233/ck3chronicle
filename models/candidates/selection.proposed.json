@@ -1,0 +1,11 @@
+{
+  "schema": "ck3chronicle.native-model-selection",
+  "schema_version": 2,
+  "revision_id": "76630685c4a341ca14bf9c7c",
+  "package_id": "44a0401b8adf0a2953d26705",
+  "artifact_directory": "candidates/44a0401b8adf0a2953d26705",
+  "manifest_sha256": "2a768c9d9729025da2874671dfc5952b703019f57a36a68e8437e1242122aca1",
+  "matcher_api_version": "ck3-native-matcher-v1",
+  "integration_status": "candidate_pending_pipeline_reader",
+  "handoff": "docs/LEARNER_PARSER_PIPELINE_HANDOFF.md"
+}

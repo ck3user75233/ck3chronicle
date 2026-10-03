@@ -8,6 +8,7 @@ inference that remains outside this module is documented as closure debt.
 from __future__ import annotations
 
 from pathlib import Path
+from dataclasses import dataclass
 
 try:
     import tomllib
@@ -17,6 +18,40 @@ except ImportError:  # Python < 3.11 fallback (should not occur; requires >=3.11
 
 class ConfigurationError(RuntimeError):
     """The project-local path configuration is absent or invalid."""
+
+
+@dataclass(frozen=True)
+class WatcherSettings:
+    database: Path
+    ingest_enabled: bool = True
+    retention_enabled: bool = True
+    maintenance_hours: int = 24
+    retention_days: int = 30
+
+
+def watcher_settings() -> WatcherSettings:
+    """Use the existing configuration authority; no runtime path discovery."""
+    values = load_config().get("watcher", {})
+    if not isinstance(values, dict):
+        raise ConfigurationError("watcher configuration must be a table")
+    database = values.get("database")
+    if not isinstance(database, str) or not database.strip():
+        raise ConfigurationError("watcher.database must name the initialized SQLite database file")
+    path = Path(database)
+    if not path.is_absolute():
+        path = CONFIG_FILE_PATH.parent / path
+    options = {}
+    for key in ("ingest_enabled", "retention_enabled"):
+        value = values.get(key, True)
+        if type(value) is not bool:
+            raise ConfigurationError(f"watcher.{key} must be boolean")
+        options[key] = value
+    for key, default in (("maintenance_hours", 24), ("retention_days", 30)):
+        value = values.get(key, default)
+        if type(value) is not int or value <= 0:
+            raise ConfigurationError(f"watcher.{key} must be a positive integer")
+        options[key] = value
+    return WatcherSettings(database=path.resolve(), **options)
 
 
 # This is an exact project contract, not a search path. Commands are run from
