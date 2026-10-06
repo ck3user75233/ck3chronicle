@@ -75,11 +75,11 @@ def snapshot(root, output, inventory_path, training_path):
 
 def build(root, output):
     from template_learning.learner_loader import create_release, launch
-    release = create_release(root/'tools/template_learning', output/'learner-releases')
+    release = create_release(root/'tools/template_learning', output/'learner-releases',
+                             application_source=root/'src/ck3chronicle')
     save(output/'release.json', release)
     folder, pin = Path(release['folder']), release['manifest_sha256']
-    arguments = ['--parser-manifest', str(folder/'template_learning/parsers/v1_7/manifest.json'),
-                 '--output-dir', str(output/'candidate')]
+    arguments = ['--output-dir', str(output/'candidate')]
     for row in json.loads((output/'inputs.json').read_text()):
         arguments.extend(['--log', row['snapshot']])
     start = time.monotonic()
@@ -121,7 +121,10 @@ def main():
             _validate_template(template,{d['id']:d for d in OWNER_RULES['constructions']},
                 {d['id']:d for d in OWNER_RULES['parameter_structures']},
                 {d['id']:d for d in OWNER_RULES['location_label_equivalences']['groups']})
-        save(args.output/'source-probe.json',dict(records=len(records),templates=templates,review=review))
+        from template_learning.refinement_history import encode_history
+        result = dict(records=len(records),templates=templates,review=review)
+        encode_history(result)
+        save(args.output/'source-probe.json',result)
         print('Source inference and declaration validation passed:',len(templates),'templates',flush=True)
     else:
         build(args.root.resolve(), args.output.resolve())

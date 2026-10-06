@@ -129,6 +129,11 @@ def main():
         '<code>&lt;LOCATOR entries: one or more&gt;</code> denotes a repeated section, not one concatenated slot: every file, line and trace remains separately captured in native order. '
         'The literal <code>Script location:</code> / <code>Stack trace:</code> marker remains significant.</p>',
         '<h2 id="new">New definitions: '+str(len(added_examples))+' examples</h2><p>Prioritized by newly covered messages and consolidation observed on the stored corpus. Predecessors shown below matched the same genuine native messages; this is evidence of replacement, not a claim of universal equivalence.</p>']
+    if (out.parent/'effect-regression-review'/'DIAGNOSIS.html').exists():
+        bits.insert(1,'<p class="note" id="effect-regression"><strong>Confirmed discovery regression:</strong> '
+                    'repeated-location and trace slot-presence credit was mistakenly removed; the missed candidate pairing is a downstream failure. '
+                    '<a href="../effect-regression-review/DIAGNOSIS.html">Read the corrected diagnosis and short-template check</a>. '
+                    'This candidate is not ready for production approval.</p>')
     for index,identifier in enumerate(added_examples,1):
         edges_here = incoming[identifier]
         bits.append('<article><h3>'+str(index)+'. '+esc(templates['after'][identifier]['display'].split('Error:')[-1].splitlines()[0][:130])+'</h3>'+declaration('after',identifier))

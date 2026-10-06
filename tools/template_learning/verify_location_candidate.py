@@ -74,6 +74,8 @@ def main():
     cli.add_argument('--experiment', type=Path, required=True)
     cli.add_argument('--baseline', type=Path, required=True)
     cli.add_argument('--baseline-pin', required=True)
+    cli.add_argument('--baseline-label', default='v46')
+    cli.add_argument('--regression-evidence',type=Path)
     args = cli.parse_args()
     root, out = args.root.resolve(), args.experiment.resolve()
     manifest_path, = (out/'packages').glob('*/manifest.json')
@@ -85,7 +87,13 @@ def main():
         candidate_package=packages['candidate'].manifest['package_id'],
         candidate_pin=sha(manifest_path), baseline_package=packages['baseline'].manifest['package_id'],
         totals=Counter(), transitions=Counter(), runs=[], changes=[], failures=[], targets=[],
-        status_downgrades=[], remaining_unmatched=[])
+        status_downgrades=[], remaining_unmatched=[], assignment_changes=[], regression_checks=[])
+    report['baseline_label']=args.baseline_label
+    regressions = {}
+    if args.regression_evidence:
+        prior=json.loads(args.regression_evidence.read_text())
+        regressions={(r['run_id'],r['ordinal']):r for r in prior['status_downgrades']}
+    changed_pairs={}
     report['training_summary'] = packages['candidate'].data['summary']
     report['export_validation'] = json.loads((manifest_path.parent/'native-validation.json').read_text())
     cache = {}
@@ -114,6 +122,21 @@ def main():
                 counts[label][prep['status'] if prep else 'no_match'] += n
             transition = (before['status'] if before else 'no_match') + ' -> ' + (after['status'] if after else 'no_match')
             report['transitions'][transition] += n
+            if (row['run_id'],row['ordinal']) in regressions:
+                passed=bool(after and after['status']=='template' and any(
+                    v[1]=='KEY' and v[2] in {'add_title_law','activate_struggle_catalyst'} for v in captures(after)))
+                report['regression_checks'].append(dict(run_id=row['run_id'],ordinal=row['ordinal'],passed=passed,
+                    occurrences=n,text=unit['body']['text'],assignment=after))
+                if not passed:
+                    report['failures'].append(dict(run_id=row['run_id'],ordinal=row['ordinal'],reason='effect-name KEY regression remains'))
+            old_id=before['values']['template_id'] if before else None
+            new_id=after['values']['template_id'] if after else None
+            if old_id!=new_id or transition not in {'template -> template','provisional -> provisional','no_match -> no_match'}:
+                pair=(old_id,new_id,transition)
+                change=changed_pairs.setdefault(pair,dict(before=old_id,after=new_id,transition=transition,occurrences=0,records=0,
+                    source_family=row['source_family'],run_id=row['run_id'],ordinal=row['ordinal'],text=unit['body']['text']))
+                change['occurrences']+=n
+                change['records']+=1
             if transition == 'template -> provisional':
                 detail = {label:p.match(unit) for label,p in packages.items()}
                 report['status_downgrades'].append(dict(run_id=row['run_id'],ordinal=row['ordinal'],
@@ -142,7 +165,7 @@ def main():
                 report['totals']['changed_capture_occurrences'] += n
                 old_locations = captures(before, 'LOCATOR')
                 new_locations = captures(after, 'LOCATOR')
-                if [v for v in new_locations if v[2]!='Unknown'] != old_locations:
+                if new_locations != old_locations and [v for v in new_locations if v[2]!='Unknown'] != old_locations:
                     report['failures'].append(dict(run_id=row['run_id'], ordinal=row['ordinal'], reason='existing locator captures changed'))
                 if len(report['changes']) < 12:
                     report['changes'].append(dict(run_id=row['run_id'], ordinal=row['ordinal'],
@@ -151,6 +174,8 @@ def main():
             in_training=run['log_sha256'] in evidence['training_hashes']))
         print(run['run_id'], json.dumps(counts), flush=True)
     report['totals']['distinct_native_units'] = len(cache)
+    report['assignment_changes']=list(changed_pairs.values())
+    assert len(report['regression_checks'])==len(regressions)
     # The original three were in native review, not stored assigned diagnostics.
     original = next(r for r in evidence['runs'] if r['run_id']=='20261003-IS3QON')
     package = packages['candidate']
@@ -229,7 +254,7 @@ def main():
     assert report['database_unchanged'] and report['production_unchanged'] and report['training_inputs_unchanged']
     report['limitations'] = ['Repeated locations apply to complete trailing Script location and Stack trace sections; other recovery structures remain unchanged.',
         'Parser numeric recovery checks are unchanged; no genuine nonnumeric near-line example exists in the examined corpus.',
-        'The 20-log training set includes the original Run; target results are training replay, not unseen accuracy.',
+        f"The candidate training set contains {len(evidence['training_hashes'])} logs; original Run in training: {original['log_sha256'] in evidence['training_hashes']}. Target checks do not establish general accuracy.",
         'The other stored Runs test coverage on ingested evidence outside that training set; absence of a baseline match is reported explicitly.']
     save(out/'verification.json', report)
     esc = lambda value: html.escape(str(value))
@@ -242,11 +267,11 @@ def main():
         'The parser and message boundaries are unchanged. All inputs are genuine stored records or protected captures.</p>',
         '<h2>Fresh build and export</h2><pre>'+esc(json.dumps(report['training_summary'],indent=2))+'</pre>',
         '<p>Export replay checks every training assignment and capture against the candidate. See the complete evidence for the export validation receipt.</p>',
-        '<h2>Stored-data comparison with the same-20-log v46 candidate</h2><pre>'+esc(json.dumps(report['totals'],indent=2))+'</pre>',
+        '<h2>Stored-data comparison with the same-20-log '+esc(args.baseline_label)+' candidate</h2><pre>'+esc(json.dumps(report['totals'],indent=2))+'</pre>',
         '<p>All selected assignments reconstruct their complete native regions. Distinct native messages were checked against candidate identity keys for accidental merging.</p>',
         '<pre>'+esc(json.dumps(report['transitions'],indent=2))+'</pre>',
         '<p>Failed checks: '+str(len(report['failures']))+'. Candidate LOCATOR slots without numeric gates: '+str(report['locator_slots_without_numeric_gate'])+'.</p>',
-        '<table><tr><th>Run</th><th>In training</th><th>v46 baseline</th><th>Candidate</th></tr>']
+        '<table><tr><th>Run</th><th>In training</th><th>'+esc(args.baseline_label)+' baseline</th><th>Candidate</th></tr>']
     for row in report['runs']:
         bits.append('<tr><td>'+esc(row['run_id'])+'</td><td>'+str(row['in_training'])+'</td><td>'+esc(dict(row['counts']['baseline']))+'</td><td>'+esc(dict(row['counts']['candidate']))+'</td></tr>')
     bits.append('</table><h2>Native changes</h2>')

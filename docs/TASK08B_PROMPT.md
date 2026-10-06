@@ -1,5 +1,22 @@
 # Task 08B — Reports and Investigation Experience
 
+## Current owner clarifications — 2026-10-04
+
+Ordinary phrase/token search encompasses complete diagnostic messages: template
+literals and populated slot values together. Show the stored origin of matches
+and the template already assigned to each diagnostic. Templates do not produce
+errors. No special template-discovery query or slot-only search options are needed.
+The contrived bound-phrase-versus-template empty-set example is withdrawn.
+
+Display requested Run -5…+5 positions with unavailable positions labelled, rather
+than requiring eleven simultaneous genuine Runs for verification. Empty diagnostic
+results and missing Run positions are normal outcomes. Distinguish actual handler
+operation/transport errors from those outcomes. Source decoding/search errors
+refer to current files or the search process, not already-decoded SQL records.
+Verify independence from logs/models through observed I/O without deleting inputs.
+These clarifications supersede conflicting earlier example or acceptance wording;
+the current delivery/evidence is in [08B's handoff](TASK08B_REPORTING_HANDOFF.md).
+
 ## Assignment and deliverables
 
 You are the Reporting and Analysis team. Deliver the CLI and report experience
@@ -103,8 +120,8 @@ syntax and support:
 
 - **`runs`:** configured/explicit database, explicit processing package, eligible
   Run listing in source-modification chronology, text/JSON, and pagination applied
-  after eligibility and ordering. Disclose missing/unusable timestamps and
-  duplicate-time exclusions with their Run IDs and timestamps.
+  after eligibility and ordering. Disclose missing/unusable timestamps with
+  their Run IDs and stored values.
 - **`report`:** configured/explicit database, named Run or `latest`, named preset or explicit custom query path,
   structured query file, text/JSON/HTML, display limit and `--verbose` excerpts.
   HTML requires an explicit destination. Text/JSON default to stdout unless the
@@ -114,8 +131,7 @@ syntax and support:
   and selects its latest eligible Run using 08A.1 chronology. Selection uses stored
   metadata, without loading a model.
 - **Timestamp eligibility:** use 08A.1's original source-log modification chronology
-  and exclusions. If an explicitly selected Run belongs to a duplicate-timestamp
-  group in the package, fail clearly. Explain when no eligible Run remains; excluded
+  and missing/unusable timestamp exclusions. Explain when no eligible Run remains; excluded
   Runs remain outside chronological windows and neighbor lists.
 - **Queries:** provide a concise JSON example with scope, refinement, grouped
   literal include/exclude clauses using AND/OR, and optional analytics. Use the
@@ -203,8 +219,7 @@ Use the following history contract:
   trailing window of five contains the selected Run and up to four eligible predecessors.
 - Use `history.counts`, `selected_count`, preceding/subsequent observed/read counts
   and fractions, and `newly_observed`, with 08A.1's same-package eligibility and chronology.
-- Disclose excluded duplicate-time Run IDs, shared timestamps and reasons, and the
-  actual available window size.
+- Disclose missing/unusable timestamp exclusions and the actual available window size.
 - Newness uses successfully read included predecessors. Unavailable comparisons
   remain disclosed coverage gaps; they do not veto window-relative newness.
   A selected-only window labels positive records new within that window and has
@@ -266,7 +281,7 @@ Distinguish source inspection, upstream evidence and checks actually executed by
 Exercise representative reports through the root CLI and demonstrate:
 
 - **Selection:** package restriction, source-timestamp order, `runs`/`latest`,
-  exclusions, selected duplicate-time rejection and honest short/absent history.
+  missing/unusable timestamp exclusions and honest short/absent history.
 - **Queries:** preset definitions and refinements, contradiction rejection, grouped
   message filters, mod/member and file scopes, exact-record selection, and exact/partial
   template selection distinct from bound-value matches.
@@ -289,8 +304,8 @@ scope delivery reports 41 scope/candidate comparisons, four multi-Run source
 investigations / 93 comparisons and nine genuine source tests. Receive these as
 upstream evidence. Use its unchanged backup and linked reports for consumer checks.
 
-Fourteen older missing-timestamp Runs remain excluded. Duplicate usable timestamps,
-naturally failed reads, unavailable roots, decoding/ripgrep failures and a full
+Fourteen older missing-timestamp Runs remain excluded. Naturally failed reads,
+unavailable roots, decoding/ripgrep failures and a full
 five-before/five-after window remain unexercised. Preserve these evidence gaps unless
 genuine cases are available. Available genuine windows suffice for delivery; report
 their actual sizes. Report failed checks and proposed requirements beyond this assignment.

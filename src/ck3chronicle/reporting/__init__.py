@@ -5,12 +5,12 @@ from .analysis import (
     SourceEvaluationError, SourceResolver, chronology, exact_identity,
     frequency_observation, identity_key, rollup, template_text,
 )
-from .source_search import SourceSearch
+from .source_search import SourceSearch, file_line_sources
 from .source_references import source_references
 
 __all__ = [
     'InvestigationQuery', 'QueryError', 'evaluate_text', 'DiagnosticAnalysis',
     'InvestigationResult', 'ReadError', 'RunSelectionError', 'SourceEvaluationError',
     'SourceResolver', 'chronology', 'exact_identity', 'frequency_observation',
-    'template_text', 'identity_key', 'rollup', 'SourceSearch', 'source_references',
+    'template_text', 'identity_key', 'rollup', 'SourceSearch', 'source_references', 'file_line_sources',
 ]

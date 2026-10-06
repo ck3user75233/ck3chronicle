@@ -1,4 +1,5 @@
 """Source selection validation, shared by standalone and composed searches."""
+from copy import deepcopy
 from pathlib import PurePosixPath
 
 from .query import QueryError, _integer, _list, _object, _string, validate_text
@@ -7,10 +8,30 @@ from .query import QueryError, _integer, _list, _object, _string, validate_text
 SOURCE_FIELDS = {'roots', 'members', 'files', 'referenced_paths', 'directories',
                  'recursive', 'extensions', 'include', 'exclude', 'filename',
                  'relative_path', 'filename_globs', 'path_globs', 'case_sensitive',
-                 'content', 'reference_mode'}
+                 'content', 'reference_mode', 'resolution'}
 
 
-def validate_source(value):
+def _game_relative(path):
+    """Accept /common/... as game-relative only in explicitly relative fields.
+
+    Keep physical roots/files, UNC paths and literal text conditions untouched.
+    """
+    path = path.replace('\\', '/').removeprefix('./')
+    return path[1:] if path.startswith('/') and not path.startswith('//') else path
+
+
+def normalize_source(value, *, diagnostic=False):
+    """Return a validated selection with explicit relative paths normalized."""
+    validate_source(value, diagnostic=diagnostic)
+    result = deepcopy(value)
+    if 'directories' in result:
+        result['directories'] = [_game_relative(p) or '.' for p in result['directories']]
+    if 'exact' in result.get('relative_path', {}):
+        result['relative_path']['exact'] = [_game_relative(p) for p in result['relative_path']['exact']]
+    return result
+
+
+def validate_source(value, *, diagnostic=False):
     _object(value, SOURCE_FIELDS, 'source')
     if not value:
         raise QueryError('empty source selection')
@@ -18,6 +39,11 @@ def validate_source(value):
         if key in {'recursive', 'case_sensitive'}:
             if type(selection) is not bool:
                 raise QueryError(f'{key} must be boolean')
+        elif key == 'resolution':
+            if not diagnostic:
+                raise QueryError('resolution is a diagnostic filter; use scope.source.resolution')
+            if not isinstance(selection, str) or selection not in {'resolved', 'unresolved'}:
+                raise QueryError('resolution must be resolved or unresolved')
         elif key == 'reference_mode':
             if selection not in {'relative', 'basename'}:
                 raise QueryError('reference_mode must be relative or basename')
@@ -48,7 +74,7 @@ def validate_source(value):
                 else:
                     _string(part, key)
                     if key == 'directories':
-                        path = PurePosixPath(part.replace('\\', '/'))
+                        path = PurePosixPath(_game_relative(part))
                         if path.is_absolute() or '..' in path.parts or ':' in part:
                             raise QueryError('directories must stay relative to the selected roots')
 

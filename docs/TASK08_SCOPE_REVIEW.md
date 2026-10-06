@@ -1,5 +1,243 @@
 # Tasks 08A.1 / 08A.2 / 08B — current scope decisions
 
+## 08B delivery disposition — 2026-10-04
+
+Unreadable/unsupported current files are per-file source results, with a reason
+and disclosure that their contents/excerpts could not be read. They are distinct
+from a crashed/failed source-search process. Busy database requests queue through
+the existing handler; runtime connection loss is not a busy-queue rejection.
+These owner clarifications require no new pipeline policy.
+
+The owner clarified that source-process/database faults are ordinary execution
+errors to surface at the caller boundary. A bounded reporting CLI repair now
+handles unexpected Python exceptions consistently and preserves the error on
+stderr if error rendering also fails. No broader recovery system or new analytical
+requirement is commissioned. Unencountered crash paths remain verification limits.
+
+Implementation and owner-requested corrections are complete. The authoritative
+[handoff checklist](TASK08B_REPORTING_HANDOFF.md) lists the delivered CLI, five
+presets, composable queries, report formats, history/source experience, verification
+and documentation. No known assigned feature/documentation work remains. Two
+unencountered runtime fault groups are disclosed as verification limits, not
+executed tests or new requirements. Full live Trusted Run acceptance is separate;
+commits and pushes remain deferred. Historical review entries below retain their
+original evidence and do not override this disposition.
+
+## Owner clarification: content search and concrete availability — 2026-10-04
+
+Default phrase/token investigation searches the whole diagnostic, including
+template literals and populated slots. Match origins and assigned templates are
+result data; templates do not produce errors. No special template-discovery query
+or slot-only flags are commissioned. The contrived template-phrase acceptance
+example is withdrawn. Bounded shared-renderer provenance, analytical match
+annotations/rollups and report columns implement this through existing services.
+
+Requested Run positions must display unavailable neighbors. Eleven simultaneous
+Runs are not required for acceptance; existing full-side and new seven-Run
+position checks cover this. Raw-log/model independence is verified through I/O
+observation, with no input removal. Empty results, no-path emissions and missing
+Run positions are normal outcomes. Handler operation/transport errors and current
+source-search process launch/error exits are separately named execution faults;
+these two fault paths were not encountered in retained checks. Exact results and
+limits are in [08B](TASK08B_REPORTING_HANDOFF.md). Live Trusted Run remains separate.
+
+## Owner deletion: reporting duplicate-detection requirement — 2026-10-04
+
+The owner directed removal of timestamp-based duplicate Run exclusion/rejection
+from Data Intelligence. Duplicate-ingestion handling belongs to the pipeline.
+The rule and its verification obligation are deleted from reporting code, prompts,
+handoffs and open-item tracking. It is not an unverified case. No replacement
+duplicate policy, new timestamp test or pipeline modification is commissioned.
+Ordinary package/source-time history remains in 08A.1; [08B](TASK08B_REPORTING_HANDOFF.md)
+records the regression checks.
+
+## Earlier failed-query and incomplete-item traceability — 2026-10-04
+
+The owner requires the earlier incomplete-deliverable assessment to be visible,
+not implied by individual improved reports. The review bundle now maps its six
+review IDs and 17 named query outcomes explicitly. Four evidence-gap groups remain
+unverified. This is a bounded reporting/documentation correction using saved CLI
+outputs, with direct links from each report; it claims no additional failure-case
+acceptance. See [08B](TASK08B_REPORTING_HANDOFF.md).
+
+## Owner direction: file status, columns and error source — 2026-10-04
+
+The owner now directs single-file/line analytics to use the last matching playset
+member in load order as the error source. This supersedes earlier blanket limits
+on identifying a winning source for that case. Implementation stays in the source
+and analysis libraries; reports show the same JSON decision. Status labels are
+Resolved / File not found; raw load order, mod name, file path and line have their
+own columns. All matching copies remain visible. Genuine CLI and browser evidence
+is recorded in [08B](TASK08B_REPORTING_HANDOFF.md). No separate broader causal
+analysis or schema change is commissioned.
+
+## Owner clarification: game-relative path selection — 2026-10-04
+
+The ordinary path filter names the same relative location under all recorded
+playset members, for example `/common/scripted_effects/some_file.txt`. The explicit
+`relative_path.exact` selector accepts the optional leading slash; lookup inventories
+only the parent directory and retains every matching mod candidate. A different
+relative directory is not a basename match. This bounded source/consumer clarification
+is implemented and verified with genuine stored data; see [08B](TASK08B_REPORTING_HANDOFF.md).
+
+## Owner correction: no path is normal emission content — 2026-10-04
+
+The owner rejects calling an emission incomplete because it supplies no path.
+No path means source lookup is not applicable, not unavailable evidence. The
+source/query owners now export neutral path presence, skip unnecessary source
+lookup, and preserve ordinary nonmatching filter behavior. Reports remove warning
+styling and do not attach another record's lookup failure to a pathless emission.
+The [08B handoff](TASK08B_REPORTING_HANDOFF.md) records genuine verification.
+
+## Owner addition: measure recursion and expose search counts — 2026-10-04
+
+The owner requested independent counts under search roots and returned file/folder
+counts to verify recursion. 08A.2 now supplies per-search unique physical-path
+counts plus actual root/directory/recursion/cache details; 08B presents them.
+Twenty-nine comparisons pass against genuine trees independently enumerated with
+PowerShell, including full roots, recursion off, directory and exact-file scopes,
+cache reuse and repeated roots. Counts remain measurements, not thresholds.
+The ordinary root CLI also verifies scoped counts in all formats. An initial
+checker newline failure and successful fresh rerun are disclosed in the
+[08B handoff](TASK08B_REPORTING_HANDOFF.md). No new storage or search architecture,
+synthetic source trees, production change or broader acceptance claim.
+
+## Owner addition: explicitly seek unresolved paths — 2026-10-04
+
+The owner requested a way to find messages whose recorded paths could not resolve.
+The source/query owners now provide `scope.source.resolution` (`unresolved` or
+`resolved`), and reporting displays/exports the per-reference current result.
+Stored paths stay authoritative recorded evidence; current resolution is measured
+at report generation within the disclosed scope, not written into historical
+diagnostics. Missing paths and incomplete searches remain distinct. Ordinary path
+filtering keeps its corrected semantics below. Genuine and authorized fixture
+checks are recorded in the [08B handoff](TASK08B_REPORTING_HANDOFF.md); no new
+architecture, production activation or expanded synthetic-history permission.
+
+## Owner correction: path selection is ordinary filtering — 2026-10-04
+
+The owner rejects errors/partials caused by records without a usable matching
+path. This supersedes earlier source requirements treating unidentified references
+or explicitly missing files as failed evidence. Path-only investigations match
+recorded paths independently of disk existence; nonmatches are excluded normally.
+Root/member/content predicates still use current candidate evidence. Missing
+individual files are ordinary nonmatches; actual required-source read failures
+remain failures. No additional filter language or storage architecture is added.
+
+The bounded correction is in the owning source/query library, with obsolete
+unidentified-record error presentation removed. Updated root-CLI examples include
+an unrestricted path query, successful empty results, the authorized fake-LOCATOR
+fixture and a genuine archive with no playset. Relevant genuine CLI/source checks,
+fixture and archive exports pass. See [08B handoff](TASK08B_REPORTING_HANDOFF.md).
+Prior test expectations do not override this owner correction. Production and
+unrelated work remain unchanged; no commits or pushes.
+
+## Earlier 08B verification follow-up and bounded synthetic permission — 2026-10-04
+
+The owner explicitly authorized two copied genuine emissions with only fake file
+LOCATOR paths, paired with the normal captured playset JSON. This bounded exception
+supersedes the blanket synthetic-data prohibition for that fixture; it does not
+authorize fabricated history or unrelated injected failures. Five checks across
+eleven actual CLI exports pass with all 133 original playset members preserved.
+Source API semantics are unchanged; missing paths in readable roots are distinct
+from unavailable roots. The fixture report links inputs and verification evidence.
+
+Available genuine cases were also pursued: a fresh unchanged backup supplies seven
+eligible Runs, now verifying a full trailing-five and each five-neighbor side.
+Five unchanged archived logs in separate single-Run storage cover all nine syntax
+selectors and missing-playset behavior. Seventeen exports cover 85 syntax records;
+original logs and production chronology are unchanged. No simultaneous eleven-Run
+claim is made. The failed temporary-capture rename/retry is disclosed in
+[the handoff](TASK08B_REPORTING_HANDOFF.md).
+
+The 54-example review bundle links these completed checks from `outcomes.html`,
+with four remaining genuine-evidence gap groups clearly separate. Browser checks,
+two focused genuine CLI groups and logging/imports pass. No new dependency,
+architecture, live activation, commit or push. Full Trusted Run remains separate.
+
+## Earlier 08B explanation integrated with report evidence — 2026-10-04
+
+The owner's later request to see earlier incomplete deliverables is addressed by
+a visible `outcomes.html` reconciliation in the review bundle, linked from each
+example. Completed fixes and unverified genuine-data cases remain distinct; the
+page gives the evidence needed for the latter. No scope or acceptance rule changes.
+
+Further owner review requires the explanation and the evidence it discusses to
+be together. An outcome anchor alone did not resolve the reading problem. The
+report renderer now includes template patterns, Run counts and example diagnostic
+evidence in the opening explanation, with direct links to exact detail entries
+and verbose source excerpts. The 38-example bundle, genuine CLI format/partial
+groups and actual Chrome navigation were checked; precise evidence is in
+[the reporting handoff](TASK08B_REPORTING_HANDOFF.md). This presentation correction
+does not change analytical results or evidence limitations.
+
+### Earlier 08B reporting closure record — 2026-10-04
+
+The owner required completion of the remaining implementation, clarity and browser
+work before finishing 08B. That work is now complete, with the evidence matrix in
+[the reporting handoff](TASK08B_REPORTING_HANDOFF.md). The owner's empty-set feedback
+supersedes the older prompt's rejection of contradictory preset refinements:
+well-formed filters are ANDed and can produce zero matches. Preset definitions
+remain explicit in the reusable query model's additional `refinement.all` clauses.
+Missing required selectors and invalid execution controls still fail validation.
+This is a bounded correction in the owning query library, not a new architecture.
+
+Required-source evaluation semantics are unchanged. Partial reports now show the
+pathless diagnostic separately so the incomplete result can be understood. The
+existing source resolver supplies the evidence. Mod names, Run counts, templates
+and a genuine DLC-file example have been visually inspected. Chrome navigation,
+all eight CLI groups, six query and nine source checks passed; a later focused
+partial-report check covers the final presentation change. Earlier unavailable
+browser verification is superseded by the current actual walkthrough.
+
+Unrepresented genuine failure/duplicate/full-window cases and seven absent syntax
+selectors remain disclosed, consistent with the assignment's evidence rules.
+No synthetic acceptance data, production changes, commits or pushes were added.
+Full live Trusted Run acceptance remains separate.
+
+### Earlier implementation evidence — 2026-10-03
+
+Owner usability refinement: every report explains its query, expected behavior,
+actual results and how to read diagnostics; each genuine consumer example has a
+specific plain-English check description. Visible file tables add recorded mod
+names/load-order numbers beside mod paths using existing source-service provenance.
+Base-game/DLC paths remain simple. No analytical selection or identity rule changed.
+All eight root-CLI groups passed; precise evidence is in the 08B handoff.
+
+Owner presentation correction: template investigations show the stored pattern
+and combined per-Run counts first; diagnostic instances and their match statuses
+are labelled explicitly. Template aggregates are reusable 08A.1 data, computed
+before display limits with separate full diagnostic identities. Genuine root-CLI
+and raw-handler checks passed. See the 08B handoff for precise evidence.
+
+Owner review correction: the checked-in template example now selects only its
+template ID. The earlier additional culture/message filters demonstrated a narrow
+refinement, not template breadth. Corrected genuine CLI exports show 202 selected
+identities / 396 occurrences, retaining separate messages and visible Run counts.
+The handoff records output agreement and the corrected verification-parser issue.
+
+[Working handoff](TASK08B_REPORTING_HANDOFF.md) records the implemented root CLI,
+five preset definitions, structured refinements, text/JSON/offline HTML and linked
+verbose appendix. Both 08A services and completed traversal-scope repair were
+received. Bounded gaps were resolved in their owners: stored reference presence,
+per-Run/window association ranking data, candidate provenance, readable partial
+matches and an opt-in optional context mode for SQL-reference queries. No new
+storage path, worker, source recognizer or statistical baseline was introduced.
+
+All eight real-data CLI groups passed in the final run; six diagnostic and nine
+source checks were actually rerun. Four-Run source chronology, all-candidate
+composition, exact/template/message distinctions, both syntax statuses, newness,
+historical absence, error partials, display limits and format/appendix agreement
+are exercised. The first three failed checks and corrections are disclosed in the
+handoff. Naturally unavailable reads/roots and full windows
+remain unverified. Browser visual layout could not be checked in this environment.
+
+Jinja2 installation was blocked by the environment. The explicit delivered
+alternative is standard-library escaped elements with packaged HTML/CSS; no new
+dependency or silent runtime renderer fallback. Ordinary reports remain reusable
+library consumers. Prompts were not rewritten; no new product requirement,
+production operation, commit or push was added. Trusted Run acceptance is separate.
+
 ## Advisor reconciled 08B receiving instructions — 2026-10-03
 
 Following owner-requested review of the multi-Run handoff,
@@ -165,8 +403,8 @@ reporting checks were removed. 08A.2 and 08B remain next.
 * Full contract equality data plus the stored definition revision scopes exact
   identity. Historical entries preserve their originating record references and
   have selected count zero; occurrence refinements remain selected-Run based.
-* Eligibility precedes pagination. All exact stored-timestamp duplicate members
-  are excluded and disclosed; direct selection fails. Standard datetime supplies
+* Eligibility precedes pagination. Missing/unusable timestamps are excluded and
+  disclosed. Standard datetime supplies
   chronological ordering, with original strings retained and no nanosecond system.
 * Source extraction belongs to 08A.2, including referenced-path interpretation.
   The shared query reserves explicit roots/files, optional members and referenced

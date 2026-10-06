@@ -14,7 +14,7 @@ import unittest
 import uuid
 
 from ck3chronicle.pipeline.request_handler import HandlerClient
-from ck3chronicle.reporting import DiagnosticAnalysis, SourceSearch, SourceEvaluationError, source_references
+from ck3chronicle.reporting import DiagnosticAnalysis, SourceSearch, source_references
 
 
 @unittest.skipUnless(os.environ.get('CK3_TASK08A2_EVIDENCE'), 'requires real CK3 database and installed sources')
@@ -122,7 +122,13 @@ class GenuineSourceChecks(unittest.TestCase):
         resolver = SourceSearch(self.client, scratch_directory=self.out)
         result = DiagnosticAnalysis(self.client, source_resolver=resolver).investigate('latest', package_id=self.package)
         self.assertEqual(result.totals, self.baseline.totals)
-        self.assertEqual(result.window, self.baseline.window)
+        # 08B receiving adds candidate-bearing per-Run contributors/rankings.
+        # Optional source context must still leave the SQL counts/history intact.
+        for actual, expected in zip(result.window['runs'], self.baseline.window['runs']):
+            self.assertEqual({k: v for k, v in actual.items() if k not in {'records', 'rollups'}},
+                             {k: v for k, v in expected.items() if k not in {'records', 'rollups'}})
+            self.assertEqual([e['history'] for e in actual['records']],
+                             [e['history'] for e in expected['records']])
         self.assertTrue(any(len(e['candidates']) > 1 for e in result.records))
         self.assertTrue(result.rollups['candidate_files']['overlapping_records'])
         self.assertFalse(result.rollups['candidate_files']['bucket_totals_are_additive'])
@@ -168,20 +174,26 @@ class GenuineSourceChecks(unittest.TestCase):
             self.assertEqual(excerpt['lines'][-1]['line'], min(14, excerpt['total_lines']))
         self.save('eight-diagnostics', result.to_dict())
 
-    def test_08_real_unlocated_diagnostics_are_unavailable_required_evidence(self):
+    def test_08_source_filters_exclude_unlocated_records(self):
         unlocated = next(e for e in self.baseline.records if not source_references(e['stored_record'])['references'])
         located = next(e for e in self.baseline.records if 'culture trigger [ Failed context switch' in e['message'])
         service = DiagnosticAnalysis(self.client, source_resolver=SourceSearch(self.client, scratch_directory=self.out))
         query = {'scope': {'source': {'members': [{'load_order': 115}]}},
                  'refinement': {'identities': [unlocated['identity'], located['identity']]}}
-        with self.assertRaises(SourceEvaluationError) as caught:
-            service.investigate('latest', package_id=self.package, query=query)
-        self.assertFalse(caught.exception.partial['complete'])
-        self.assertTrue(caught.exception.partial['coverage']['reference_limitations'])
-        self.assertIn(located['identity_key'], caught.exception.partial['matches'])
-        self.assertEqual(len(caught.exception.partial['candidates'][located['identity_key']]), 1)
-        self.save('unavailable-reference', {'query': query, 'message': unlocated['message'],
-                  'error': str(caught.exception), 'partial': caught.exception.partial})
+        result = service.investigate('latest', package_id=self.package, query=query)
+        self.assertEqual([e['identity'] for e in result.records], [located['identity']])
+        self.assertEqual(len(result.records[0]['candidates']), 1)
+        self.assertTrue(result.coverage['source'][self.run_id]['complete'])
+        self.assertEqual(result.coverage['source'][self.run_id]['records_without_source_path'], 0)
+        query['scope']['source'] = {'files': [self.reference]}
+        path = service.investigate('latest', package_id=self.package, query=query)
+        self.assertEqual([e['identity'] for e in path.records], [located['identity']])
+        self.assertEqual(path.coverage['source'][self.run_id]['metrics']['inventory_builds'], 0)
+        query['refinement']['identities'] = [unlocated['identity']]
+        empty = service.investigate('latest', package_id=self.package, query=query)
+        self.assertEqual(empty.totals['distinct_records'], 0)
+        self.assertFalse(empty.coverage['source'][self.run_id]['issues'])
+        self.save('unlocated-excluded', {'member': result.to_dict(), 'path': path.to_dict(), 'empty': empty.to_dict()})
 
     def test_09_stored_reference_filter_and_explicit_basename_mode(self):
         service = DiagnosticAnalysis(self.client, source_resolver=SourceSearch(self.client, scratch_directory=self.out))
@@ -191,6 +203,18 @@ class GenuineSourceChecks(unittest.TestCase):
         self.assertEqual(result.totals['distinct_records'], 2)
         self.assertEqual(result.totals['occurrences'], 10)
         self.assertEqual(result.coverage['source'][self.run_id]['metrics']['inventory_builds'], 0)
+        combined_paths = {'files': [self.reference], 'directories': ['common/on_action'], 'recursive': False,
+                          'extensions': ['txt'], 'filename': {'exact': ['sea_minority_on_actions.txt']},
+                          'relative_path': {'text': {'and': [{'contains': 'common/'}, {'contains': 'on_action/'}]}},
+                          'filename_globs': ['sea_*.txt'], 'path_globs': ['common/*'], 'include': ['*.txt']}
+        query = {'scope': {'source': combined_paths}, 'refinement': {'message': {'contains': 'Failed context switch'}}}
+        composed = service.investigate('latest', package_id=self.package, query=query)
+        self.assertEqual(composed.totals, result.totals)
+        self.assertEqual(composed.coverage['source'][self.run_id]['metrics']['inventory_builds'], 0)
+        query['scope']['source']['exclude'] = [self.reference]
+        excluded = service.investigate('latest', package_id=self.package, query=query)
+        self.assertEqual(excluded.totals['distinct_records'], 0)
+        self.assertFalse(excluded.coverage['source'][self.run_id]['issues'])
         first = self.search.search({'referenced_paths': [self.reference]}, run_id=self.run_id)
         broad = self.search.search({'referenced_paths': ['sea_minority_on_actions.txt'], 'reference_mode': 'basename'}, run_id=self.run_id)
         self.assertEqual(first['files'], broad['files'])

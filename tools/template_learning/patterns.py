@@ -4,7 +4,7 @@ Patterns are candidates. Type proposals describe observed native values and
 positional cues; no source text is rewritten and no runtime classification runs.
 """
 from __future__ import annotations
-from . import location_sequences
+from . import location_sequences, formatted_literals
 from .matching_primitives import (punctuation_piece, path_piece_ranges,
     filename_sequence, pattern_identity, display_pattern, SLOT_TYPES, NUMBER)
 from .matching_defaults import (key_piece_sequence, location_piece_ranges,
@@ -13,7 +13,7 @@ import difflib
 from functools import lru_cache
 import re
 from template_learning.literal_guidance import LITERAL_WORDING, guided_piece_indices, guided_ranges
-from template_learning.owner_rules import LOCATION_CUE, PATH_VALUE_CUE, FILE_VALUE_CUE, FILENAME_SUFFIXES, IDENTIFIER_CUE, INFERENCE_POLICY, LOCATION_LABEL_EQUIVALENCES
+from template_learning.owner_rules import LOCATION_CUE, PATH_VALUE_CUE, FILE_VALUE_CUE, FILENAME_SUFFIXES, IDENTIFIER_CUE, INFERENCE_POLICY, LOCATION_LABEL_EQUIVALENCES, OWNER_RULES
 from template_learning import regions, constructions, parameter_structures
 from template_learning.records import identity
 
@@ -27,6 +27,8 @@ def date_key_piece_indices(pieces):
 
 
 SLOT_DEFINITIONS = {
+    "CHARACTER_ID_SUPER_SHORT": "Complete opaque character display name without numeric-ID parentheses, recognized through owner-declared field markers; exact spelling preserved.",
+    "CHARACTER_ID_SHORT": "Complete opaque display name and (numeric internal ID, display location), recognized at a body-start or colon field boundary; no date prerequisite; original spelling preserved.",
     "CHARACTER_FULL_ID": "Complete variable-length character name, of/optional key and ID parentheses; owner-declared emitter boundaries; exact opaque content.",
     "TITLE_FULL_ID": "Complete variable-length title name and ID parentheses; owner-declared emitter boundaries; exact opaque content without rank or key-value classification.",
     "HOUSE_FULL_ID": "Complete variable-length house name and ID parentheses; owner-declared emitter boundaries; exact opaque content including empty internal values.",
@@ -92,7 +94,9 @@ def _slot(values, before, piece_values, *, location_field=False, declared_field=
         constraints=dict(parser_boundaries=True,literal_punctuation=False,literal_guidance=[])
         if full_id:
             constraints['full_id']={'definition':parameter_definition,'source':source}
-        return dict(kind='slot',type=definition['slot_type'] if full_id else 'PARAM',optional=False,prefix='',suffix='',
+        if definition.get('strict_capture'):
+            constraints['parameter_structure']={'definition':parameter_definition,'source':source}
+        return dict(kind='slot',type=definition.get('slot_type','PARAM'),optional=False,prefix='',suffix='',
             constraints=constraints,
             observed_values=sorted(set(values)),observed_absence=False,
             parameter_definition=parameter_definition,
@@ -219,6 +223,8 @@ def _inference_units(pieces,source,region_first=True):
     parameters=parameter_piece_ranges(pieces,source)
     excluded=tuple([*locations.items(),*((a,v[0]) for a,v in declared.items()),
                     *((a,v[0]) for a,v in parameters.items())])
+    formats = formatted_literals.ranges(pieces, OWNER_RULES.get('formatted_literals', ()), excluded)
+    excluded += tuple((a, b) for a, (b, _) in formats.items())
     # A label is structural literal wording, not a field. Recognize it only
     # beside a complete recognized location and outside every opaque field.
     labels = {}
@@ -259,6 +265,10 @@ def _inference_units(pieces,source,region_first=True):
         if i in parameters:
             end,definition=parameters[i]
             keys.append(('parameter',definition));bounds.append((i,end));i=end
+            continue
+        if i in formats:
+            end, identifier = formats[i]
+            keys.append(('formatted-literal', identifier)); bounds.append((i, end)); i=end
             continue
         if i in labels:
             end, group = labels[i]
@@ -316,7 +326,7 @@ def derive_pattern(records, reference, *, hypotheses=None):
     def literal(text):
         if not text:
             return
-        if parts and parts[-1]["kind"] == "literal" and 'alternatives' not in parts[-1]:
+        if parts and parts[-1]["kind"] == "literal" and not {'alternatives', 'literal_format'} & parts[-1].keys():
             parts[-1]["text"] += text
         else:
             parts.append(dict(kind="literal", text=text))
@@ -333,7 +343,7 @@ def derive_pattern(records, reference, *, hypotheses=None):
                         inference_basis='owner-declared native date token is KEY, including constant observations')
             part['constraints'] = dict(parser_boundaries=True, literal_punctuation=False,
                                        literal_guidance=[], key_joiners=INFERENCE_POLICY['key_syntax']['joiners'])
-        if part["type"] not in {"LOCATOR", "PARAM", "REASON", "KEY", "OPTIONAL_KEY", "CHARACTER_FULL_ID", "HOUSE_FULL_ID", "TITLE_FULL_ID"} and any(
+        if part["type"] not in {"LOCATOR", "PARAM", "REASON", "KEY", "OPTIONAL_KEY", "CHARACTER_FULL_ID", "HOUSE_FULL_ID", "TITLE_FULL_ID", "CHARACTER_ID_SHORT", "CHARACTER_ID_SUPER_SHORT"} and any(
                 punctuation_piece(k, t) for pieces in piece_values for k, t in pieces):
             boundary_failures.extend(r.text for r in records)
         part["name"] = f"s{len(slot_ranges)}"
@@ -342,7 +352,9 @@ def derive_pattern(records, reference, *, hypotheses=None):
         parts.append(part)
         proposed_slots.append((part,spans))
         if hypotheses is not None:
-            facts = regions.evidence(records, spans)
+            # This observation was just computed for the field. Reuse it;
+            # hypotheses describe the decision, not another evidence capture.
+            facts = part['field_support']
             insufficient = part['type']=='PARAM' and part['optional'] and facts['nonempty_values']<2
             hypotheses.append(dict(proposal="aligned_variation", decision="insufficient" if insufficient else "accepted",
                 reason="one nonempty spelling plus absence does not establish variable interior content" if insufficient else part["inference_basis"], slot_type=part["type"],
@@ -359,7 +371,11 @@ def derive_pattern(records, reference, *, hypotheses=None):
         elif any(values):
             add_slot(spans)
         if right < len(ref):
-            if ref[right][0] == 'location-label':
+            if ref[right][0] == 'formatted-literal':
+                definition = next(d for d in OWNER_RULES['formatted_literals'] if d['id']==ref[right][1])
+                parts.append(dict(kind='literal', text=definition['text'],
+                                  literal_format=definition['id'], format_pattern=definition['pattern']))
+            elif ref[right][0] == 'location-label':
                 group = next(g for g in LOCATION_LABEL_EQUIVALENCES if g['id'] == ref[right][1])
                 forms = group['literal_alternatives']
                 parts.append(dict(kind='literal', text=forms[0], alternatives=list(forms),
@@ -415,13 +431,34 @@ def derive_pattern(records, reference, *, hypotheses=None):
                    and parts[end+1]["text"].isspace()
                    and coalescible(parts[end+2])):
                 end += 2
-        if end > i and any(p.get("type") == "PARAM" for p in parts[i:end+1]):
+        coupled_words = False
+        if (end > i and all(p.get('type') == 'KEY' for p in parts[i:end+1:2])
+                and all(not {'\r', '\n'} & set(p['text']) for p in parts[i+1:end:2])):
+            # Stable whitespace alone does not establish independent fields.
+            # Reconsider ordinary words which have only varied together. Keep
+            # separately marked/declared fields, identifiers with syntax, and
+            # observed independent variation out of this conservative check.
+            columns = [tuple(''.join(t for _, t in r.pieces[a:b])
+                             for r, (a, b) in zip(records, slot_ranges[p['name']]))
+                       for p in parts[i:end+1:2]]
+            if all(value.isalpha() for column in columns for value in column):
+                distinct_rows = len(set(zip(*columns)))
+                spans = [(a[0], b[1]) for a, b in zip(
+                    slot_ranges[parts[i]['name']], slot_ranges[parts[end]['name']])]
+                coupled_words = (distinct_rows > 1
+                    and all(len(set(column)) == distinct_rows for column in columns)
+                    and regions.enclosing_pair(records, spans) is None)
+        if end > i and (coupled_words or any(p.get("type") == "PARAM" for p in parts[i:end+1])):
             spans = [(a[0],b[1]) for a,b in zip(slot_ranges[parts[i]["name"]],slot_ranges[parts[end]["name"]])]
             values = ["".join(t for _,t in r.pieces[a:b]) for r,(a,b) in zip(records,spans)]
             piece_values = [r.pieces[a:b] for r,(a,b) in zip(records,spans)]
             before = coalesced[-1]["text"] if coalesced and coalesced[-1]["kind"] == "literal" else ""
             joined=typed_slot(spans,before)
             joined['field_support']=regions.evidence(records,spans)
+            if coupled_words and hypotheses is not None:
+                hypotheses.append(dict(proposal='coupled_word_fields', decision='reconsidered',
+                    reason='alphabetic fields vary only together; whitespace does not establish independent KEYs; assess the complete span using existing field-boundary requirements',
+                    **joined['field_support']))
             coalesced.append(joined)
             i = end+1
         else:
@@ -469,7 +506,7 @@ def derive_pattern(records, reference, *, hypotheses=None):
     for number,part in enumerate(p for p in parts if p["kind"] == "slot"):
         part["name"] = f"s{number}"
     for i,part in enumerate(parts):
-        if part['kind']!='slot' or part['type'] in {'LOCATOR','REASON','VALUE','CHARACTER_FULL_ID','HOUSE_FULL_ID', 'TITLE_FULL_ID'}:
+        if part['kind']!='slot' or part['type'] in {'LOCATOR','REASON','VALUE','CHARACTER_FULL_ID','HOUSE_FULL_ID', 'TITLE_FULL_ID', 'CHARACTER_ID_SHORT', 'CHARACTER_ID_SUPER_SHORT'}:
             continue
         before=parts[i-1]['text'] if i and parts[i-1]['kind']=='literal' else ''
         after=parts[i+1]['text'] if i+1<len(parts) and parts[i+1]['kind']=='literal' else ''

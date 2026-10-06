@@ -1,0 +1,1308 @@
+{
+  "architectural_requirements": [
+    {
+      "authority": "Owner: every inference and matching pool is source-specific.",
+      "id": "source-partition",
+      "implementation": "records.py, clustering.py, research_matching.py"
+    },
+    {
+      "authority": "Owner: consume the selected raw parser; slash is separate punctuation. KEY cannot swallow separate punctuation pieces. LOCATOR may span a complete adjacent path sequence including its slash separators. PARAM is a variable-length raw span and may contain punctuation; its surrounding template boundaries remain literal.",
+      "id": "raw-boundaries",
+      "implementation": "patterns.py; selected parser manifest"
+    },
+    {
+      "authority": "Owner instruction packet: discover region hypotheses empirically from comparable native messages within source/component. Investigate stable wording, markers, interior literals, variation and ordinary slot types; iterate grouping after support. Only supported PARAM contents have zero similarity weight. No automatic parenthesized-field exclusion or forced type. New hard-coded formats require explicit approval and a reference record.",
+      "engineering_decisions": "Period and equals do not seed marker envelopes. Backslash exclusion is owner-confirmed from prior path-use assessment. Balanced pairs only constrain matching after observed field evidence; they do not assign PARAM. Default literals remain protected except inside candidate-local supported fields.",
+      "id": "empirical-variable-regions",
+      "implementation": "constructions.py consumes the owner-declared script envelope. Complete outer messages are the learning unit; no independent reason or tail pools. regions.py assesses native variation and field boundaries, patterns.py records candidate-local support and field-local relaxation of presumed literals. clustering.py re-infers complete membership after unions. Numeric/structural heuristics are centralized in inference_policy; no parenthesis-to-PARAM rule."
+    },
+    {
+      "authority": "Owner: preserve case-sensitive distinctions and do not infer a slot from case differences alone.",
+      "id": "literal-case",
+      "implementation": "clustering.py: anchors, refine_literal_variants"
+    },
+    {
+      "authority": "Owner: no optional literal representation or expansion in that direction.",
+      "id": "no-optional-literals",
+      "implementation": "patterns.py: mandatory literal parts. clustering.py retains generic punctuation-only presence refinement. In empirical discovery, a proposed optional multi-token PARAM with only one nonempty spelling is recorded as insufficient evidence for variable interior content; its observed formulations remain separate. This does not change OPTIONAL_KEY or split every fixed word plus absence. No automatic delimiter-pair or whole-parenthesized partition."
+    },
+    {
+      "authority": "Owner: deduplicate identical learner messages while retaining occurrences; parser does not deduplicate.",
+      "id": "distinct-native-evidence",
+      "implementation": "records.py: exact message deduplication with occurrences retained; artifacts.py: slot support is linked to complete candidate member records"
+    },
+    {
+      "authority": "Owner: run confirmed templates before incremental residual inference; preserve competing matches for review.",
+      "id": "confirmed-first",
+      "implementation": "artifacts.py: _learn_pool; research_matching.py"
+    },
+    {
+      "authority": "Owner: @ is valid CK3 symbol content anywhere within a continuous string, including internally. It is not a separator.",
+      "id": "adjoining-at-symbol",
+      "implementation": "Selected raw parser ck3-lossless-v1.6; @ is excluded from separators and boundary punctuation. Versioned artifact is authoritative."
+    },
+    {
+      "authority": "Owner: ! is valid filename content at the beginning, internally and before an extension. Retain adjoining leading ! with the string; preserve sentence-final exclamation punctuation. Microsoft Windows naming conventions allow ! in names.",
+      "evidence": "https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file",
+      "id": "leading-filename-exclamation",
+      "implementation": "Selected raw parser ck3-lossless-v1.6; native history/characters/!!0_TFE_chars.txt. Leading and internal ! are retained; sentence-final ! separates."
+    },
+    {
+      "authority": "Owner: colon, slash, backslash, braces, brackets and parentheses separate wherever they occur; double quote and equals accepted in the lexer review. Follow-up directs semicolon and pipe to be separators as well. Each character is an individual token; preserve its spelling. Div/0 remains the explicit whole-token exception.",
+      "id": "raw-always-separators",
+      "implementation": "Selected raw parser ck3-lossless-v1.6 ALWAYS_SEPARATORS and stdlib re scanner. Validate only with complete native logs."
+    },
+    {
+      "authority": "Owner: Div/0 is an explicit one-token exception; tooltip/description remains tooltip, /, description. Exact case-sensitive whole lexeme after surrounding punctuation is detached, never a substring replacement or path heuristic.",
+      "evidence": "Native jomini_scriptvalue.cpp message: Div/0 near court_language_ai_score. Owner 2026-09-21 slash follow-up.",
+      "id": "atomic-div-zero-lexeme",
+      "implementation": "Selected raw parser ck3-lossless-v1.4 ATOMIC_LEXEMES; this reference records authority, the versioned standalone parser embeds the implementation.",
+      "lexemes": [
+        "Div/0"
+      ]
+    },
+    {
+      "authority": "Owner: path/file.txt:6 must expose file.txt, :, 6; LOCATOR covers paths and line references separately. A filename alone is also a path.",
+      "id": "filename-line-boundary",
+      "implementation": "Selected raw parser ck3-lossless-v1.6 general colon separation; patterns.location_piece_ranges uses exact pieces and context."
+    }
+  ],
+  "assignment_policy": {
+    "authority": "Owner 2026-09-26: implement retirement of redundant fixed-value formulations and choose one winner among complete remaining matches; report native differences. No example-specific template overrides.",
+    "evidence_scope": "Exported candidate-local native observations; not occurrence frequency, literal length, adjective vocabulary or runtime learning. Structural loss is measured in training members, not re-inferred by the selector.",
+    "metrics": [
+      {
+        "direction": "min",
+        "field": "maximum_location_losses",
+        "include_wrappers": true
+      },
+      {
+        "direction": "min",
+        "field": "maximum_declared_field_losses",
+        "include_wrappers": true
+      },
+      {
+        "direction": "min",
+        "field": "unsubstantiated_fields",
+        "include_wrappers": true
+      },
+      {
+        "direction": "max",
+        "field": "independent_examples",
+        "include_wrappers": false
+      }
+    ],
+    "ordering": [
+      "minimum candidate-local native location losses",
+      "minimum candidate-local native declared-field losses",
+      "minimum fields without positive local evidence",
+      "maximum distinct examples excluding locations and declared traces",
+      "stable template ID then canonical complete capture spans"
+    ],
+    "retirement": {
+      "field_types": [
+        "KEY",
+        "OPTIONAL_KEY"
+      ],
+      "minimum_distinct_values_or_absence": 2,
+      "operation": "retire redundant active formulation; retain evidence and audit decision; no re-inference or PARAM enlargement",
+      "requirements": [
+        "same source and construction",
+        "same wrapper constraints",
+        "exact symbolic specialization within established fields",
+        "unique complete assignments for every narrower native member"
+      ]
+    },
+    "ties": "One deterministic assignment; match_status provisional if substantive template evidence or complete capture assignments tie. Template support status retained separately.",
+    "unmatched": "No eligible complete assignment, not merely insufficient support or competing templates.",
+    "version": "complete-assignment-v2"
+  },
+  "constructions": [
+    {
+      "authority": "Owner-reviewed case 10 and 2026-10-04 implementation authorization: effect is fixed category wording in Unknown effect, not a KEY. Retained-code tracing reproduces the first inference merging effect/trigger before revision guards can apply. Distinct declared constructions prevent this initial merge without forbidding either spelling inside reported identifier fields.",
+      "comparison_regions": [
+        "message"
+      ],
+      "fields": {},
+      "id": "unknown-effect-diagnostic",
+      "pattern": "(?P<message>[ \\t]*Unknown effect:[\\s\\S]+)",
+      "region_order": [
+        "message"
+      ],
+      "source": "pdx_persistent_reader.cpp"
+    },
+    {
+      "authority": "Owner-reviewed case 10: retain trigger as fixed diagnostic category wording, using the same initial-construction boundary as Unknown effect. Initial discovery and later complete matching use the shared declaration; location markers and quoted/reported identifiers retain their existing types.",
+      "comparison_regions": [
+        "message"
+      ],
+      "fields": {},
+      "id": "unknown-trigger-diagnostic",
+      "pattern": "(?P<message>[ \\t]*Unknown trigger:[\\s\\S]+)",
+      "region_order": [
+        "message"
+      ],
+      "source": "pdx_persistent_reader.cpp"
+    },
+    {
+      "authority": "Owner 2026-09-27 explicitly confirmed this complete formulation, preserving effect as literal wording and the bracketed interior as one opaque REASON. Owner 2026-10-03 supersedes the old Unknown typing: the location marker remains literal and Unknown is a LOCATOR value. Native leading spaces and line endings remain exact.",
+      "comparison_regions": [
+        "prefix",
+        "tail"
+      ],
+      "evidence": "Complete retained log 9d3622ab1b6c85cbab45d83767bb870b06c6fb9d6da50ee44f5eba3674d98cbc; Task 06 review case 1.",
+      "fields": {
+        "reason": {
+          "allow_empty": true,
+          "meaning": "Complete native bracketed reason",
+          "type": "REASON"
+        }
+      },
+      "id": "untyped-effect",
+      "pattern": "(?P<prefix> Script system error!\\n  Error: untyped effect \\[ )(?P<reason>[\\s\\S]*?)(?P<tail> \\]\\n  Script location:[\\s\\S]+)",
+      "region_order": [
+        "prefix",
+        "reason",
+        "tail"
+      ],
+      "source": "jomini_script_system.cpp"
+    },
+    {
+      "authority": "Owner 2026-09-27 explicitly confirmed this complete formulation, preserving trigger as literal wording and the bracketed interior as one opaque REASON. Owner 2026-10-03 supersedes the old Unknown typing: the location marker remains literal and Unknown is a LOCATOR value. Native leading spaces and line endings remain exact.",
+      "comparison_regions": [
+        "prefix",
+        "tail"
+      ],
+      "evidence": "Complete retained log 10cbdcb23e34a5b571a16eb52d390e5e676663936f000fd43404af19d85027fb.",
+      "fields": {
+        "reason": {
+          "allow_empty": true,
+          "meaning": "Complete native bracketed reason",
+          "type": "REASON"
+        }
+      },
+      "id": "untyped-trigger",
+      "pattern": "(?P<prefix> Script system error!\\n  Error: untyped trigger \\[ )(?P<reason>[\\s\\S]*?)(?P<tail> \\]\\n  Script location:[\\s\\S]+)",
+      "region_order": [
+        "prefix",
+        "reason",
+        "tail"
+      ],
+      "source": "jomini_script_system.cpp"
+    },
+    {
+      "authority": "Owner 2026-09-22 approved recommendation 2 and requires declarative common constructions: capture the bracketed reason intact within the outer diagnostic; no independent L2 or detached tail learning.",
+      "comparison_regions": [
+        "L1"
+      ],
+      "evidence": "docs/LEARNER_OUTER_DIAGNOSTIC_IMPLEMENTATION.md",
+      "excludes": [
+        "untyped-effect",
+        "untyped-trigger"
+      ],
+      "fields": {
+        "L2": {
+          "allow_empty": true,
+          "empty_authority": "Owner 2026-09-24: fix the native empty-reason failure. A present reason field may contain zero characters; keep complete surrounding whitespace runs, including line endings, literal and every raw gap whole. Empty is not absent, not an optional literal, and not a reason to invent content.",
+          "meaning": "Complete native reason text inside the outer literal brackets",
+          "type": "REASON"
+        }
+      },
+      "id": "script-system-reason",
+      "pattern": "(?P<prefix>[ \\t]*Script system error![^\\r\\n]*[\\r\\n]+[ \\t]*Error:[ \\t]*)(?P<L1>[^\\r\\n]+?)(?P<open>[ \\t]+\\[\\s*)(?P<L2>[\\s\\S]*?)(?P<close>\\s*\\])(?P<tail>[ \\t\\r\\n]+Script location:[\\s\\S]+)",
+      "region_order": [
+        "prefix",
+        "L1",
+        "open",
+        "L2",
+        "close",
+        "tail"
+      ],
+      "source": "jomini_script_system.cpp"
+    },
+    {
+      "authority": "Engineering declaration under owner 2026-09-22 permission to supply common structures through this JSON. This is the same observed Script system error / Error / Script location envelope without the declared bracketed reason. It identifies comparison wording only, prescribing neither template wording nor slot types.",
+      "comparison_regions": [
+        "message"
+      ],
+      "evidence": "Native development-8 bundle 602fc7bae41bf40895cf0d5b: Event target link scope returned an unset scope; Failed to fetch variable for at_artifacts_window_selected_artifact due to not being set; Character Xingben Miao has no capital. Exact native rows and the broad competing template are preserved in that ignored bundle. docs/LEARNER_OUTER_DIAGNOSTIC_IMPLEMENTATION.md records the cause and correction.",
+      "excludes": [
+        "script-system-reason",
+        "untyped-effect",
+        "untyped-trigger"
+      ],
+      "fields": {},
+      "id": "script-system-unbracketed",
+      "pattern": "(?P<prefix>[ \\t]*Script system error![^\\r\\n]*[\\r\\n]+[ \\t]*Error:[ \\t]*)(?P<message>[^\\r\\n]+)(?P<tail>[ \\t\\r\\n]+Script location:[\\s\\S]+)",
+      "region_order": [
+        "prefix",
+        "message",
+        "tail"
+      ],
+      "source": "jomini_script_system.cpp"
+    }
+  ],
+  "continuation_structures": [
+    {
+      "authority": "Owner authorized continuation-aware model integration following parser v1.7 handoff. One opening plus ordered supporting title entries; complete character reference and each whole displayed title remain opaque. Recognition and entry boundaries come solely from the selected parser.",
+      "id": "history-title-list",
+      "label": "'s title: ",
+      "minimum_entries": 1,
+      "recovery_structure": "history-colon-title-list-v1",
+      "reference_type": "CHARACTER_FULL_ID",
+      "source": "history.cpp",
+      "value_type": "PARAM"
+    }
+  ],
+  "default_literals": {
+    "authority": "Owner: supplied wording remains literal; CK3 symbol-type defaults accept either case of the first letter only, on exact complete parser tokens. Type identity must be established independently of directory or path occurrence. No substring or attached-string matches. Preserve native casing in templates.",
+    "disabled_authority": "Owner 2026-09-22: eliminate presumed-literal guidance. Owner 2026-09-26: remove the adjective/error-word experiment from production learner code. Retained CK3 symbol types are used solely to check established wording lost into proposed slots selected by diagnostic_wording_loss.target_slot_types; no initial literal assignment or matching constraint.",
+    "enabled": false,
+    "evidence": "docs/LEARNER_LITERAL_WORDING_SURVEY.md; native counts and captures in .codex-tmp/learner-refactor/literal-wording-survey/",
+    "groups": [
+      {
+        "basis": "Owner accepted the wiki-supported types and named constructs presented in the 2026-09-21 side conversation and explicitly requested this reference update. Retains previously owner-approved spellings. Supporting wiki articles describe definitions, references or scope types. Multiword type names remain complete phrases; aliases are explicitly enumerated.",
+        "first_letter_case_insensitive": true,
+        "id": "ck3-symbol-types",
+        "words": [
+          "activity",
+          "army",
+          "artifact",
+          "building",
+          "catalyst",
+          "character",
+          "combat",
+          "culture",
+          "cultures",
+          "decision",
+          "doctrine",
+          "dynasty",
+          "effect",
+          "effects",
+          "event",
+          "faction",
+          "faith",
+          "faiths",
+          "government",
+          "holding",
+          "interaction",
+          "modifier",
+          "on_action",
+          "on_actions",
+          "province",
+          "regiment",
+          "religion",
+          "scheme",
+          "script_value",
+          "script_values",
+          "scripted_effect",
+          "scripted_effects",
+          "scripted_list",
+          "scripted_lists",
+          "scripted_modifier",
+          "scripted_modifiers",
+          "scripted_relations",
+          "scripted_trigger",
+          "scripted_triggers",
+          "secret",
+          "struggle",
+          "trait",
+          "trigger",
+          "triggers",
+          "war"
+        ]
+      }
+    ],
+    "id": "literal-wording",
+    "matching": "Diagnostic words and phrases retain explicit case-sensitive spellings. Symbol-type words expand only the first letter; symbol-type phrases explicitly enumerate lower/upper first-letter spellings in phrases, preserving the complete phrase. Match complete parser-token boundaries. No whole-word case folding, substring matching, runtime stemming, plural inference or native-text normalization.",
+    "phrase_evidence": {
+      "explicit_owner_spelling": [
+        "Event ID"
+      ],
+      "observed_native_spellings": {
+        "Historical ID": 2001,
+        "Internal ID": 6726,
+        "event ID": 210
+      },
+      "scope": "Counts are message occurrences containing each wording in the 73-log saved evidence; no retraining used for the wording survey. Unobserved forms are not silently installed.",
+      "standalone_removed": [
+        "Internal",
+        "Historical",
+        "ID",
+        "to",
+        "for"
+      ],
+      "unobserved_forms_under_review": [
+        "Internal_ID",
+        "internal_ID",
+        "internalID",
+        "Event_ID",
+        "event_ID",
+        "eventID"
+      ]
+    },
+    "phrases": [
+      "due to",
+      "Internal ID",
+      "Historical ID",
+      "event ID",
+      "Event ID",
+      "artifact template",
+      "Artifact template",
+      "artifact visuals",
+      "Artifact visuals",
+      "casus belli",
+      "Casus belli",
+      "character interaction",
+      "Character interaction",
+      "combat side",
+      "Combat side",
+      "council position",
+      "Council position",
+      "council task",
+      "Council task",
+      "dynasty house",
+      "Dynasty house",
+      "event target",
+      "Event target",
+      "great holy war",
+      "Great holy war",
+      "holy order",
+      "Holy order",
+      "holy site",
+      "Holy site",
+      "landed title",
+      "Landed title",
+      "men-at-arms type",
+      "Men-at-arms type",
+      "religion family",
+      "Religion family",
+      "script value",
+      "Script value",
+      "scripted effect",
+      "Scripted effect",
+      "scripted list",
+      "Scripted list",
+      "scripted relation",
+      "Scripted relation",
+      "scripted trigger",
+      "Scripted trigger",
+      "story cycle",
+      "Story cycle",
+      "struggle phase",
+      "Struggle phase"
+    ],
+    "symbol_type_evidence": {
+      "access": "Live wiki requests returned access errors. Reviewed the corresponding wiki articles in the jesec/ck3-modding-wiki archive; both original and consulted URLs are retained below.",
+      "authority": "Owner accepted the presented wiki-supported inventory (those look good), then explicitly requested updating the reference file.",
+      "coverage": "Wiki-supported types and named constructs, not a claim of an exhaustive current engine inventory. The wiki scope list explicitly warns that its coverage is outdated.",
+      "phrase_matching": "Active phrase spellings are declared in default_literals.phrases. Only the first letter changes case; phrase constituents are not independently protected unless separately declared as types or diagnostic wording.",
+      "retained_owner_spellings": [
+        "culture",
+        "cultures",
+        "effect",
+        "effects",
+        "event",
+        "faith",
+        "faiths",
+        "on_action",
+        "on_actions",
+        "scripted_effect",
+        "scripted_effects",
+        "scripted_modifier",
+        "scripted_modifiers",
+        "scripted_trigger",
+        "scripted_triggers",
+        "trait",
+        "trigger",
+        "triggers"
+      ],
+      "reviewed": "2026-09-21",
+      "sources": [
+        {
+          "article": "Scripting",
+          "consulted_url": "https://github.com/jesec/ck3-modding-wiki/blob/master/wiki_pages/Scripting.md",
+          "phrases": [
+            "scripted effect",
+            "scripted trigger",
+            "script value",
+            "event target"
+          ],
+          "wiki_url": "https://ck3.paradoxwikis.com/Scripting",
+          "words": [
+            "effect",
+            "trigger",
+            "scripted_effect",
+            "scripted_trigger"
+          ]
+        },
+        {
+          "article": "Script values",
+          "consulted_url": "https://github.com/jesec/ck3-modding-wiki/blob/master/wiki_pages/Script_values.md",
+          "phrases": [
+            "script value"
+          ],
+          "wiki_url": "https://ck3.paradoxwikis.com/Script_values",
+          "words": [
+            "script_value",
+            "script_values"
+          ]
+        },
+        {
+          "article": "Lists",
+          "consulted_url": "https://github.com/jesec/ck3-modding-wiki/blob/master/wiki_pages/Lists.md",
+          "phrases": [
+            "scripted list",
+            "scripted relation"
+          ],
+          "wiki_url": "https://ck3.paradoxwikis.com/Lists",
+          "words": [
+            "scripted_list",
+            "scripted_lists",
+            "scripted_relations"
+          ]
+        },
+        {
+          "article": "Event modding",
+          "consulted_url": "https://github.com/jesec/ck3-modding-wiki/blob/master/wiki_pages/Event_modding.md",
+          "phrases": [],
+          "wiki_url": "https://ck3.paradoxwikis.com/Event_modding",
+          "words": [
+            "event"
+          ]
+        },
+        {
+          "article": "Modding",
+          "consulted_url": "https://github.com/jesec/ck3-modding-wiki/blob/master/wiki_pages/Modding.md",
+          "phrases": [],
+          "wiki_url": "https://ck3.paradoxwikis.com/Modding",
+          "words": [
+            "on_action",
+            "on_actions"
+          ]
+        },
+        {
+          "article": "Trait modding",
+          "consulted_url": "https://github.com/jesec/ck3-modding-wiki/blob/master/wiki_pages/Trait_modding.md",
+          "phrases": [],
+          "wiki_url": "https://ck3.paradoxwikis.com/Trait_modding",
+          "words": [
+            "trait"
+          ]
+        },
+        {
+          "article": "Decisions modding",
+          "consulted_url": "https://github.com/jesec/ck3-modding-wiki/blob/master/wiki_pages/Decisions_modding.md",
+          "phrases": [],
+          "wiki_url": "https://ck3.paradoxwikis.com/Decisions_modding",
+          "words": [
+            "decision"
+          ]
+        },
+        {
+          "article": "Interactions modding",
+          "consulted_url": "https://github.com/jesec/ck3-modding-wiki/blob/master/wiki_pages/Interactions_modding.md",
+          "phrases": [
+            "character interaction"
+          ],
+          "wiki_url": "https://ck3.paradoxwikis.com/Interactions_modding",
+          "words": [
+            "interaction"
+          ]
+        },
+        {
+          "article": "Religions modding",
+          "consulted_url": "https://github.com/jesec/ck3-modding-wiki/blob/master/wiki_pages/Religions_modding.md",
+          "phrases": [
+            "religion family",
+            "holy site"
+          ],
+          "wiki_url": "https://ck3.paradoxwikis.com/Religions_modding",
+          "words": [
+            "religion",
+            "faith",
+            "doctrine"
+          ]
+        },
+        {
+          "article": "Governments modding",
+          "consulted_url": "https://github.com/jesec/ck3-modding-wiki/blob/master/wiki_pages/Governments_modding.md",
+          "phrases": [],
+          "wiki_url": "https://ck3.paradoxwikis.com/Governments_modding",
+          "words": [
+            "government"
+          ]
+        },
+        {
+          "article": "Holdings modding",
+          "consulted_url": "https://github.com/jesec/ck3-modding-wiki/blob/master/wiki_pages/Holdings_modding.md",
+          "phrases": [],
+          "wiki_url": "https://ck3.paradoxwikis.com/Holdings_modding",
+          "words": [
+            "holding",
+            "building"
+          ]
+        },
+        {
+          "article": "Council modding",
+          "consulted_url": "https://github.com/jesec/ck3-modding-wiki/blob/master/wiki_pages/Council_modding.md",
+          "phrases": [
+            "council position",
+            "council task"
+          ],
+          "wiki_url": "https://ck3.paradoxwikis.com/Council_modding",
+          "words": []
+        },
+        {
+          "article": "Regiments modding",
+          "consulted_url": "https://github.com/jesec/ck3-modding-wiki/blob/master/wiki_pages/Regiments_modding.md",
+          "phrases": [
+            "men-at-arms type"
+          ],
+          "wiki_url": "https://ck3.paradoxwikis.com/Regiments_modding",
+          "words": [
+            "regiment"
+          ]
+        },
+        {
+          "article": "Artifact modding",
+          "consulted_url": "https://github.com/jesec/ck3-modding-wiki/blob/master/wiki_pages/Artifact_modding.md",
+          "phrases": [
+            "artifact template",
+            "artifact visuals"
+          ],
+          "wiki_url": "https://ck3.paradoxwikis.com/Artifact_modding",
+          "words": [
+            "artifact"
+          ]
+        },
+        {
+          "article": "Modifier list",
+          "consulted_url": "https://github.com/jesec/ck3-modding-wiki/blob/master/wiki_pages/Modifier_list.md",
+          "phrases": [],
+          "wiki_url": "https://ck3.paradoxwikis.com/Modifier_list",
+          "words": [
+            "modifier"
+          ]
+        },
+        {
+          "article": "Story cycles modding",
+          "consulted_url": "https://github.com/jesec/ck3-modding-wiki/blob/master/wiki_pages/Story_cycles_modding.md",
+          "phrases": [
+            "story cycle"
+          ],
+          "wiki_url": "https://ck3.paradoxwikis.com/Story_cycles_modding",
+          "words": []
+        },
+        {
+          "article": "Struggle modding",
+          "consulted_url": "https://github.com/jesec/ck3-modding-wiki/blob/master/wiki_pages/Struggle_modding.md",
+          "phrases": [
+            "struggle phase"
+          ],
+          "wiki_url": "https://ck3.paradoxwikis.com/Struggle_modding",
+          "words": [
+            "struggle",
+            "catalyst"
+          ]
+        },
+        {
+          "article": "Scopes list",
+          "consulted_url": "https://github.com/jesec/ck3-modding-wiki/blob/master/wiki_pages/Scopes_list.md",
+          "phrases": [
+            "landed title",
+            "dynasty house",
+            "holy order",
+            "great holy war",
+            "combat side",
+            "council task",
+            "casus belli",
+            "story cycle"
+          ],
+          "wiki_url": "https://ck3.paradoxwikis.com/Scopes_list",
+          "words": [
+            "culture",
+            "dynasty",
+            "secret",
+            "character",
+            "army",
+            "province",
+            "faith",
+            "scheme",
+            "war",
+            "combat",
+            "faction",
+            "activity"
+          ]
+        }
+      ],
+      "spelling_policy": "Only explicitly enumerated spellings are active. Descriptive multiword names do not imply underscore aliases or automatic plural forms.",
+      "symbol_type_phrase_bases": [
+        "artifact template",
+        "artifact visuals",
+        "casus belli",
+        "character interaction",
+        "combat side",
+        "council position",
+        "council task",
+        "dynasty house",
+        "event target",
+        "great holy war",
+        "holy order",
+        "holy site",
+        "landed title",
+        "men-at-arms type",
+        "religion family",
+        "script value",
+        "scripted effect",
+        "scripted list",
+        "scripted relation",
+        "scripted trigger",
+        "story cycle",
+        "struggle phase"
+      ]
+    }
+  },
+  "diagnostic_wording_loss": {
+    "authority": "Owner 2026-09-25: CK3 symbol types block PARAM proposals that swallow established template literals. Owner 2026-09-26: retain that protection and extend it to KEY and OPTIONAL_KEY after identifying the PARAM-only implementation gap. Adjective-specific resistance remains a separate research proposal. This does not restore default literals.",
+    "decision": "reject_generalization",
+    "enabled": true,
+    "enclosed_identifier_evidence": {
+      "authority": "Engineering handling under the contextual loss-check implementation authorization: native validation showed quoted scope values being forced back to literal text. This uses existing field-boundary evidence, not word/emitter exceptions or owner-prescribed numeric weights. Two distinct nonempty values establish observed variation.",
+      "mechanic": "Positive evidence may outweigh symbol-word loss for a proposed KEY/OPTIONAL_KEY only when it has at least two distinct nonempty native values and every candidate member has the same enclosing pair under the existing raw-piece boundary checker. Record both the listed-word loss and the field evidence. Brackets or quotes alone are insufficient. Existing PARAM loss protection is unchanged.",
+      "minimum_distinct_nonempty_values": 2,
+      "slot_types": [
+        "KEY",
+        "OPTIONAL_KEY"
+      ]
+    },
+    "id": "established-symbol-wording-to-slot-loss",
+    "language_survey": "Offline research only: use a language-library POS tagger on existing raw-parser tokens in native literal/PARAM regions to nominate negative adjectives for review; exclude LOCATOR contents. Keep native contexts, tags and counts. POS labels alone do not establish negative diagnostic meaning. No adjective reference or language-library dependency is active in inference or runtime matching.",
+    "matching": "Complete existing raw-parser tokens and complete declared phrases only; no identifier substrings. Preserve native case; symbol words retain the reference group's first-letter variants. Examine only old literal spans newly inside proposed captures of target_slot_types, excluding all pre-existing slot contents including LOCATORs and PARAMs. This is a loss check on proposed revisions, not initial slot typing.",
+    "reference_status": "CK3 symbol types only. Complete raw-parser tokens and declared phrases; no adjective or error-word vocabulary.",
+    "symbol_type_group": "ck3-symbol-types",
+    "symbol_type_phrases": [
+      "artifact template",
+      "Artifact template",
+      "artifact visuals",
+      "Artifact visuals",
+      "casus belli",
+      "Casus belli",
+      "character interaction",
+      "Character interaction",
+      "combat side",
+      "Combat side",
+      "council position",
+      "Council position",
+      "council task",
+      "Council task",
+      "dynasty house",
+      "Dynasty house",
+      "event target",
+      "Event target",
+      "great holy war",
+      "Great holy war",
+      "holy order",
+      "Holy order",
+      "holy site",
+      "Holy site",
+      "landed title",
+      "Landed title",
+      "men-at-arms type",
+      "Men-at-arms type",
+      "religion family",
+      "Religion family",
+      "script value",
+      "Script value",
+      "scripted effect",
+      "Scripted effect",
+      "scripted list",
+      "Scripted list",
+      "scripted relation",
+      "Scripted relation",
+      "scripted trigger",
+      "Scripted trigger",
+      "story cycle",
+      "Story cycle",
+      "struggle phase",
+      "Struggle phase"
+    ],
+    "target_slot_types": [
+      "KEY",
+      "OPTIONAL_KEY",
+      "PARAM"
+    ]
+  },
+  "formatted_literals": [
+    {
+      "authority": "Owner correction 2026-10-04: this format is an equivalent literal, never KEY or another slot type. At the same template position all conforming dates match. Retain the exact native spelling as a literal layout choice for rendering and message identity. Space-separated spelling is corpus-backed; hyphenated spelling was requested earlier but remains without a genuine witness. Dotted date KEYs and the outer timestamp are unchanged.",
+      "id": "game-date-prefix",
+      "pattern": "(?:[0-9]{1,2} (?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9]{3,4}|[0-9]{1,2}-(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-[0-9]{3,4})",
+      "prefix": "(?:^[ \\t]*|:[ \\t]+)",
+      "suffix": ":",
+      "text": "{game date}"
+    }
+  ],
+  "inference_policy": {
+    "authority": "Owner 2026-09-22 approved recommendations 3-7. Numeric and structural tests below are transparent engineering heuristics to be evaluated on native logs, not owner-prescribed CK3 formats.",
+    "complete_capture_search": {
+      "authority": "Owner: examine all complete matches before concluding, not the first successful capture division.",
+      "method": "Memoized complete-path count; one assignment is unique, several are capture ambiguity. Retain two witnesses for inspection without truncating the count/search. No shortest/longest or remembered-name preference."
+    },
+    "coverage_absorption": {
+      "authority": "Owner-approved PARAM context correction plan; owner 2026-09-26 follow-up confirms removal rather than a dormant toggle.",
+      "mechanic": "Coverage-driven absorption implementation and both unconditional calls are deleted. Complete native matching remains a validation check, not a reason to combine groups.",
+      "status": "removed_from_implementation"
+    },
+    "date_keys": {
+      "authority": "Owner 2026-09-27: dates in the 1178.10.1 format must never be template diagnostic wording; infer KEY even when the observed date is constant.",
+      "id": "native-dotted-date-key",
+      "matching": "Ordinary KEY constraints; this is an inference declaration, not a new runtime field type or date validator. Template support still requires independent native examples.",
+      "scope": "A complete native year.month.day token outside existing opaque fields and LOCATOR ranges. Preserve spelling and surrounding punctuation; do not validate the calendar, split full IDs, or infer other date formats.",
+      "token_pattern": "[0-9]+\\.[0-9]{1,2}\\.[0-9]{1,2}"
+    },
+    "empirical_balanced_regions": {
+      "authority": "Owner 2026-09-23: identify probable PARAM regions before interior wording alignment; accept recurring words inside supported PARAMs; prefer a supported outer region over decomposing its nested contents.",
+      "correction": "The previous phrase/whitespace, nested-content and alternating-separator restrictions were assistant-invented engineering heuristics, not owner requirements. Removed pursuant to the owner correction.",
+      "discovery": "Outermost balanced asymmetric delimiter interiors are proposed before initial word comparison and before pattern alignment. They contribute no wording or placeholder similarity bonus. Known fields and LOCATOR ranges keep priority.",
+      "scope": "Uses existing asymmetric marker pairs; symmetric quotes retain existing rank-based boundary handling. No source, message phrase, name or identifier prefix is hard coded. General unpaired and word-delimited region discovery remains outstanding.",
+      "validation": "At least param_min_distinct_nonempty distinct nonempty member values and observed multi-token raw spans support a PARAM proposal. Boundary validation and complete capture agreement are still required. Token counts include punctuation, exclude gaps. No whitespace, nesting or alternating-token-form requirements. Equal observed lengths are not a veto. Qualified KEY and LOCATOR syntax retain precedence; fixed contents remain literal."
+    },
+    "established_wording_key_run_loss": {
+      "authority": "Engineering correction under owner instructions to preserve independently established diagnostic wording while excluding supported KEY values from comparison. The owner did not prescribe this algorithm or threshold. v39 native validation exposed loss of a single word from established runs, which the former adjacent-KEY-only check missed.",
+      "enabled": true,
+      "mechanic": "Reject a proposed merge when any complete word in a previously literal run of at least two alphabetic raw tokens would become KEY/OPTIONAL_KEY content. The previous template must already have at least two distinct values in a non-LOCATOR field. Inspect only previous literals, never words inside accepted captures. Raw punctuation, fields and line endings interrupt a run. Isolated old spellings remain eligible for field discovery. This is a conservative merge-evidence check, not default literals, vocabulary classification or an initial slot grammar; it can retain narrower templates for unquoted identifiers embedded in established wording. Two words is the minimum run length, evaluated on complete native logs.",
+      "minimum_words": 2
+    },
+    "excluded_region_markers": [
+      ".",
+      "=",
+      "\\"
+    ],
+    "field_local_literal_guidance": true,
+    "field_similarity": {
+      "authority": "Owner 2026-09-27 reiterates that a corresponding field at the correct position counts once, like one matching token, irrespective of its contents. Slot contents must not contribute individual word matches or become diagnostic wording.",
+      "mechanic": "Retain ordered literal-word units and one typed unit per recognized present field. Declared fields participate from recognition; inferred fields participate only after complete capture validation. Hypothesized unaccepted regions receive no field credit. Existing source/structure partitions and diagnostic-wording-loss protection still apply.",
+      "trailing_location_presence": "Owner 2026-10-03: a recognized message-ending variable-count location section contributes exactly one LOCATOR presence unit when it contains one or more locators, including contextual Unknown. Contents, number of entries and their repeated traces do not multiply this contribution. Absence contributes no presence unit. This exception applies only to the recognized trailing location sequence, not KEY, REASON, other PARAMs, other LOCATOR positions or arbitrary repeated fields. Exact ordered captures and message identity remain unchanged."
+    },
+    "key_syntax": {
+      "authority": "Owner 2026-09-23: title:some_holder should be treated as a KEY despite spanning raw separator pieces. Generalize qualified-reference syntax, not a title-name whitelist.",
+      "joiners": [
+        ":"
+      ],
+      "malformed_references": "Owner 2026-09-23: malformed scope:title:... references can occupy KEY fields. No game-validity check or one-colon-per-dotted-step restriction. A colon-adjacent prose fragment is not independently a field; candidate context and retained surrounding wording still govern inference. Existing PARAM and REASON interiors remain opaque.",
+      "mechanic": "One complete non-punctuation parser token, or adjacent such tokens joined by colon tokens with no whitespace. Infer and match the same raw spans. File/line location recognition retains precedence; enclosing punctuation and other separators stay outside KEY."
+    },
+    "marker_adjacency": true,
+    "marker_adjacency_basis": "Engineering boundary rule: a separator immediately beside the same aligned wording in every native member remains literal, even if that separator occurs additional times farther inside a varying field. Native example: Reason: before rich-text explanations. This does not assign PARAM or remove punctuation.",
+    "marker_pairs": {
+      "\"": "\"",
+      "'": "'",
+      "(": ")",
+      "[": "]",
+      "{": "}"
+    },
+    "ordinary_slot_type_evidence": {
+      "authority": "Owner 2026-09-23: fix automatic KEY/PARAM fallback. Unsupported slot types retain literal formulations; incompatible observations must not broaden an otherwise supported field.",
+      "field_typing_clarification": "Owner 2026-09-23: a supported variable expression span remains PARAM, including members with one raw token. Type the candidate-local field, not each observed spelling independently. Separator punctuation alone does not prove PARAM; retain positive variation and boundary evidence.",
+      "param": "Distinct nonempty observed values and multi-token raw spans provide positive content evidence, followed by boundary validation. Simpler supported slot types take precedence. KEY failure is not evidence for PARAM. Whitespace, nesting and unequal observed lengths are not prerequisites. Declared fields retain their explicit owner-approved evidence path. A multi-piece qualified KEY does not itself supply multi-token PARAM evidence when mixed with a punctuation outlier.",
+      "unsupported": "Reject the proposed union or partition the initial native pool by raw field structure and re-infer complete messages. Identifiers share a shape; punctuation and gaps retain structural identity. If structure cannot separate the unsupported alternatives, retain literal spellings. No global identifier-prefix rules or example-value exceptions."
+    },
+    "param_boundary_preference": {
+      "authority": "Owner 2026-09-25: prioritize genuine (), [] and {} enclosures; paired quotes are weaker. Colons, sentence endings and other adjacent punctuation neither seed nor support PARAM proposals. Independently learned fields may use those tokens as endpoints. No example-specific rules.",
+      "engineering_basis": "Actual matching raw-token brackets are proposed before interior alignment. Quotes require aligned corresponding endpoints and complete capture replay. Weak-connector coalescing requires a complete enclosing pair in every native member; punctuation on either edge is insufficient. The retained one-word search limit bounds that existing coalescing pass, not an owner definition of PARAM.",
+      "removed_shortcuts": "The previous either-side-punctuation acceptance, punctuation-driven absorption of an intervening word, arbitrary adjacent-marker envelope proposals, and word-boundary acceptance threshold were engineering heuristics, not owner requirements. They are removed. Diagnostic-only context and joint support validation are separate pending work.",
+      "unmarked_discovery": "Disabled by owner 2026-09-25 clarification: remove the broken acceptance route, without attempting to preserve or rescue assignments from its existing pool. Investigate any genuine unmarked PARAM recognition needs separately after native evaluation. Explicit owner-declared structures retain their authority. No replacement width/count heuristic or presumed correctness of existing assignments.",
+      "weak_connector_max_words": 1
+    },
+    "param_min_distinct_nonempty": 2,
+    "parameter_structure_selection": "Compare the ordered declared opaque-field structures before ordinary matching. Existing trace definitions yield PARAM. Owner-declared full_id definitions yield CHARACTER_FULL_ID, HOUSE_FULL_ID or TITLE_FULL_ID and enforce their exact structural boundaries in both matching routes. None supplies positive diagnostic wording.",
+    "region_proposal_neighbors": 12,
+    "region_search": "One sweep over the original groups. Investigate at most 12 nearest later unconsumed candidates per group, ranked by retained diagnostic wording. Accepted unions re-infer every member but are not reopened in this sweep. Owner approved removal of the repeated loop after the complete thirty-log comparison. The neighbor cap limits proposals, never evidence-member coverage; coverage-driven absorption and both unconditional passes have been removed.",
+    "short_form_max_tokens": 2,
+    "short_form_shared_fraction": 0.49,
+    "template_support": {
+      "authority": "Owner 2026-09-23: a single learning example must remain provisional; repeated occurrences are not independent learning examples. Owner 2026-09-27: distinct slot values are distinct examples of the same template; excluding field contents from positive wording similarity must not discard their variation from message identity.",
+      "counting": "Distinct complete native member bodies and ordered continuation contents, within the same source and candidate. Preserve variation in every slot type, including LOCATOR and declared PARAM. No minimum log count; separate examples in one log suffice. Declared structures do not waive this requirement.",
+      "excludes": "Exact occurrence repetitions; timestamp/source-line headers and occurrence provenance",
+      "minimum_distinct_examples": 2
+    }
+  },
+  "location_label_equivalences": {
+    "authority": "Owner 2026-09-24: handle Near file:/file: and near line:/line: as contextual location wording through learner rules, without requiring variation among present OPTIONAL_KEY values. Preserve original wording and bytes; regenerate exact template forms during learning.",
+    "evidence": "73 complete native logs: 1255 Near file: mentions and 652 near file: mentions precede locations; 143966 near line: mentions precede numeric line/range values. Labels are exact case-sensitive token sequences; internal horizontal whitespace is preserved. This finite census is not a universal CK3 grammar claim.",
+    "groups": [
+      {
+        "forms": [
+          [
+            "Near",
+            "file",
+            ":"
+          ],
+          [
+            "near",
+            "file",
+            ":"
+          ],
+          [
+            "file",
+            ":"
+          ]
+        ],
+        "id": "file-location"
+      },
+      {
+        "forms": [
+          [
+            "near",
+            "line",
+            ":"
+          ],
+          [
+            "line",
+            ":"
+          ]
+        ],
+        "id": "line-location",
+        "literal_alternatives": [
+          "line:",
+          "near line:"
+        ],
+        "literal_alternatives_authority": "Owner 2026-09-28: near line: and line: are interchangeable immediately before a line LOCATOR; preserve exact native spelling and all remaining wording."
+      }
+    ],
+    "scope": "Complete same-source candidate messages only. Match complete raw tokens immediately before an independently recognized LOCATOR, outside opaque fields. Line-location labels use the owner-approved literal alternatives in one template, even with only one spelling observed; record the selected literal choice for exact rendering. File-location labels retain observed exact formulations. No input normalization or variable label slots."
+  },
+  "location_sequence_authority": "Owner 2026-10-03 authorized a disposable combined experiment: ignore the contents and count of trailing location entries for classification similarity while preserving every exact LOCATOR and trace PARAM in ordered bindings and message identity. Script location and Stack trace are evidenced section introducers; they remain literal. Whole recovered messages and existing cross-emission continuations remain unchanged. Repeated-entry layouts are learned from complete native entries, not substituted source text.",
+  "parameter_structures": [
+    {
+      "authority": "Owner-reviewed case 2 accepts left/right as one KEY field; 2026-10-04 implementation authorization closes the remaining literal left/scope formulation using the same explicit field positions.",
+      "content": "(?:left|right)(?= side during comparison ')",
+      "id": "invalid-comparison-side",
+      "mechanic": "line_sequence",
+      "prefix": "Invalid ",
+      "slot_type": "KEY",
+      "source": "jomini_script_system.cpp",
+      "strict_capture": true
+    },
+    {
+      "authority": "Owner-reviewed case 2: the reported comparison identifier is a quoted KEY, including scope. This positional declaration does not make surrounding diagnostic words KEYs.",
+      "content": "[^'\\s]+(?=')",
+      "id": "invalid-comparison-identifier",
+      "mechanic": "line_sequence",
+      "prefix": "Invalid (?:left|right) side during comparison '",
+      "slot_type": "KEY",
+      "source": "jomini_script_system.cpp",
+      "strict_capture": true
+    },
+    {
+      "authority": "Owner 2026-10-04 authorizes contextual hard-coded correction after the complete 73-log function-word survey. These two observed diagnostic phrases are one PARAM each, never three independent KEYs. Parent is literal game wording, not a taxonomy category. Preserve original grammar and complete full-ID fields.",
+      "content": "(?:hasn't been born|the wrong gender)(?= at file:)",
+      "id": "character-parent-state-phrase",
+      "mechanic": "line_sequence",
+      "prefix": "^[ \\t]*Parent \\([^\\r\\n]*\\) of [^\\r\\n]+ is ",
+      "slot_type": "PARAM",
+      "source": "characterhistory.cpp",
+      "strict_capture": true
+    },
+    {
+      "authority": "Owner-reviewed case 14 and implementation authorization 2026-10-04: the complete quoted formatting tag is PARAM, including embedded control characters and line endings. Opening and closing quotes remain literal; neither KEY syntax nor physical line breaks divide this field.",
+      "content": "[\\s\\S]+(?='[ \\t]*(?:\\r?\\n)?$)",
+      "id": "formatting-tag-content",
+      "mechanic": "line_sequence",
+      "prefix": "^[ \\t]*Unknown formatting tag '",
+      "slot_type": "PARAM",
+      "strict_capture": true
+    },
+    {
+      "authority": "Owner-reviewed case 12: the quoted compare-trigger identifier is a KEY. Explicit recognition retains the same field for observed singleton and varying identifiers; surrounding diagnostic words remain literal.",
+      "content": "[^'\\s]+(?=': none, expected )",
+      "id": "compare-trigger-identifier",
+      "mechanic": "line_sequence",
+      "prefix": "Wrong scope for trigger for compare trigger '",
+      "slot_type": "KEY",
+      "source": "jomini_script_system.cpp",
+      "strict_capture": true
+    },
+    {
+      "authority": "Owner-reviewed case 12 and implementation authorization 2026-10-04: expected scope is a KEY field. Character and war are observed scope values, not different diagnostic wording. No change to standalone effect/trigger diagnostic categories.",
+      "content": "[A-Za-z_][A-Za-z0-9_]*(?=[ \\t\\r\\n]|$)",
+      "id": "compare-trigger-expected-scope",
+      "mechanic": "line_sequence",
+      "prefix": "Wrong scope for trigger for compare trigger '[^'\\r\\n]+': none, expected ",
+      "slot_type": "KEY",
+      "source": "jomini_script_system.cpp",
+      "strict_capture": true
+    },
+    {
+      "authority": "Owner 2026-10-04 implementation authorization following the residual survey: capture the entire reported display field, including multiword and single-word members, as PARAM. This fixes inherited word-count splitting without a place-name dictionary or English stop-word ban. The field ends at the native line ending.",
+      "content": "[^\\r\\n]+?(?=[^\\S\\r\\n]*(?:\\r?\\n|$))",
+      "id": "missing-localization-display",
+      "mechanic": "line_sequence",
+      "prefix": "^[ \\t]*Key is missing localization:[^\\S\\r\\n]+",
+      "slot_type": "PARAM",
+      "source": "pdx_locstring.cpp",
+      "strict_capture": true
+    },
+    {
+      "authority": "Owner 2026-10-04 authorizes the reviewed whole-name boundary correction and overlapping name-template fix. Recognize the complete marked-up character reference in the demonstrated Cheater/With line fields, including ID markup, titles, lowercase particles, names and reset bytes. PARAM preserves the opaque reference; no new identity type or markup rewriting. Not restricted to any name, mod or script effect.",
+      "content": "\\x15ONCLICK:CHARACTER,[0-9]+ \\x15TOOLTIP:CHARACTER,[0-9]+ \\x15L[^\\r\\n]+?(?=[ \\t]*(?:\\r?\\n|$))",
+      "id": "marked-character-line-reference",
+      "mechanic": "line_sequence",
+      "prefix": "(?m)^(?:Cheater|With):[ \\t]+",
+      "slot_type": "PARAM",
+      "strict_capture": true
+    },
+    {
+      "authority": "Owner 2026-10-03 correction: the first name word is capitalized; later words are unrestricted. A first-capitalized display location follows the numeric ID and comma. Numeric parentheses distinguish this complete short identity; no date prerequisite. Starts use the existing emission/body or colon field boundary, not arbitrary interior name suffixes. Preserve names with leading transliteration modifiers, such as genuine \u02beAm\u012br. This is source/mod/name independent; no global classification of plain Name of Place text.",
+      "capitalized_starts": [
+        "name",
+        "location"
+      ],
+      "content": "(?P<name>[^\\s():][^():\\r\\n]*) \\([0-9]+, (?P<location>[^()\\r\\n]+)\\)(?=[:;,. \\t\\r\\n]|$)",
+      "id": "character-id-short",
+      "leading_modifiers": "\u02be\u02bf'",
+      "mechanic": "line_sequence",
+      "prefix": "(?:^[ \\t]*|:[ \\t]+)",
+      "slot_type": "CHARACTER_ID_SHORT",
+      "strict_capture": true
+    },
+    {
+      "authority": "Owner 2026-10-03 requests the shortest character display-name form as a dedicated slot rather than PARAM, allowing receiver is as the recognition marker. The complete name between receiver is and the following comma/default-location marker is CHARACTER_ID_SUPER_SHORT. This reuses the bounded recognizer verified on all 75 genuine receivers; no global Name of Place classifier, source/mod/name whitelist, numeric-ID requirement or decomposition.",
+      "content": "[^\\r\\n]+?(?=, default location is )",
+      "id": "receiver-before-default-location",
+      "mechanic": "line_sequence",
+      "prefix": "\\breceiver is ",
+      "slot_type": "CHARACTER_ID_SUPER_SHORT",
+      "strict_capture": true
+    },
+    {
+      "authority": "Owner correction 2026-10-03: default location is <PARAM> starts at the capitalized word immediately after the marker and ends at the native line ending. All 75 values in 104 genuine logs have this boundary and no terminal period. Remove the unsupported period terminator; periods have no special boundary role. Preserve complete display names and separate trailing presentation whitespace.",
+      "capitalized_starts": [
+        "location"
+      ],
+      "content": "(?P<location>[^ \\t\\r\\n][^\\r\\n]*?)(?=[ \\t]*(?:\\r?\\n|$))",
+      "id": "default-location-name",
+      "mechanic": "line_sequence",
+      "prefix": "\\bdefault location is ",
+      "slot_type": "PARAM",
+      "strict_capture": true
+    },
+    {
+      "authority": "Owner 2026-09-26: implement CHARACTER_FULL_ID and HOUSE_FULL_ID as complete opaque variable-length name plus ID structures. Lowercase name words and empty internal values do not matter. Use emitter context, shared outer structure, and raw parser boundaries. No name dictionary, name decomposition, capitalization veto, ID validation or entity resolution.",
+      "contexts": [
+        {
+          "guard": "",
+          "prefix": "^[ \\t]*",
+          "source": "history.cpp",
+          "suffix": "(?: (?:has no faith|should hold at least one landed title)|'s title:)"
+        },
+        {
+          "guard": "",
+          "prefix": "^[ \\t]*Couldn't set [^\\s]+ as capital for[ \\t]+",
+          "source": "history.cpp",
+          "suffix": " it's held by "
+        },
+        {
+          "guard": "^[ \\t]*Couldn't set [^\\s]+ as capital for ",
+          "prefix": "it's held by[ \\t]+",
+          "source": "history.cpp",
+          "suffix": "[\\r\\n]*$"
+        },
+        {
+          "guard": "",
+          "prefix": "^[ \\t]*Barony [^\\s]+ does not have a holding, but is held by[ \\t]+",
+          "source": "history.cpp",
+          "suffix": " after running history\\."
+        },
+        {
+          "guard": "",
+          "prefix": "^[ \\t]*Parent[ \\t]+\\(",
+          "source": "characterhistory.cpp",
+          "suffix": "\\) of "
+        },
+        {
+          "guard": "^[ \\t]*Parent[ \\t]+\\(",
+          "prefix": "\\)[ \\t]+of[ \\t]+",
+          "source": "characterhistory.cpp",
+          "suffix": " is "
+        },
+        {
+          "guard": "",
+          "prefix": "^[ \\t]*(?:Spouse|Concubine) Character:[ \\t]+",
+          "source": "characterhistory.cpp",
+          "suffix": " (?:cannot |is )"
+        },
+        {
+          "guard": "^[ \\t]*(?:Spouse|Concubine) Character:",
+          "prefix": "In history for[ \\t]+",
+          "source": "characterhistory.cpp",
+          "suffix": " at file:"
+        },
+        {
+          "guard": "",
+          "prefix": "^[ \\t]*Character born after death or bookmark date \\(age [^\\r\\n()]+\\):[ \\t]+",
+          "source": "characterhistory.cpp",
+          "suffix": " at file:"
+        },
+        {
+          "guard": "",
+          "prefix": "^[ \\t]*file: [^\\r\\n]+ line: [0-9]+[^\\r\\n]*\\):[ \\t]+",
+          "source": "jomini_effect_impl.cpp",
+          "suffix": " is (?:married but not an adult!|a landed herder marked as a vassal of a nomadic ruler!|a herder or nomad tributary with a non-nomadic/steppe subject contract!)"
+        },
+        {
+          "guard": "",
+          "prefix": "^[ \\t]*Removing travel plan from the character[ \\t]+",
+          "source": "characterlocationdata.cpp",
+          "suffix": " owner when the travel plan is not ending normally\\."
+        },
+        {
+          "guard": "",
+          "prefix": "^[ \\t]*Failed build succession for '",
+          "source": "succession_order.cpp",
+          "suffix": "' due to unhandled succession order "
+        },
+        {
+          "guard": "^[ \\t]*Title '.+ is in the succession that we are currently building ",
+          "prefix": "for character '",
+          "source": "succession_order.cpp",
+          "suffix": "'\\."
+        },
+        {
+          "guard": "",
+          "prefix": "^[ \\t]*Date [^\\s]+ Title [^\\s]+ landed title holder[ \\t]+",
+          "source": "landed_title_manager.cpp",
+          "suffix": " is not alive\\. Hole in history discovered\\."
+        },
+        {
+          "guard": "",
+          "prefix": "^[ \\t]*Trying to trigger activity event '[^\\r\\n]+' for character[ \\t]+",
+          "source": "activity_utilities.cpp",
+          "suffix": ","
+        },
+        {
+          "guard": "",
+          "prefix": "^[ \\t]*Activity participant[ \\t]+",
+          "source": "travel_plan.cpp",
+          "suffix": " is aborting current travel plan while still participating in activity "
+        },
+        {
+          "guard": "^[ \\t]*could not grant title '[^\\r\\n]+' to new character; ",
+          "prefix": "current holder:[ \\t]+",
+          "source": "character_commands.cpp",
+          "suffix": "[\\r\\n]"
+        },
+        {
+          "guard": "^[ \\t]*Failed to pick default activity option for category ",
+          "prefix": "(?m)^Root:[ \\t]+",
+          "source": "activity_type.cpp",
+          "suffix": " \\x15weak \\(Character - "
+        },
+        {
+          "guard": "",
+          "prefix": "^[ \\t]*'",
+          "source": "landed_title.cpp",
+          "suffix": "' is of the wrong faith, "
+        },
+        {
+          "guard": "",
+          "prefix": "^[ \\t]*Character '",
+          "source": "confederation.cpp",
+          "suffix": "' is not allowed to join confederation "
+        },
+        {
+          "guard": "^[ \\t]*\\*_neighboring_realm_same_rank_owner ",
+          "prefix": "used on character '",
+          "source": "neighboring_landed_title_script_lists.cpp",
+          "suffix": "', who is not county-level or above, near "
+        },
+        {
+          "guard": "^[ \\t]*Event '[^\\r\\n]+' triggered but ",
+          "prefix": "has no valid options for '",
+          "source": "event_window_data.cpp",
+          "suffix": "', this is bad check the script"
+        },
+        {
+          "guard": "",
+          "prefix": "^[ \\t]*Trying to add an obedient opinion to the character '",
+          "source": "opinionmanager.cpp",
+          "suffix": "' targeting '"
+        },
+        {
+          "guard": "^[ \\t]*Trying to add an obedient opinion to the character ",
+          "prefix": "targeting '",
+          "source": "opinionmanager.cpp",
+          "suffix": "', but they already have an opinion with the obedient flag"
+        },
+        {
+          "guard": "",
+          "prefix": "^[ \\t]*Assertion failed: No landed data for the employer: '",
+          "source": "pdx_assert.cpp",
+          "suffix": "' \\(from "
+        },
+        {
+          "guard": "^[ \\t]*Assertion failed: Trying to remove holder of the on-map title ",
+          "prefix": "currently held by '",
+          "source": "pdx_assert.cpp",
+          "suffix": "'\\. That's illegal!"
+        },
+        {
+          "guard": "^[ \\t]*Script system error!",
+          "prefix": "Error:[ \\t]+Character '",
+          "source": "jomini_script_system.cpp",
+          "suffix": "' has no capital"
+        },
+        {
+          "guard": "^[ \\t]*Script system error!",
+          "prefix": "Error:[ \\t]+alive character[ \\t]+\\(",
+          "source": "jomini_script_system.cpp",
+          "suffix": "\\) in killer link"
+        }
+      ],
+      "delimiters": [
+        "(",
+        ")"
+      ],
+      "evidence": "docs/LEARNER_CHARACTER_FULL_ID_STATUS.md: 7414 character-form ID occurrences in 73 complete logs; source/context declarations consume outer diagnostic fields only, retaining existing opaque REASON precedence.",
+      "id": "character-full-id",
+      "id_label": [
+        "Internal",
+        "ID"
+      ],
+      "mechanic": "full_id",
+      "name_tail": {
+        "separator": "of",
+        "value_token_counts": [
+          0,
+          1
+        ]
+      },
+      "slot_type": "CHARACTER_FULL_ID"
+    },
+    {
+      "authority": "Owner 2026-09-26: implement CHARACTER_FULL_ID and HOUSE_FULL_ID as complete opaque variable-length name plus ID structures. Lowercase name words and empty internal values do not matter. Use emitter context, shared outer structure, and raw parser boundaries. No name dictionary, name decomposition, capitalization veto, ID validation or entity resolution.",
+      "contexts": [
+        {
+          "guard": "",
+          "prefix": "^[ \\t]*House '",
+          "source": "confederation.cpp",
+          "suffix": "' is not allowed to join confederation "
+        }
+      ],
+      "delimiters": [
+        "(",
+        ")"
+      ],
+      "evidence": "Native confederation.cpp:686: 12 occurrences, 11 distinct messages. House name and complete Internal ID / Internal Key parentheses captured intact, including empty values.",
+      "id": "house-full-id",
+      "id_label": [
+        "Internal",
+        "ID"
+      ],
+      "mechanic": "full_id",
+      "name_tail": null,
+      "slot_type": "HOUSE_FULL_ID"
+    },
+    {
+      "authority": "Owner 2026-09-26 requested the same opaque full-ID treatment for the observed county formatter and then implementation of discussed improvements. Native inventory establishes the same formatter for multiple title ranks; TITLE_FULL_ID is the implementation scope, with explicit source and surrounding boundaries.",
+      "contexts": [
+        {
+          "guard": "",
+          "prefix": "^[ \\t]*Assertion failed: Trying to remove holder of the on-map title '",
+          "source": "pdx_assert.cpp",
+          "suffix": "' currently held by '"
+        },
+        {
+          "guard": "",
+          "prefix": "^[ \\t]*Title '",
+          "source": "succession_order.cpp",
+          "suffix": "' is in the succession that we are currently building for character '"
+        },
+        {
+          "guard": "^[ \\t]*Script system error!",
+          "prefix": "(?m)^[ \\t]*Error: Trying to check state faith on ",
+          "source": "jomini_script_system.cpp",
+          "suffix": ", which shouldn't have one"
+        }
+      ],
+      "delimiters": [
+        "(",
+        ")"
+      ],
+      "evidence": "Complete 73-log inventory: 337 populated Internal Key title markers; 85 occurrences in these outer diagnostic contexts, 252 already within opaque REASON fields. ID values and title rank are not parsed. See docs/LEARNER_V35_IMPLEMENTATION.md.",
+      "id": "title-full-id",
+      "id_label": [
+        "Internal",
+        "ID"
+      ],
+      "mechanic": "full_id",
+      "name_tail": null,
+      "slot_type": "TITLE_FULL_ID"
+    },
+    {
+      "authority": "Owner: traces are PARAMs whose interior does not supply template wording. Owner 2026-09-24 clarified file/line references must remain outside trace PARAMs, including Script location messages. Only the balanced parenthetical interior following a file/line introducer is PARAM; the enclosing punctuation remains literal and file and line remain LOCATOR. The former whole-chain script-location-frames declaration was an incorrect boundary and is removed.",
+      "delimiters": [
+        "(",
+        ")"
+      ],
+      "evidence": "Complete native location-bearing messages, including jomini_scriptvalue.h, title_links.cpp, jomini_effect_impl.cpp and jomini_eventmanager.cpp. Ordinary parentheses without the file/line introducer are not recognized.",
+      "id": "located-parenthetical",
+      "mechanic": "balanced_interior",
+      "prefix": "(?<![\\w])(?:file|infile):[ \\t]+[^\\r\\n]+?[ \\t]+line:[ \\t]+[0-9]+(?:-[0-9]+)?[ \\t]+\\("
+    },
+    {
+      "authority": "Owner 2026-09-23: recognize the emitted Character: name/title (Internal ID ... Historical ID ...) description as one PARAM ending at its balanced closing parenthesis. No name or ID-value rules.",
+      "content_required": "(?:\\(Internal ID:[ \\t]|^\\(no character\\)$)",
+      "delimiters": [
+        "(",
+        ")"
+      ],
+      "evidence": "Native Basilia de Clare spouse-history message and same-source descriptions in the ten-log corpus.",
+      "id": "character-history-description",
+      "meaning": "Character description including its ID parentheses; Character: and following diagnostic wording remain outside.",
+      "mechanic": "through_balanced_suffix",
+      "prefix": "(?<!\\w)Character:[ \\t]*",
+      "source": "characterhistory.cpp"
+    },
+    {
+      "authority": "Owner 2026-10-04: the special game-formatting characters in context establish PARAM start/end markers. Recognize complete linked or tooltip display references from their ONCLICK/TOOLTIP opener through the complete consecutive reset run (at least three with ONCLICK, at least two without it; additional resets close surrounding formatting and stay in the capture). Preserve all metadata, displayed text and controls together as the opaque PARAM value. Existing declared fields and full identities retain precedence. No name, word-count, trait-ID, mod or emitter whitelist; do not treat a lone control character as sufficient evidence. Nested or incomplete markup is not generalized from these examples. Implementation preserves a larger surrounding quoted field for empirical inference; a reference occupying the entire quoted interior remains eligible.",
+      "content": "(?P<link>\\x15ONCLICK:[^\\s\\x15]+[ \\t]+)?\\x15TOOLTIP:[^\\s\\x15]+[ \\t]+\\x15L;?[ \\t]+[^\\x15\\r\\n]+?\\x15!\\x15!(?(link)\\x15!)(?:\\x15!)*(?!\\x15!)",
+      "defer_inside_quotes": [
+        "'",
+        "\""
+      ],
+      "id": "formatted-linked-reference",
+      "mechanic": "line_sequence",
+      "prefix": "(?=\\x15(?:ONCLICK|TOOLTIP):)",
+      "slot_type": "PARAM",
+      "strict_capture": true
+    }
+  ],
+  "schema": "ck3chronicle.learner-owner-rules",
+  "scope": "Learner-owned declarations. Selected raw parser code remains versioned independently. No source-code injection, optional literals or unapproved example-specific slot-type overrides. Approved structures and explicitly owner-confirmed formulations are declared under constructions; observed native evidence is still required to produce a candidate.",
+  "slot_position_cues": {
+    "authority": "Owner requires file/line labels outside LOCATOR captures and no forced numeric conversion for identifier fields. The existing regexes are implementation heuristics, not owner-prescribed regex syntax or new example-specific typing rules. Owner 2026-09-21: the value following Database: in Key <KEY> not found at Database: is a LOCATOR; its label remains literal. Owner follow-up: recognized locations must remain LOCATOR, not literal wording, even when observations share one path spelling, including words within paths. Recognition uses known labels and complete parser tokens; never colon-to-line-end masking.",
+    "case_sensitive": false,
+    "evidence": "docs/LEARNER_NATIVE_MODEL_CONTRACT.md; docs/LEARNER_INFERENCE_RULES.md",
+    "filename_authority": "Owner: .txt, .yml, .md and .py establish filename evidence without a directory separator. These explicit examples are suffix cues, not a folder whitelist or a claim that every dotted CK3 key is a filename. Other extensions can be recognized in path/file contexts or filename:line notation. Explicit file context bounds names containing spaces; do not join spaced slash lists without location context.",
+    "filename_context_pattern": "\\bfile(?:[ \\t]*:[ \\t]*|[ \\t]+)[\\\"\\x27]?$",
+    "filename_suffixes": [
+      ".txt",
+      ".yml",
+      ".md",
+      ".py"
+    ],
+    "id": "native-slot-labels",
+    "identifier_pattern": "(?:\\bID|\\bkey)\\s*:?\\s*[\"']?$",
+    "line_suffix_authority": "Owner: file.txt:6 is filename, colon punctuation, line reference. The path and line are separate LOCATOR fields with the colon literal between them. Native GUI .gui:number and dynasty .txt:number forms support the generic boundary; existing scope:key and dotted identifiers remain intact.",
+    "location_pattern": "(?:\\bdatabase\\s*:|\\bfile\\s*:|\\bline\\s*:|\\blines\\s*:)\\s*[\"']?$",
+    "location_values_are_slots": true,
+    "path_value_authority": "Owner: recognize slash-delimited path formulations after a colon, file, or in using syntax and complete ranges of adjacent raw segment and slash tokens, including unfamiliar or mod-created paths. No folder allowlist, required extension, or required :number suffix for these contextual forms. Numeric ratios alone are not path evidence. Slash-delimited filename syntax with an extension also supplies evidence without those introducers. Slash is a separate punctuation token, not internal identifier punctuation. Preserve native attached location suffixes when present, separately labelled line fields, and surrounding wording; do not swallow subsequent trace content. Regex implementation is a reviewable lexical heuristic, not an owner-specified regex.",
+    "path_value_context_pattern": "(?::|(?<!\\S)(?:[Ii]n|[Ff]ile)[ \\t]+)[^\\S\\r\\n]*[\\[\\(<\\\"\\x27]*[^\\S\\r\\n]*$",
+    "unavailable_location_authority": "Owner 2026-10-03: Unknown is a LOCATOR only immediately after a recognized location marker; elsewhere it normally remains literal. Preserve section labels, nested file/line labels, exact native value, and message identity. Numeric contents are not required for labelled LOCATOR recognition or line/near-line literal equivalence.",
+    "unavailable_location_pattern": "(?:\\bScript location:|\\blocation:|\\bFrom:|\\bStack trace:|\\bNew Location:|\\bPrevious Location:)[ \\t]*[\\x22\\x27]?$"
+  },
+  "updated": "2026-09-26",
+  "version": 1
+}

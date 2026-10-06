@@ -1,0 +1,7 @@
+{
+  "purpose": "Find every stored diagnostic assigned to the trigger-error template, keeping distinct diagnostic records and their Run counts separate",
+  "refinement": {
+    "templates": [{"template_id": "0b2804538785c71278ea37e7"}]
+  },
+  "analytics": {"trailing_runs": 5}
+}

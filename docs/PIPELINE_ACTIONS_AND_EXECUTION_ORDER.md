@@ -1,5 +1,13 @@
 **Pipeline actions and proposed execution order**
 
+## Shared decoder receiving handoff — 2026-10-05
+
+Decoder delivery is ready for pipeline and learner/release receiving. Follow the
+[pipeline section of the combined release handoff](learner-next-release/HANDOFF.md#pipeline-team-receiving-and-deployment--2026-10-05)
+for exact ownership, ingestion/failure/storage boundaries and deployment checks.
+The [current 07D handoff](TASK07D_DATABASE_REQUEST_HANDLER_HANDOFF.md) remains the
+runtime API authority. Production integration and activation remain pending.
+
 ## Task 07D implemented — activation remains separate — 2026-09-29
 
 Use the [current Task 07D handoff](TASK07D_DATABASE_REQUEST_HANDLER_HANDOFF.md) for APIs, handler startup/shutdown,

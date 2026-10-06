@@ -1,5 +1,15 @@
 # Approved Error Contract specification
 
+## Stored rendering provenance interface — 2026-10-04
+
+`pipeline.contracts.render_segments(definition, values)` exposes the same stored
+rendering used by `render` and `render_regions`, with end-exclusive character
+offsets and literal/slot origins (region, slot ID and type). It follows the stored
+layout choices; it does not recognize text, change bindings, or classify records.
+Reporting uses this to explain matches in ordinary whole-message searches.
+The contract, exact identity and stored schema are unchanged. Verification and
+consumer details are in [08B](TASK08B_REPORTING_HANDOFF.md).
+
 ## Implementation interface note — 2026-09-27
 
 2026-09-28 selected v45 integration: schema-5/API-v2 definitions can declare

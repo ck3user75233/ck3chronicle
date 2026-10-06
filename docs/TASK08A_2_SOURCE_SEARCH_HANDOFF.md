@@ -1,5 +1,209 @@
 # Task 08A.2 — source search and diagnostic context
 
+## Owner rule: last load order identifies the file/line error source — 2026-10-04
+
+The owner now directs single-file/line analytics to identify the last matching
+playset member in load order as the error source. This supersedes the earlier
+blanket “winning file/ownership unresolved” presentation requirement for this case.
+`file_line_sources(candidates)` is a pure public analysis helper, independent of
+templates and disk reads. Resolver results add an identity-keyed `file_line_sources`
+map; each group supplies relative path, line, candidate IDs, rule `last_load_order`,
+an `error_source` file/member object and a reason when no assignment is possible.
+Analysis forwards these groups into selected, historical/per-Run and partial records.
+
+Groups use the effective source scope and resolved files before file-content
+filtering, so excluding the last file's contents does not promote an earlier copy.
+All original candidate associations and their order remain intact. No line or no
+comparable load order means this file/line rule cannot assign a source; explicit
+outside-playset roots retain their unavailable order. No parser, schema, stored
+identity or current-path-resolution predicate changes. Reports display `resolved`
+as **Resolved**, and completed zero-match `unresolved` as **File not found**.
+See [08B](TASK08B_REPORTING_HANDOFF.md) for genuine CLI and browser checks.
+
+## Owner clarification: game-relative paths across playset members — 2026-10-04
+
+The ordinary path filter is relative to each playset member's root. Use
+`scope.source.relative_path.exact`, for example
+`["/common/scripted_effects/some_file.txt"]`. It matches the recorded relative path;
+optional candidate lookup checks that same location across every recorded member
+unless roots/members are explicitly restricted. All candidate associations remain
+in recorded order. A matching basename in another folder is not a path match.
+Exact paths continue to restrict inventories to their parent folders, nonrecursively.
+
+`normalize_source` now accepts an optional single leading slash in the explicitly
+relative fields `relative_path.exact` and `directories`, along with either separator.
+It works on a copy; the request and stored references are unchanged. Standalone
+`effective_selection` shows the normalized scope. Physical `roots`/`files`, UNC paths
+and literal text predicates are not reinterpreted. Default stored-path investigation
+remains SQL-only; reports opt into candidate context. See [08B](TASK08B_REPORTING_HANDOFF.md)
+for genuine root-CLI, standalone and scoped-inventory verification.
+
+## Owner correction: an emission without a path is complete — 2026-10-04
+
+An emission need not supply a source-file path. Its absence is normal, not a
+reference limitation or incomplete evidence. `source_references` now returns
+`status: "present"` or `"no_path"` alongside `references`, replacing `limitation`.
+The resolver returns an identity-keyed `reference_status` map. Neutral coverage
+`records_without_source_path` replaces `reference_limitations`/`reference_complete`;
+no-path records do not lower coverage completeness.
+
+If no selected references need lookup, optional context does not read the playset
+or probe roots: `searched` is false, file/folder counts are zero and source coverage
+is complete. With mixed records, an actual source lookup problem concerns only
+records carrying references. Existing source-path filters still exclude no-path
+records normally. No diagnostic, parser classification or database schema changes.
+See [08B](TASK08B_REPORTING_HANDOFF.md) for genuine CLI/archive verification.
+
+## Owner-requested recursion measurements — 2026-10-04
+
+Source search now returns per-search `coverage.search_counts`, separately from the
+existing cumulative session `coverage.metrics`:
+
+- `files_searched`: unique physical file names/paths considered in the effective
+  inventory scopes, before file/path/content filters;
+- `folders_searched`: unique enumerated folders, including the starting directories
+  and empty folders;
+- `candidate_files`: unique files selected before content filtering;
+- `content_files_requested`: unique files selected for a content check, zero if
+  none was requested; this is not a claim that every read succeeded;
+- `matching_files`: unique files remaining after the source predicates.
+
+`coverage.search_scopes` lists every selected root/member, actual lookup directories,
+effective recursion, file/folder counts, completion/skipping and cache source
+(`none`, `exact_scope`, `whole_root_subset`). Cached inventories preserve the
+same applicable counts, including empty folders. Repeated/overlapping roots retain
+their associations; global search counts deduplicate physical paths and per-root
+rows are not additive. Incomplete coverage counts only the evaluated work and is
+still labelled incomplete. SQL-only stored-path selection returns zero filesystem
+counts. Existing construction metrics now also measure folders and attach counts
+to `inventory_scopes`; they remain cumulative, not per-search totals.
+
+Exact files/references still narrow lookup to parent directories within the
+requested scope. Reports do not recursively scan a whole root merely to print
+its total. `tools/check_source_recursion.py` independently measures full real roots
+using PowerShell, compares returned file sets and counts for recursive/nonrecursive,
+scoped and cached searches, and exercises root-CLI presentation from a disposable
+database backup. See [08B](TASK08B_REPORTING_HANDOFF.md) for actual receipts.
+
+## Owner-requested explicit path-resolution filter — 2026-10-04
+
+The owner asked to seek messages whose recorded paths could not resolve. Use
+`scope.source.resolution: "unresolved"` (or `"resolved"`) in diagnostic queries.
+This explicitly requests current disk evaluation even in default library use.
+It does not change SQL-only ordinary path predicates. `resolution` is not a
+standalone file-search or optional-context option; validation directs callers to
+the diagnostic query field.
+
+For each original reference, `resolve` returns `reference_resolution[identity_key]`
+entries with `reference`, `status` and ordered `candidate_ids`. Status is:
+
+- `resolved`: at least one current file found in the effective scope;
+- `unresolved`: a completed search found none for this reference;
+- `incomplete`: no file found, but search coverage cannot establish absence;
+- `not_searched`: disk context was not requested for a stored-path-only query;
+- `outside_scope`: this reference does not satisfy the required path predicates.
+
+No usable stored reference produces an empty reference list and a normal nonmatch.
+Selection is existential per diagnostic: one selected reference with the requested
+status suffices; a diagnostic can contain both resolved and unresolved paths.
+Root/member predicates choose where resolution is tested, rather than requiring
+a positive candidate when `resolution: "unresolved"` is present. Directory/path
+filters still compose normally. File existence is evaluated before content filters:
+an existing file with nonmatching content remains resolved. A separately required
+content predicate needs a matching candidate, possibly from another reference.
+
+Unresolved means absent within the disclosed scope; it is not a global filesystem
+or historical fact. Incomplete required search retains `SourceEvaluationError`
+and known matching partials. Current coverage is conservative across the selected
+scope: unresolved references are unknown if the search could not complete.
+`coverage.searched` distinguishes skipped lookup, and `resolution_filter` records
+the requested status. Analysis exports the per-reference result and reports show
+it beside each path. No persistent index, parser or database schema is added.
+
+Genuine CLI checks, independent filesystem/count verification and the authorized
+two-entry fixture pass; exact receipts are in [08B](TASK08B_REPORTING_HANDOFF.md).
+
+## Owner correction: ordinary path filters — 2026-10-04
+
+The owner's later clarification supersedes the missing-file and unidentified-
+reference error rules below. In diagnostic investigations, path-only predicates
+(`files`, `referenced_paths`, filename/relative-path conditions, directories and
+globs/extensions) match recorded references. A matching file need not exist on
+disk. No usable matching reference means exclusion, not incomplete evidence.
+Source context remains optional for these predicates; default library use stays
+SQL-only, while reports request candidate context. Absolute paths can be compared
+with relative references through lexical recorded-root metadata without probing
+disk. This establishes a possible path correspondence, not ownership.
+
+Root/member/content predicates still use current candidate associations, after
+excluding pathless and path-nonmatching records. Missing individual files return
+ordinary nonmatches, including in standalone `search`. Actual selected-root,
+traversal/read/decoding and search-process failures retain incomplete coverage.
+No references left to evaluate means a complete empty result without disk probes.
+Required-filter partials no longer contain an `unidentified_records` view.
+
+Four focused genuine source groups passed (33.856 s); two genuine CLI groups
+passed (70.665 s). The authorized two-entry fixture passes nine checks / nineteen
+exports for recorded paths, missing files, directory/absolute paths and empty
+mod candidates. See the current [08B handoff](TASK08B_REPORTING_HANDOFF.md) for
+evidence and the report bundle. This is a bounded source/query-owner correction;
+no storage, parser, matcher or architecture change.
+
+## Earlier owner-authorized missing-file fixture — superseded filter semantics
+
+The earlier fixture used two copied genuine emissions with fake file LOCATOR paths
+and all 133 recorded playset members preserved. It exposed an incorrect distinction
+between `files` and other stored-path selectors: `files` incorrectly failed when
+the physical file was missing. Its original empty-result expectation and subsequent
+error expectation were both superseded by the owner's clarification.
+
+Current behavior: `files`, `relative_path.exact` and `referenced_paths` select
+matching stored paths. Both fixture messages are returned when both recorded paths
+are selected; an unmentioned path returns a successful empty result. No disk file
+is required to answer that database question. Optional file lookup may find no
+candidates without invalidating the diagnostic selection. See the current
+[08B handoff](TASK08B_REPORTING_HANDOFF.md) for corrected checks and retained
+historical receipts. The fixture is labelled synthetic and does not establish
+unavailable-root or decoding-failure behavior.
+
+## 08B source-presentation completion — 2026-10-04
+
+The source evaluator's membership and incomplete-evidence rules are unchanged.
+08A.1 now includes readable `unidentified_records` in required-source error
+partials, derived from this resolver's existing `reference_limitations`.
+Reports display these separately from known matches and name the diagnostic
+whose mod/file condition cannot be evaluated. Stored reference presence remains
+independent of current file existence; mod membership means a current candidate
+under the root selected through that evidence Run's stored playset, not ownership.
+The hotspots preset now expresses its stored-reference condition through an
+AND refinement clause, using the same extractor.
+
+All nine genuine source tests passed again (260.071 seconds). A genuine DLC-file
+CLI example additionally confirms plain base-game/DLC paths alongside a named mod
+candidate. Exact consumer evidence and browser inspection are in the current
+[08B handoff](TASK08B_REPORTING_HANDOFF.md).
+
+## 08B receiving additions — 2026-10-03
+
+`SourceSearch(..., candidate_context=False)` has one opt-in constructor argument.
+Reports pass `candidate_context=True`: stored-reference-only filters retain their
+SQL membership while also looking up optional disk candidates. The default still
+performs zero disk inventory for these queries. Optional disk gaps remain in
+`coverage.complete`; they do not invalidate a complete stored-reference filter.
+Other required-source predicates retain their existing evaluation/error behavior.
+
+Resolver coverage now includes `effective_selection` and
+`reference_only_filter`. Reports display those scopes and preserve all roots,
+issues, inventory-scope metrics, candidates, member numbers and excerpts. The
+hotspots query's new `scope.has_source_reference` calls this owner's existing
+extractor from the query library; no new path-recognition logic was added.
+
+The nine retained genuine source checks passed again during 08B (199.944 seconds).
+The optional-source invariance assertion now compares window counts/history,
+excluding the newly added candidate-bearing per-Run views/rollups. All data and
+membership/count expectations remain unchanged. See [08B handoff](TASK08B_REPORTING_HANDOFF.md)
+for CLI-specific evidence, newline repair and remaining unverified cases.
+
 Current scope correction, 2026-10-03: **only unscoped searches default to all
 recorded-playset roots**. Explicit roots/members are selected before disk probes;
 explicit directories limit traversal. Exact files/relative references now narrow
@@ -40,7 +244,7 @@ and CLI presentation. Generated demonstrations remain under ignored
 from ck3chronicle.reporting import SourceSearch, source_references
 
 SourceSearch(client=None, *, ripgrep='rg', context=None, excerpts=False,
-             scratch_directory=None)
+             scratch_directory=None, candidate_context=False)
 SourceSearch.read_playset(run_id) -> dict
 SourceSearch.search(selection: dict, *, run_id: str | None = None) -> dict
 SourceSearch.resolve(run, records, scope) -> dict
@@ -79,13 +283,13 @@ lists and Boolean groups, unknown fields and invalid types raise `QueryError`.
 | `members` | OR list of objects selecting stored `load_order`, `name`, `path`, `root_ID`, `stable_id`, or `descriptor_path`; fields inside an object use exact AND, including nulls. |
 | `directories` | Relative directory scopes under each root; default `['.']`. Absolute paths and parent traversal are rejected. |
 | `recursive` | Default true; false uses a single-directory inventory. |
-| `files` | Exact relative or absolute file selections within the chosen roots/scope. A requested missing/out-of-scope file is an explicit coverage issue. |
+| `files` | Exact recorded paths in path-only investigations; no disk existence requirement. With root/member/content predicates, select current candidate files. Standalone search selects disk files. Missing/out-of-scope files are ordinary nonmatches. |
 | `extensions` | OR list, with or without leading dot. |
 | `filename`, `relative_path` | Objects with `exact` string alternatives and/or a `text` literal condition tree. Both, if supplied, must match. |
 | `filename_globs`, `path_globs`, `include`, `exclude` | `fnmatch.fnmatchcase` patterns; slash is an ordinary character, so `common/*` includes descendants. Exclusion wins. No custom glob engine or shell expansion. |
 | `case_sensitive` | Exact path/name/glob/reference comparisons; default false. Each text leaf has its own case option. |
 | `content` | Nested `and`/`or` groups of literal `contains`/`not_contains` leaves with optional `case_sensitive`. Evaluated over the whole file. |
-| `referenced_paths` | Select stored references in investigations, or relative inventory paths in standalone search. A reference-only investigation does not need disk access. |
+| `referenced_paths` | Select stored references in investigations, or relative inventory paths in standalone search. Like other path-only filters, this does not need disk access. |
 | `reference_mode` | `relative` by default, preserving supplied directories; `basename` explicitly broadens lookup. |
 
 With both `members` and `roots`, only selected recorded members whose root is
@@ -125,7 +329,8 @@ Path-valued LOCATORs retain their slot identifier; paths in stored literal/suppo
 text are also located. Adjacent `line`, `near line`, and `line … and column … in`
 wording supplies line numbers. Script-stack locations retain supporting roles and
 region references. Numeric locators and C++ emitter names are not script paths.
-Unidentifiable references produce a limitation rather than a guessed location.
+An emission without a file reference has status `no_path`; source lookup is not
+applicable. This is normal emission content, not a limitation. No location is guessed.
 This is reference lookup, not another matcher, syntax catalog or semantic classifier.
 
 Every matching physical/member association is retained, including repeated
@@ -233,9 +438,10 @@ claimed. The genuine content queries exercised ASCII script identifiers.
 Exit 0 means matches; exit 1 means a completed no-match search; other exits or
 stderr diagnostics mark incomplete coverage. Known positive matches may survive
 an errored batch; absence requires completed evidence. A missing/unreadable root,
-archive/file mount, traversal/read/decoding failure or unidentified required
-reference prevents claiming a complete filtered zero. Optional context still
-preserves SQL data.
+archive/file mount or traversal/read/decoding failure can prevent completion of a
+filter requiring that disk evidence. Pathless records and missing individual files
+are ordinary nonmatches. Optional context still preserves SQL data; path-only
+membership remains independent of disk coverage.
 
 ## Concrete 08B consumer
 

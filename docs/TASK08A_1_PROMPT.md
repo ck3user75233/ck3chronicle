@@ -143,19 +143,11 @@ Do not substitute capture, processing or process-start time or backfill old Runs
 Missing/unusable timestamps exclude Runs from this chronology and are reported
 as exclusions. A directly selected ineligible Run gets a clear explanation.
 
-Within the selected processing package, distinct Run IDs sharing the same stored
-source timestamp are suspicious data, not ordinary chronological ties. Before
-selecting chronological neighbors or applying pagination, exclude every Run in
-each such group from time-series/ordinal reporting. Report the excluded Run IDs,
-shared timestamps and reason; suggest inspecting duplicated session data or
-overwritten/corrupted timestamps. Do not force ordinality with Run IDs, capture
-time, ingestion time or another fallback. Do not deliberately round timestamps
-to create duplicate groups. If the explicitly selected Run belongs to such a
-group, fail report generation and explain the failure to the caller. Diagnostic
-filters and display limits must not hide a duplicate or restore its eligibility.
+Duplicate-ingestion handling belongs to the pipeline. Reporting consumes the
+stored Runs and does not implement a second duplicate-detection or rejection rule.
 
 `latest` means the latest eligible Run in the explicitly selected processing
-package under this chronology, after missing/unusable and duplicate-timestamp
+package under this chronology, after missing/unusable timestamp
 exclusions. If none remains, report that no eligible Run is available.
 
 Repository `list_runs`/`latest_run` currently use processing time. Build the
@@ -243,8 +235,7 @@ Demonstrate:
   database worker. SQL rendering requires neither raw logs nor executable models.
 - Package/timestamp selection, exclusions and short/absent history follow the
   contract; existing repository processing-time order cannot leak into reports.
-  Duplicate-timestamp groups are wholly excluded from chronology and disclosed;
-  an explicitly selected member fails clearly, and `latest` uses eligible Runs.
+  `latest` uses eligible Runs.
 - Exact identity preserves value differences; zero median, disappearance and
   boundary/fractional counts follow the stated rules without false novelty.
 - Combined include/exclude filters, rollups and display limits preserve totals.

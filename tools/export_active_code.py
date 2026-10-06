@@ -217,7 +217,8 @@ def write_export(root, output, title, scope, reasons, resources, excluded, exter
         # A fence longer than any backtick run in the source cannot be closed
         # by an embedded Markdown example or template literal.
         fence = '`' * max(3, 1 + max((len(s) for s in re.findall(r'`+', text)), default=0))
-        language = {'.py': 'python', '.json': 'json', '.html': 'html'}.get(path.suffix, 'text')
+        language = {'.py': 'python', '.json': 'json', '.html': 'html', '.css': 'css',
+                    '.js': 'javascript'}.get(path.suffix, 'text')
         body = f'### `{name}`\n\n{fence}{language}\n{text}'
         if not text.endswith('\n'):
             body += '\n'
@@ -281,19 +282,28 @@ def main():
         raise ValueError('export output must be inside the repository workspace')
     output.mkdir(parents=True, exist_ok=True)
     sources = Sources(root)
-    scripts = tomllib.loads((root / 'pyproject.toml').read_text(encoding='utf-8'))['project']['scripts']
+    project = tomllib.loads((root / 'pyproject.toml').read_text(encoding='utf-8'))
+    scripts = project['project']['scripts']
     runtime_seeds = {scripts['ck3chronicle'].split(':')[0]: 'Installed ck3chronicle console entry point'}
     handler = 'ck3chronicle.pipeline.database_handler'
     if handler not in (root / 'src/ck3chronicle/pipeline/request_handler.py').read_text(encoding='utf-8'):
         raise ValueError('reinspect the handler subprocess entry point before exporting')
     runtime_seeds[handler] = 'Subprocess entry point launched by request_handler.py (python -m)'
     runtime_seeds['ck3chronicle.reporting'] = (
-        'Supported public diagnostic-query and source-search APIs delivered by Tasks 08A.1/08A.2')
+        'Supported public diagnostic-query, source-search and reporting APIs')
     runtime_seeds['ck3chronicle.command_envelope'] = (
         'Application response helper explicitly retained by Task 06B for Task 08 command integration; '
         'not currently called by the CLI')
     runtime, runtime_modules, runtime_external = sources.closure(runtime_seeds)
     runtime_check = crosscheck_imports(root, runtime_seeds, runtime_modules, runtime_external)
+    # Presentation assets are loaded as resources, so import graphs cannot find them.
+    for package, patterns in project['tool']['setuptools'].get('package-data', {}).items():
+        if package not in runtime_modules:
+            continue
+        for pattern in patterns:
+            for path in sources.modules[package].parent.glob(pattern):
+                if path.is_file() and path.suffix in {'.html', '.css', '.js'}:
+                    runtime[path].add(f'Packaged presentation source declared for {package} in pyproject.toml')
     runtime_resources = {}
     selection_path = root / 'models/selection.json'
     selection = json.loads(selection_path.read_bytes())
@@ -379,8 +389,9 @@ def main():
             f'Default package: `{selection["package_id"]}`. Roots: `ck3chronicle.cli` and '
             '`ck3chronicle.pipeline.database_handler`, plus the supported `ck3chronicle.reporting` '
             'public library APIs and retained `ck3chronicle.command_envelope` helper '
-            '(reporting CLI integration remains Task 08B). Includes their transitive project imports and '
-            'the selected package Python source.'], runtime, runtime_resources, excluded_runtime, runtime_external))
+            '(the helper is not currently called by the CLI). Includes their transitive project imports, '
+            'packaged report presentation assets and the selected package Python source.'],
+        runtime, runtime_resources, excluded_runtime, runtime_external))
     reports.append(write_export(root, output / 'ck3chronicle-learner-release-code.md',
         'ck3chronicle Learner and Release Tools Codebase Export', common + [
             'Roots: the installed learner-release and model-release commands, documented current learner '

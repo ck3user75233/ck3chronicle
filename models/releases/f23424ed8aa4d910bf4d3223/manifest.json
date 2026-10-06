@@ -1,0 +1,37 @@
+{
+  "delivery_status": "candidate_not_activated",
+  "hashes": {
+    "assignment.py": "29e3bc8f54ac678988a3dc3e0023ce7c1dc76403900a44805ef958fbd47be235",
+    "continuations.py": "11e4d8b146367c6374508a29b802a143288b973760620babc02c8f9f9760d6ce",
+    "empirical_template_model.json": "0a996498620272da063bf31214dff91e24268e07e586d0c53fcbe440d123e88f",
+    "formatted_literals.py": "844395d3d2149962ac10278f55e02588cd21f9409f034f3a774747dea0c8475d",
+    "full_ids.py": "d91a646cde7887c5fe497e4c76a4bd4cd5ca59277c06c55995cdb5116d22dc28",
+    "location_sequences.py": "2803892b483d99ba15360847ef43265122da4fefabd322286d46340f4271a4d7",
+    "matcher_loader.py": "748ca79317380552200ba4d878372f1baeddb2db9d963b87635899dcf872b706",
+    "matching_primitives.py": "abcc1c7e23534f57422728a70aa7e08f733286c35c6f3257cfbe0ebb3e8d68e2",
+    "matching_validation.py": "363014af5c2faa84e8bbf4ecc0032d378e6165d5a61e1afce91c03f315af8929",
+    "native-validation.json": "862c55123202942eef7aa79757a29d9eee9cb3a16a4bafbdba7a1e875efee75f",
+    "native_matching.py": "7feaac2216730f2dc08cd07b16b1c6ef6192a0ff6141ef39b430d43cadb55f1c",
+    "owner_rules.json": "0ed163266aa8964885bcb9f5fa6eec43b6426e3abfdd5eb19a1c7ab2d617f295",
+    "parser-manifest.json": "8ecc55cbdfb4d5601e4cc2c2f11b278b4b0962f9f6e9c62c739f6fd5248f79bb",
+    "parser.py": "a8005254df58daf20e000e454c9e3e9b40304be4cd0962e1fa88e90cea86baab"
+  },
+  "matcher_api_version": "ck3-native-matcher-v3",
+  "model_revision_id": "0f4a012e91e6ffa253d9d858",
+  "model_schema_version": 6,
+  "package_id": "f23424ed8aa4d910bf4d3223",
+  "parser": {
+    "artifact": "parser.py",
+    "sha256": "a8005254df58daf20e000e454c9e3e9b40304be4cd0962e1fa88e90cea86baab",
+    "version": "ck3-lossless-v1.7"
+  },
+  "publication_learner_release": {
+    "learner_identity": "30400ed4c65b1101e705ce8a47fea86ef11cf22cd5be7d4f9610916487a1ee43",
+    "manifest_sha256": "3363cdb62d6c851917faa20af02133e60184a97a6229dd8b9686abddf087e616",
+    "release_id": "2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a"
+  },
+  "schema": "ck3chronicle.native-matcher-package",
+  "schema_version": 1,
+  "selector_version": "complete-assignment-v2",
+  "source_manifest_sha256": "6b944b352e96fea6c562f0a34d7039c8cd78e2227a71e3af5b4d68a1c418a7bc"
+}

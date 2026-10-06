@@ -1,11 +1,9 @@
 {
   "schema": "ck3chronicle.native-model-selection",
   "schema_version": 2,
-  "revision_id": "f5cde2616f35d563118d3d32",
-  "package_id": "68f1ae5db205ab46afef9c4d",
-  "artifact_directory": "candidates/68f1ae5db205ab46afef9c4d",
-  "manifest_sha256": "2a84fe9c734a558e757df54649eac0812ea380a80ac8a2d0fe17129d50f24a5f",
-  "matcher_api_version": "ck3-native-matcher-v2",
-  "integration_status": "integrated_verified",
-  "handoff": "docs/TASK06_V45_STORAGE_INTEGRATION_HANDOFF.md"
+  "revision_id": "789219fdbd81c8dab950bc93",
+  "package_id": "4ac4e8ee92346e6d14eacfbf",
+  "artifact_directory": "releases/4ac4e8ee92346e6d14eacfbf",
+  "manifest_sha256": "839548e8c8143e01b63059848557dc94e9fe66f5e1924f6026442f7331a8ba9f",
+  "matcher_api_version": "ck3-native-matcher-v3"
 }

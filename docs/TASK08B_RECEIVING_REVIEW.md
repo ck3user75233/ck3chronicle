@@ -1,5 +1,18 @@
 # 08A.1 / 08A.2 receiving review for 08B
 
+## Owner-directed consumer corrections received — 2026-10-04
+
+Current content search covers complete diagnostics, including literals and slot
+values. The renderer/analysis expose stored match origins and assigned templates
+as reusable data; no reclassification or special template-discovery query is
+introduced. Requested history positions disclose unavailable Runs, and real
+CLI/worker I/O tracing verifies reporting independence from original logs/models.
+Handler operation errors are distinct from empty/missing-data outcomes; current
+source access/decode/search errors are distinct from SQL decoding. The misleading
+template-phrase example is withdrawn. [08B](TASK08B_REPORTING_HANDOFF.md) records
+the bounded changes, executed genuine checks and two unexercised runtime fault
+paths. Earlier receiving and gap language below is historical.
+
 ## Updated receiving decision — 2026-10-03
 
 [08B's prompt](TASK08B_PROMPT.md) now receives the latest
@@ -17,7 +30,7 @@ Four eligible genuine Runs are now available. Upstream reports 18 investigations
 359 comparisons plus two single-Run checks, followed by 41 scope comparisons,
 four source investigations / 93 comparisons and nine source tests. Those are
 reported upstream results, not reruns by this advisor. The remaining absent
-failure/duplicate-timestamp/full-window cases remain explicitly unverified.
+failure/full-window cases remain explicitly unverified.
 
 This review read the handoff, current query/source implementations and readable
 newness/scope reports. It confirmed removed exports/history fields and the
@@ -115,7 +128,7 @@ must not be presented as instantaneous on the strength of the fastest run.
 ## Evidence limits and work not done
 
 The unchanged SQL dataset has one eligible Run. It cannot verify genuine
-multi-Run recurrence/disappearance, duplicate-time groups or notability boundaries.
+multi-Run recurrence/disappearance or notability boundaries.
 It does verify absent prior history and preservation of the actual counts. Missing
 root/decoding/ripgrep-process failure cases were not manufactured; their full
 runtime behavior remains unverified. The source handoff discloses further limits,

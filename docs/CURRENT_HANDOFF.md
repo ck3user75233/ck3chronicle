@@ -1,5 +1,1711 @@
 # Current handoff
 
+## Database replaced; 31 new-model Runs active — 2026-10-05
+
+**Complete.** Production now uses
+`.ck3chronicle/wip/runtime/ck3chronicle-schema3-20261005T112504Z.sqlite3`: 31 Runs,
+all package `4ac4e8ee92346e6d14eacfbf` / parser v1.8, totaling 958,190 classified
+occurrences in 79,508 records. These are the 30 rebuilt retained captures plus the
+session the owner just closed. No database rows were migrated or imported.
+
+See the [replacement receipt](learner-next-release/PIPELINE_RECEIVING.md#database-replacement-complete--2026-10-05)
+and [operational record](learner-next-release/PIPELINE_CUTOVER.md). After a verified
+backup, config's database path switched at 12:07:47 UTC and the installed watcher
+restarted at 12:08:19. Watcher 51024 (launcher 55312); handler 54908 (launcher 60264),
+instance `f474dbf7100a44399e2ae4a6a05f6375`. Fresh heartbeat/public reads/reports pass.
+The old database/review namespace exists only in the backup at
+`.codex-tmp/pipeline-refresh-20261005/backup-20261005T120734Z/retired-original/`.
+Protected captures and other configuration remain unchanged. No rollback needed.
+
+The genuine CK3 lifecycle 11:16:27–12:06:14, capture and automatic new-model ingestion
+are verified; its active Run is `20261005-UYSOEO`. The earlier live-lifecycle follow-up
+is closed. R4 syntax remains separately owned Reporting work. Staging/deferral and
+older pending statements below are historical; do not rerun the 30-input rebuild.
+
+## Thirty-capture rebuild verified; switch deferred by owner — 2026-10-05
+
+All 30 readable protected captures are rebuilt and verified under production package
+`4ac4e8ee92346e6d14eacfbf` in the separate staged database
+`.ck3chronicle/wip/runtime/ck3chronicle-schema3-20261005T112504Z.sqlite3`.
+The [receipt](learner-next-release/PIPELINE_RECEIVING.md#thirty-capture-rebuild-staged-switch-deferred--2026-10-05)
+records 948,135 classified occurrences, 76,510 records, exact native-region/review
+checks, unchanged capture facts/playsets and passing genuine missing-time reports.
+Evidence: `.codex-tmp/pipeline-refresh-20261005/`; staging handler is shut down.
+
+**The owner explicitly deferred the database switch and asked to leave CK3 running.**
+Production still uses the September 28 database; configuration, watcher 64444,
+handler 47932 and protected originals remain unchanged. Do not execute stop/switch
+helpers while this deferral applies. Pipeline's next action after it is lifted:
+secure the naturally completed session, refresh inventory, back up the closed
+production store/evidence at the safe boundary, switch to this existing staged
+store, then reconcile startup duplicates and any newly protected unique captures.
+Do not rebuild the same 30 captures again. Natural production lifecycle verification
+remains distinct from the completed historical rebuild. R4 remains Reporting-owned.
+
+## Owner-requested database refresh pending game exit — 2026-10-05
+
+The owner requested clearing legacy-model results and ingesting protected originals
+under production package `4ac4e8ee92346e6d14eacfbf`. This authorizes the historical
+refresh, superseding the earlier no-reset/no-reprocessing restriction for this work.
+No reset has occurred. At 11:18:55 UTC CK3 PID 53004 is running under watcher 64444;
+leave capture observation intact until natural exit and completed publication/ingestion.
+Read-only inventory: `.codex-tmp/pipeline-refresh-20261005/refresh-inventory.json`.
+All 30 stored Runs have readable protected originals; 22 older directories still
+deny contents/ACL reads. They are not proven missing stored Runs.
+
+Pipeline continuation: verify the first naturally completed new-package lifecycle,
+refresh capture/request accounting, stop the verified watcher/handler safely, make
+and verify a fresh backup, explicitly initialize a new database through the existing
+API and switch its configured path, then let the sole installed watcher's ordinary
+startup ingestion rebuild the available genuine captures. Preserve original logs,
+metadata/playsets and archived database/review evidence. Run IDs/processing times
+may change; old classifications/lineage survive in backup. No permissions repair,
+fake input or fabricated missing history is authorized by this inventory work.
+
+## Production cutover complete; natural lifecycle follow-up pending — 2026-10-05
+
+**Production is on package `4ac4e8ee92346e6d14eacfbf` (learner v61/parser v1.8).
+No rollback.** The owner-authorized switch/restart superseded the prior hold.
+See the [activation receipt](learner-next-release/PIPELINE_RECEIVING.md#production-activated--2026-10-05)
+and [cutover record](learner-next-release/PIPELINE_CUTOVER.md). At 09:57:58 UTC the
+final R3 installed runtime started: watcher 64444 (launcher 64756), handler 47932
+(launcher 65896), instance `88739409838c4e38936bebc72166ae33`. Existing database,
+configuration, 30 Runs and capture/review evidence were preserved; the verified
+backup is `.codex-tmp/pipeline-activation-20261005/backup-20261005T095647Z/`.
+Fresh heartbeat, startup duplicate accounting and genuine existing-Run reports pass.
+
+No new unique capture occurred: **new-package stored ingestion lineage and live
+lifecycle verification remain pending**, distinct from successful activation.
+Pipeline retains the follow-up: correlate the next natural completed capture to
+its new Run, verify actual package/parser/application lineage, facts/counts,
+playset/review and reports, then append evidence. No fake capture or historical
+reprocessing. R1/R2/R3/R5 remain closed; R4 syntax remains separately owned Reporting
+work. Older holds and process observations below are historical where superseded.
+
+## R3 packaging closed; activation held — 2026-10-05
+
+**READY FOR OWNER ACTIVATION DECISION. R3 CLOSED.** The
+[final receipt](learner-next-release/PIPELINE_RECEIVING.md#r3-packaging-closed--2026-10-05)
+and [cutover](learner-next-release/PIPELINE_CUTOVER.md) supersede the earlier
+post-install override arrangement. Final wheel SHA-256:
+`7239a0c5b89e52f2df1d31028bdbf21b086e3600bf7c079347a1ee4f1d982959`; artifact and clean staged environment
+are under `.codex-tmp/pipeline-r3-packaging-20261005/`. The wheel contains a valid
+default referencing shipped package `4ac4e8ee92346e6d14eacfbf`. Outside-checkout
+default loading, all 556 installed members and installed rollback authenticate
+without a corrective file replacement. Application/distribution bytes are unchanged;
+prior independent Reporting/ingestion evidence is reused. Live configuration and
+immutable distributions remain untouched. The owner explicitly holds activation;
+new-package live lifecycle verification remains pending. Older entries below are
+historical where superseded.
+
+## Pipeline repair receipt complete; activation decision next — 2026-10-05
+
+**READY FOR OWNER ACTIVATION DECISION.** Continue from the
+[independent receipt](learner-next-release/PIPELINE_RECEIVING.md#pipeline-repair-receiving-completed--2026-10-05)
+and [final cutover](learner-next-release/PIPELINE_CUTOVER.md). Evidence Q:
+`.codex-tmp/pipeline-reporting-receiving-20261005/`; final staged interpreter:
+`Q/deployment/Scripts/python.exe`. Final wheel remains
+`.codex-tmp/reporting-repair-20261005/final/application/ck3chronicle-0.0.1-py3-none-any.whl`,
+SHA-256 `3b4b20881233174a1858b4fc960b0318555d0ef9387909ca4584c53772e68890`.
+Pipeline owns the mandatory new-selection installation override and authenticated
+installed rollback. The bare-wheel default limitation is disclosed; no wheel was
+patched/relabelled, and learner/model/parser distributions remain immutable.
+
+Independent `R/pipeline-independent-final/receipt.json` passes 35 genuine checks
+and 28 CLI commands (new syntax is the one expected exit-2 result); Q additionally
+verifies delivered/independent output contents. R1/R2/R5 receiving is closed.
+Original P/producer receipts and installations are preserved; no ingestion setup
+was rerun. Native decoder/processing code is unchanged, so original storage and
+full-corpus evidence is reused. R4 stays Reporting-owned; R2's nonblocking
+disposition is unchanged. No runtime product source was edited in this continuation.
+
+Read-only observation at 09:27:19 UTC: watcher 30816, handler 23252 / instance
+`ca3faf45a4514e5cab542769c2a3c70f`, CK3 absent. Latest Run `20261005-0UM3HN`
+completed naturally on the old package; 30 readable pending originals match all
+30 stored Runs, with 22 older inaccessible directories unchanged. Refresh these
+observations before any later operation. Keep the current database. The owner must
+separately authorize the concrete pin switch and watcher/handler restart; no live
+config/pin switch, production write/reset, backlog processing, commit or push is
+authorized or performed. New-package live lifecycle verification remains pending.
+
+## Reporting R1/R2/R5 repair delivered — 2026-10-05
+
+Continue with the [new Pipeline repair receipt](learner-next-release/PIPELINE_RECEIVING.md#reporting-repair-delivered--2026-10-05).
+Evidence/artifact root: `.codex-tmp/reporting-repair-20261005/`; final wheel is
+`final/application/ck3chronicle-0.0.1-py3-none-any.whl`, SHA-256
+`3b4b20881233174a1858b4fc960b0318555d0ef9387909ca4584c53772e68890`.
+`artifact.json`, installed receipts and `repair.patch` identify only this repair
+against the original wheel; concurrent work and original receipts are preserved.
+All 556 members authenticate, with six application members changed and retained
+distributions unchanged. Genuine public-handler and installed CLI checks pass for
+R1/R2/R5 and the old-package control; no source timestamp was invented or stored.
+
+Pipeline receives the new installation and updates cutover. Owner activation is
+still separate; no live pin switch/restart, production ingest/reset, historical
+processing, commit or push occurred. R2's prior nonblocking disposition stands.
+R3 remains packaging's default-path obligation (explicit new selection and installed
+rollback verified); R4 remains separate Reporting selector work. Broader 08C is
+not resumed. Original receiving and source lineage below remain historical evidence.
+
+## Pipeline receiving complete with Reporting defects — 2026-10-05
+
+Current continuation is [PIPELINE_RECEIVING.md](learner-next-release/PIPELINE_RECEIVING.md)
+and the [concrete cutover](learner-next-release/PIPELINE_CUTOVER.md). Authenticated
+318 delivery hashes and 556 installed files; exact final package passed genuine
+HandlerClient ingestion/storage/review on three new-package logs (172,130 units)
+and an old-package control. Default ingestion in a separate staged deployment also
+passed. Evidence/scripts/storage are ignored under `.codex-tmp/pipeline-receiving-20261005`.
+No runtime product source was edited and concurrent work remains intact.
+
+Open receiving owners: Data Intelligence/Reporting owns repeat-part template
+rendering (`KeyError: 'prefix'`), surrogate UTF-8 exports and new-model syntax
+selectors. Owner clarification: the surrogate-export defect R2 is nonblocking;
+do not require its repair or another disposition before activation. The
+[fresh-chat repair prompt](learner-next-release/REPORTING_RECEIVING_REPAIR_PROMPT.md)
+covers R1/R2 and R5, Reporting's use of chronology to exclude missing-time Runs
+from ordinary listings/selection. Missing time limits chronological placement only;
+Run-ID listings, all-Runs message searches and other nonchronological operations
+must work normally with the available facts. Repairs remain pending; this is prompt
+preparation. Learner/application packaging receives the wheel's
+default pointing to an unshipped `candidates/` directory; Pipeline's staged new
+default and catalog-derived installed rollback avoid that deployment path defect.
+Do not modify/relabel the delivered wheel. Repaired applications need new receipts.
+
+Production remains package `68f1ae5db205ab46afef9c4d`, watcher 30816, handler 23252 /
+instance `ca3faf45a4514e5cab542769c2a3c70f` at the recorded observation. CK3 is running.
+29 stored Runs have readable matching pending originals; 22 older pending folders
+are inaccessible and unchanged. Latest genuine ZEHL9K's report passes. Keep the
+database; no historical processing/reset is authorized. No live selection, config,
+database, watcher or handler was changed. R1 remains the recommended repair before
+activation; the owner can separately disposition it. R2 is not an activation gate.
+The existing restart prohibition still requires an operational decision.
+Recheck process identities and capture safety before any later authorized switch.
+
+## Combined learner / decoder release delivered — 2026-10-05
+
+The final [release packet](learner-next-release/README.md) records registered v61
+learner/parser v1.8 and model package `4ac4e8ee92346e6d14eacfbf`, the verified
+installed application, exact pins and proposed/previous selections. Same 20 Runs
+gain 13,184 classifications with no losses/downgrades; full 73-log preservation
+passes. Pipeline receiving and activation remain pending. Production selection
+`68f1ae5db205ab46afef9c4d` and services are unchanged. The Data Intelligence
+surrogate-bearing export defect remains disclosed for bounded repair or owner
+disposition. The preparation entries below are historical where superseded by
+this completed release; they do not change the remaining operational restrictions.
+
+
+## Decoder handoff delivered to learner and pipeline documentation — 2026-10-05
+
+The combined release HANDOFF.md now includes exact learner/parser substitutions
+and a pipeline receiving/deployment section. Current 07D and pipeline action
+documents link to it. Decoder delivery is ready; receiving, combined verification
+and activation are separate pending team responsibilities. This documentation
+update did not change code, production selection, stored data or runtime processes.
+
+## Travel-field implementation rechecked for owner — 2026-10-05
+
+The quoted fragmented travel pattern is production template
+`b04e2561df19216e8c1e0a72`, not a v60 successor. The actual candidate successor is
+`64c28a8317c5ddae687bfb54`: equivalent `{game date}` literal, complete
+CHARACTER_ID_SHORT, contextual CHARACTER_ID_SUPER_SHORT receiver, and final PARAM.
+Re-ran the exported-package check on all 63 retained date/travel messages, plus
+the existing history/localization checks. Exact rendering and date retention in
+identity pass. The genuine Maria / Count Momčilo of Kotor example captures
+`Maria (58928, Aigaîon Pélagos)`, `Count Momčilo of Kotor`, and `Aigaîon Pélagos`
+as the complete respective fields; `27 Nov 1076` is a literal choice, not a slot.
+Evidence: `.codex-tmp/marked-references-v60-final/travel-owner-recheck.json`.
+The report generator now explicitly labels production-before / candidate-after,
+marks removed predecessors, and provides a jump past long predecessor lists.
+The same CHANGES.html URL is regenerated. No learner rules or packages changed.
+
+## Combined learner / decoder release preparation — 2026-10-05
+
+Owner intends the next pinned release to include the incoming decoder API handoff.
+The running release packet is now [learner-next-release/README.md](learner-next-release/README.md),
+with an 18-item implemented change list, genuine v60 results and explicit open/
+deferred items. Its [HANDOFF.md](learner-next-release/HANDOFF.md) records exact
+baseline pins, integration dependencies, verification and coordinated activation.
+Final combined identities/results are pending; v60 is the verified baseline,
+not a decoder-integrated release. The subteam's concurrent 2026-10-05 update reports
+four disposable parser checks passing, including the corrected session-55 case;
+formal receiving and integrated classification remain pending. Parser-hash equality assumptions in
+comparison tools need explicit receiving work for the new parser combination.
+This turn changes documentation only. No build, registration, active pin, runtime
+process or stored evidence changed. Continue updating this packet as integration
+lands; production remains 68f1ae5db205ab46afef9c4d.
+
+## Shared decoder simplified; known encodings approved — 2026-10-05
+
+Owner explicitly approved using a known encoding when available and detection
+otherwise through one API. `decode`/`read` use standard codecs with surrogateescape
+for known encodings; automatic Unicode reading precedes chardet fallback using its
+own minimum threshold. Candidate voting, directory override routing and decoder
+caching were removed. Search owns its session snapshot; display renders preserved
+bytes as \\xHH without changing processing text. Double-BOM stop remains.
+
+Actual disposable parser substitutions now PASS on four genuine logs including
+session 55: 186,704 emissions, 190,701 native matcher inputs and exact native byte
+reconstruction agree. All 44 Invalid character messages pass search/excerpt display
+checks. The 942-file random mod survey gives 941 identical readable text/search/
+excerpt results and one low-confidence undetermined result. Public stored-query
+comparison and runtime logging ownership checks pass. Production caller files,
+selected artifacts and selection remain unchanged; no database ingest or package
+publication. See TASK08C_ENCODING_RECOMMENDATION and TASK08C_HANDOFF. Earlier
+fully automatic/failed-parser statements below are historical and superseded.
+
+## Disposable parser decoder substitution exercised — 2026-10-04
+
+The actual pinned parser was copied into ignored decoder evidence and only its
+two byte-to-text decoding calls were routed through the shared API, with a small
+failure wrapper/counter. Three genuine logs match across 86,704 emissions and
+90,698 native matcher inputs. Session 55 fails at line 1618 when the decoder
+rejects its first Invalid character message. Overall acceptance FAILED; decoder
+correction remains outstanding. Production artifacts/selection are unchanged.
+See TASK08C_HANDOFF and `.codex-tmp/task08c/decoder/parser-substitution/results.json`.
+
+## Decoder candidates only; existing callers restored — 2026-10-04
+
+Owner requires the decoder cutover with the coordinated pinned release, using
+only disposable caller copies meanwhile. Source-search/report integration and
+the dependency declaration have been restored; candidate copies are retained
+under ignored task evidence. The new decoder API has no production callers.
+Inconclusive or text-ambiguous decoding now fails explicitly; header repair is
+out of scope. Earlier integration-delivery statements are superseded. See the
+[current 08C handoff](TASK08C_HANDOFF.md) for restoration and staged checks.
+
+## Parser decoder-call boundary — 2026-10-04
+
+Owner clarified that the shared decoder should replace embedded decoding calls,
+without parser-mechanics changes absent prior alignment. The experimental source-
+reference replacement adapter was removed; parser integration is pending the
+coordinated upgrade. Source search/excerpts retain the shared decoder. The
+[08C handoff](TASK08C_HANDOFF.md) distinguishes current code from historical
+prototype comparisons. Pinned parser artifacts and ingestion are unchanged.
+
+## Shared decoder/API and genuine integration comparison — 2026-10-04
+
+Owner-directed unpinned `Decoder` now serves source search/excerpts through one
+automatic API. Genuine source and UTF-8 parser comparisons pass; one actual log
+with an invalid UTF-8 byte exposes a detector/parser mismatch, recorded for the
+coordinated package upgrade. Ingestion and pinned artifacts remain unchanged.
+See [08C handoff](TASK08C_HANDOFF.md) for APIs, evidence, limits and failed checks.
+
+## Formatted-reference PARAM correction verified — 2026-10-04
+
+Latest executable learner: v60. The owner requests contextual special-character
+markers as PARAM boundaries. `formatted-linked-reference` recognizes optional
+ONCLICK, TOOLTIP metadata, L/semicolon display marker and text, with the complete
+consecutive reset run (at least three for linked references and two for tooltip-only references). It preserves
+all bytes as one PARAM. Earlier declared/full-ID fields retain precedence; an
+inner reference defers within a larger paired quotation. Discovery quote behavior
+was proved identical on all 91,925 corpus messages. Parser v1.7 is unchanged.
+
+The 73-log preflight recognizes 127 new fields in 69 messages, preserves every
+old declared boundary and checks two larger quoted PARAMs. v59 initially covered
+only triple resets. It completed and verified package 79b70779b4b73bc2b15a7c72,
+with zero assignment losses/downgrades and 13,184 formerly unmatched occurrences
+classified in the 20 stored Runs. This is 1,689 more than v58, from one genuine
+character-title message now selecting its formatted PARAM template. However,
+report review found 14 additional ordinary two-reset tooltip fields. v59 is
+superseded by the current v60 rebuild and must not be promoted as final.
+
+Current frozen release:
+`a9cb7ae7704cfd7e6c5acf84def50dfe74440e9b913c0bf9240720dd985ebb6f`, pin
+`66d6bcd105ea60fcabada86f90827a646fc00f5d102a7d6ee4f77ffe68920b01`.
+Workspace `.codex-tmp/marked-references-v60-final/build` completed the established
+20/20/20/13 incremental schedule. Research bundle: `5317ab79a799897585647fb9`.
+Exported package: `840957b2f8e16f1cf0f88ad2`, model `8e6eed125bebfbc8b4ced145`,
+manifest pin `1873f5b6f83c11fdd232817554343d154c9735f34398058d4057db6a0f43d288`.
+Its 394 templates comprise 296 supported and 98 provisional templates. It remains
+in the ignored workspace; it has not been registered or selected for production.
+
+All 71 focused messages / 126 occurrences pass exact PARAM capture checks and
+native reconstruction; all six templates using the new declaration are supported.
+Both larger quoted PARAMs remain whole. Full-corpus gap checks find zero field
+failures, grammatical KEY captures or ties. All 16 history messages retain literal
+wording; 63 date/short-character messages retain equivalent date literals and typed
+character slots. All three original IS3QON errors pass Classifier/prepare_record
+as supported, preserving the review shard.
+
+The 20 stored Runs gain 13,184 formerly unmatched occurrences across 95 messages,
+with no lost assignments or supported-to-provisional downgrades. Reconstruction,
+identity and locator preservation pass. Full 73-log comparison: 2,476,548 supported,
+118,038 provisional and two unmatched occurrences; no losses or downgrades relative
+to production. These overlapping scopes must not be added. The production baseline
+remains package 68f1ae5db205ab46afef9c4d, not the earlier one-shot candidate.
+
+Human review: `.codex-tmp/marked-references-v60-final/CHANGES.html` contains the
+executive assessment, 15 added templates, 15 removals grouped by successor, and
+15 previously unmatched examples. Linked `FIXES.html` groups the six changed
+families plus the preserved quoted family, with 14 globally numbered examples.
+The main report now lists every selected predecessor before each sampled
+successor, links repeated patterns/bodies instead of printing them again, and
+numbers 35 unique genuine examples. Neither report has duplicate preformatted
+blocks, broken anchors or missing local links; see report-verification.json.
+Executive assessment: positive on reviewed evidence, with explicit remaining gaps;
+coverage alone does not prove every semantic generalization. The 38 removed
+production alternatives without selected witnesses remain a comparison limit.
+
+Tools: verify_formatted_references.py,
+report_formatted_references.py, compare_production_candidate.py. The comparison
+now guards catalogs before/after its own read-only execution, recording earlier
+catalog changes separately: v58 registration legitimately changed catalogs since
+the retained v57 Run snapshot. Production selection stayed 68f1ae5db205ab46afef9c4d.
+Actual retained Run documents are in `.codex-tmp/literal-v57-candidate`; later
+stored-evidence files point there instead of duplicating those documents.
+
+Two five-reset faith references occur inside surrounding faction formatting.
+Their displayed labels are plain, so the complete reset run is now recognized;
+reset count alone is not an exclusion. Internally nested labels, including a
+character label in that same family, remain outside this simple rule.
+The separate activity PARAM proposal below
+also remains unimplemented. No production activation, runtime restart, source-log
+or stored-Run mutation occurred. Prior runtime-restart prohibition is unresolved.
+
+## 08C critical source-header warnings — 2026-10-04
+
+The owner-directed `Critical Encoding issues (...)` source-validation results
+and report labels are implemented. See [08C handoff](TASK08C_HANDOFF.md) for the
+owning-component changes, genuine 18,837-file header scan, public API/CLI/browser
+checks and evidence limits. Broader decoding/scope/beta work remains pending;
+production services, package selection and unrelated learner work are unchanged.
+
+## Adjacent-field report corrected; activity PARAM proposal tested — 2026-10-04
+
+Owner challenged "member failure", repeated presentations and the activity count.
+`review_adjacent_field_families.py` now owns the same ADJACENT-WORDS.html URL.
+It scans the entire 73-log native evidence and classifies the four complete
+families with the recorded production package and v58. Each family appears once;
+connected predecessor/successor groups prevent repeated alternatives. Unchanged
+patterns appear once, linked examples use global E01–E27 labels, and literal
+examples identical to a displayed pattern link to that text instead of repeating it.
+The earlier audit tool now writes INFERENCE-CHECKS.html and cannot overwrite this
+family report. All links/IDs and absence of repeated preformatted blocks verified.
+
+Corrected activity incidence: 10 distinct messages / 10 occurrences, not two.
+Two was only the retained inference support of template ee7f96f3c3b501ac6180eed7;
+that template actually selects four messages in the full corpus. Another template
+selects three, one provisional selects one, two remain unmatched. Both production
+and v58 have those same outcomes. Other family totals: flavorization 4 messages /
+5 occurrences; trait 41 / 90; history 16 / 33. Counts are complete family selections,
+not overlapping alternative compatibility or inference-support counts.
+
+"Member failure" was report wording for the existing complete-match/capture-range
+consistency check in patterns.py, not an owner diagnostic category. Zero does not
+prove semantic slot correctness. A combined activity inference gives a genuine
+example: repeated formatting markers permit two different divisions of the Feast
+message into two PARAMs. The check rejects that ambiguous assignment.
+
+Bounded proposal: preserve the full CHARACTER_FULL_ID and capture the entire
+activity description between `participating in activity ` and the fixed following
+`. Use `remove_from_activity` ...` sentence as one PARAM. Existing matcher gives
+one complete assignment and the exact intended field for all 10 genuine messages,
+including the two presently unmatched. No observed activity value contains an
+internal period. Existing ordinary whole-span inference proposes PARAM but rejects
+its unpaired boundaries; a contextual field declaration is the recommended fix.
+This is a tested proposal, NOT an implemented learner rule or new candidate.
+Core rules, immutable packages, runtime processes and production pin are unchanged.
+Evidence, trace, exact examples and checks: adjacent-word-audit/families.json and
+family-report-verification.json. Initial probe import used the wrong helper module;
+corrected to matching_defaults before running the successful test. Restart approval
+remains unanswered; do not activate v58 while treating this newly identified gap
+as already fixed.
+
+## Adjacent-word rule scope audit delivered — 2026-10-04
+
+Owner requested all affected templates, two genuine examples each, the three
+other adjacent-field patterns, and exact enclosure exclusions. Delivered
+`.codex-tmp/coupled-words-v58-candidate/adjacent-word-audit/ADJACENT-WORDS.html`
+with JSON evidence via `tools/template_learning/audit_coupled_word_inference.py`.
+Scanned all 91,925 contextual rows / 2,594,588 occurrences; replayed the final
+400 template member groups (37,123 distinct supporting records), with zero
+member failures and zero coupled-word triggers in those already-separated groups.
+The combined 16-message history pool triggers once, proposing and rejecting
+PARAM values `after death`/`from before`. This focused pool is not an invocation
+log of every temporary proposal from the historical incremental build.
+
+Exact v57/v58 exported-template comparison: all 400 IDs and literal/slot layouts
+are identical. 398 whole template entries are identical; only construction_id
+changes on the two history templates, from specific construction names to null.
+No other changed final formulation was found. All 97 PARAM and 31 REASON slots
+in final body patterns, wrapper declarations and repeated layouts are unchanged.
+
+The prior "three other adjacent-KEY patterns" inventory consists of flavorization
+character names, displayed history trait names, and activity names. All remain
+unchanged and fail the alphabetic-only gate because of hyphens, controls or
+possessive text. That inventory was NOT three additional rule successes and does
+not endorse their semantic KEY typing. Report includes two distinct genuine
+examples of each of these three patterns and each history template (10 total).
+All 10 independently select their displayed supported templates through the
+retained package matcher. Initial audit lookup confused evidence example IDs with
+record-key IDs and stopped at an assertion; corrected before report delivery.
+
+The enclosure gate checks matched markers immediately around the whole proposed
+span, ignoring gap pieces. It is not a blanket exemption for every substring
+anywhere inside ()/[]/quotes. Declared/empirical/inference-owned fields and REASON
+types are excluded earlier. No new core inference rule or immutable artifact was
+changed by this audit. Activation remains pending the earlier restart question;
+this owner follow-up did not authorize a restart.
+
+## v58 replacement prepared; runtime activation pending — 2026-10-04
+
+Owner authorized pinning the completed replacement with its parser/matcher.
+Registered unchanged package `f23424ed8aa4d910bf4d3223` under `models/releases/`
+(publication order 7) and its complete frozen learner release `2951fe80...`
+under `learners/releases/` (order 8). Catalog registration does not activate it.
+The exact proposed selection and old selection are preserved in
+`.codex-tmp/v58-production-promotion/`; current active selection remains
+`68f1ae5db205ab46afef9c4d`.
+
+Ten release-selection checks passed, including public contract preparation on
+genuine IS3QON evidence for all retained available packages. Runtime logging
+ownership passed. Wheel build passed; verified 327 packaged files byte-for-byte,
+including the application renderer. Code extracted from that wheel classifies
+all three original errors as supported and prepares their exact native contracts.
+No production Runs, protected logs, old packages or runtime processes changed.
+
+The existing handler is PID 23252, instance ca3faf45a4514e5cab542769c2a3c70f;
+its October 2 startup predates the required repeated-locator/date renderer.
+The old application imports contracts at startup, so a pin-only switch is unsafe.
+The owner was asked to resolve the earlier explicit no-runtime-restart restriction
+for the final controlled watcher/handler restart and pin switch. Await the answer;
+do not infer permission from elapsed time. This is the only activation blocker.
+After activation, rebuild/verify the wheel with the new default selection and
+update this status. Use the existing runtime activation procedure; do not replay
+historical Runs. Full identities and publication evidence are in
+`docs/LEARNER_PARSER_PIPELINE_HANDOFF.md`.
+
+## Completed continuation — 2026-10-04, reusable history inference (v58)
+
+Continuing the unresolved implementation, not stopping at the delivery recap.
+Removed the two v57 history constructions. In patterns.py, adjacent alphabetic
+KEY proposals that vary only together, outside an enclosing pair, are reconsidered
+as a complete span. Existing field-boundary assessment rejects an unmarked phrase
+and literal refinement preserves its variants. Explicit fields, identifier syntax,
+optional values, line breaks and observed independent variation are excluded.
+No phrase, emitter or function-word list is encoded by this correction.
+
+The retained 16 history messages / 33 occurrences reproduce KEY KEY with frozen
+v57 after ablating its two construction gates. Frozen v58 produces two supported
+literal templates, both construction_id=null. The actual final build agrees.
+Traces are history-inference-{baseline,correction}.json in the new workspace.
+
+COMPLETE: .codex-tmp/coupled-words-v58-candidate contains the full 73-log
+20+20+20+13 incremental build, authenticated export, production comparisons and
+human reports. CHANGES.html has 15 added templates, 15 removed templates in
+complete successor groups, and 15 previously unmatched-message examples.
+LITERAL-CORRECTIONS.html explains the reusable history inference; FIXES.html,
+REMOVALS.html, REMAINING-REMOVALS.html and FUNCTION-WORDS.html cover the remaining
+verification and semantic crosswalk. Review this candidate before release/pinning.
+
+Package f23424ed8aa4d910bf4d3223; model 0f4a012e91e6ffa253d9d858;
+manifest SHA-256 504710350c8f87666f0358fbacc35f85e4e50045e1cee5d270d25e63ea377c21.
+Research revision 6ea0b0b5157f318030756507. Release receipt:
+.codex-tmp/coupled-words-v58-release.json; release
+2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a;
+implementation 30400ed4c65b1101e705ce8a47fea86ef11cf22cd5be7d4f9610916487a1ee43.
+Current implementation agrees with this frozen release.
+
+Verification: 400 templates (300 supported, 100 provisional), 207 added IDs,
+496 removed IDs and 193 unchanged versus production. The same 20 stored Runs
+gain 11,495 assignments / 94 distinct messages; zero losses/downgrades, identity
+collisions, reconstruction failures or changed existing LOCATOR captures.
+All 73 training logs: 36,833 provisional occurrences become supported, two
+unmatched occurrences become supported, zero losses/downgrades. Two occurrences
+remain unmatched as in production. Export parity checks 371,538 captures over
+91,925 contextual messages / 2,594,588 occurrences, with zero changes.
+All original three IS3QON errors pass public Classifier/prepare_record as
+supported; all 75 saved short-character/date cases pass; all history/date literal
+and exact-rendering checks pass. Full function-word audit and field checks show
+zero demonstrated grammatical KEYs or template ties. The seven residual removal
+cases remain three families / 676 messages with identical production/candidate
+captures; 31 other no-selected-witness removals were already addressed.
+
+The obsolete report_removed_templates.py renderer failed its historical
+location-only-difference assertion on construction_id changes; no report from
+that invocation was delivered. Current report_gap_candidate.py owns the up-to-date
+REMOVALS report. Its output and the other five pages pass sample/link/anchor
+checks; no new visual screenshot verification is claimed. A probe initially used
+the wrong implementation-identity dictionary key, then passed with its actual
+sha256 field. These were tooling checks, not failed candidate classifications.
+The last learning stage took 685 seconds versus 285 previously; CPU progressed
+and artifact creation completed. No cause for the elapsed-time difference was
+established. The resulting research model is about 104 MB, not the old 11 GB.
+
+No assigned implementation/test/report deliverable remains open from this
+continuation. Contextual effect/trigger cue, rare-message pass and adoption of a
+sliding threshold remain deferred; the requested threshold experiment is already
+complete. Production packages, processes, source logs and Runs remain untouched.
+
+## Earlier v57 delivery status — superseded by completed v58 above
+
+The current review/test deliverables are COMPLETE: disposable v57 candidate built
+on the 73-log incremental schedule; production comparison and human-readable
+samples; grouped many-to-one removals; complete-marker effect/trigger survey;
+and the specified sliding-threshold experiments with their precise scope and
+limitations. All three original IS3QON diagnostics have supported assignments.
+
+The overall exercise is NOT CLOSED: the owner rejected the history-wording
+implementation, and no replacement mechanism has been delivered. Do not describe
+successful literal-output verification as resolving that objection or as making
+the candidate ready for production release.
+
+The additional contextual cue and rare-message pass are deferred. The marker
+survey shows no demonstrated need for a broader exemption now. A sliding policy
+was tested but not adopted; the requested experiment is complete. Broader catalog
+retirement and the two unchanged unmatched training messages are disclosed
+limitations, not newly commissioned deliverables. Production release/pinning
+remains intentionally unperformed. No new implementation or build this turn.
+
+Close future delivery updates explicitly with completed deliverables, unresolved
+assigned work, and intentional deferrals. Do not leave the owner to infer whether
+work is finished or require reminders to produce already-requested reports.
+
+## Owner deferrals and marker evidence — 2026-10-04
+
+The contextual effect/trigger cue is deferred: existing learner changes address
+the demonstrated category-wording problem; absence of that particular proposed
+cue is not itself outstanding required work. Rare-message pooling is explicitly
+low priority and deferred. Do not keep either on an urgent implementation list.
+The owner requested genuine evidence for effect/trigger inside ()/[] before
+considering a broader marker exemption. No such exemption is implemented now.
+
+Re-ran the owning survey against v57's full 73-log native evidence: 91,925
+contextual rows / 2,594,588 occurrences. Found 4,494 standalone effect/trigger
+token positions inside matched ()/[], across 4,218 distinct messages / 306,193
+message occurrences. Nearest enclosing pair: ()→PARAM 3,674 positions,
+()→REASON 102, []→REASON 718. No enclosed literal, KEY or unassigned hit.
+There are 34 selected templates and 46 template/word/marker/role combinations;
+each combination has a genuine witness replayed through the authenticated v57
+matcher, with exact capture-byte checks. The 102 parenthetical REASON cases are
+inside a larger opaque reason, not evidence requiring another PARAM boundary.
+The survey excludes identifier substrings and unmatched delimiters. Report and
+complete patterns/captures: .codex-tmp/literal-v57-candidate/
+category-word-marker-review.html and .json. This confirms no demonstrated need
+for the proposed broader exemption in the surveyed corpus, not all future logs.
+
+Clarified the exact sliding test in .codex-tmp/short-threshold-review/REVIEW.html.
+The baseline was the CURRENT policy, not plain .72 everywhere: equal-length
+1–2-unit sequences without quoted-value positions use ≥.49 same-position
+agreement with at least one equal position. This positional rule is not the
+weighted similarity score; the quotation branch bypasses it. Both trials keep
+it unchanged and vary weighted-score cutoffs for lengths 3–6 only:
+gentle .68/.69/.70/.71; lower .60/.63/.66/.69 versus baseline .72. A .713333
+five-unit comparison changes admission in both trials; the lower trial also
+admits a .6725 audio pair, later kept separate by inference. Tests preserve
+proposal retrieval, construction boundaries and guards. They cover initial
+discovery/refinement on the short-message subset, not a full incremental model
+or an expanded proposal-search strategy. No new learner policy or production
+change this turn; survey/report tooling and guidance only.
+
+## Current learner improvement inventory — 2026-10-04
+
+Checked current source against frozen v57 implementation identity
+e0f56450eb75fd156567dd643454dfceb16d59ba3096b04b40737a730173291f;
+they still agree. Earlier dated recommendation tables describe older candidates
+and must not be presented as the current missing-work list.
+
+Outstanding implementation/proposal distinctions:
+
+1. Contextual `_`/`.` identifier + effect/trigger cue: surveyed, not implemented.
+   The intended cue makes the preceding identifier KEY and the following category
+   literal, excluding enclosing PARAM/REASON regions. Existing behavior already
+   leaves all 8,302 surveyed category positions literal; 14 predecessor positions
+   remain literal. Their raw v57 examples are in LITERAL-IDENTIFIERS.html. Do not
+   call all 14 misclassifications without considering their contexts.
+2. General marker-aware exemption in the wording-loss safeguard: not extended to
+   newly proposed PARAMs. Existing opaque fields are excluded; the enclosed
+   identifier exception currently permits KEY/OPTIONAL_KEY only. This is an
+   identified code limitation, not a demonstrated remaining v57 failed assignment.
+3. History after-death/from-before implementation: v57 uses hard-coded separate
+   constructions and passes literal-output checks; the owner rejects the
+   implementation. No revised mechanism has been implemented. The separate
+   Parent-state PARAM correction is implemented, not part of this missing item.
+4. Sliding similarity: two isolated genuine-corpus experiments are complete.
+   No curve was adopted, and no full incremental candidate with a sliding policy
+   was built. Both curves simplify initial grouping of 15 messages already
+   assigned to the same whole-expression template in production and v57. No
+   demonstrated selected-classification gain; keep this distinct from untested.
+5. Separate rare-message pooling/additive pass: proposed, not implemented as a
+   rarity-selected workflow. Existing additive learning already pools cumulative
+   provisional/unassigned evidence; inclusion of rare source logs was corrected
+   and the candidate has completed the full 73-log incremental schedule.
+6. Broader retirement of redundant overlapping templates: not implemented beyond
+   existing exact-identity consolidation and fixed KEY specialization retirement.
+   Three unselected narrow name templates and four GUI alternatives remain in
+   v57. This is a proposed reusable catalog simplification, not an identity or
+   occurrence-count defect and not an instruction to delete unwitnessed templates.
+
+Untyped construction applicability is now explained with both genuine header
+variants; no agreed code replacement is waiting. The three-family removal report
+is corrected, with all predecessors before one shared replacement; it is not a
+template approval queue. Two training messages (two occurrences) about activity
+participants aborting travel remain unmatched in both production and v57; the
+saved comparison demonstrates the residual coverage gap, not its cause or a
+ready correction. Do not confuse them with the three original IS3QON cases,
+all of which now receive supported assignments.
+
+Implemented and verified in the disposable candidate: quoted-value-neutral
+ordered similarity; bounded regrouping and identical-template consolidation;
+variable-count ending locator handling with one presence unit and exact identity
+retention; contextual Unknown/marker recognition; trace PARAMs; equivalent literal
+game dates; short and marker-bounded super-short character identities; default
+location PARAM through line end; Unknown effect/trigger category separation;
+the scoped comparison/expected-scope/formatting-tag/name-field corrections and
+Parent-state PARAM; full-corpus function-word audit; incremental 73-log build and
+production comparison; refinement-history deltas and bounded bundle writing.
+No production release/pin activation has occurred. This inventory review changes
+documentation only, not learner behavior or model artifacts.
+
+## Consolidation report layout — 2026-10-04
+
+Owner explicitly requires all removed predecessor templates together, followed
+by their one shared replacement. Implemented in `review_unselected_removals.py`
+and regenerated REMAINING-REMOVALS.html: missing-name now shows all five full
+production patterns, then the single retained supported PARAM template. The
+other two families use the same grouped layout. Counts and examples follow the
+consolidation; no learner/model behavior changes. The replacement's prior
+existence in production is identified explicitly.
+
+## Owner correction: review learner behavior, not template approval — 2026-10-04
+
+The owner does not approve individual templates. The learner determines supported
+and provisional status; owner review concerns learner/matcher code and outcomes.
+Approval for production release remains separate. Say "disposable candidate
+model" and show actual template and assignment status; do not use "candidate"
+ambiguously for a rejected hypothesis or an unapproved template.
+
+Corrected the misleading seven-removal report in place:
+`.codex-tmp/literal-v57-candidate/REMAINING-REMOVALS.html`. The owning tool,
+`review_unselected_removals.py`, now groups by message family and evaluates actual
+selected production AND v57 assignments across the entire 73-log family. Counts
+for an old alternative measure overlapping compatibility sets, not selections
+or occurrences of the repeated sample. No learner identity/counting bug was
+demonstrated. All family rows have distinct native identities and unchanged
+selected capture types, contents and spans between the two authenticated models.
+
+- Missing loc for name: 630 distinct messages / 1,116 occurrences, all selected
+  as supported template 5093f36599ce2356a1e6433e by BOTH models. There are 574
+  distinct name PARAM values. Five old alternatives have overlapping counts
+  75/159, 53/133, 551/1005, 74/158 and 54/134 (messages/occurrences), with union
+  572/1030 and common intersection 53/133. None was selected. The exact
+  Abd al-Aziz / 1235023 message occurs three times and fits all five; the report
+  repeated it, not the stored message identity. Noriko's trailing space explains
+  the optional-versus-mandatory one-message difference. Twenty-one two-word-name
+  cases have nonnumeric character IDs, explaining the KEY-versus-VALUE difference.
+- Scope-dependent localization: five messages / 180,998 occurrences, four
+  leading identifiers. Both models already select the same KEY pattern/captures.
+- GUI Failed-parsing-data-statement: 41 messages / 63 occurrences, 35 distinct
+  statement PARAMs and seven property values. Both models already select the
+  whole-statement PARAM pattern. The old page displayed only one witness because
+  it restricted sampling to one removed literal alternative. The new page shows
+  12 diverse genuine messages and all 35 exact PARAM values.
+
+The owner considers the displayed generalizations better; this is feedback on
+learner output, not case-by-case template approval. Production already selected
+those generalized patterns too: the actual change here is catalog simplification,
+not improved selected classifications. Additional unselected narrow templates
+remain in v57 (three name variants and four GUI variants). They are disclosed as
+residual catalog redundancy, not duplicate stored messages. Do not delete them
+solely because they lack selected witnesses in this finite corpus. A broader
+retirement change needs a reusable containment proof. No core learner/matcher
+policy, immutable release, production pin, Run or source log changed this turn.
+Evidence: removal-family-evidence.json and removal-family-summary.json adjacent
+to the corrected report. Earlier "seven remaining for approval" framing below
+is superseded. The short-threshold report links the corrected family explanation.
+
+## Active owner review — 2026-10-04, after v57
+
+The owner rejects the current after-death/from-before implementation. Do not
+equate verification of literal output with approval of the two hard-coded
+constructions. Clarification is pending on whether the objection concerns that
+mechanism while the literal wording requirement remains. No new history rule
+has been implemented in response. The immutable v57 candidate remains unchanged.
+
+Owner explicitly requests a variable similarity threshold experiment now; the
+earlier conditional deferral no longer applies. `review_short_thresholds.py`
+performs isolated short-message discovery/refinement experiments using genuine
+73-log evidence, not a replacement incremental model or production coverage
+claim. Results are retained in `.codex-tmp/short-threshold-review`.
+
+Experiment completed: 46,393 underlying short messages from 46,419 contextual
+rows (1,845,193 occurrences), drawn from all 91,925 rows in the 73 logs. Baseline
+0.72 yields 223 inferred templates in this subset. Both tested curves yield
+221, consolidating 15 Failed-converting-statement messages into an already
+inferred whole-expression PARAM template; no new template identities. Gentler
+thresholds at lengths 3/4/5/6 are .68/.69/.70/.71; the lower curve uses
+.60/.63/.66/.69; other lengths retain .72 and existing <=2 special handling.
+The decisive score is .713333 at length five. The lower curve also admits an
+audio stop/check-isPlaying comparison, but later inference keeps those separate.
+All members match their inferred body patterns. Untouched source pools are
+reused only after tracing every baseline comparison and proving neither curve
+changes an admission there. No incremental build or complete assignment claim
+is made for this experiment. Crucially, authenticated production and v57 matchers
+already select the supported whole-expression PARAM template on all 15 changed
+messages. Thus there is no demonstrated current selected-classification gain.
+Report: `.codex-tmp/short-threshold-review/REVIEW.html`; raw experiment results,
+comparison, and 15-message runtime checks are adjacent. No learner policy changed.
+
+The 38 removed production templates with no selected witnesses narrow to seven
+templates in three families not already covered by accepted changes: five
+missing-character-name localization variants, one house_equal scope-dependent
+localization template, and one GUI data-statement template. The other 31 are
+covered by owner-directed field corrections/accepted generalizations, not 31
+separately approved IDs. Direct complete matching over all 73 logs found genuine
+witnesses for every one of the 38; all have complete candidate assignments.
+See `.codex-tmp/literal-v57-candidate/REMAINING-REMOVALS.html` and
+`unselected-removals-review.json`. Do not call these missing-coverage cases.
+
+Untyped clarification verified against v57: plain-header template
+4ac751de53c2454d5094602a is applicable and complete; generic
+acf0016a118519e25fc1557c is inapplicable by construction exclusion. A genuine
+tooltip/description-header message instead uses generic
+4ebf2338bc94781fc5627440; the exact dedicated rule does not recognize that header.
+Both branch traces and source provenance are saved in
+`.codex-tmp/literal-v57-candidate/untyped-applicability-review.json` and shown in
+the new review report. Do not describe all untyped messages as dedicated-only.
+
+## Latest owner correction implemented and verified — 2026-10-04, v57
+
+The sample numbers refer to v56 CHANGES.html: removed sample 6 is production
+template 0ebbfabd31d46b3ad046b464, removed sample 11 is the history formulation,
+and newly classified sample 3 is the Wijayatunggadewi travel diagnostic.
+Do not confuse them with the separate fourteen-case review numbering.
+
+Owner explicitly changes history direction: after death birth / from before
+birth remain literal, superseding the earlier relative-phrase PARAM rule.
+Implemented separate construction applicability, preserving both phrases during
+initial inference and later matching. The separate Parent-state PARAM remains.
+The date KEY implementation was incorrect: formatted game dates now occupy an
+equivalent literal position, with exact spelling retained in literal_choices,
+rendering and identity. The ordinary dotted-date KEY and outer timestamp are
+unchanged. This includes a backward-compatible contract-renderer extension;
+future activation requires that application change as well as the new package.
+
+Genuine preflight: 63 date messages / 63 occurrences, 16 history messages / 33
+occurrences. Both history formulations remain literal; date values are not slots.
+All eight other explicit fields and 2,643 full-ID captures are preserved across
+91,925 contextual rows. Runtime logging ownership and diff whitespace checks pass.
+
+Raw sample 6 evidence: Key is missing localization: Ymerodraeth Lân Rufeinig
+(three occurrences), and Yr Ymerodraeth Rufeinig (four). The removed OPTIONAL_KEY
+template completely matches both, but production selects a three-KEY template.
+Candidate captures each whole value as PARAM. Owner accepts removing the flawed
+template as an improvement. Absence of a selected predecessor witness does not
+mean absence of raw supporting examples. These messages contain no character-ID
+parentheses or markup; do not infer a character identity from names alone.
+
+Frozen v57 receipt: .codex-tmp/literal-v57-release.json; release
+823909dc65f3093911cc12cd8ff20574fd6267de623c22baf143144067761f72,
+manifest a95b5e6670a17b4c3351c3f90e2affcdfa4e2eb392b638dab3fe786ba93d9e63.
+Build workspace .codex-tmp/literal-v57-candidate, using the retained same 73
+inputs and 20+20+20+13 schedule. All checkpoints and publication completed.
+Research revision 434b4e66b2fb4c476fe13213; package 53c4fdd5e5d0265714016450;
+model d52938cb774206d0e62ed4ca; package manifest pin
+0c1964615955b292863f365a1c619398305638b48438c7c9d1c029164a6d8f15.
+There are 400 templates (300 supported, 100 provisional). Production comparison
+has 207 added IDs, 496 removed IDs and 193 unchanged IDs; counts alone do not
+establish quality. Same 20 Runs: 11,495 newly classified occurrences, no losses
+or downgrades, no reconstruction failures or identity collisions, and unchanged
+LOCATOR captures. Same 73 training logs: 36,833 provisional-to-template upgrades,
+two newly classified occurrences, no losses/downgrades, two remain unmatched.
+
+Frozen package checks: all 75 genuine date/character messages use one supported
+template, with exact date spellings in literal_choices and no date slot. All
+16 history messages / 33 occurrences retain literal formulations. Both raw
+localization values match complete PARAMs. All original three IS3QON diagnostics
+pass public Classifier/prepare_record as supported templates. Full eight-field
+verification has zero failures, zero demonstrated grammatical KEYs and zero ties.
+Export parity checks 371,538 captures with zero changed matches/outcomes.
+The 75-case date corpus includes examples beyond the 63 dates in training;
+the Wijayatunggadewi example is in that broader corpus and the original review.
+
+Human reports: .codex-tmp/literal-v57-candidate/CHANGES.html and
+LITERAL-CORRECTIONS.html; detailed field and removal reports remain linked.
+Report checks pass all 20 local links and 15/15/15 samples across five pages.
+Optional screenshot verification could not complete: isolated headless Chrome
+failed GPU initialization; the in-process-GPU retry timed out and its owned
+process was stopped. Do not claim visual inspection passed. This does not affect
+the completed learner/matcher, identity, rendering or production comparisons.
+No production pin, Run, source log or runtime process is changed.
+The earlier contextual effect/trigger cue remains a surveyed proposal, not a
+new v57 implementation. Only the date/history corrections are added this turn.
+
+## Contextual effect/trigger proposal: status clarification — 2026-10-04
+
+Owner confirms the proposed cue means: a preceding identifier containing `_`
+or `.` becomes KEY, while the following effect/trigger remains literal. This is
+additional evidence for discovery, not a replacement for other discovery.
+Exclude occurrences inside parameter/reason markers or existing opaque fields.
+**This new cue and a new general marker exemption have not been implemented.**
+The last two turns added/revised survey tooling only; v56 remains the candidate.
+
+The original 8,302-position survey checked the following category word only.
+The expanded predecessor audit finds 8,288 preceding KEY positions and 14
+preceding literals, while all 8,302 following category words remain literal.
+The 14 literals are eight add_domicile_building cases, one each of
+equip_artifact_to_owner_replace, fire_councillor, trigger_situation_catalyst,
+vassal_contract_set_obligation_level, can_recruit and is_shown. They have complete
+assignments; do not claim 100% implementation of both halves of the proposed cue.
+An intermediate progress note incorrectly described all twelve effect cases as
+add_domicile_building based on the first three samples; the full predecessor
+inventory above corrects it.
+
+All surveyed effect/trigger tokens inside matched ()/[] are already PARAM or
+REASON contents in v56. Genuine `start_war effect [ No valid titles found for
+start_war effect ]` establishes why marker/opaque-field ownership must take
+precedence over the proposed cue. Default literal guidance is still disabled.
+The older revision safeguard's enclosed-evidence exception covers KEY/OPTIONAL_KEY
+but not new PARAM proposals. This is a code-level limitation to investigate,
+not a demonstrated remaining v56 misclassification or an implemented fix.
+`if effect` was described as genuine emitted wording, not a claim that a script
+was valid; citing Unknown effect as a limitation of an additive cue was misplaced.
+
+Evidence: `category-word-contexts.json` and
+`category-word-contexts-with-predecessor.json` in the v56 candidate workspace;
+reusable survey: tools/template_learning/survey_category_word_contexts.py.
+Older dated entries below record earlier states; completed v56 work supersedes
+their pending implementation/build statements.
+
+## Owner gaps implemented and verified — 2026-10-04, v56
+
+Owner explicitly directed implementation, not another proposal. Executable
+owner-rule declarations now cover nine reviewed fields: history relative PARAM,
+Parent-message state PARAM, formatting-tag PARAM, comparison side/identifier KEYs,
+compare-trigger identifier/expected-scope KEYs, complete missing-localization
+display PARAM, and complete marked Cheater/With character-reference PARAMs.
+All native values, controls and presentation whitespace are retained. Full
+73-log preflight passed all 91,925 contextual rows, preserving 2,643 full-ID
+captures. The larger missing-localization retyping affects 19,288 fields / 97,451
+occurrences and must be disclosed separately from coverage gains.
+
+Retained v54 code reproduced all four originally disputed case 7–10 templates.
+Unknown effect/trigger enter the same initial group at similarity 0.83636 > 0.72;
+the first derive_pattern assigns their categories KEY. No previous literals
+exist yet for the revision guard. The later Unknown/Unexpected merge is rejected.
+v56 adds two explicit category-preserving constructions; a replay of the same
+genuine source pool verifies history PARAM and fixed effect/trigger categories
+already at initial discovery. No fresh-versus-incremental outcome comparison.
+
+A v55 attempt was stopped after its 20-log build when this cause was established;
+its running session and child processes were terminated through exec Ctrl-C.
+Do not resume it. Current build: `.codex-tmp/owner-gaps-v56-candidate`, same retained
+20+20+20+13 schedule via mirror_incremental_build.py --basis. Frozen release:
+f274b62cfeb1b0151944d5dd8f326cefe5134f220017947ce4433fc9d2245683, manifest pin
+9809e62fc11f4ad111641239960f4adb22df6ea7e922cc5b8ac13df65ec1771f. Receipt:
+`.codex-tmp/owner-gaps-v56-release.json`. All four checkpoints and publication
+completed; build session 37790 exited successfully. No build remains active.
+
+Candidate package `3f5e1736f30ca4a1c94cbe5e`, model
+`e00251c9a5de51b76b8c7f22`, manifest pin
+`cc3f36a2c0b2b24f9b9bc605f6d1235ea18e33f5eea9ced6df74b7a2b6d3546f` lives under
+`.codex-tmp/owner-gaps-v56-candidate/packages/`. Research revision:
+`9c19654e784f3b5fcc371aa8`. It has 399 templates: 299 supported and 100 provisional.
+Production remains package `68f1ae5db205ab46afef9c4d`.
+
+Production-only verification, using the retained same evidence and schedule:
+
+- 20 stored Runs: 11,495 newly classified occurrences (94 distinct contextual
+  messages); no lost assignments or template-to-provisional downgrades. Another
+  72 provisional occurrences become template assignments. All original three
+  IS3QON messages pass public Classifier/prepare_record as supported templates.
+- 73 training logs: all 91,925 contextual rows / 2,594,588 occurrences joined
+  against the existing production ledger. No lost assignments or downgrades;
+  36,833 provisional occurrences become templates, two unmatched become templates,
+  and two remain unmatched. These scopes overlap and must not be added.
+- All nine declared field checks pass exact value/type/boundary assertions.
+  No demonstrated grammatical KEY splits and no template ties remain. Every
+  required owner-pattern check passes. Unknown effect/trigger stay literal over
+  445 / 67,740 training occurrences. Native export parity checks 371,617 captures
+  with no changed matches or outcomes. Existing locator captures, reconstruction,
+  and message identities pass; no parser change.
+- Full function-word audit: 378 contextual rows / 2,401 occurrences, 285 bindings
+  across 25 templates remain flagged by spelling. Context review finds reported
+  identifiers/functions/properties/types/tokens (368 / 2,390), trait/display
+  markup spellings (3 / 4), and May within dates (7 / 7), not the corrected
+  grammatical phrases or fragmented name fields. This is the stated vocabulary
+  audit, not proof of every possible English grammatical case.
+- Inventory: 206 added IDs, 496 removed, 193 unchanged. 458 removed IDs have
+  observed successors; 31 many-to-one groups involve 315 removed IDs. The 651
+  genuine public-matcher witnesses cover all 466 observed mapping pairs across
+  the two scopes. Location-role changes and diagnostic slot/literal changes are
+  reported separately. **38 removed IDs lack a selected witness**, so replacement
+  equivalence remains unverified. Untyped construction acceptance remains pending
+  owner review. Do not claim every removal is approved or uniformly beneficial.
+
+Reports in the candidate workspace: CHANGES.html (15 added, 15 removed, 15 newly
+classified examples), FIXES.html (all fourteen cases and exact field captures),
+REMOVALS.html (many-to-one mappings and role changes), FUNCTION-WORDS.html
+(complete residual contextual inventory). Both main pages rendered successfully
+in isolated headless Chrome and were inspected. Report generators and reusable
+checks live under tools/template_learning. The comparison joins native IDs/counts,
+not hashes of assignment-bearing files whose assignments legitimately changed.
+
+Assessment: positive on verified evidence; owner review is still required before
+release/pinning. No production package, selection, catalog, Run, protected source
+log or runtime process was changed. Preserve the reviewed production-capture
+finding below: whole-name improvements fix inherited limitations, not a newly
+introduced candidate regression.
+
+## Name-field production comparison clarification — 2026-10-04
+
+Owner challenged whether the 107 flagged multiword-name cases were introduced
+by the candidate. All 107 messages / 332 occurrences were replayed through both
+pinned public matchers. Every flagged name capture already exists in production
+with identical type, value and native byte span. Across 106 rows / 331 occurrences
+all capture roles are unchanged. The remaining of Suffolk case changes only
+diagnostic `target` from literal to KEY; its name captures are unchanged too.
+Production already splits Antiochia/in/Pisidien and The/Isles using exactly the
+same template IDs as the candidate. The Hampshire/Suffolk names also already
+split of and the place name in production. Earlier recommendations did not
+distinguish inherited name-field handling from candidate regressions clearly
+enough. Treat whole-name recognition as an inherited improvement opportunity,
+not a newly caused regression. Evidence/report:
+`.codex-tmp/production-incremental-v54-candidate/name-capture-production-comparison.json`
+and `NAME-COMPARISON.html`. Reproducible tool: `inspect_name_capture_changes.py`.
+No inference/model/production changes.
+
+## Residual KEY survey and consolidated recommendations — 2026-10-04
+
+Owner allows hard-coded handling of the demonstrated phrases but requires a
+remaining-incidence survey and concrete recommendations for earlier concerns.
+The survey/recommendations are now in
+`.codex-tmp/production-incremental-v54-candidate/RECOMMENDATIONS.html` and
+`owner-recommendations.json`, generated by `report_owner_recommendations.py`.
+No new learner rule, model build, production activation or Run change this turn.
+
+All 313 flagged template/slot/value bindings across 33 templates were reviewed
+contextually; the same 91,925 native rows were scanned to count each message once.
+The 720 flagged rows / 3,221 occurrences partition into:
+- grammatical diagnostic phrases: 235 / 488, three templates;
+- multiword name/display-field boundaries: 107 / 332, five templates;
+- identifiers/reported values: 365 / 1,862, twenty templates;
+- display/markup spelling coincidences: six / 532, four templates;
+- month May inside the declared date field: seven / seven, one template.
+
+The two phrases cover the grammatical diagnostic-wording defect detected by the
+explicit inventory; they do not fix the remaining name-field fragmentation.
+This is not a claim of universal English grammatical classification. Propose
+context-bound whole PARAMs for hasn't been born / the wrong gender in the
+observed Parent (…) of … is … at file: formulation, plus the already directed
+has history PARAM between has history and birth, won't execute. Do not turn
+function-word spellings into a global KEY prohibition.
+
+The report lists all fourteen owner cases against production/current incremental
+patterns. Do not claim all accepted generalizations are delivered: case 2 retains
+a literal left/scope variant; case 7 still has two literal history phrases;
+case 12 retains expected character/war literals; case 14 still has a KEY template
+and a literal control-character template rather than one PARAM. Cases 8/9 remain
+separate like production; optional consolidation need not be forced. Case 10
+effect/trigger remains literal, but the requested causal trace of the earlier
+rejected outcome is still outstanding. Case 5 remains pending owner acceptance.
+Retain verified locator/date/identity gains and cases 1/3/4/11/13. Resolve the
+two supported-template ties before promotion; 18 removed IDs have no selected
+witness. Recommended follow-up is a frozen corrected learner, same incremental
+schedule, production-only comparison, and semantic/field checks alongside coverage.
+
+## Expanded function-word KEY audit — 2026-10-04
+
+The owner reiterated the request to identify the grammatical categories and find
+KEY assignments containing such wording, including `hasn't` / `has not`. The
+earlier finite-word audit omitted contractions and articles; its results below
+must not be presented as an exhaustive grammatical audit.
+
+`audit_key_bindings.py` now searches categorized prepositions/connectives,
+auxiliary forms, negation, contractions, pronouns/determiners/articles and related
+adverbs. Whole-value and within-value hits are distinguished; exact values and
+UTF-8 spans are preserved. All selected assignment regions are visited. The
+73-log retained evidence contains 91,925 contextual rows / 2,594,588 occurrences
+and 97,976 nonempty selected KEY captures, all in bodies. Every selected body
+capture's native byte span was checked. Search hits: 720 contextual rows / 3,221
+occurrences, 313 template/slot/value bindings across 33 templates. These include
+identifier/name/date spelling coincidences, not 720 confirmed typing errors.
+
+Confirmed grammatical phrase splitting: `hasn't been born` becomes three KEYs
+in 154 messages / 371 occurrences; `the wrong gender` likewise in 81 / 117.
+Three characterhistory.cpp templates contain these alternatives. Existing
+production witnesses establish inherited grammatical KEYs. Historical v34
+regrouping traced the same phrase-pair defect, but do not assert that branch
+caused the current outcome without tracing today's decisions. No taxonomy
+category called a parent diagnostic is introduced; Parent is game wording.
+
+Full inventory and genuine phrase context:
+`.codex-tmp/production-incremental-v54-candidate/function-word-audit.json` and
+`FUNCTION-WORDS.html`, generated by `report_function_words.py`. Before/from/has
+are absent from selected KEY captures; after occurs in reported identifiers.
+Whole-field concerns also occur in multiword display names. Function-word use in
+ordinary diagnostic grammar must not become independent KEYs. Identifier-position
+spellings are distinct evidence. Trace the three affected templates and pursue
+a reusable phrase-level correction, keeping the owner-requested history PARAM
+case in scope. No learner inference, candidate or production package changed in
+this audit. Do not resume the one-shot-versus-incremental comparison.
+
+## Production-to-incremental semantic investigation — 2026-10-04
+
+**Owner correction: compare production with the incremental candidate only.**
+Matching the build schedule was a control for that comparison, not a request to
+investigate the one-shot build. Do not resume the fresh-versus-incremental work
+described in the historical section below. An unexecuted exploratory script for
+that wrong scope was removed. Neither candidate nor production was changed.
+
+Current review: `.codex-tmp/production-incremental-v54-candidate/SEMANTICS.html`;
+`CHANGES.html` now uses the same production-only executive assessment and retains
+the 15 added / 15 removed / 15 newly classified examples. The separate historical
+BUILD-HISTORY report is no longer the active review direction.
+All local report links, 17 new-match groups and sample counts passed checks;
+SEMANTICS rendered in Chrome and was visually inspected. Receipt:
+`semantic-report-verification.json`.
+
+Every one of the 81 newly classified stored messages (6,063 occurrences) was
+replayed through both pinned public matchers. **6,048 occurrences / 66 messages**
+have the same displayed diagnostic in production; every corresponding production
+layout fails the parameter-structure applicability gate solely because its count
+of trailing `located-parenthetical` traces differs. Source/context/construction
+agree. Candidate repeated-locator matching preserves the diagnostic and captures
+every original location. Biggest group: 5,236 occurrences with three locations;
+production has the same KEY diagnostic with one or two. The other gains are 13
+travel identities, one original quoted scope mismatch, and one marked-up-name
+message requiring typing review. Rejected history/effect-trigger KEY patterns do
+not drive these gains. Exact evidence: `production-gain-traces.json`.
+
+622 public-matcher witnesses cover 430 of 448 removed IDs, 438 pairs and 195
+destinations; 18 removed IDs have no selected witness. Disjoint primary changes:
+144 identical displayed patterns; 138 location/layout changes with unchanged
+diagnostic word roles; 139 literal-to-slot; eight slot-to-literal; one type change.
+27 many-to-one groups involve 263 removed IDs. The report shows every predecessor
+in each group and genuine capture changes. `removed-template-analysis.json`.
+
+Both training template-to-provisional occurrences were individually replayed:
+`di Urbino` and `di Rienzo`. The same two supported templates tie at rank
+`[0,0,0,-2]`: generic `32c2191f6fdd59776673222b` and literal-di
+`dbbfc518e0d2d4ded54722fd`. Selected captures are unchanged; no capture ambiguity.
+This is a template-overlap/selection issue, not lost support or data. The first
+report had one witness for the pair; `production-downgrade-traces.json` now includes
+both complete matcher inspections, production assignments and capture comparisons.
+
+Full 73-log audit: 91,925 contextual messages / 2,594,588 occurrences. `after`
+occurs as a KEY in four event/namespace messages (five slot bindings), not grammar;
+`before`, `from`, `effect`, `trigger` absent from selected body KEY values. `been`
+occurs in 154 CK3 messages beginning `Parent (…) of …` / 371 occurrences. Three exact public
+production witnesses establish the same grammatical KEY capture already existed;
+same displayed production patterns cover these families. Multiword localization
+`in`/`do`/`of` also uses an unchanged production template. No stop-word ban.
+`key-binding-audit.json`, `inherited-key-witnesses.json` retain counts and context.
+
+Assessment: mostly positive **versus production**, with overlapping name templates,
+inherited phrase/name typing limitations, and unobserved removed-ID successors
+remaining. No inference changes or model activation in this investigation.
+Recommended next investigation concerns the overlap's retention/selection history
+and coherent name/phrase typing; keep the requested history PARAM work distinct
+from claims about new regressions. Production preservation checks remain valid.
+
+Terminology clarification: “parent diagnostic” was ambiguous report shorthand,
+not an owner-taxonomy concept. `Parent` is literal CK3 message text referring to
+a character's parent. Current report wording now spells that out. Searches of
+product/learner source and governing docs found no separate category, schema field
+or processing layer with that name. Historical full-ID and wording-preservation
+requirements apply to those ordinary error messages; do not delete recognition
+or general merge safeguards based on this reporting terminology error.
+
+## Production-schedule v54 control completed — 2026-10-04
+
+The unchanged frozen v54 learner completed production's retained 20+20+20+13
+schedule. Corpus equality and order were already established; the owner directed
+reuse of the saved hashes/inventory, without another input audit. Disposable
+package `83df10b8cfb86d1573f8e510`, model `6024f47eace4750c605e0101`, manifest pin
+`9b4baf8e93455ef247808bbc13aa73d841aa1fb271a781ec2a2e8df385d2d321`.
+Workspace `.codex-tmp/production-incremental-v54-candidate`; research revision
+`4bde423710ac0d140f898168`. Authenticated build/publication receipts completed.
+The initial post-20-log orchestration check used a runtime field on a research
+model; it was corrected and the completed checkpoint resumed without rebuilding.
+
+Reports: `BUILD-HISTORY.html` compares production/fresh/incremental and all 14
+owner cases; `CHANGES.html` contains 15 added, 15 removed and 15 newly classified
+examples. Links/sample counts/production parity passed; BUILD-HISTORY rendered
+and visually inspected. Inventory: 689 production / 496 fresh / 467 incremental.
+On the same 20 stored Runs: 6,063 newly classified occurrences, no production
+assignment losses or downgrades, 72 provisional-to-template upgrades. All three
+IS3QON reviews are supported assignments. Across 73 training logs: no production
+assignment losses, two template-to-provisional occurrences, two of four unmatched
+occurrences classified. Exact captures reconstruct, no message-identity collisions;
+production selection/catalogs, retained DB backup and review shards unchanged.
+
+Controlled result is mixed. Examples 7–10 retain literal phrases/categories in
+incremental v54: history has two separate literal phrases (the requested shared
+PARAM remains absent); effect/trigger remain literal; colored/textured and
+Flag/Variable remain separate. Thus fresh-build KEY outcomes are demonstrably
+build-history-sensitive. Exact decision/safeguard traces are still outstanding.
+Fresh-to-incremental loses 10,665 stored-Run assignments across 17 messages:
+5,429 invalid-comparison-side and 5,236 failed-variable-fetch occurrences, both
+tooltip constructions. These were also unmatched in production. Both candidates
+must be retained as controls; do not promote or call the new result uniformly
+positive. Next: owner-requested actual traces for 7–10 and these two families,
+full 73-log contextual function-word KEY audit, then reusable corrections and
+re-evaluation. No inference changes were made in this controlled-build step.
+
+## Owner review received; production-schedule build setup — 2026-10-04
+
+[The owner review](LEARNER_73_LOG_OWNER_REVIEW.md) supersedes the provisional
+review judgments below. First reproduce production's 20+20+20+13 ordered input
+batches using the unchanged frozen v54 release. Incremental candidate workspace:
+`.codex-tmp/production-incremental-v54-candidate`. The retained registry operation
+owns recovery/build/publication; `mirror_incremental_build.py` only orchestrates
+exact input copies, checkpoint receipts and progress. Build basis records original
+script/identity hashes and each ordered input prefix. No cross-version model seed.
+
+After completion, compare with production and fresh v54 before attributing the
+differences or changing inference. Examples 7 and 10 are rejected; 8 and 9 are
+accepted with sensitivity concerns; 5 remains pending. The detailed trace/full
+binding audit/fixes follow that controlled comparison. Source logs, production
+packages, selected learner and Runs remain unchanged. Preserve both v54 controls.
+
+## Owner-authorized obsolete research artifact cleanup — 2026-10-04
+
+Removed 23 superseded generated model/native-evidence payloads from this task,
+totaling 18,316,359,874 bytes (18.32 GB), including the 11,350,871,937-byte v53
+research model. Earlier v46/locator/character experiments and the refinement
+memory/control copies were included. Original source logs, manifests, review
+reports, compact exports and unrelated earlier research remain intact.
+
+Current candidate `.codex-tmp/production-73-v54-candidate` is preserved in full.
+Its research bundle hashes and immutable package pin were verified before and
+after cleanup; production package/selection and current review reports are
+unchanged. Exact deletion inventory and verification receipt:
+`obsolete-artifact-cleanup.json` in that candidate directory. Each affected old
+bundle has `REMOVED-PAYLOADS.json`; those research bundles are no longer loadable.
+Historical statements below that their large payloads remain on disk are now
+superseded. The computed bulk deletion was blocked by execution policy; direct
+explicitly named nonrecursive PowerShell file deletions succeeded.
+
+## Removed-template thematic review — 2026-10-04
+
+Owner follow-up: make many-old-to-one-new mapping the main review view.
+`.codex-tmp/production-73-v54-candidate/CONSOLIDATIONS.html` now presents all
+38 such groups involving 289 distinct removed predecessors, with every old
+pattern, genuine witnesses, exact capture changes and links to all its outcomes.
+Initial review judgments: 30 look like upgrades, seven need wording/category
+review, one has mixed predecessor outcomes (marked-up-name support downgrades
+outside the displayed successor). These judgments are not accuracy measurements
+or release approval. Full removal analysis retains the separate one-to-one,
+lost-match and unobserved cases. Main comparison links to the focused view.
+All predecessor membership and local links verified; Chrome desktop rendering
+captured. Evidence: `consolidation-review.json` and
+`consolidation-report-verification.json`. No matcher/package changes.
+
+Owner terminology correction: use **error templates**, including provisional
+templates, in learner review prose; “definitions” is not an additional taxonomy.
+Updated the main report and added
+`.codex-tmp/production-73-v54-candidate/REMOVED-TEMPLATES.html`.
+
+The complete existing coverage crosswalk identifies 442 of 465 removed templates
+with selected witnesses, mapping to 218 candidate templates; 23 lack a selected
+witness. Both pinned public matchers replayed 659 genuine witnesses across 475
+distinct predecessor/successor pairs, including a no-match destination. Capture
+analysis samples one witness per mapping/status/scope, not every message. All
+exact byte-span transfers, selected IDs/statuses and crosswalk counts passed.
+Source JSON and the human report include all 465 removed templates and every
+observed successor, with scope counts kept separate.
+
+Primary categories (exclusive priority documented in report): 135 identical
+display patterns with only location numeric/line-reference constraints removed
+(apart from IDs/support metadata); 128 location changes without diagnostic word
+retyping in witnesses; 165 literal-to-slot broadening, including 35 travel
+predecessors; 10 narrowing; one both directions; two slot-type changes; one with
+lost coverage; 23 unobserved. The recursive executable comparison verifies the
+135 constraint-only replacements rather than assuming display equality means
+equivalence. Net reduction is 689 to 496: script-system 251 to 81, effect-impl 74
+to 43, all other emitters together +8. Gross ID removal is not family loss.
+
+Assessment remains mixed. Category wording now generalized into KEY includes
+after death/from before, left/right, Flag/Variable, effect/trigger and
+colored/textured. A parenthesized left-was/right-was clause becomes PARAM.
+These require classification-granularity review; this analysis does not establish
+false positives or authorize a new constrained grammar. Known loss/support
+regressions remain as documented below. No inference/package/runtime changes.
+
+Verification: report data/links/anchors and 15/15/15 main-report samples pass;
+Chrome headless desktop rendering captured and visually reviewed. Evidence:
+`removed-template-analysis.json`, `removed-template-summary.json`,
+`removed-report-verification.json`. The first extra crosswalk check incorrectly
+omitted status from its key; one genuine pair has both template and provisional
+selected outcomes. The corrected check includes status and passes; original
+crosswalk/replay already preserved it. Source helpers:
+`analyze_removed_templates.py`, `report_removed_templates.py`, and updated
+`report_production_comparison.py` under `tools/template_learning/`.
+
+## Completed 73-log v54 comparison and human report — 2026-10-04
+
+Delivered report: `.codex-tmp/production-73-v54-candidate/CHANGES.html`.
+It contains 15 added definitions, 15 removed definitions stratified across both
+evaluation scopes, 15 newly classified messages and destination templates, an
+executive assessment, original-three/effect/locator/continuation checks, full
+crosswalks, remaining unmatched examples and concrete regression explanations.
+
+Assessment: mixed, with a large net coverage improvement. On the same 20 retained
+Runs (811,103 total message/recovery occurrences), 16,727 previously unclassified
+occurrences (97 distinct messages) now classify; one previously complete occurrence
+is lost; no template-to-provisional changes occur in these Runs. Net gain 16,726.
+All original three IS3QON diagnostics are supported assignments, all 75 short-ID
+travel forms share one supported template, and all four earlier effect KEY checks
+pass. Of the earlier 60 lost occurrences, 59 recover; all 317 earlier downgrades
+regain template status. Production parity, exact reconstruction, identity and
+existing LOCATOR preservation checks have zero discrepancies.
+
+Both packages use exactly the same 73 training hashes; none of these 20 stored
+Run hashes is in that set. The independent full-training-corpus check covers
+91,925 contextual messages / 2,594,588 occurrences: no complete match losses,
+63,749 provisional-to-template upgrades, four formerly unmatched occurrences
+classified, and 115 template-to-provisional occurrences over 30 forms. These
+scopes overlap in message content and must not be summed as independent totals.
+Definition inventory: production 689, candidate 496, added 272, removed 465,
+shared IDs 224. Across both scopes, removed IDs classify as 435 with preserved
+selected coverage, six support-downgrade-only, one lost-match, 23 without a
+selected witness. The latter are not proven harmless removals.
+
+Remaining lost match: Run `20261001-3FCRIS`, stored ordinal 3196, one marked-up
+`had_sex_with_effect` character-name message, formerly template
+`0fa77cd8ed4f17791dbdcb4a`. The trace PARAM is recognized; 38 applicable candidates
+(34 in the family) yield zero complete matches and zero ambiguous-capture
+candidates. The exact message is outside training. Saved refinement lineage shows
+unsupported broad PARAM proposals split the marked-up names (167 values) and
+localization spellings (18,895 values), leaving literal singleton survivors.
+Training downgrades are 12 marked-up name forms/occurrences and 18 apostrophe-name
+forms/103 occurrences. Do not force PARAMs or infer a database failure. Attribution
+between changed inference and fresh-versus-incremental order remains unisolated.
+Recommendation: retain improvements, resolve/review these regressions and the
+remaining unselected definitions before release/pin approval; use a bounded
+ordered-incremental experiment for the two families if requested. Production
+selection, catalogs, processes, Runs and protected evidence remain unchanged.
+
+Fresh source `f4fa64dd7d104a82fad64812`; model `31488ccd43652c5bcd8f05cf`;
+disposable package `c506869af1b6c97d0bafb11e`; manifest pin
+`a1335cbb3957ca717e98d941e73f7f30dd6987319661861c558c923d6cd5d380`.
+Learner release/pin are the verified v54 identifiers recorded below. Build and
+publication receipts completed. Native assignment evidence is byte-identical to
+the stopped v53 73-log result, and all 496 executable definitions are identical.
+Research model fell from 11,350,871,937 to 245,544,316 bytes. The 18,895-value
+observation is now one event referenced by 18,895 children. Build time 1000.734s;
+observed peak working set 5,025,054,720 bytes (private memory sampled every 15s).
+No learning or publication worker remains active.
+
+Verification disclosures: the first comparison correctly stopped because copied
+experiment metadata still named the earlier 20 training logs; corrected only that
+research descriptor to the authenticated 73 hashes and reran comparison and
+locator verification. Original descriptor and evidence-reuse provenance retained.
+An initial HTML checker used the Windows default encoding; corrected to UTF-8
+bytes and disabled redundant CRLF translation in HTML output. All final sample
+contents, counts and links pass. Headless Edge produced no screenshot and Chrome
+startup exited -2147483645; visual rendering remains unverified. See
+report-verification.json for these limits and the one real coverage failure.
+
+## Resumed through production comparison and human report — 2026-10-04
+
+The owner clarified that stopping after engineering verification did not complete
+the requested deliverable. The corrected v54 fresh build resumed at 01:06:23 local
+in `.codex-tmp/production-73-v54-candidate`, worker PID 47300, exec session 97109.
+The prior stopped-attempt log is preserved separately. Use the completed 20-log
+parity and serializer-memory checks above/below as prerequisites already met.
+Finish this build, its authenticated publication/native parity, comparison with
+the unchanged production package, original-three and locator/character checks,
+and the human-readable CHANGES.html report. Include 15 added definitions, up to
+15 removed definitions with replacement/loss assessment, previously unclassified
+messages and their destination templates, executive judgment and next steps.
+Do not end merely with a build-start or engineering-status message.
+
+The report uses the same retained 20-Run snapshot as the earlier v53 comparison.
+An additional read-only production pass over all 91,925 contextual messages from
+the 73-log corpus completed: 2,439,711 template, 154,873 provisional, four no_match
+occurrences. Ledger/provenance is production-training-ledger.json in the fresh
+directory. Once new candidate native-evidence byte equality is established,
+compare that ledger with the independently replayed candidate to assess removed
+definitions beyond the 20-Run sample. New compare_training_corpus.py owns this
+genuine-data comparison. No production records change. Learner memory sampling
+is in learner-memory.jsonl; the separate monitor exec session is 15386.
+
+## Refinement duplication corrected; 73-log build stopped for memory verification — 2026-10-04
+
+Latest owner instruction: do not restart until the memory/bundle-writer defects
+are also fixed. Although those changes were already included in the successful
+20-log control, the 73-log worker and its launcher were stopped at 01:02:40 local
+on 2026-10-04 (verified process IDs/start times; exec session 46197 ended).
+No 73-log model or completion receipt was produced. Keep this attempt's directory;
+do not mistake its release.json for a successful build. Production processes were
+not stopped. An isolated serializer allocation measurement passed against
+the genuine completed 103,390,582-byte control model; it did not run learning.
+Helper: measure_serialization_memory.py; output `.codex-tmp/refinement-writer-memory`.
+Peak additional Python allocations: 6,747,518 bytes for writing and 8,587,838
+for revision hashing; output bytes and revision hash exactly unchanged. These
+measurements exclude the already-loaded model and inference, and do not claim
+full 73-log peak memory. Producer reload removal is in artifacts.write_bundle;
+the genuine 20-log learn/publish receipts prove that corrected path completed.
+The 73-log build remains stopped after the measurement; no restart occurred.
+
+Owner clarified that the observed content hashes proved duplicated parent data;
+they were not a request for content-addressed deduplication. The stopped 73-log
+v53 research build and diagnostic recovery remain preserved. No recovery export
+is being activated or substituted for a fresh build.
+
+The v54 candidate changes six child-split paths and three consolidation/regrouping
+paths to parent-linked, local-delta refinement events. A rejected field's complete
+value list is created once at the split. Child decisions contain retained values,
+not the parent list. Sequential research event IDs require no content comparison.
+Retirement history shares this lineage. Further duplication corrections: reuse
+the already-computed field observation, pass executable definitions into the
+matcher's defensive snapshot, avoid copying immutable prior retirement history,
+stream research model JSON/revision hashing, avoid producer-side model reload,
+and stream review rows with one definition file per template.
+
+Changed owners: clustering.py, new refinement_history.py, artifacts.py,
+evidence_serialization.py, patterns.py, research_matching.py, learner_loader.py,
+build_review_pack.py. Research probes now preserve lineage references.
+New verify_refinement_lineage.py compares genuine candidate inputs, executable
+definitions, full native-evidence bytes and lineage integrity. Canonical streaming
+encoding/hash already agree exactly with the retained genuine v53 model.
+
+Controlled rebuild passed in `.codex-tmp/refinement-lineage-control` on the
+same 20 inputs as `.codex-tmp/super-short-character-candidate`: 287 executable
+definitions exactly equal; complete native-evidence file byte-identical across
+731,529 occurrences (600,256 template, 131,273 provisional, zero unknown).
+The 219-node lineage passed integrity checks; 76 retained-value children contain
+only local deltas. A genuine 32-way split stores one 32-value observation and 32
+child references. Control model size is 103,390,582 bytes versus 103,472,274;
+this smaller corpus does not contain the pathological 18,895-value split.
+Build took 182.954 seconds; independent publication/native replay also passed.
+Control source revision `2f5800a8b8d02fd1b6eb47e9`, runtime model
+`4bbd5353d39e4407847f9353`, disposable package `c95eae6233cfc49bfe23dedf`.
+See `verification.json`, `learn-execution.json`, `publish-execution.json` there.
+
+The now-stopped 73-log build started 2026-10-04 01:01:49 local in
+`.codex-tmp/production-73-v54-candidate`; learner worker PID 28460, parent 45380,
+exec session 46197. Release `16b038032b58d67fe95304da8edfdd0aa02ecc1663d874a70c7c9935dcc3cd28`,
+pin `f8f024af577229c48306c31b32e5712bdaa5f42341766cc2f26e1076961ed8f3`,
+same exact release as the successful 20-log control. All 73 input bytes/hashes
+were rechecked against production's recorded training set before launch.
+The build helper would write learn/publish receipts and a disposable package;
+this stopped attempt did not reach those steps.
+After completion, quantify the large split's lineage/size reduction, compare
+compact definitions and native assignments with the preserved v53 73-log
+diagnostic baseline, then complete the production comparison/report using the
+unchanged 20-Run exports copied into the fresh directory. Re-run character/date
+and original IS3QON/location checks for the new candidate. The final production
+report must retain the incremental-versus-fresh caveat and investigate regressions.
+
+The owner deferred an identical incremental-order experiment; do not substitute
+one now. Production selections, catalogs, processes and protected inputs remain
+unchanged. No new full-corpus result is yet claimed.
+
+## Reporting content search and outcome corrections — 2026-10-04
+
+Owner terminology correction: unreadable/unsupported source content is a per-file
+result with a reason, not a search-process crash. Python checks encoding/reads
+excerpts; ripgrep searches current source contents. A busy handler queues requests
+and retries contention; broken transport is a runtime error handled by its existing
+contract, not a new busy-queue rejection policy. The current review register now
+separates file outcomes from the two unencountered process/handler fault groups.
+
+Latest owner clarification: operational faults should surface through the caller's
+exception boundary. `reporting.cli` now catches unexpected ordinary Python
+exceptions for `runs`/`report`, preserves stage/type/message/traceback and exits
+nonzero. If the error renderer/destination also fails, stderr retains the original
+error envelope. Libraries/handler contracts are unchanged. Verification uses
+genuine CLI paths and source inspection; no induced crash/failure claim.
+
+08B implementation and owner-review corrections are complete. The authoritative
+deliverable checklist and remaining verification limits are now the opening
+section of [the reporting handoff](TASK08B_REPORTING_HANDOFF.md). No known assigned
+feature or documentation work remains. Do not treat historical open-item entries
+below as current work, or unencountered runtime faults as passed tests.
+
+Read [08B](TASK08B_REPORTING_HANDOFF.md)'s opening sections for current evidence. Normal content
+search spans template literals and populated slots; result annotations derive
+from the shared stored renderer, with assigned templates and full-count summaries.
+The misleading template-phrase acceptance case is withdrawn. Genuine CLI groups
+11/04/02/12 verify searches, composition, history/formats and all requested
+-5…+5 positions with missing Runs labelled. The seven-Run middle window has four
+unavailable positions; eleven simultaneous Runs are not a gate. Python file-I/O
+tracing covers both the cold CLI and worker without opening logs/model artifacts.
+No synthetic history, injected failures, production changes, commits or pushes.
+
+Current review manifest/browser receipts: `.codex-tmp/task08b/content-search/`.
+The existing bundle's `outcomes.html` now describes two concrete unexercised
+fault paths (handler operation/transport; source-search process launch/error exit),
+separately from successful empty queries and ordinary absence. Handoff lists
+all receipts, bounded library changes, checker corrections and trace limits.
+
+## Earlier reporting duplicate-detection requirement removal — 2026-10-04
+
+Owner explicitly deleted timestamp-based duplicate detection/rejection from
+Reporting and Analysis. The chronology grouping/exclusion code and reporting
+verification item are removed. Duplicate-ingestion handling stays in the pipeline;
+no replacement check or pipeline change was made. Prompts, owning/receiving
+handoffs and cross-team summaries are corrected. The review page has four remaining
+evidence-gap groups. See [08B](TASK08B_REPORTING_HANDOFF.md) for checks and receipts.
+
+## Task 08B earlier-outcome reconciliation — 2026-10-04
+
+Owner could not trace the earlier incomplete-deliverable/bad-query list from the
+file report. `outcomes.html` now gives all six original review IDs, 17 named query
+cases with expected and actual saved results, and the four still-unverified groups.
+Opening explanations link directly to the case table and open checks. The builder
+validates the named outcomes against retained CLI exports; no query, failure or
+database state was fabricated or rerun for this presentation change. Documentation
+completion does not imply owner acceptance or passing unrepresented cases.
+See [08B](TASK08B_REPORTING_HANDOFF.md) for the current review/navigation check.
+
+## Task 08B file presentation and source rule — 2026-10-04
+
+The owner's current rule identifies the last matching playset member in load
+order as the error source for each file/line. It supersedes the earlier blanket
+winning-file/ownership-unresolved report wording for this case. Tables now show
+raw load order, mod name, path and line separately, with **Resolved** / **File not
+found** status and an **Error source** column. JSON exports `file_line_sources`;
+the owning source service evaluates load order before file-content filtering.
+Three genuine CLI groups / 18 exports passed in 63.465 s under
+`.codex-tmp/task08b/bf417ac7f10840d7be776e15f11a15aa/`. The reviewed example retains
+both orders 114/115 and assigns 115. Focused browser checks pass. The full evidence
+and exceptions for unavailable load order/line are in [08B](TASK08B_REPORTING_HANDOFF.md).
+No production/package/process change, commit or push.
+
+## Task 08B relative-path clarification — 2026-10-04
+
+The owner clarified that paths normally mean game-relative paths shared by the
+base game and mod folder structures. Use `scope.source.relative_path.exact`:
+optional leading `/` and either separator now normalize in explicitly relative
+fields, leaving physical paths and stored evidence unchanged. Reports look in the
+same parent folder beneath every recorded member, retaining all mod candidates.
+Genuine CLI results: two diagnostics / 64 occurrences, candidates at orders 114/115,
+433 file names in 77 existing parent folders, no recursion. Wrong relative folder:
+empty success. The handoff and review bundle include `relative-path-all-members`.
+SQL-only path matching, explicit physical-file access and other operational limits
+remain unchanged. Exact receipts are in [08B](TASK08B_REPORTING_HANDOFF.md).
+
+## Task 08B no-path emission correction — 2026-10-04
+
+An emission need not contain a path. Reports label source lookup not applicable;
+the source library skips playset/root access when no references need lookup.
+No-path records have `source_path_status: "no_path"`; misleading reference-
+limitation/completeness fields are removed. Mixed reports keep lookup problems
+on actual referenced records only. Genuine checks and current examples are in the
+[08B handoff](TASK08B_REPORTING_HANDOFF.md). Production and unrelated work unchanged.
+
+## Task 08B source recursion/count verification — 2026-10-04
+
+Per-search counts and effective root/directory/recursion/cache detail are now
+returned by SourceSearch and rendered by reports. Independent PowerShell counts
+and returned-file-set comparisons pass 29 cases on genuine base-game/mod trees;
+the root CLI exports consistent counts in JSON/text/HTML. The initial text-checker
+newline issue was corrected and the full check rerun in fresh disposable storage.
+Passing receipt: `.codex-tmp/task08b/recursion/769ceb6ed0434981b2744aab42faff3e/`.
+See the [08B handoff](TASK08B_REPORTING_HANDOFF.md) for exact counts and reproduction.
+No production/package/process change or commit/push; preserve unrelated learner work.
+
+## Task 08B explicit path-resolution selection — 2026-10-04
+
+Owner-requested `scope.source.resolution: "unresolved"` finds messages with at
+least one recorded reference for which a completed current search finds no file
+in the effective roots. `resolved` is also supported. Reports and analytical JSON
+show per-reference status; no-path messages are nonmatches and incomplete searches
+remain unknown. Ordinary path matching is unchanged. The genuine example returns
+60 diagnostics / 386 occurrences; the two-entry authorized fixture verifies fake
+paths separately. Current implementation, evidence and bundle pointers are in
+[08B handoff](TASK08B_REPORTING_HANDOFF.md). No schema/production/package-selection
+change; commits and pushes remain deferred. Preserve the unrelated learner work.
+
+## Task 08B path-filter correction — 2026-10-04
+
+Owner correction implemented in 08A.2: ordinary path-only predicates select stored
+references; pathless/nonmatching records are excluded without an error, warning or
+unidentified partial. A matching file need not exist on disk. Root/member/content
+queries still use current candidates; missing individual files are nonmatches.
+08A.1 consumes those matches before totals/history/limits. No schema/API-field or
+production change. The prior required-file/pathless-failure semantics are obsolete.
+
+Current broad example: `investigations/file-path-all.html` in the existing 08B
+bundle, selecting all diagnostics for one recorded path with no other refinement.
+It returns two identities / 64 occurrences. The existing `required-partial.html`
+now succeeds with only the culture diagnostic (32 occurrences), silently excluding
+the pathless localisation record. New path-only and missing-file examples and the
+outcome page explain the correction. Original exports are retained separately.
+
+Two genuine CLI groups, four focused source groups and expanded path-composition
+check pass; the authorized fixture passes nine checks / nineteen exports; genuine
+archive/path checks pass seven exports, plus three broad-query formats. Logging
+and imports pass. Current manifests and commands are under
+`.codex-tmp/task08b/path-filter-correction/`; [handoff](TASK08B_REPORTING_HANDOFF.md)
+records exact locations. Commits/pushes deferred; unrelated learner work preserved.
+
+## Earlier Task 08B verification follow-up — 2026-10-04
+
+The owner's requested synthetic fixture is delivered and labelled: two complete
+genuine emissions, only fake file LOCATOR paths changed, all 133 recorded playset
+members/orders preserved by the normal writer. Five checks / eleven actual CLI
+exports pass. Original evidence is unchanged. The integrated report links input
+log, playset JSON, original emissions and the verification receipt.
+
+Fresh unchanged genuine backup: seven eligible Runs and fourteen exclusions.
+Full trailing-five, separate five-before/five-after sides and a three-per-side
+window pass independent public-handler count/history checks. Five unchanged
+archived logs in separate disposable single-Run databases now exercise all nine
+syntax selectors (85 diagnostics; seventeen CLI exports) and missing-playset
+optional/required behavior. They do not extend production history. A temporary
+capture rename failed before ingestion; a fresh retry passed the two remaining
+archive cases. Details and retained failure evidence are in
+[the reporting handoff](TASK08B_REPORTING_HANDOFF.md).
+
+Review bundle remains `.codex-tmp/task08b/c9e83ce2125a45c78c8db4b4ab70d18f/`.
+Open `investigations/synthetic-missing-files.html`, `worked-five-runs.html` beside
+it, or `outcomes.html` for completed items and four remaining evidence-gap groups.
+The 54-example bundle passes 16,161 links; fifteen new Chrome routes and fixture
+input navigation pass; representative screenshots inspected. Final two genuine
+CLI groups pass (72.554 s), plus logging/imports. No production/process/config/
+package selection change, commit or push; unrelated learner work preserved.
+
+## Earlier Task 08B integrated explanation correction — 2026-10-04
+
+Latest owner follow-up: the template example did not show what happened to the
+earlier incomplete deliverables. The bundle now has `outcomes.html`, linked from
+the index and all example reports. It gives completed corrections with direct
+report links, plus the remaining genuine-evidence gap groups and their completion
+conditions. Definitions are in `examples/reporting/delivery-status.json`; the
+existing bundle builder renders them. No missing evidence case was newly closed.
+
+The latest owner feedback reopened the reading/navigation issue: an outcome link
+was insufficient when the explanation and evidence still had to be found. The
+ordinary report renderer now places the question, expected/actual result and
+relevant evidence together. All 38 example links land there. Named links open
+the exact template, diagnostic, Run table or highlighted source excerpt.
+The rebuilt bundle passes 12,077 local-link checks with unchanged analytical
+payloads. Genuine CLI format/history/limit and partial-source groups passed;
+Chrome checks exercise integrated explanations and direct evidence links.
+Evidence: `.codex-tmp/task08b/browser-integrated/`; details and CLI evidence paths
+are in [the reporting handoff](TASK08B_REPORTING_HANDOFF.md). Earlier closure
+wording below predates this additional owner correction. No production state,
+active package selection, commits or pushes changed.
+
+### Earlier reporting implementation checks — 2026-10-04
+
+The open 08B work has been completed: valid opposing preset filters return empty
+results; missing symbol input fails before any database request; partial-source
+reports visibly separate the pathless diagnostic from known matches. Reports
+explain their question/filters/outcome, show template patterns and diagnostic Run
+counts, and name recorded mods beside paths. A genuine DLC-file case is checked.
+
+All eight CLI groups passed (161.987 seconds), six query checks (13.926 seconds),
+nine source checks (260.071 seconds), final focused partial-source checks and
+logging/imports/dependency checks. Actual Chrome clicks cover 13 report routes and
+source appendix/return navigation. Desktop/narrow screenshots were inspected.
+The 38-example bundle has 10,559 checked local links. See the current closure
+register, evidence paths and reproduction commands in
+[TASK08B_REPORTING_HANDOFF.md](TASK08B_REPORTING_HANDOFF.md).
+
+The seven absent syntax selectors and genuine failure/duplicate/full-window gaps
+remain explicitly unverified, as permitted by the assignment. No production data,
+process/config/model selection, commit or push changed. Full live Trusted Run
+acceptance remains separate. The earlier in-progress notes below are history.
+
+### Earlier 08B review continuation (superseded by closure above)
+
+
+Latest review: query/preset input validation now precedes database-client creation
+and named-Run lookup; the missing symbol selector submits no investigation.
+Focused genuine preset checks passed (14.855 seconds), plus logging/imports.
+The examples distinguish stored paths, current mod-file candidates and the genuine
+pathless localisation record. Contradiction-to-empty-set behavior is an open owner
+policy clarification, not a database limitation; original rejection rules remain.
+Use the handoff's updated review-bundle command and saved evidence manifest.
+
+Owner correction: 08B is not complete. Existing implementation and passing CLI
+checks do not close report usability and visual/end-to-end review. Continue from
+the open-issue register at the start of [TASK08B_REPORTING_HANDOFF.md](TASK08B_REPORTING_HANDOFF.md).
+It separates current UX/verification work from expected negative checks and real
+evidence gaps. Full Trusted Run acceptance remains a separate milestone.
+
+The current navigation fix gives every example an explicit outcome link, a full
+report link and a return route. `no-eligible` links to its actual error and shows
+the requested package. Explanations live inside the reports. A tracked generator,
+`tools/build_reporting_examples.py`, rebuilds the index and reading copies in
+the same review bundle's `investigations/` directory. Browser/owner review remains
+open even after structural and CLI verification.
+
+### Earlier implementation evidence — 2026-10-03
+
+Latest owner refinement: all outputs now start with plain-English question,
+filters, expected behavior, actual result and reading guide. Each consumer example
+also has a specific question/expected outcome in `examples/reporting/checks.json`.
+Individual diagnostics are labelled explicitly; classification details explain
+template recognition. Mod names/load orders are visible beside candidate paths,
+using the evidence Run's recorded playset. Base-game/DLC members keep plain paths.
+All eight genuine CLI groups passed (276.954 seconds), plus recorded-playset name
+verification and existing template/count/history checks. Current template/worked
+files were refreshed; `examples.html` beside them indexes explained reading copies
+of the latest `cc41d9c32c7843d0bb98f857ee5f88ea/` CLI results. Receive the 08B handoff
+for exact changes and the unexercised DLC-candidate presentation case.
+
+Latest template/instance correction: reports now lead template investigations with
+the actual placeholder pattern and combined per-Run counts, then explicitly label
+each individual diagnostic. Raw `template` status is shown as `Match status: matched
+template`. Complete template aggregates live in 08A.1's `rollups.templates`, keyed
+by full definition reference and computed before display limits. The current
+template-only exports were regenerated; genuine raw-handler counts, HTML/text/JSON,
+zero-display-limit invariance, focused CLI checks (14.960 seconds), logging and
+imports passed. See the handoff for the corrected initial test-discovery invocation.
+
+Latest example correction: `symbol-template.json` now selects only the broad
+trigger-error template, removing the culture/message restrictions that had reduced
+it to one selected identity. Genuine root-CLI `template-only.{html,json,txt}`
+exports in the current `c9e83ce2125a45c78c8db4b4ab70d18f/` evidence directory
+show all 202 selected identities / 396 occurrences with per-Run history; four-Run
+totals are 263 identities / 1,415 occurrences. Export agreement and visible Run
+tables passed. README/handoff distinguish template selection from optional
+refinement and the separate worked message query. The handoff discloses an initial
+XML-checker failure on preserved CK3 control characters, corrected with HTMLParser.
+
+Latest owner usability correction: `Occurrences by Run` is now visible directly
+below each diagnostic message instead of inside collapsed history details.
+The current `c9e83ce2125a45c78c8db4b4ab70d18f/worked-full.html` was regenerated
+with the actual root CLI; generated history tables/counts and logging ownership
+were checked. No analysis or runtime-data change.
+
+Receive [TASK08B_REPORTING_HANDOFF.md](TASK08B_REPORTING_HANDOFF.md). Reporting
+implementation is present: root `runs`/`report`, five presets, structured query
+refinements, text/JSON/offline HTML, candidate associations and verbose appendices.
+README and `examples/reporting/` supply working commands/queries. The two 08A
+handoffs describe bounded consumer additions in their owning libraries.
+
+Final genuine CLI verification passed all eight groups (179.454 seconds); all six
+retained diagnostic and nine source checks passed. Exact consumer commands and
+reports are under ignored `.codex-tmp/task08b/e5e61184ea4a41bcb077858ce49966f6/`.
+Use `worked-full.html` and its sibling appendix for the full available four-Run
+context-switch example. Shared logging/import/dependency checks and packaged
+HTML/CSS passed. A configured-database check used a disposable config/database.
+The latest worked files are in `.codex-tmp/task08b/c9e83ce2125a45c78c8db4b4ab70d18f/`
+after two focused CLI groups passed again (126.077 seconds), checking escaped
+content and preservation of exclusions in partial-source failures.
+The handoff discloses initial newline/incorrect-source-assumption failures,
+unavailable dependency/browser tooling and remaining real-evidence gaps.
+
+Changed files owned by this task: root CLI; reporting CLI/presets/presentation,
+HTML/CSS resources and package-data declaration; query/analysis/source receiving
+additions; genuine CLI tests and a source-test assertion adjusted to separate
+unchanged SQL/history from new candidate data; three example queries; README,
+08B/08A handoffs and current pointers/ledger. No synthetic histories, live process
+changes, production writes, model selection, commits or pushes. Pre-existing
+learner/advisory changes listed below remain untouched. Full Trusted Run acceptance
+and any browser visual review are separate continuation items; no operational
+activation is needed merely to run these ordinary reporting commands.
+
+## Incoming advisory review delivered — 2026-10-03
+
+Continue advisory work from [TRUSTED_RUN_COMPLETION_PATHWAY.md](TRUSTED_RUN_COMPLETION_PATHWAY.md).
+08B and the canonical implementation plan remain undelivered at inspection.
+Configuration/bootstrap/setup and read-only doctor have concrete gaps. Retained
+October 3 normal/crash lifecycles include start, exit, capture, ingestion and saved
+public Run reads; do not repeat the earlier blanket live-evidence gap. Candidate
+applicability and milestone acceptance remain separate. The pathway names proposed
+owners, scope decisions and next assignments; none is activated by this review.
+Only advisory documentation/current pointers changed. Existing prompts, product
+specifications, source, runtime state and unrelated work are preserved.
+
 ## Canonical logging planning handoff — 2026-10-03
 
 The owner supplied an execution-journal design using actual code identities,
@@ -18,7 +1724,411 @@ immutable-candidate and bounded rollback guidance is in 09A. The
 and separate consideration of runtime conversion; owner decisions remain open.
 The agreed 08B prompt is untouched. Ongoing locator work below remains independent.
 
+## Exact production-corpus rebuild stopped; lineage correction pending — 2026-10-04
+
+Owner explicitly stopped the v53 research-candidate path and requested fixing
+the provenance duplication / serialization-memory problems before a fresh build.
+No candidate worker remains running. A bounded export recovery completed parity
+but was NOT packaged or used for a new production comparison; that path is stopped.
+
+The v53 fresh build did learn the exact 73 hashes: 2,594,588 messages / 90,506
+distinct messages, 496 definitions (335 supported, 161 provisional), training
+2,503,348 full / 91,240 provisional / zero unknown. It wrote source candidate
+54573fdc09b35e2e37d9ef1a, then whole-file reload grew past 56 GB private memory.
+Only its identified worker PID16016 was stopped. Production PIDs30816/23252 and
+their Oct2 start times were unchanged. Original artifacts are preserved.
+
+Research model: 11,350,871,937 bytes, including 10,468,162,891 bytes of
+inference_refinements. Bounded recovery under recovered-release/ in the same
+experiment authenticated source hashes, used unchanged owner compaction and
+verified 91,925 contextual messages / all 2,594,588 occurrences / 367,957 captures,
+zero changed matches/outcomes. Its control reproduced the prior 20-log published
+model exactly. This recovered release is diagnostic evidence only after the
+owner's stop instruction; do not continue packaging it.
+
+Owner rejected content-hash deduplication as the primary fix: children should
+reference parent history and store ONLY incremental evidence; consolidation should
+reference input histories instead of flattening them. The unrun content-addressed
+research_history.py experiment and its artifacts/loader changes were backed out;
+clustering remains v53. No fresh replacement build has started. Next: implement
+creation-time lineage/deltas, separate research history from executable definitions,
+stream writing/hashing, and avoid reloading while retaining producer objects.
+Preserve exact provenance, template inference, support statuses and captures.
+
+Owner also asked why fresh rather than equivalent incremental: old learner state
+is incompatible, but an empty new-version incremental replay in original order is
+possible. No incremental rebuild is requested now; consider it after fresh results.
+
+### Original 73-log preparation
+
+Owner requires candidate training on production's exact 73 logs before comparing.
+All 73 hashes and byte sizes were resolved and verified against production's
+training_evidence (596,625,707 bytes). The now-stopped fresh build ran under ignored
+`.codex-tmp/production-73-v53-candidate/`, using the identical frozen v53 release
+as the prior 20-log candidate. No learner rule changes or old-model seed.
+The original IS3QON capture is outside this training set; 63 of the 75 genuine
+travel examples are present. Evaluation reuses the exact preceding 20-Run public
+handler export/database backup and native review routes, preserving comparability.
+Build output and immutable execution receipts belong in that candidate directory.
+Production selection, data and runtime processes are not being changed.
+
+The comparison/report helpers now derive training parity, counts and assessment
+from results, rather than retaining the earlier 20-log report's fixed numbers.
+Final production comparison and updated human-readable report await the corrected
+fresh build; the stopped/recovered v53 output has not replaced the old report.
+
+## Production v45 versus v53 comparison delivered — 2026-10-03
+
+Owner requested a production comparison, 15 added/removed examples, genuine
+previously unclassified examples and a short executive assessment. Delivered
+`.codex-tmp/production-v53-comparison/CHANGES.html`. This is explicitly against
+selected production package 68f1ae5db205ab46afef9c4d, not an earlier experiment.
+Candidate remains v53 a113649d3a975d5b47018681; no model changes or further build.
+
+Fresh consistent read-only backup plus public HandlerClient export found 20 Runs
+(two newer than prior comparisons), 52,899 stored records / 792,675 assigned
+occurrences. Authenticated native review shards contribute 18,427 no_matches and
+one unresolved recovery: 811,103 total occurrences, 7,287 distinct recovered native
+messages. All 20 Runs record the selected v45 package. Production replay agrees
+with every stored template/status and every review no_match route; zero parity
+mismatches. Review units are mapped to original emission ordinals and body spans;
+shards/manifests and backup hashes checked unchanged. No production data writes.
+
+Assessment: MIXED, substantial net coverage gain but not ready to replace
+production. 6,056 production no_match occurrences / 77 distinct messages become
+template assignments (13 target definitions), including the original three.
+60 previously complete occurrences / 38 distinct messages lose assignments
+(56 template, 4 provisional). 317 occurrences / 8 distinct messages become
+provisional; these remain valid complete assignments, not lost matches. Another
+72 provisional occurrences become templates. Net complete gain: 5,996 occurrences.
+Final counts production -> candidate: template 784,904 -> 790,659; provisional
+7,771 -> 8,012; no_match 18,427 -> 12,431; unresolved recovery stays 1.
+
+Definition inventory: 689 production vs 287 candidate; 164 added IDs, 566 absent,
+123 shared. Removed categories: 166 observed replacements without coverage/status
+regression; 19 with losses; 7 with downgrades and no losses; 374 unobserved in these
+Runs, so safe replacement is not established. Exact-ID changes are not counts of
+new/lost semantic families. Production trained on 73 logs vs candidate's 20, so
+this comparison combines implementation and training-breadth differences.
+
+Concrete narrowing: generic entity-name KEY becomes literal unit_levant... and
+loses unit_seljuks... messages; generic audio parenthetical PARAM becomes one
+literal reason with only one independent example; candidate lacks Invalid province
+definitions. Smaller training breadth is a plausible contributor, not proven as
+the sole cause. Recommendations: retain fixes; build fresh compatible learner
+state on the full approved genuine corpus including production coverage, repeat
+comparison against all losses/downgrades and remaining unknowns, review semantics,
+then seek release/pin approval. That next build/activation was NOT started.
+
+Report has exactly 15 added, 15 removed and 15 gained-message examples (covering
+all 13 gained target definitions), plus 8 lost-match and all 8 downgrade examples.
+Sample selection, complete crosswalk, full assignments and executive summary are
+in sibling JSON. All gained samples are actual native production review routes.
+Exact reconstruction and identity uniqueness pass; no existing LOCATOR capture
+loss on shared matches. 303 distinct messages change captures/types; complete
+details retained. This is data-fidelity evidence, not exhaustive semantic approval.
+HTML counts/links and totals verified; production selection/catalogs unchanged.
+
+New owning empirical helpers: compare_production_candidate.py and
+report_production_comparison.py. Earlier open report links prominently to this
+production assessment and labels prior no-regression claims as versus v52 only.
+Existing unrelated reporting/advisory work preserved; no commits or runtime restarts.
+
+## Corrected line boundary and dedicated super-short receiver — v53, 2026-10-03
+
+Owner corrected the earlier period instruction: evidence should have challenged
+it instead of adding an unsupported alternative. All 75 genuine bodies end in
+CRLF and their default-location values have no terminal period. Removed v52's
+period terminator; default-location PARAM now extends to native line end only,
+retaining the capitalized start and separating trailing presentation whitespace.
+
+The owner also questioned the missing super-short type and literal receiver in
+the open report. Inspection confirmed no dedicated type existed through v52:
+the marker-bounded recognizer emitted PARAM. The open locator-presence report
+was v49, whose actual template really did have literal receiver names; it was
+incorrect to explain this solely as raw-message display. v50-v52 captured receiver
+PARAMs correctly. v53 reuses that verified recognizer with CHARACTER_ID_SUPER_SHORT
+between `receiver is ` and `, default location is `. This is bounded recognition,
+not a global capitalization/Name of Place classifier. Existing numeric-parenthesis
+CHARACTER_ID_SHORT and full IDs remain unchanged. Structural validation requires
+the owner-declared boundary for the new type.
+
+Frozen release `a1c6be7f5802c60a6afe3f500cbe840bea53a2565cd051117ecb30ca8f633ec9`,
+source candidate `0f451b3b150162fecbeb14f1`, model `89b82329839c9bd6cce5bdd1`,
+package `a113649d3a975d5b47018681`, pin
+`3c9f74a7f4a813920fa7ee573c5d263dbd3121e4867709c67a5ee0a5a987ca1a`.
+Report: `.codex-tmp/super-short-character-candidate/CHANGES.html`; the previously
+open `.codex-tmp/locator-presence-candidate/CHANGES.html` now shows the current
+template and real captures above a collapsed, explicitly historical v49 section.
+Original v49 page is preserved as CHANGES.v49-history.html in that directory.
+
+Same 20-log fresh build: 222.984 seconds, 731,529 messages, 600,256 template /
+131,273 provisional / zero unknown, 287 definitions (204 supported / 83 provisional).
+Export parity: 166,518 captures, zero changed assignments/outcomes. All 75 genuine
+travel examples retain template status via `0e4e3302cde2fc5e07a2227f`; this replaces
+the prior travel definition, with 286 others unchanged. Receiver type changes
+PARAM -> CHARACTER_ID_SUPER_SHORT; all exact values, other capture types (including
+trace PARAMs), and rendered text remain identical to v52. Distinct identity checks
+pass. Full IDs remain identical: 1,128 character / 3 house / 12 title occurrences.
+
+All 18 Runs / 48,772 records / 766,476 occurrences retain v52 statuses: 758,582
+template / 7,842 provisional / 52 no_match; no losses, downgrades or failed checks.
+Original three all template through public Classifier/prepare_record. Original
+Run: 59,170 template / 143 provisional. Locator/continuation/wrapper and four earlier
+effect regressions pass. Production selection/catalogs, input hashes and backup
+unchanged; production process IDs/start times unchanged. No activation, database
+writes, runtime restarts or synthetic acceptance examples.
+
+Changed owning source: owner_rules, shared SLOT_TYPES, patterns definitions/gates,
+matching_validation structural-type requirement, clustering v53 identity. Empirical
+evaluate_character_dates now accepts an explicit expected receiver type; shared
+report helper supports historical v52 and corrected v53, checks complete capture
+conservation and shows actual original-message binding tables. Guidance and formal
+pipeline handoff updated. See focused-inference.json, receiver-type-transition.json,
+all-short-identities.json, verification.json and immutable execution receipts.
+
+## Owner-directed receiver/location boundaries — v52, 2026-10-03
+
+Implemented the latest directive in executable owner_rules: `default location is`
+introduces a PARAM whose first character is uppercase; a period ends the capture
+and remains literal. Native line end also terminates it: a fresh hash-verified
+104-log search found exactly 75 values, all capitalized and all without a period.
+The period-terminated/lowercase-start branches have no genuine witnesses and
+remain empirically unverified. The complete receiver PARAM rule already captures
+all 75 shortest character display names between `receiver is ` and the following
+comma/default-location marker; its explicit owner authorization is now recorded.
+Numeric-parenthesis CHARACTER_ID_SHORT is separate and unchanged; corrected its
+stale exported description that still claimed a preceding date was required.
+
+Fresh frozen release `5973a6a68069df1493b7a8b0631fa57776b6247ff0cbe5677f7c01255039bab9`,
+source candidate `afe5c5ce2dbebe2c5e326034`, model `b78ac3969c51343bfc071958`,
+package `ca3d41518921b4ac128d3721`, manifest pin
+`c6c6293f2723d17b399e7f7235f486e79f755efe239cef062a10cebe1c577230`.
+Report: `.codex-tmp/receiver-location-boundaries-candidate/CHANGES.html`; sibling
+location-boundary-inventory.json, field-verification.json, all-short-identities.json,
+verification.json and immutable execution receipts retain exact evidence.
+
+Same 20 complete-log build (497.344 seconds): 731,529 messages, 600,256 template /
+131,273 provisional / zero unknown. All 287 definitions are identical to v51;
+the changed executable rules are saved in the new package. Export parity checks
+166,518 captures with zero changed matches/outcomes. All 75 corpus travel messages
+retain template status via d9d8bdd39db285c6d80d8d2f, with exact date/identity/receiver/
+location values, reconstruction and distinct identities. Full-ID preservation:
+1,128 character / 3 house / 12 title occurrences.
+
+Same unchanged public-handler export of 18 Runs / 48,772 records / 766,476
+occurrences: all statuses unchanged from v51 (758,582 template / 7,842 provisional /
+52 no_match), no lost matches, downgrades or failed checks. Original three all
+template through public Classifier/prepare_record; original Run totals 59,170
+template / 143 provisional. Locator/continuation/wrapper checks and four prior
+effect regressions pass. Production selection/catalogs, input hashes and backup
+are unchanged; production process IDs/start times remain unchanged. No promotion,
+candidate database writes, process restarts or synthetic acceptance examples.
+
+Changed owning source: owner_rules.json, clustering version, patterns slot
+description, new report_receiver_location_boundaries helper; guidance and pipeline
+handoff updated. Existing unrelated work preserved. Earlier reports link forward.
+
+## Executable short-ID/location correction — v51, 2026-10-03
+
+Owner explicitly required an updated candidate, not documentation alone. Implemented
+the corrected first-capitalized-name/place rule with unrestricted later words and
+numeric-comma parentheses, removing the preceding-date prerequisite. Body-start or
+colon field boundaries remain; genuine leading transliteration modifiers are
+accepted. Complete final display names after `default location is ` are now PARAMs,
+including multiword names. Date KEYs, full IDs, receiver PARAMs, raw parser and
+locator behavior remain unchanged. No global plain-name-of-place classifier.
+
+Fresh immutable v51 release
+`dd4888c1c7ff795ac0118f9d4c1ad183e279b13909f08880ff77a28702344768`, source candidate
+`44f20d059af7d22e7c2df702`, model `a57f2987314c6427873d1097`, package
+`a43ff1bce0c141069431b9a6`, manifest pin
+`0db556637a153dc1e20bb3dd65475ea4d23f84a559fc52244fe005e472757a8f`.
+Report and all nineteen exact repaired examples:
+`.codex-tmp/character-location-candidate/CHANGES.html`.
+Same 20 complete-log build: 731,529 messages, 600,256 template / 131,273 provisional /
+zero unknown; 287 definitions, 204 supported / 83 provisional. Learning took 261.985
+seconds. Export parity checked 166,518 captures with zero changed matches/outcomes.
+
+All 75 inventoried genuine travel messages now have template assignments through
+`d9d8bdd39db285c6d80d8d2f`: 56 retain template status; all 19 former no_matches
+improve. Exact date, complete short identity, receiver, final display location,
+native rendering and distinct identity digests pass. One shared template replaces
+two definitions (final KEY / literal Mgikuyu Sabaki); 286 definitions are unchanged.
+Existing full-ID recognition is identical for 1,128 character, 3 house and 12 title
+occurrences. No genuine undated short-ID emitter was found in the 104-log inventory;
+broader applicability remains unverified, despite removing the unnecessary guard.
+
+All 18 stored Runs / 48,772 records / 766,476 occurrences checked against v50 using
+the unchanged public-handler export: one additional no_match becomes template,
+all other statuses unchanged. Totals: 758,582 template / 7,842 provisional /
+52 no_match. No lost matches, status downgrades or failed checks. All original
+three are template via the public Classifier/prepare_record path. Original Run:
+59,170 template / 143 provisional / zero no_match. Ordered LOCATOR values,
+variable-count distinct identity, native continuation/wrapper examples and four
+earlier effect-regression cases pass. Production selection/catalogs, original
+inputs and the database backup hashes are unchanged; no candidate DB writes or
+runtime restarts. CIM process inspection was denied; ordinary Get-Process confirmed
+both production process IDs/start times unchanged. No install was needed.
+
+Code: owner_rules declarations, shared matching_primitives capitalization guard,
+matching_validation declaration checks, v51 clustering identity. Empirical helpers
+check_character_dates/evaluate_character_dates/report_character_location verify and
+report genuine evidence. The receiver-capture survey now uses the actual receiver
+span rather than substring containment in another capture. Guidance and formal
+pipeline handoff record implemented behavior; historical v49/v50 pages link forward.
+Remaining repeated-entry line:/near line: equivalence gap is a separate limitation.
+
+## Disposable date/short-character correction — v50, 2026-10-03
+
+Owner reiterated the previously omitted word-month date and short-character
+directives. Implemented in the existing parameter registry/shared matcher:
+format-constrained date KEY, opaque CHARACTER_ID_SHORT following that date,
+and a bounded PARAM between `receiver is ` and `, default location is `.
+All are source/mod/name independent. Numeric short-ID parentheses and the date
+signpost establish boundaries in v50. Owner subsequently corrected the rationale:
+capitalizing only the first word, allowing unrestricted later words, does not
+truncate Viviana de Torres or Akurat Misibsen of Nabel. The earlier analysis
+mistakenly tested an all-words-capitalized rule. Name/place first-character uppercase
+holds in 74/75; the other starts `ʾAmīr` (uppercase A after a transliteration modifier).
+All 75 numeric-comma endings are this character formulation; no non-character
+counterexample was found. Evidence supports the owner's shape in this emitter/context;
+it does not establish that the current date guard is necessary. No model changed
+as part of this explanatory correction.
+Existing CHARACTER_FULL_ID is unchanged (28 declared contexts / 17 sources).
+
+104 complete retained logs (815,801,334 bytes, hashes verified) contain 75 short
+identities/date prefixes, all in the travel family; no other family was found.
+All dates use spaces/three-letter months: 19 three-digit years, 56 four-digit.
+Hyphenated spelling is explicitly owner-requested, declared but unwitnessed.
+Complete name word counts: 1=8, 2=40, 3=10, 4=9, 5=3, 6=5. Raw parser token
+counts differ: 1=8, 2=39, 3=11, 4=8, 5=4, 6=4, 7=1. Names can include titles,
+`of`, lowercase particles, apostrophes and untranslated dynasty strings; display
+locations can be multiword. Short/full distinction is the numeric-comma suffix,
+not the absence of `of` words. Whole short identities remain opaque.
+
+The receiver was never PARAM in the v49 corpus replay: 22 literal / 53 unmatched.
+Date/short fields alone pass similarity but the existing unmarked-PARAM ban still
+separates the two targets. Explicit field markers now bound the receiver. Broad
+plain-name-of-place survey: 187 expression occurrences / 154 distinct witnesses,
+48 already inside PARAM, 109 inside REASON, 26 literal, 4 unmatched; includes
+non-character titles/artifacts/traits/wording. Do not infer characters globally.
+
+Fresh same-20-log source candidate `939a84cf65c16602cccf868f`, model
+`165e31d94dd1dd6343acab13`, package `86a00a396c0c051a811e2048`, manifest pin
+`bb8b30c80b7cb0777392bcb758b1debc4fc790bf3f7ed10a2bdb05bb81371174`, frozen release
+`ea355276733439647c1ad7b9a2797a355958baaf3d6758324bb13fcb2e1144b2`.
+Artifacts/report: `.codex-tmp/character-date-candidate/CHANGES.html` and sibling
+corpus/field-verification/all-short-identities/verification JSON and execution receipts.
+Training: 731,529 messages, 600,256 template / 131,273 provisional / zero unknown;
+288 definitions, 205 supported / 83 provisional. Export parity: 166,516 captures,
+zero changed assignments/outcomes. Build took 198.64 seconds.
+
+All three original diagnostics are template assignments. Both travel examples
+share `825d520b4951f33d75e54545`, capturing date KEY, CHARACTER_ID_SHORT, receiver
+PARAM and final location KEY. Original Run public pipeline: 59,170 template /
+143 provisional / zero no_match. Same 18-Run public-handler export: 766,476
+occurrences, 3 no_match -> template; all other statuses unchanged (758,581 template,
+7,842 provisional, 53 no_match). No downgrades or lost matches. Exact reconstruction,
+identity distinction, LOCATOR preservation, continuation and four prior effect
+checks pass. Existing recognized full-ID fields in the 20-log evidence are unchanged:
+1,128 character, 3 house, 12 title occurrences.
+
+All 75 short identities/date/receivers are recognized exactly; candidate complete
+assignments: 56 template / 19 no_match. Versus v49: 34 newly matched, 8 provisional
+-> template, 14 template unchanged, 19 unchanged no_match. Those 19 have final
+multiword location names outside the learned final KEY; default-location display
+names remain an explicit separate limitation. Do not claim the entire travel
+family is solved. No universal name recognizer or new location-name field added.
+
+The first all-75 evaluation harness failed a list-of-tuples versus list-of-lists
+assertion; corrected to the renderer API shape and reran all 75 with exact text
+and field-value checks. Corpus scanning now uses physical LF boundaries so CK3
+formatting controls do not distort source line references; counts unchanged.
+Parser unchanged; production models/catalogs, source logs, existing Runs and live
+watcher/handler untouched. No candidate database writes or production activation.
+Existing repeated-entry line/near-line equivalence gap remains separate.
+
 ## Disposable combined locator experiment — 2026-10-03
+
+Completed owner-authorized follow-up: v49 restores exactly ONE LOCATOR presence
+unit for the recognized variable-count message-ending location sequence. This
+does not collapse KEY counts or other fields. Code change is in learning_tokens;
+matcher capture/layout semantics and threshold 0.72 remain unchanged. An immutable
+fresh same-20-log build is retained in `.codex-tmp/locator-presence-candidate/`,
+using the prior unchanged 18-Run HandlerClient export/backup for comparison.
+Frozen learner release: `25a23fd9776991fe8138bcd318818bd11df0acc8e63e215ecdd1340afebfca54`.
+Focused genuine checks pass for absent, Unknown, 1/2/3-entry presence, three
+independent KEY positions and two non-trailing LOCATOR positions. The real effect
+pair now scores 0.775 and forms one shared KEY-effect definition at 0.72.
+Full-package/stored-data verification passed. Candidate `32437a5272a3cf7586d3e741`
+exports model `30a80a06501b0ecb861a2c95`, package `34993f744952a813749b9ecb`,
+manifest pin `2166296d28590f6d9666dea5c3a336051b1d382a800c70938a77d55d04cc8d6e`.
+Training: 731,529 messages, 600,248 template / 131,281 provisional / zero unknown;
+296 definitions (204 supported, 92 provisional). Export parity checked 166,507
+captures with zero changed matches/outcomes. All 18 stored Runs: 48,772 records,
+766,476 occurrences, 6,875 distinct native units. v48 -> v49 changes only four
+provisional occurrences to template, repairing all four effect regressions with
+shared KEY-effect definition `54a08a1f7dece3a16e343bfb`; no status downgrades or
+lost complete matches. Totals: 758,578 template / 7,842 provisional / 56 no_match.
+Exact reconstruction, locator captures, distinct identities and continuation
+checks pass. No selected KEY becomes literal; 36 custom_tooltip occurrences gain
+KEY captures. Inventory changes: 23 added / 10 removed / 273 unchanged IDs;
+new literal-scope inventory entries do not displace selected KEY captures in
+these stored Runs. This is not a universal unseen-accuracy claim.
+Original Run public pipeline: 59,168 template / 145 provisional / zero no_match;
+original scope target template, both travel targets provisional (unchanged).
+Report: `.codex-tmp/locator-presence-candidate/CHANGES.html`; verification and
+authenticated execution receipts are alongside it. Production selection/catalogs,
+backup, training logs and watcher/handler processes remain unchanged.
+The presence correction resolves the effect regression, so the conditional
+variable-threshold trial was not run; threshold remains 0.72.
+The 0.85 calculation below was illustrative; it is not the implemented one-unit
+policy. The repeated-entry line/near-line equivalence gap remains separate.
+
+Latest owner correction: the recorded `inference_policy.field_similarity` rule
+requires each recognized present field to contribute one typed similarity unit,
+independent of its contents. v48 incorrectly removed repeated-location and trace
+field-presence credit while removing count dependence. The v46 score's field
+contributions were legitimate presence credit, not leakage of slot contents.
+Restore count-independent presence credit before attributing the failure solely
+to neighbor retrieval. A diagnostic calculation on the real pair retaining one
+file/line/trace presence signature scores 0.85 before effect-name KEY inference;
+this is illustrative, not an implemented policy. The jointly inferred fields are
+KEY, REASON, LOCATOR, LOCATOR, PARAM; all five corresponding fields are present.
+Runtime matching uses complete structural assignments, not similarity scores.
+There is no implemented general sliding threshold: current short-form admission
+only covers equal-length comparisons of at most two units with 0.49 agreement;
+the three-unit v48 view falls through to 0.72. See `slot-presence-check.json` and
+the corrected DIAGNOSIS.html. No matcher/learner behavior changed in this review.
+
+Subsequent owner review identified a confirmed v48 discovery regression in the
+four template-to-provisional effect occurrences. Do not treat this candidate as
+ready for promotion. The two original training members are both present: current
+joint inference and pair-only ordinary clustering produce the supported shared
+`<KEY> effect [<REASON>]` formulation with zero failed captures. Their native
+inference views contain 27 aligned units differing only at the effect-name token.
+The initial comparison fell from v46's 0.87142857 (shared location fields counted)
+to v48's 0.70 (location fields excluded), below the unchanged 0.72 threshold.
+Full-source tracing reproduced 329 pre-regrouping groups: the correct partner
+ranked 18th among 42 remaining candidates, outside the 12-neighbor limit. Other
+effect formulations tie under the coarse word-set score; template IDs decide
+their order. The later iteration searches only forward and never retries this
+pair. Its one-member provisional definitions are an effect of missed discovery,
+not insufficient corpus evidence. The earlier status-only explanation was incomplete.
+
+Authenticated v46 focused additive source-API verification retains the old
+supported definition with two settled records and zero reopened records. That
+does not authorize or enable a v46-to-v48 seed: additive learning requires the
+same implementation/rules/parser/threshold, and changed implementation is
+explicitly rejected. Fix proposal retrieval for structurally aligned field
+variants; preserve full inference/wording guards. No new inference policy was
+implemented during this troubleshooting request. The independently found
+repeated-entry `line:` / `near line:` equivalence omission is also outstanding.
+Evidence/report: `.codex-tmp/effect-regression-review/DIAGNOSIS.html`, `trace.json`,
+`ranking.json`, `v46-comparison.json`, `v46-additive.json`. Research tools:
+`investigate_effect_regression.py`, `report_effect_regression.py`. The linked
+CHANGES.html now flags this confirmed regression. Production remains untouched.
 
 The owner now explicitly authorizes implementing/testing BOTH marker/Unknown
 recognition and count-independent trailing locators in a disposable candidate,
@@ -298,7 +2408,7 @@ wording search substitutes for whole-message content including slot values.
 No runtime changes or new requirements. No synthetic data or failures.
 One premature report-generation command failed, then succeeded after the final
 integrity evidence was written; data comparisons all passed. Logging/imports/pip
-checks passed. Failed-read/duplicate-timestamp/unavailable-source cases remain
+checks passed. Failed-read/unavailable-source cases remain
 unexercised. Continue 08B separately; its known traversal-scope repair is still open.
 
 ## Learner v46: approved changes and fresh 20-log candidate — 2026-10-03

@@ -10,9 +10,9 @@ import string
 import unicodedata
 from .full_ids import FullIdRules
 from .continuations import match_components
-from . import location_sequences
+from . import location_sequences, formatted_literals
 
-SLOT_TYPES = ("KEY", "OPTIONAL_KEY", "PARAM", "LOCATOR", "VALUE", "REASON", "CHARACTER_FULL_ID", "HOUSE_FULL_ID", "TITLE_FULL_ID")
+SLOT_TYPES = ("KEY", "OPTIONAL_KEY", "PARAM", "LOCATOR", "VALUE", "REASON", "CHARACTER_FULL_ID", "HOUSE_FULL_ID", "TITLE_FULL_ID", "CHARACTER_ID_SHORT", "CHARACTER_ID_SUPER_SHORT")
 NUMBER = r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?"
 LINE_REFERENCE = r"[0-9]+(?:-[0-9]+)?"
 
@@ -36,6 +36,43 @@ def punctuation_piece(kind, text):
     """Classify an existing parser piece; never split or normalize its text."""
     return kind == "token" and bool(text) and all(
         c in string.punctuation or unicodedata.category(c).startswith("P") for c in text)
+
+
+@lru_cache(maxsize=16384)
+def quoted_piece_ranges(pieces, quote="'", allow_multiline=False, allow_punctuated_close=False):
+    """Locate unambiguous paired quote tokens in the original parser pieces.
+
+    This establishes boundaries, never slot types. Nested, unmatched or ambiguous
+    quotes abstain; word-internal apostrophes remain interior data. Discovery
+    keeps its single-line restriction; field recognition can also defer to an
+    enclosing multiline quotation without consuming its contents. Deferral can
+    allow punctuation before a closing quote; discovery retains its stricter
+    ambiguity check. This conservative deferral does not declare an outer PARAM.
+    """
+    ranges, opened = [], None
+    for index, piece in enumerate(pieces):
+        if piece != ('token', quote):
+            continue
+        left = pieces[index-1] if index else None
+        right = pieces[index+1] if index+1 < len(pieces) else None
+        can_open = left is None or left[0] == 'gap' or punctuation_piece(*left)
+        can_close = right is None or right[0] == 'gap' or punctuation_piece(*right)
+        if opened is None:
+            if not can_open or (can_close and right != ('token', quote)):
+                return (), 'ambiguous_quote_boundaries'
+            opened = index
+        elif can_close:
+            if can_open and index != opened + 1 and not allow_punctuated_close:
+                return (), 'ambiguous_quote_boundaries'
+            if not allow_multiline and any('\n' in text or '\r' in text for _, text in pieces[opened+1:index]):
+                return (), 'multiline_quote_boundaries'
+            ranges.append((opened, index+1))
+            opened = None
+        elif can_open:
+            return (), 'nested_quote_boundaries'
+    if opened is not None:
+        return (), 'unclosed_quote'
+    return tuple(ranges), None
 
 
 def key_piece_sequence(pieces, joiners):
@@ -146,7 +183,7 @@ def _matching_plan(material):
     if any(p["kind"] == "slot" and p["type"] not in SLOT_TYPES for p in result):
         raise MatcherDeclarationError("unsupported slot type")
     allowed = {"parser_boundaries", "literal_punctuation", "literal_guidance", "single_token", "key_joiners",
-               "location_value", "numeric_text", "line_reference", "balanced_pairs", "declared_field", "full_id"}
+               "location_value", "numeric_text", "line_reference", "balanced_pairs", "declared_field", "full_id", "parameter_structure"}
     if any(set(p["constraints"]) - allowed for p in result if p["kind"] == "slot"):
         raise MatcherDeclarationError("unsupported slot constraint")
     return result
@@ -309,6 +346,7 @@ class Rules:
                          if [c for c in w if c['name'].startswith('locations_')]==expected]
             return dict(count=len(witnesses),captures=witnesses[0] if len(witnesses)==1 else None,witnesses=witnesses)
         if (parts and parts[0]['kind'] == 'literal'
+                and 'literal_format' not in parts[0]
                 and not text.startswith(tuple(parts[0].get('alternatives', [parts[0]['text']])))):
             return dict(count=0, captures=None, witnesses=[])
         plan = _matching_plan(json.dumps(pattern_identity(parts), sort_keys=True, ensure_ascii=True))
@@ -324,6 +362,9 @@ class Rules:
                 return (1, ((),)) if position == len(text) else (0, ())
             part = plan[index]
             if part['kind'] == 'literal':
+                if 'literal_format' in part:
+                    value = formatted_literals.spelling(part, text, position)
+                    return visit(index + 1, position + len(value)) if value is not None and position in boundary_set and position+len(value) in boundary_set else (0, ())
                 # Validated choices are nonempty, prefix-free declared labels.
                 literal = next((s for s in part.get('alternatives', [part['text']])
                                 if text.startswith(s, position)), None)
@@ -339,6 +380,10 @@ class Rules:
                 elif c.get('full_id'):
                     field = c['full_id']
                     end = self.full_ids.capture_ends(pieces, field['source'], field['definition']).get(a)
+                    ends = (end,) if end is not None else ()
+                elif c.get('parameter_structure'):
+                    field = c['parameter_structure']
+                    end = self.parameter_capture_ends(pieces, field['source'], field['definition']).get(a)
                     ends = (end,) if end is not None else ()
                 elif c.get('location_value'):
                     end = self.location_capture_ends(pieces).get(a)
@@ -448,6 +493,9 @@ class Rules:
                     found = content.match(text, start)
                     if found is None or found.end() not in indices:
                         continue
+                    if any(not found.group(group).lstrip(definition.get('leading_modifiers', ''))[:1].isupper()
+                           for group in definition.get('capitalized_starts', ())):
+                        continue
                     b = indices[found.end()]
                 elif definition['mechanic'] == 'balanced_interior':
                     opening, closing = definition['delimiters']
@@ -491,9 +539,27 @@ class Rules:
                     raise MatcherDeclarationError('unknown declared parameter mechanic')
                 if a == b or any((x < b and a < y for x, y in (*protected, *((x, y[0]) for x, y in fields.items())))):
                     continue
+                # A new inner reference must not split a larger quoted field.
+                # Whole-interior references remain eligible. No slot is inferred
+                # merely from a quotation; ordinary empirical inference owns it.
+                enclosing = [
+                    (left, right) for quote in definition.get('defer_inside_quotes', ())
+                    for left, right in quoted_piece_ranges(pieces, quote, True, True)[0]
+                    if left < a and b <= right - 1
+                    and any(kind != 'gap' for kind, _ in (*pieces[left+1:a], *pieces[b:right-1]))]
+                if enclosing:
+                    continue
                 fields[a] = (b, definition['id'])
         return fields
 
+
+    @lru_cache(maxsize=16384)
+    def parameter_capture_ends(self, pieces, source, definition):
+        offsets = [0]
+        for _, value in pieces:
+            offsets.append(offsets[-1] + len(value))
+        return {offsets[a]: offsets[b] for a, (b, d) in self.parameter_field_ranges(pieces, (), source).items()
+                if d == definition}
 
     def applies_to_record(self, template, record):
         """Shared source/construction/field-structure gates before body matching."""

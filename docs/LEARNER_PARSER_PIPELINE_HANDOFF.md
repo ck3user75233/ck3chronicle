@@ -1,5 +1,276 @@
 # Formal reply: published native model and shared parser
 
+## Next combined release — 2026-10-05
+
+Use the [release README](learner-next-release/README.md) and
+[integration handoff](learner-next-release/HANDOFF.md) for the upcoming learner /
+decoder package. They consolidate the cumulative change list, exact v60 baseline,
+decoder integration, verification and activation requirements. Neither the older
+v58 preparation below nor v60's decoder-free verification is the final combined
+release. Production selection remains unchanged. Parser v1.8 uses the application's
+fragment-safe decoder; the frozen learner retains that shared source as an
+authenticated dependency, and installed runtime packages require the accompanying
+application artifact. Historical standalone/standard-library-only package claims
+below describe their original releases, not the v1.8 application dependency.
+
+## Continued research after v58 preparation — 2026-10-04
+
+The prepared v58 replacement below was never activated. Subsequent owner review
+identified additional field-boundary work, so its completion statement is
+historical. The current disposable v60 build adds contextual formatted-reference
+PARAM recognition; see CURRENT_HANDOFF for its frozen release and verification
+status. Do not activate the earlier prepared selection as the completed result
+of this continuing work. Active production remains `68f1ae5db205ab46afef9c4d`.
+The separate activity-field gap and coordinated runtime activation remain open.
+
+## v58 production replacement preparation — 2026-10-04
+
+The owner authorized replacing production after the assigned work was completed.
+The completed 73-log incremental candidate is now retained through the owning
+model/learner registration APIs; its immutable payloads were not rewritten.
+The active selection is still the previous package pending coordinated activation.
+
+- Package: `f23424ed8aa4d910bf4d3223`, model `0f4a012e91e6ffa253d9d858`.
+- Retained path: `models/releases/f23424ed8aa4d910bf4d3223`.
+- Manifest SHA-256: `504710350c8f87666f0358fbacc35f85e4e50045e1cee5d270d25e63ea377c21`.
+- Matcher API: `ck3-native-matcher-v3`; selector: `complete-assignment-v2`.
+- Parser: `ck3-lossless-v1.7`, unchanged hash
+  `a8005254df58daf20e000e454c9e3e9b40304be4cd0962e1fa88e90cea86baab`.
+- Frozen learner: `2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a`.
+- Learner manifest SHA-256:
+  `3363cdb62d6c851917faa20af02133e60184a97a6229dd8b9686abddf087e616`.
+- Model publication order 7; learner publication order 8. Catalog publication
+  records do not themselves change the active selection.
+
+All assigned implementation, empirical comparisons and report work is complete.
+The 400 templates comprise 300 supported and 100 provisional templates. The same
+20 stored Runs gain 11,495 classified occurrences with zero losses/downgrades;
+the complete 73-log training comparison also has no losses/downgrades. All three
+original IS3QON errors classify as supported. Full evidence and the requested
+samples remain in `.codex-tmp/coupled-words-v58-candidate/CHANGES.html`.
+
+Activation must include the current application `pipeline/contracts.py`, which
+renders repeated location entries and exact formatted-date literal choices.
+The handler for the configured production database answered the read-only hello
+request as PID 23252, instance `ca3faf45a4514e5cab542769c2a3c70f`. Its October 2
+startup predates these changes. `repository.py` imports contracts at startup;
+changing the selected package alone does not refresh that application module.
+The owner's earlier prohibition on runtime restarts therefore needs resolving
+before the final live switch. No restart or production ingestion was performed.
+
+Preparation receipts and the exact proposed/previous selections are in
+`.codex-tmp/v58-production-promotion/`. The previous package
+`68f1ae5db205ab46afef9c4d` remains retained for historical Runs and rollback.
+No database migration, historical reclassification or source-log change is needed.
+
+## Latest disposable v57 candidate — 2026-10-04
+
+Package 53c4fdd5e5d0265714016450 supersedes v56 for the owner's latest review.
+Manifest pin: 0c1964615955b292863f365a1c619398305638b48438c7c9d1c029164a6d8f15.
+Path: .codex-tmp/literal-v57-candidate/packages/53c4fdd5e5d0265714016450.
+The same 73-log incremental schedule produced 400 templates. The history
+after-death / before-birth wording is literal, replacing the earlier PARAM rule.
+Game-date prefixes are equivalent formatted literals, replacing the erroneous
+KEY representation. Their exact native spelling is stored as a string choice in
+literal_choices; ordinary line-label choices remain integer indexes. Both are
+preserved by error identity and exact rendering. The public contract renderer
+has the corresponding backward-compatible extension; deploy that application
+change with any future approved package activation. No DB migration is needed.
+
+All 75 genuine short-character/date messages pass one supported template; all
+three original IS3QON diagnostics pass Classifier/prepare_record. The same 20-Run
+comparison gains 11,495 assignments with zero losses, downgrades, identity
+collisions or reconstruction failures. The full 73-log comparison also loses no
+production assignments or supported statuses. Current production stays pinned
+to 68f1ae5db205ab46afef9c4d. No runtime processes were restarted or replaced.
+Human review: .codex-tmp/literal-v57-candidate/CHANGES.html and its linked
+LITERAL-CORRECTIONS.html. Earlier dated sections describe superseded candidates.
+
+## Current disposable v56 candidate — 2026-10-04
+
+Owner-directed gap fixes are implemented and verified in package
+`3f5e1736f30ca4a1c94cbe5e`, model `e00251c9a5de51b76b8c7f22`, manifest pin
+`cc3f36a2c0b2b24f9b9bc605f6d1235ea18e33f5eea9ced6df74b7a2b6d3546f`.
+Artifacts and readable reports are under `.codex-tmp/owner-gaps-v56-candidate`.
+The retained 73 inputs and 20+20+20+13 schedule match the recorded production
+build. The active comparison is production versus this candidate only.
+
+Nine contextual field declarations repair grammatical phrase/name fragmentation
+and finish accepted comparison/scope/formatting-tag fields. Separate Unknown
+effect/trigger constructions protect those category words at initial discovery;
+the reproduced original defect preceded revision-only wording protection.
+
+The same 20 stored Runs gain 11,495 assignments over production, with none lost
+or downgraded. All three original IS3QON messages pass public classification and
+record preparation. All 73 training logs also have no production assignment losses
+or template-to-provisional downgrades; 36,833 provisional occurrences become
+template assignments. Field checks and template-tie checks pass. Export parity
+checks all 91,925 contextual rows and 371,617 captures. Production, source logs,
+stored Runs and runtime processes remain unchanged.
+
+399 candidate templates include 100 provisionals. CHANGES.html contains 15 added,
+15 removed and 15 newly classified examples. FIXES.html checks all fourteen owner
+cases; REMOVALS.html traces many-to-one replacements and separates location-only
+changes. The 38 removed production IDs without selected witnesses remain a review
+limit, as does pending acceptance of the dedicated untyped construction. Positive
+verified results are not production promotion. Exact receipts are in CURRENT_HANDOFF.
+
+## Historical same-73-log v54 candidate comparison — 2026-10-04
+
+The completed human report is
+`.codex-tmp/production-73-v54-candidate/CHANGES.html`: 15 added definitions,
+15 removed definitions and 15 previously unclassified messages with destination
+templates. It compares the exact production training hash set and the same
+20-Run evidence used in the earlier report, plus all 73 training logs.
+
+Assessment is mixed with a large net gain: 16,727 new complete assignments and
+one lost occurrence in the stored Runs; no support downgrades there. All three
+original IS3QON diagnostics classify. The full training corpus has no lost
+assignments, but 115 occurrences lose template support and remain valid
+provisionals. Saved history traces the affected marked-up names and apostrophe
+localization names to rejected broad PARAM proposals and singleton refinement.
+Resolve/review those regressions before promotion; identical incremental ordering
+has not been tested. Exact package/pin, scope, evidence and verification limits are
+at the top of CURRENT_HANDOFF.md. Production is unchanged.
+
+The storage-only v54 correction preserves all 496 v53 full-corpus executable
+definitions and byte-identical native assignment evidence. Research JSON shrank
+from 11.35 GB to 245.5 MB; build and native publication parity both completed.
+
+## Production comparison of v53 — 2026-10-03
+
+The completed comparison with selected production v45 is mixed and does not
+recommend promoting the current 20-log candidate. Fresh evidence covers 20 Runs,
+including native production review shards: 6,056 previously unclassified
+occurrences gain complete assignments, but 60 previously complete occurrences
+lose them and 317 template occurrences become valid provisional assignments.
+Net complete coverage increases by 5,996. Production replay agrees with all
+stored outcomes; reconstruction/identity/LOCATOR fidelity checks pass.
+
+Report: `.codex-tmp/production-v53-comparison/CHANGES.html`, with 15 added,
+15 removed and 15 gained-message examples, negative examples and executive next
+steps. Production's 73-log training breadth differs from the candidate's 20 logs;
+374 absent production definitions are not exercised by the observed Runs. Retain
+the fixes, rebuild with full approved genuine coverage in fresh compatible learner
+state, then repeat regression review before seeking release/pin approval. No such
+build or activation was started. Earlier zero-regression comparisons below are
+against preceding experimental candidates, not production.
+
+## Disposable v53 typed receiver and corrected line boundary — 2026-10-03
+
+New package `a113649d3a975d5b47018681`, model `89b82329839c9bd6cce5bdd1`,
+manifest pin `3c9f74a7f4a813920fa7ee573c5d263dbd3121e4867709c67a5ee0a5a987ca1a`
+is under `.codex-tmp/super-short-character-candidate/packages/`.
+The default-location PARAM ends at the native line ending; the unsupported v52
+period terminator is removed. All 75 genuine examples end in CRLF and lack a
+terminal period. Evidence should have corrected the earlier proposed grammar.
+
+The existing receiver-marker recognizer now emits CHARACTER_ID_SUPER_SHORT,
+preserving the complete name between `receiver is ` and `, default location is `.
+This is a new dedicated type: v50-v52 emitted PARAM, and the v49 report really
+showed literal receiver names. There was no existing global super-short recognizer.
+Consumers must retain the new type supplied by the authenticated model and use
+the packaged matcher. Shape/API v3 is unchanged; structural recognition is required
+for this type. Numeric-parenthesis CHARACTER_ID_SHORT and full-ID types remain
+unchanged. This does not identify arbitrary Name of Place strings globally.
+
+All 75 genuine corpus examples pass the exported package as one template with the
+new type, exact values/rendering and distinct identities. Candidate review is in
+`.codex-tmp/super-short-character-candidate/CHANGES.html`; CURRENT_HANDOFF records
+the final stored-Run comparison. No production activation is part of this work.
+
+The completed 18-Run comparison retains all v52 statuses with zero losses,
+downgrades or failed checks. The original three pass public classification/record
+preparation. All 75 receivers change type only: exact values, all other capture
+types (including trace PARAMs) and reconstructed text are unchanged. Export parity
+checks 166,518 captures. Production selection/catalogs, protected inputs and backup
+remain unchanged. The formerly open v49 page now shows the current template and
+actual capture table above explicitly historical content.
+
+## Disposable v52 receiver/location boundaries — 2026-10-03
+
+Package `ca3d41518921b4ac128d3721`, model `b78ac3969c51343bfc071958`,
+manifest pin `c6c6293f2723d17b399e7f7235f486e79f755efe239cef062a10cebe1c577230`
+is under `.codex-tmp/receiver-location-boundaries-candidate/packages/`.
+This follows the owner's explicit default-location boundary directive. The saved
+executable rule captures a capitalized-start PARAM immediately after `default
+location is `, ending before a period or at native line end. The period stays
+literal. All 75 genuine examples end without a period, so a mandatory period
+would reject the evidence. Period-terminated and lowercase-start examples are
+unavailable in the 104-log census and remain empirically unverified.
+
+The owner explicitly accepts `receiver is ` as a marker for the shortest character
+display-name form. The already-working complete receiver PARAM rule is retained;
+it ends before the comma/default-location marker. It is separate from numeric-
+parenthesis CHARACTER_ID_SHORT, whose stale exported date-boundary description
+is corrected. No matcher API, parser, full-ID or production selection change.
+All 75 retain complete template assignments with exact values; export parity
+checks 166,518 captures. All 287 template definitions remain identical to v51;
+the executable rules and model/package identities change. See CURRENT_HANDOFF
+and `.codex-tmp/receiver-location-boundaries-candidate/CHANGES.html` for results.
+
+The 18-Run / 766,476-occurrence comparison with v51 has no status changes, lost
+matches or downgrades. All three original diagnostics pass public classification
+and record preparation. Exact reconstruction, locator preservation, continuation/
+wrapper checks and four earlier effect regressions pass. Production selection,
+catalogs, protected inputs and database backup are unchanged; no runtime restart.
+
+## Disposable v51 short-ID/location correction — 2026-10-03
+
+The owner required updating the executable candidate, not just recording the
+directive. Newly frozen package `a43ff1bce0c141069431b9a6`, model
+`a57f2987314c6427873d1097`, manifest pin
+`0db556637a153dc1e20bb3dd65475ea4d23f84a559fc52244fe005e472757a8f`
+is under `.codex-tmp/character-location-candidate/packages/`.
+It supersedes v50 for this disposable experiment; production remains v45.
+
+CHARACTER_ID_SHORT no longer requires a preceding date: it uses a body-start or
+colon boundary, capitalized name/place starts (allowing leading transliteration
+modifiers), unrestricted later words, and numeric-ID/comma parentheses. The entire
+identity remains opaque. The complete final display name after `default location
+is ` is now one PARAM, including multiword names. Date recognition, full IDs, raw
+parser, existing locator semantics and matcher API v3 remain unchanged.
+
+The exported matcher assigns all 75 genuine inventoried travel messages to the
+same supported definition `d9d8bdd39db285c6d80d8d2f`: 56 retain template status,
+19 improve from no_match. Exact field values, rendering and distinct identities
+pass. Two older definitions consolidate into this one; the other 286 definitions
+are unchanged. The 104-log inventory contains no undated short-ID witness, so
+applicability to an undated emitter remains unverified. Candidate review/results
+are in `.codex-tmp/character-location-candidate/CHANGES.html` and CURRENT_HANDOFF.
+
+The unchanged public-handler export of 18 Runs / 766,476 occurrences verifies
+one additional no_match -> template, with no lost matches or status downgrades.
+All original three diagnostics pass the public Classifier/prepare_record path.
+Exact rendering, LOCATOR preservation, continuation/wrapper checks and the four
+earlier effect regressions pass. Export parity checks 166,518 captures. Production
+selection/catalogs, protected input hashes and the database backup are unchanged;
+no candidate database writes or runtime restarts.
+
+## Disposable v50 date/short-character candidate — 2026-10-03
+
+Owner-requested experimental follow-up, not production activation. Package
+`86a00a396c0c051a811e2048`, model `165e31d94dd1dd6343acab13`, manifest pin
+`bb8b30c80b7cb0777392bcb758b1debc4fc790bf3f7ed10a2bdb05bb81371174` are retained under
+`.codex-tmp/character-date-candidate/packages/`. This builds on experimental schema
+6 / matcher API v3; the original production v45 package remains selected.
+
+The model adds `CHARACTER_ID_SHORT` and a `parameter_structure` slot constraint
+containing declaration/source references. Format-locked date KEYs, short IDs and
+bounded receiver PARAMs use the existing line-sequence declaration mechanism,
+with exact recognized boundaries enforced by the pinned matcher. Consumers must
+retain the new type as supplied by the model, preserve whole values, and use the
+packaged matcher rather than interpreting date/name syntax themselves. Dates
+remain KEYs with a structural constraint; existing full-ID types are unchanged.
+
+Public Classifier/prepare_record checks pass for all original three diagnostics:
+all template status, with the two travel messages sharing one definition. Genuine
+18-Run comparison, exact reconstruction/identity, existing locator preservation,
+continuations, and original four effect-regression checks pass. No candidate
+database writes, selection/catalog changes or process restarts. Corpus scope and
+the remaining multiword default-location limitation are in CURRENT_HANDOFF and
+the candidate's CHANGES.html; full release/promotion remains owner-directed.
+
 ## Script location stack investigation — 2026-09-28
 
 See [the investigation results](LEARNER_SCRIPT_LOCATION_STACK_INVESTIGATION_RESULTS.md)

@@ -130,7 +130,7 @@ def build(bundle, output, top=20, examples=3):
     for tid in sorted(used_patterns):
         p = patterns[tid]
         exported_patterns[tid] = dict(source=p["source_family"], region=p["context_kind"], display=p["display"],
-            status=p['status'],parts=[{k: v for k, v in part.items() if k in {"kind", "text", "type", "name", "prefix", "suffix", "optional", "alternatives", "location_label"}}
+            status=p['status'],parts=[{k: v for k, v in part.items() if k in {"kind", "text", "type", "name", "prefix", "suffix", "optional", "alternatives", "location_label", "literal_format", "format_pattern"}}
                    for part in p["parts"]], support=p["support_occurrences"], variants=p["unique_messages"])
     result = dict(revision=model["revision_id"], parser=model["parser"]["version"], bundle=str(bundle.resolve()),
         summary=model["summary"], views=views, patterns=exported_patterns, records=records,

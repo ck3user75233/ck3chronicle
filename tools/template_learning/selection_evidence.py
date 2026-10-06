@@ -51,10 +51,10 @@ def selection_evidence(cluster, support):
             valid=bool(part.get('parameter_definition') or
                        part.get('field_support',{}).get('assessment',{}).get('supported'))
         elif kind in {'KEY','OPTIONAL_KEY'}:
-            valid=(part.get('inference_rule') == INFERENCE_POLICY['date_keys']['id']
+            valid=(bool(constraints.get('parameter_structure')) or part.get('inference_rule') == INFERENCE_POLICY['date_keys']['id']
                    or len(part['observed_values'])+bool(part.get('observed_absence'))>=2)
         else:
-            valid=bool(constraints.get('location_value') or constraints.get('full_id')
+            valid=bool(constraints.get('location_value') or constraints.get('full_id') or constraints.get('parameter_structure')
                        or constraints.get('declared_field') or kind=='VALUE')
         if not valid:unsupported.append(part['name'])
     return dict(maximum_location_losses=max_locations,

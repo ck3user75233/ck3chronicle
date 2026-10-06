@@ -98,7 +98,7 @@ directories and therefore do not establish the missing automatic narrowing.
 |---|---|---|
 | 08A.1 structured query, stored template-reference OR selection, whole-message/grouped literals, exact identity, typed bindings and count refinements | `query.py` and `analysis.py`; public signatures/examples in the 08A.1 handoff; genuine diagnostic and multi-Run checks | Implemented. Exact/partial template-text APIs from the original prompt remain present; they were not deleted or substituted for stored assignment selection. |
 | 08A.1 handler-only reads and contract rendering/identity | HandlerClient reads; `contracts.render` and full `identity_data`; no repository/SQLite runtime access | Implemented and exercised on unchanged genuine backups. |
-| 08A.1 package/source-timestamp chronology, windows, history, historical entries and exclusions | Four eligible genuine Runs and fourteen missing-timestamp exclusions; per-Run raw/filtered counts and default/trailing windows | Exercised for available history. Duplicate usable timestamps and naturally failed reads were absent and remain unverified; no synthetic evidence was used. |
+| 08A.1 package/source-timestamp chronology, windows, history, historical entries and exclusions | Four eligible genuine Runs and fourteen missing-timestamp exclusions; per-Run raw/filtered counts and default/trailing windows | Exercised for available history. Naturally failed reads were absent and remain unverified; no synthetic evidence was used. |
 | 08A.1 original median/notability requirement | Was implemented and verified before the owner rejected median-based comparison; median and derived labels subsequently removed | A change following the owner's discussion, not fulfilment of the original formula requirement. No replacement notability capability has been delivered. |
 | 08A.1 newness evidence rule | Updated to presence in selected Run and absence in included predecessors, without the prior unavailable-read veto | Owner-directed rule replaces the original gate. The implementation's selected-only-window behavior is explicitly disclosed below. |
 | 08A.1 counts, rollups, display limits, review data and explicit record selectors | Returned through InvestigationResult; genuine tests cover totals/overlap and selector composition | Implemented; researched CLI presets remain 08B work, as originally split. |
@@ -196,7 +196,7 @@ No check failed in this follow-up. No new product requirement, dependency,
 production action or replacement statistical rule was introduced.
 
 All included reads succeeded; naturally unavailable reads remain unexercised,
-as do duplicate usable timestamps and unavailable source roots. No such case was
+as do unavailable source roots. No such case was
 fabricated. 08B and its separately assigned traversal-scope repair remain open.
 
 ## Timestamped history verified — 2026-10-03
@@ -276,7 +276,7 @@ verifier's final integrity JSON. It was rerun successfully after verification
 exited; no data comparison failed and no runtime branch was added in response.
 
 Still unexercised: naturally failed/unavailable reads and denominator exclusion,
-duplicate usable timestamps, unavailable-source cases, full five-before/five-after
+unavailable-source cases, full five-before/five-after
 capacity and exhaustive threshold boundaries. These are evidence limits, not
 new requirements or blockers for the genuine short-history checks delivered here.
 Scripts: `check_current_availability.py`, `validate_timestamped.py` and
@@ -369,7 +369,7 @@ demonstrated by the exercised checks and no runtime code was changed.
 Not verified: eligible multi-Run chronological ordering, actual default/trailing
 window sizes, source-filtered totals through a successful history investigation,
 observation fractions/denominators, medians, novelty/notability and threshold
-boundaries. No usable duplicate-timestamp groups, failed reads or unavailable
+boundaries. No failed reads or unavailable
 source roots occurred. No such evidence was fabricated. A missing timestamp is
 an eligibility exclusion, not a failed diagnostic read.
 

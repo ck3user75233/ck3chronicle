@@ -1,4 +1,34 @@
-# Current learner: v41, complete continuation groups
+# Current delivered learner: v61
+
+The combined decoder/parser/learner release is locally registered and verified.
+Learner `0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de`
+(publication order 9) and runtime package `4ac4e8ee92346e6d14eacfbf` (order 8)
+use parser v1.8 and the authenticated shared application decoder. The fresh
+73-log build followed 20/20/20/13. See the [release README](../../docs/learner-next-release/README.md)
+and [final handoff](../../docs/learner-next-release/HANDOFF.md) for external pins,
+installed artifact, comparisons, reproduction and the separate Data Intelligence
+export limitation. Pipeline receiving and activation remain pending.
+Production still selects `68f1ae5db205ab46afef9c4d`.
+
+The authenticated v60 research package `840957b2f8e16f1cf0f88ad2` remains the
+received baseline; it does not contain the decoder integration. Earlier notes
+below are retained history, not the proposed cutover.
+
+## Retained v58 research baseline
+
+The complete frozen release is
+`2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a`, retained in
+`learners/releases/` and registered at publication order 8. Its verified 73-log
+incremental model package is `f23424ed8aa4d910bf4d3223`. That earlier candidate
+was retained but never activated; its exact manifest pins are
+in [the pipeline handoff](../../docs/LEARNER_PARSER_PIPELINE_HANDOFF.md).
+
+Use the retained release for reproducible learning and the package's own parser,
+matcher and owner rules for classification. Current inference guidance is in
+[LEARNER_INFERENCE_RULES](../../docs/LEARNER_INFERENCE_RULES.md). Historical notes
+below do not supersede that guidance or the current handoff.
+
+## Historical learner v41: complete continuation groups
 
 The published/pinned schema-4 release is **76630685c4a341ca14bf9c7c**, using
 parser v1.7 and fresh feature-v4 evidence. One complete learning record retains

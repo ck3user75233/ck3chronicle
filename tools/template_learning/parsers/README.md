@@ -8,10 +8,19 @@ another parser when its hash fails. Models retain their exact parser reference.
 | --- | --- | --- |
 | ck3-lossless-v1.6 | `v1/manifest.json` | Published lexical rules and within-emission recovery; retained for existing model pins. |
 | ck3-lossless-v1.7 | `v1_7/manifest.json` | Same lexical/framing behavior plus emitter-colon continuation recovery across headers. |
+| ck3-lossless-v1.8 | `v1_8/manifest.json` | Same v1.7 mechanics; source-span/header-group UTF-8 decoding uses the shared fragment-safe application API. |
+
+v1.8 requires `ck3chronicle.decoder.decode_fragment`. The frozen learner supplies
+the authenticated application source in its retained closure; the installed
+application supplies its normal module. Neither path uses an ambient checkout
+fallback. Fragment decoding has no physical-header admission or detector dependency.
+Physical source files retain the separate decoder read/header policy. See the
+[combined release](../../../docs/learner-next-release/HANDOFF.md) for exact pins
+and distribution details. No prior parser artifact was modified.
 
 For consumer recovery, call `iter_recoveries(raw)` from this package. It dispatches
-the selected published API explicitly. v1.7 also exposes `raw.iter_recoveries()`.
-Do not loop over `emission.recovery` to classify v1.7 input: that local inspection
+the selected published API explicitly. v1.7/v1.8 expose `raw.iter_recoveries()`.
+Do not loop over `emission.recovery` to classify v1.7/v1.8 input: that local inspection
 API does not associate following emissions.
 
 v1.7 parser SHA-256:

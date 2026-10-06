@@ -1,0 +1,9 @@
+{
+  "schema": "ck3chronicle.native-model-selection",
+  "schema_version": 2,
+  "revision_id": "789219fdbd81c8dab950bc93",
+  "package_id": "4ac4e8ee92346e6d14eacfbf",
+  "artifact_directory": "releases/4ac4e8ee92346e6d14eacfbf",
+  "manifest_sha256": "839548e8c8143e01b63059848557dc94e9fe66f5e1924f6026442f7331a8ba9f",
+  "matcher_api_version": "ck3-native-matcher-v3"
+}

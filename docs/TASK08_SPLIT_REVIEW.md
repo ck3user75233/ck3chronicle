@@ -32,8 +32,8 @@ instructions. The owner's Downloads versions of `TASK08A_PROMPT.md` and
   pointers identify the split; historical wording is not silently restored over
   the owner's updated policies.
 
-Chronology and notability sections remain unchanged, including the owner's
-session-end timestamp description and duplicate-timestamp exclusions. Source
+Chronology retains the original source-log modification timestamp ordering.
+Duplicate-ingestion handling belongs to the pipeline. Source
 search now follows the owner's explicit clarification: no mandatory playset
 restriction, file-level content conditions, explicit source-filter evaluation
 errors and the specified ripgrep wrapper behavior. No new link-resolution policy

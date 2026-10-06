@@ -1,35 +1,43 @@
-# Published native model
+# Retained native models
 
-The selected release is **76630685c4a341ca14bf9c7c**. [selection.json](selection.json)
-pins its directory and manifest SHA-256. The immutable release contains model
-schema 4, raw parser **ck3-lossless-v1.7**, parser manifest, owner-rule registry,
-native validation and hash-covered standalone **assignment.py** / **continuations.py**.
-There is no implicit latest-model selection or compatibility fallback.
+[selection.json](selection.json) is the explicit active package pin. It currently
+selects `4ac4e8ee92346e6d14eacfbf` after the owner-authorized 2026-10-05 cutover. The combined package
+`4ac4e8ee92346e6d14eacfbf` is retained under `releases/` and registered at model
+publication order 8. Its manifest pin is
+`839548e8c8143e01b63059848557dc94e9fe66f5e1924f6026442f7331a8ba9f`.
+Pipeline receiving and the coordinated runtime switch are complete. The wheel's
+independent [packaged default](../packaging/models/selection.json) and checkout
+selection now agree. New-package live ingestion/lifecycle remains pending a natural
+unique capture; see the [activation receipt](../docs/learner-next-release/PIPELINE_RECEIVING.md#production-activated--2026-10-05).
+See the [R3 packaging receipt](../docs/learner-next-release/PIPELINE_RECEIVING.md#r3-packaging-closed--2026-10-05).
 
-Learner v41 rediscovers **418 templates: 232 supported and 186 provisional** from
-thirty complete native logs. Publication preserves those statuses; it does not
-individually confirm templates. Supporting title entries belong to one complete
-error with its opening, regardless of list length. Their displayed title is an
-opaque PARAM and their repeated character reference must match the opening.
+Earlier v58 package `f23424ed8aa4d910bf4d3223` (order 7) is retained history. The [combined learner/decoder release packet](../docs/learner-next-release/README.md)
+owns the new v61/v1.8 package and receiving status. Parser v1.8 requires the shared
+application `ck3chronicle.decoder.decode_fragment` module; ship the application
+artifact and its current contract renderer with the model. Known-UTF-8 processing
+does not import a detector. Automatic physical-source detection uses the declared
+chardet dependency. Do not activate the earlier v58 selection.
 
-All 1,143,044 unaffected occurrences retain the v40 assignments and captures.
-Twenty separate messages become nine complete groups with eleven entries. The
-1,143,053 resulting diagnostics replay identically through the learner and runtime,
-with 4,429,930 native bindings verified. Additional native-log coverage limits
-are recorded in the [delivery ledger](../docs/LEARNER_CONTINUATION_MODEL_STATUS.md).
+The replacement contains 394 templates (296 supported, 98 provisional), runtime
+model `789219fdbd81c8dab950bc93`, model schema 6, matcher API
+`ck3-native-matcher-v3`, selector `complete-assignment-v2`, and parser
+`ck3-lossless-v1.8`. Model, parser, matcher helpers and owner rules are hash-covered
+immutable payloads. The application decoder and renderer ship in the verified
+application wheel linked from the combined release packet.
 
-Use `ck3chronicle.pipeline.catalog.load_selected_classifier(models_root=...)`.
-The runtime reader validates model schema, artifact hashes and declarations before
-loading the selected parser and standalone helpers. Classifications expose one
-`selected` result and its bindings for both full and provisional outcomes. Keep
-the outcome with the result; a template ID alone does not imply confirmation.
+Use `ck3chronicle.pipeline.catalog.load_selected_classifier`. Selection validates
+the manifest pin and loads that package's own authenticated matcher bootstrap;
+there is no implicit latest-package selection or mutable-learner fallback.
+Complete supported and provisional assignments retain their respective statuses.
 
-The wheel packages this selection and all eight release files under
-`share/ck3chronicle/models/`. Model/parser identity remains explicit and immutable.
-Previous directories are historical artifacts, never fallbacks. Captured logs,
-per-occurrence provenance, and generated research reports remain outside Git.
+The wheel includes selection/catalog files and every retained available runtime
+package. Earlier packages remain available for historical Run lineage and explicit
+selection. Immutable manifests retain their original publication-time text;
+current production registration and activation are recorded by the catalog and
+selection, without rewriting package bytes.
 
-The [existing pipeline handoff](../docs/LEARNER_PARSER_PIPELINE_HANDOFF.md) documents
-component-relative matching and absolute bindings. Application ingestion/storage
-adoption remains separate; publishing and selecting this release starts no watcher
-and performs no production ingestion.
+The replacement requires the current application contract renderer for repeated
+location entries and exact game-date literal choices. See the
+[pipeline handoff](../docs/LEARNER_PARSER_PIPELINE_HANDOFF.md) for verification,
+activation status and the running handler compatibility requirement. Registration
+does not restart services, ingest logs or change existing Runs.

@@ -1,5 +1,16 @@
 # Task 07D — current database and ingestion handoff
 
+## Incoming shared decoder / combined release — 2026-10-05
+
+The decoder delivery is ready. Pipeline receiving responsibilities are in the
+combined release [pipeline handoff](learner-next-release/HANDOFF.md#pipeline-team-receiving-and-deployment--2026-10-05):
+selected-parser consumption, original-byte/hash preservation, existing failure
+and warning boundaries, genuine disposable ingestion checks, application packaging
+and coordinated activation. Learner/release owns the new parser artifact; pipeline
+must not patch the retained production parser or add a competing decoder. The
+shared decoder remains unversioned/unpinned. The current handler/API contract below
+is unchanged; this is a receiving handoff, not completed activation.
+
 Updated 2026-09-30 after the bounded 07D hardening follow-up. This is the
 current executable reference for Task 07/07D callers.
 The [07E handoff](TASK07E_RUNTIME_LOGGING_HANDOFF.md) now supplies shared logging,

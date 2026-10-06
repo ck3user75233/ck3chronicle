@@ -1,5 +1,5 @@
 """Empirical boundary evidence over aligned native pieces; no CK3 format rules."""
-from .matching_primitives import balanced, punctuation_piece
+from .matching_primitives import balanced, punctuation_piece, quoted_piece_ranges
 import string
 import unicodedata
 from functools import lru_cache
@@ -10,40 +10,9 @@ PAIRS = {a:b for a,b in INFERENCE_POLICY['marker_pairs'].items() if a!=b}
 EXCLUDED_MARKERS = frozenset(INFERENCE_POLICY['excluded_region_markers'])
 
 
-@lru_cache(maxsize=16384)
 def discovery_quote_ranges(pieces):
-    """Propose unambiguous single-quoted ranges for discovery comparison only.
-
-    Interior words provide no similarity evidence. No slot type is established
-    here: inference still sees every native piece. Nested, unmatched or ambiguous
-    quotes abstain for the message; word-internal apostrophes inside a proposed
-    quotation remain interior data. Existing opaque-field ownership is checked
-    by the comparison consumer.
-    """
-    ranges, opened = [], None
-    for index, piece in enumerate(pieces):
-        if piece != ('token', "'"):
-            continue
-        left = pieces[index-1] if index else None
-        right = pieces[index+1] if index+1 < len(pieces) else None
-        can_open = left is None or left[0] == 'gap' or punctuation_piece(*left)
-        can_close = right is None or right[0] == 'gap' or punctuation_piece(*right)
-        if opened is None:
-            if not can_open or (can_close and right != ('token', "'")):
-                return (), 'ambiguous_quote_boundaries'
-            opened = index
-        elif can_close:
-            if can_open and index != opened + 1:
-                return (), 'ambiguous_quote_boundaries'
-            if any('\n' in text or '\r' in text for _, text in pieces[opened+1:index]):
-                return (), 'multiline_quote_boundaries'
-            ranges.append((opened, index+1))
-            opened = None
-        elif can_open:
-            return (), 'nested_quote_boundaries'
-    if opened is not None:
-        return (), 'unclosed_quote'
-    return tuple(ranges), None
+    """Comparison-only single-line quotes; native field inference stays separate."""
+    return quoted_piece_ranges(pieces)
 
 
 def enclosing_pair(records, spans):

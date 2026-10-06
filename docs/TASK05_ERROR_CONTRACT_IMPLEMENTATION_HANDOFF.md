@@ -1,5 +1,15 @@
 # Task 05 implementation handoff — 2026-09-27
 
+## Reporting consumer addition — 2026-10-04
+
+The shared renderer now exposes `render_segments(definition, values)`: original
+text segments, end-exclusive character offsets, and stored region/literal/typed
+slot origin. `render` and `render_regions` use the same rendering path. This is
+presentation provenance for whole-message search, with no new matching,
+classification, identity or schema rule. A comparison against 739 previously
+exported stored messages preserved the rendering. See [08B](TASK08B_REPORTING_HANDOFF.md)
+for genuine consumer checks and the separately labelled LOCATOR fixture.
+
 ## Delivered boundary
 
 Pinned parser/recovery → shared complete assignment → selected regions bound once

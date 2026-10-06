@@ -1,0 +1,19 @@
+{
+  "purpose": "Candidate associations with the recorded compatibility patch and the sea-minority script",
+  "scope": {
+    "source": {
+      "members": [{"name": "EB+EC724 Compatibility Patch"}],
+      "files": ["common/on_action/sea_minority_on_actions.txt"]
+    }
+  },
+  "refinement": {
+    "message": {
+      "and": [
+        {"contains": "failed context switch"},
+        {"or": [{"contains": "culture"}, {"contains": "faith"}]},
+        {"not_contains": "effect", "case_sensitive": false}
+      ]
+    }
+  },
+  "analytics": {"trailing_runs": 5}
+}

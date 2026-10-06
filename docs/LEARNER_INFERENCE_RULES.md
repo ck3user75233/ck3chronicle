@@ -3,6 +3,205 @@
 Updated 2026-09-22. The current outer-diagnostic contract below supersedes the
 independent L1/L2/tail descriptions in earlier dated development records.
 
+## Formatted reference fields — 2026-10-04, candidate v60
+
+Owner-directed implementation recognizes the contextual game-formatting sequence
+`U+0015 ONCLICK:…` (optional), `U+0015 TOOLTIP:…`, `U+0015 L` (optional
+semicolon), displayed text, and the complete consecutive `U+0015 !` reset run (at least three with ONCLICK; at least two without it) as one
+opaque PARAM. Metadata, displayed text and control bytes remain exact capture
+contents. A bare control character is not a sufficient marker. No name,
+word-count, trait identifier, mod or emitter whitelist determines recognition.
+Existing full identities and declared fields retain precedence. A formatted
+reference embedded in a larger paired quotation defers to empirical inference
+of that enclosing field; a whole-interior reference remains eligible.
+This uses the existing parser pieces and shared learning/matching declaration.
+The disposable 73-log incremental package `840957b2f8e16f1cf0f88ad2` passes all
+71 focused-message checks (127 newly recognized fields and two preserved larger
+quoted PARAMs). Production comparisons show no lost assignments or supported-to-
+provisional downgrades; see CURRENT_HANDOFF for scope and reports. Production is
+unchanged. Display labels containing internal nested formatting, and incomplete
+references, remain outside the demonstrated rule. A simple reference inside
+surrounding formatting is eligible; extra consecutive resets remain in its capture.
+
+## Owner review boundary — 2026-10-04
+
+Reporting clarification: do not present "member failure" as an owner-defined
+diagnostic category or a semantic-quality score. Explain the implementation's
+complete-match/capture-range consistency check in plain terms. Counts of retained
+inference examples are not full-corpus message/occurrence counts; label them
+separately. Group production predecessors with actual candidate successors and
+number examples globally so the owner can refer to them unambiguously.
+
+Adjacent-word audit clarification: `enclosing_pair` means matched markers directly
+around the proposed complete span (ignoring gap pieces), in every member. It is
+not a blanket exemption based on being anywhere within a larger bracketed region.
+Already recognized declared/empirical fields and REASON slots are separately
+excluded. The v58 output comparison changes only the construction_id on the two
+history templates; their literal layouts and all other exported templates remain
+unchanged. The prior three-pattern adjacent-KEY inventory describes existing
+inferred types, not three rule successes or owner-approved slot typing. Prior
+owner feedback informs outcome review, not an approved-template list in this rule.
+
+Current prioritization: defer the additional contextual effect/trigger cue and
+the separate rare-message workflow. A full v57 corpus survey finds enclosed
+effect/trigger wording already captured as PARAM/REASON; do not extend the
+marker exemption without a demonstrated need. The completed sliding-threshold
+experiment retained the existing equal-length 1–2-unit positional rule and
+tested different weighted thresholds for 3–6 units. See CURRENT_HANDOFF for
+precise evidence, limits and report paths.
+
+The learner determines supported/provisional template status. The owner reviews
+learner code and its outcomes, not individual templates for approval. Keep model
+release approval separate. In reports, identify the disposable candidate model,
+each template's actual status, and its selected assignment status. Group related
+old templates into one family explanation; overlapping compatibility counts are
+not selected-message counts or occurrence counts for an individual witness.
+For many-to-one consolidations, display every removed production template
+together, followed by the single replacement template and its actual status.
+Do not repeat the replacement as separate issues for each predecessor. Identify
+when the replacement is retained from production rather than newly learned.
+
+## Latest owner correction — 2026-10-04, v57 candidate
+
+**v58 implementation verified in the disposable candidate:** the two hard-coded history
+constructions below have been removed. Adjacent, nonoptional alphabetic KEY
+proposals separated by horizontal whitespace are reconsidered together when
+every column has only varied in one-to-one correspondence with the other columns.
+This is conservative evidence against treating whitespace as an independent
+field boundary, not proof that English words can never be identifiers. Declared
+fields, quoted/enclosed spans, identifiers containing syntax, and independently
+varying columns retain their existing handling. The complete span must satisfy
+the existing field-boundary rules; otherwise literal refinement retains its
+observed formulations. No history wording or emitter is encoded in this rule.
+All 16 genuine history messages / 33 occurrences pass both focused checks and
+final package classification. The complete 73-log incremental build and
+production comparison pass with no assignment losses or supported-template
+downgrades; see CURRENT_HANDOFF for identities and limits. The following v57
+mechanism is historical and superseded in code; production is not activated.
+
+**Subsequent review:** the owner rejects the current history implementation.
+The two-construction mechanism below is an implemented candidate choice, not an
+approved requirement. The objection is pending clarification; do not present
+successful literal-output checks as owner acceptance. Variable similarity
+threshold testing is now explicitly requested, superseding its earlier deferral.
+
+This supersedes the v56 history-PARAM and v53 date-KEY directions below.
+The two `Character: … has history after death birth, won't execute.` and
+`… has history from before birth, won't execute.` formulations retain their
+complete diagnostic wording as literals. The v57 implementation uses separate
+constructions to prevent initial discovery from replacing the differing words
+with KEY, PARAM or REASON. That mechanism is now disputed; the owner requested
+the literal outcome, not this particular mechanism. The separate Parent-message
+state PARAM rule is unchanged.
+
+The day / three-letter month / three- or four-digit year prefix before `:` is
+an equivalent formatted literal, displayed as `{game date}`, not a slot. At the
+same template position every conforming date contributes one identical literal
+unit to similarity. A complete format must match at original parser boundaries,
+outside existing opaque fields, at a body start or colon-delimited prefix.
+No source text is normalized. Matching records its exact spelling in the literal
+layout choices; storage rendering and message identity retain that spelling.
+This is separate from the existing dotted-date KEY rule and outer timestamps.
+The earlier owner-requested hyphenated form remains unwitnessed in genuine logs.
+
+## Owner-review field corrections — 2026-10-04, v56 candidate
+
+The owner authorized implementation after the residual survey and consolidated
+recommendations. These are executable `parameter_structures` declarations, not
+notes awaiting implementation. Existing immutable releases remain unchanged.
+
+- Superseded in v57: `has history after death/from before birth` used one
+  contextual PARAM for the relative phrase. The `Parent (…) of … is … at file:` formulation
+  similarly captures `hasn't been born` / `the wrong gender` as one PARAM.
+  There is no global function-word blacklist or new diagnostic taxonomy.
+- Invalid-comparison side and quoted identifier are declared KEY positions;
+  the reviewed left/right generalization includes singleton scope examples.
+- Compare-trigger identifier and expected scope are declared KEY positions;
+  the surrounding diagnostic wording remains literal.
+- Unknown-formatting-tag quoted content is one PARAM including genuine control
+  characters and embedded line endings. Its enclosing quotes remain literal.
+- The reported missing-localization display is one PARAM, for single-word and
+  multiword values. Boundary presentation whitespace, including genuine NBSP,
+  remains outside the capture and is preserved in the native literal pieces.
+- Marked-up character references in the demonstrated Cheater/With line fields
+  become complete opaque PARAMs, including IDs, titles, particles and reset
+  bytes. Recognition uses those field markers and the actual CHARACTER markup,
+  not name/mod dictionaries. This corrects inherited field fragmentation and
+  addresses the name-word layouts behind the two supported-template ties.
+
+These declarations retain the raw parser and use the existing strict shared
+recognizer in learning and matching. Genuine 73-log preflight preserves all
+2,643 previously recognized full-ID captures. The completed frozen 73-log build
+passes all nine declared-field checks, has no template ties, and loses no
+production assignments or supported-template statuses in either evaluation scope.
+Corpus evidence/report paths and delivery status belong in CURRENT_HANDOFF.
+
+The retained v54 source-pool trace reproduced the original rejected
+`Unknown <KEY>: <KEY>` template exactly. Initial discovery grouped effect/trigger
+at similarity 0.83636 above 0.72, then inferred both categories as KEY before
+there was established literal wording to protect. A later merge with Unexpected
+token was correctly rejected, but that could not repair the initial slots.
+v56 declares separate Unknown-effect and Unknown-trigger constructions in their
+observed emitter, making category wording fixed during initial discovery as well
+as later matching. The owner-directed contextual Unknown LOCATOR rule remains
+unchanged. A partially built v55 candidate was stopped when this cause was proven;
+v56 is a new immutable release and starts the full recorded schedule afresh.
+
+## Game-date prefixes and short character identities — 2026-10-03, v53
+
+The owner reiterated the omitted date/short-identity directive and authorized
+reusable recognition. The v53 `game-date-prefix` implementation declared one format-constrained KEY
+for day / three-letter English month / three- or four-digit year, followed by a
+literal colon. Space-separated dates are genuine; the owner also requests the
+hyphen-separated spelling, for which no genuine witness was found. Values are
+equivalent for classification similarity; exact spelling remains captured and
+part of message identity. This supplements the unchanged dotted-date rule.
+The outer log timestamp is separate. The latest owner correction above replaces
+this KEY representation with equivalent literal handling; KEY was incorrect.
+
+`character-id-short` declares CHARACTER_ID_SHORT at a body start or after a
+colon field boundary: complete display name plus `(numeric ID, display location)`.
+The closing parentheses establish the ending; a preceding date is not required.
+The 104-log census found 75 examples, all in the travel family. Owner correction:
+the proposed rule capitalizes the first name word only; subsequent words may be
+lowercase. Viviana de Torres and Akurat Misibsen of Nabel satisfy that rule and
+do not justify requiring a date. First-character uppercase for name and place
+holds in 74 examples; the other begins `ʾAmīr`, with uppercase A after a leading
+transliteration modifier. No non-character numeric-comma-ending counterexample
+was found. v51 implements the corrected first-word capitalization check for name
+and place, allowing leading transliteration modifiers and unrestricted later words.
+This replaces v50's date prerequisite in executable recognition. The declaration
+has no source-family, mod, character-name or travel-wording restriction. Its
+applicability in additional emitters remains unverified. Keep the entire identity
+opaque, just as CHARACTER_FULL_ID is opaque; existing full-ID behavior is unchanged.
+
+The existing ban on unmarked PARAM discovery otherwise splits the receiver names
+even after date/identity recognition. `receiver-before-default-location` declares
+one CHARACTER_ID_SUPER_SHORT between literal `receiver is ` and `, default location is `. This is a
+bounded field rule, not global character-name inference. A broad name-of-place
+survey includes titles, artifacts, traits and ordinary wording; it does not justify
+treating those strings globally as characters. The owner explicitly accepts
+`receiver is ` as the shortest character display-name field's start marker; the
+executable receiver rule now emits the dedicated super-short type. v50-v52 used
+PARAM; there was no separate super-short slot type then. This is marker-bounded
+recognition, not a global plain-name classifier. Its exact opaque capture remains
+unchanged, and structural recognition is required in exported model validation.
+`default-location-name` captures the field starting with the capitalized word
+immediately after `default location is ` as one PARAM through the native line
+ending. All 75 genuine examples have CRLF endings and no terminal period. The
+owner corrected the earlier instruction: evidence should have challenged the
+proposed period boundary, rather than adding an unobserved alternative. v53
+removes that boundary; periods have no special terminating role. Trailing
+presentation whitespace remains outside the capture. Single- and
+multiword place names occupy the same slot. This does not broaden KEY grammar or
+reinterpret display place names as script LOCATORs.
+
+All four declarations use the existing line-sequence parameter registry. Strict
+captures serialize their declaration/source reference and enforce the same raw
+piece boundaries in inference and the packaged matcher. The new short type and
+date constraint require a fresh immutable learner/model; no retained package is
+edited. See CURRENT_HANDOFF for disposable verification and known limits.
+
 ## Owner clarification: location sections and Unknown — 2026-10-03
 
 This is the current required behavior. The owner subsequently authorized a
@@ -24,6 +223,14 @@ location-count differentiation guidance, without altering retained releases.
   entry in order: file and line as individual LOCATOR values, parenthetical
   interiors as PARAM values. Cardinality is per-message data.
 - Classification similarity excludes both locator contents and locator count.
+  Owner's subsequent clarification is explicit: a recognized message-ending
+  variable-count location sequence contributes exactly ONE presence unit when
+  it contains one or more locators, including contextual Unknown; absence
+  contributes none. Its entries and repeated traces must not multiply this
+  weight. This exception does not collapse KEY slots, other PARAMs or non-trailing
+  LOCATOR positions. v49 implements this rule; the disposable controlled test
+  keeps the 0.72 threshold and neighbor budget unchanged. Experiment with a
+  variable threshold only if the presence correction leaves the defect unresolved.
   Exact error-message identity includes the complete ordered locator values and
   their count. Otherwise identical messages with different locator contents or
   counts are distinct messages, even when classified under the same template.
@@ -43,8 +250,8 @@ location-count differentiation guidance, without altering retained releases.
   extending their recognition. Missing or empty native values are not silently
   rewritten to Unknown. The original spelling remains reconstructible.
 
-The experimental `untyped-effect-location-unknown` and
-`untyped-trigger-location-unknown` declarations preserve their diagnostic/REASON
+The experimental `untyped-effect` and
+`untyped-trigger` declarations preserve their diagnostic/REASON
 boundaries while the location recognizer captures Unknown. Retained production
 releases still implement their older rule. Experimental schema 6 / matcher API
 v3 represents repeated trailing entries; full candidate verification and delivery

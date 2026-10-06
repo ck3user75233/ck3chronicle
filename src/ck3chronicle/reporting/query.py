@@ -11,7 +11,7 @@ import json
 
 
 class QueryError(ValueError):
-    """The caller supplied an unsupported or contradictory query."""
+    """The caller supplied invalid inputs or incompatible execution controls."""
 
 
 def _object(value, allowed, label):
@@ -159,6 +159,40 @@ def _selector(selector):
                         raise QueryError('absent binding value must be null')
 
 
+def refinement_clauses(refinement):
+    """The ordinary refinement AND each additional compound condition.
+
+    A single additional level keeps preset conditions independent of user filters,
+    including opposite booleans. Existing selectors remain OR within each clause.
+    """
+    return [{k: v for k, v in refinement.items() if k != 'all'}, *refinement.get('all', [])]
+
+
+def _refinement(value, *, grouped=False):
+    fields = SELECTOR_FIELDS | {'selectors', 'occurrences', 'newly_observed', 'has_source_reference'}
+    _object(value, fields if grouped else fields | {'all'}, 'refinement')
+    if grouped and not value:
+        raise QueryError('empty refinement.all condition; omit for unrestricted')
+    scalar = {k: v for k, v in value.items() if k in SELECTOR_FIELDS}
+    if scalar:
+        _selector(scalar)
+    if 'selectors' in value:
+        _list(value['selectors'], 'selectors')
+        for selector in value['selectors']:
+            _selector(selector)
+    count = value.get('occurrences', {})
+    _object(count, {'min', 'max'}, 'occurrences')
+    for bound in count.values():
+        _integer(bound, 'occurrences')
+    for name in ('newly_observed', 'has_source_reference'):
+        if name in value and type(value[name]) is not bool:
+            raise QueryError(f'{name} must be boolean')
+    if 'all' in value:
+        _list(value['all'], 'refinement.all')
+        for clause in value['all']:
+            _refinement(clause, grouped=True)
+
+
 @dataclass
 class InvestigationQuery:
     """Plain query sections. to_dict() validates and returns an independent copy.
@@ -180,36 +214,23 @@ class InvestigationQuery:
         return query
 
     def to_dict(self) -> dict:
-        _object(self.scope, {'source_families', 'source'}, 'scope')
+        _object(self.scope, {'source_families', 'source', 'has_source_reference'}, 'scope')
+        if 'has_source_reference' in self.scope and type(self.scope['has_source_reference']) is not bool:
+            raise QueryError('has_source_reference must be boolean')
         if 'source_families' in self.scope:
             _selector({'source_families': self.scope['source_families']})
         if 'source' in self.scope:
             from .source_query import validate_source
-            validate_source(self.scope['source'])
-        _object(self.refinement, SELECTOR_FIELDS | {'selectors', 'occurrences', 'newly_observed'}, 'refinement')
-        scalar = {k: v for k, v in self.refinement.items() if k in SELECTOR_FIELDS}
-        if scalar:
-            _selector(scalar)
-        if 'selectors' in self.refinement:
-            _list(self.refinement['selectors'], 'selectors')
-            for selector in self.refinement['selectors']:
-                _selector(selector)
-        count = self.refinement.get('occurrences', {})
-        _object(count, {'min', 'max'}, 'occurrences')
-        for value in count.values():
-            _integer(value, 'occurrences')
-        if count.get('min', 0) > count.get('max', float('inf')):
-            raise QueryError('occurrence minimum exceeds maximum')
+            validate_source(self.scope['source'], diagnostic=True)
+        _refinement(self.refinement)
         _object(self.analytics, {'history', 'trailing_runs', 'include_absent'}, 'analytics')
         for name in ('history', 'include_absent'):
             if type(self.analytics.get(name, True)) is not bool:
                 raise QueryError(f'{name} must be boolean')
-        if 'newly_observed' in self.refinement and type(self.refinement['newly_observed']) is not bool:
-            raise QueryError('newly_observed must be boolean')
         if 'trailing_runs' in self.analytics:
             _integer(self.analytics['trailing_runs'], 'trailing_runs', 1)
         if not self.analytics.get('history', True) and (
-                'trailing_runs' in self.analytics or 'newly_observed' in self.refinement
+                'trailing_runs' in self.analytics or any('newly_observed' in c for c in refinement_clauses(self.refinement))
                 or self.analytics.get('include_absent', False)):
             raise QueryError('history disabled but history-dependent option requested')
         _object(self.display, {'limit', 'historical_limit'}, 'display')

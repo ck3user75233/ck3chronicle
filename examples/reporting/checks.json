@@ -1,0 +1,363 @@
+{
+  "relative-path-all-members": {
+    "question": "Find every diagnostic in Run 20261003-74G2EB whose recorded path is /common/on_action/sea_minority_on_actions.txt. Check that same relative location beneath every member of the Run's recorded playset.",
+    "expected": "Return two distinct diagnostics totalling 64 occurrences, without a message or template restriction. Show Resolved with two paths found. Present load order, mod name, path and line in separate columns: 114 is Early Bookmarks and the Legendary Super Compatch; 115 is EB+EC724 Compatibility Patch. Mark 115 as the error source because it is last in load order for this file/line. The optional leading slash means game-relative. Lookup checks only common/on_action beneath each playset root, without recursion."
+  },
+  "relative-path-no-slash": {
+    "question": "Repeat the relative-path investigation without the optional leading slash.",
+    "expected": "Return the same two diagnostics / 64 occurrences and the same candidates as relative-path-all-members. Both spellings name the same location beneath each recorded playset root."
+  },
+  "relative-path-backslashes": {
+    "question": "Repeat the relative-path investigation using Windows backslashes between folders.",
+    "expected": "Return the same two diagnostics / 64 occurrences and ordered mod candidates. Separators do not change the relative location."
+  },
+  "relative-path-other-directory": {
+    "question": "Look for the same filename under common/scripted_effects instead of its recorded common/on_action folder.",
+    "expected": "Return a successful empty result because no stored diagnostic references this different relative path. Do not expand this into a filename search across other directories. No current-file lookup is needed when no stored references match."
+  },
+  "pathless-emission": {
+    "question": "Report the genuine localisation diagnostic Data error in loc string 'duke_male_holder_irish', which supplies no file path.",
+    "expected": "Return the complete stored diagnostic with 163 occurrences. Label source lookup not applicable, without a warning, limitation or incomplete-evidence claim. No source root or playset lookup is needed and filesystem counts are zero."
+  },
+  "pathless-archive": {
+    "question": "Report a genuine archived emission that supplies no file path, from an archive with no retained playset.",
+    "expected": "Return the complete stored diagnostic normally. Source lookup is not applicable, so the absent playset does not create a source-coverage problem. Do not search the filesystem or describe the emission as incomplete."
+  },
+  "mixed-archive-source-context": {
+    "question": "Report two genuine archived diagnostics together: one supplies a file path and one does not. This archive has no retained playset.",
+    "expected": "Keep both stored diagnostics. Source lookup is not applicable to the pathless emission. Only the diagnostic with an actual reference needs current source context, which cannot be located from this archive's missing playset. Do not attach that lookup problem to the pathless diagnostic."
+  },
+  "recursion-scoped-report": {
+    "question": "Find genuine messages referencing common/on_action/sea_minority_on_actions.txt in the recorded Early Bookmarks and the Legendary Super Compatch source root, and show exactly how many files and folders the source lookup examined.",
+    "expected": "Return two stored diagnostics / 64 occurrences. Source lookup examines 130 file names in one folder, common/on_action, and finds the requested file. Because its full path is known, lookup inspects its parent without searching the whole mod. The attached independent recursion measurement has 29 passing comparisons of full roots, recursion off, directory restrictions, exact paths and cached searches against PowerShell counts and actual file sets."
+  },
+  "unresolved-genuine-paths": {
+    "question": "Which messages in genuine Run 20261003-74G2EB record a path for which no current file can be found in that Run's recorded playset roots?",
+    "expected": "Return 60 distinct diagnostics, totalling 386 occurrences, with the first 20 displayed. Counts were checked against public-handler records and an independent filesystem existence check over 561 unique stored paths. Each selected diagnostic has at least one unresolved path. No-path messages are excluded. This is absence within the named source roots, not proof of absence everywhere: for example, launcher-relative mod/ paths may refer to a different root."
+  },
+  "resolved-paths": {
+    "question": "From a genuine culture context-switch diagnostic and a pathless localisation diagnostic, keep messages with a current file for their recorded path.",
+    "expected": "Keep the culture diagnostic with 32 occurrences and two candidates, showing mod names and recorded order numbers 114 and 115. Exclude the pathless message. This verifies the explicit resolved-path filter and per-path status."
+  },
+  "unresolved-excludes-existing-and-pathless": {
+    "question": "From the same two genuine diagnostics, ask for messages with a recorded path that cannot be resolved in the recorded playset roots.",
+    "expected": "Return a successful empty result: the culture diagnostic's path resolves, and the localisation message has no path. Neither belongs in the unresolved-path result."
+  },
+  "resolution-content-independent": {
+    "question": "Keep two genuine stored diagnostics and request optional source context containing a token that is absent from the referenced file.",
+    "expected": "Keep both stored diagnostics. Label the culture diagnostic's path resolved even though no candidate satisfies the separate content condition. An existing file whose contents do not match is not a missing file. The localisation message still has no source path."
+  },
+  "synthetic-unresolved-paths": {
+    "evidence_kind": "synthetic",
+    "question": "Select messages with unresolved paths from the owner-authorized log containing two copied emissions with fake LOCATOR file paths.",
+    "expected": "Return both diagnostics, one occurrence each. The normal recorded playset has 133 accessible members; searching those roots completes and finds neither file. Show an unresolved status beside each stored path. This verifies the missing-file selector, separately from the ordinary path selector."
+  },
+  "synthetic-resolved-paths": {
+    "evidence_kind": "synthetic",
+    "question": "Ask for resolved paths in the same two-entry fake-path fixture.",
+    "expected": "Return a successful empty result because neither recorded path has a current file in the selected roots."
+  },
+  "synthetic-unresolved-directory": {
+    "evidence_kind": "synthetic",
+    "question": "Find unresolved recorded paths only inside common/on_action in the two-entry fixture.",
+    "expected": "Return the one diagnostic whose fake path is inside that directory. The other diagnostic is outside the directory filter and is excluded normally."
+  },
+  "synthetic-unresolved-member": {
+    "evidence_kind": "synthetic",
+    "question": "Look for the fixture's recorded paths only inside EB+EC724 Compatibility Patch, then select paths that have no file there.",
+    "expected": "Return both diagnostics because the selected mod root is accessible and neither fake file exists there. Here the mod chooses where resolution is tested; this does not say that the messages originated from that mod."
+  },
+  "synthetic-unresolved-content": {
+    "evidence_kind": "synthetic",
+    "question": "Require both an unresolved path and a current referenced file containing culture in the two-entry fixture.",
+    "expected": "Return a successful empty result. Both paths are unresolved, but neither diagnostic has a current referenced file to satisfy the separate content condition."
+  },
+  "unresolved-archive-unknown": {
+    "question": "Ask whether the recorded file path in genuine archived syntax diagnostics is unresolved, although this archive has no retained playset.",
+    "expected": "Explain that the current resolution cannot be established because the source roots are unknown. Return source_filter_incomplete, not an empty success or a missing-file conclusion. The ordinary recorded-path example still succeeds with these same four diagnostics when resolution is not required."
+  },
+  "file-path-all": {
+    "question": "Show all diagnostics in Run 20261003-74G2EB that reference common/on_action/sea_minority_on_actions.txt, without any message, template or exact-record restriction.",
+    "expected": "Return the complete recorded-path match set: two distinct diagnostics and 64 occurrences in this Run, verified against public-handler records. All other paths and records without a usable path are excluded normally. Current file candidates are optional supporting context."
+  },
+  "syntax-archive-equals": {
+    "question": "Apply the syntax preset to an unchanged genuine archived log containing the unexpected equals-token diagnostic.",
+    "expected": "Return the precise equals-token template and any other matching researched selectors, retaining stored match status. This is a fresh single-Run receipt in disposable storage, with no history comparison. The archive has no retained playset, so optional source coverage is unavailable while stored diagnostics remain readable."
+  },
+  "syntax-archive-brace": {
+    "question": "Apply the syntax preset to an unchanged genuine archived log containing a malformed opening-brace token inside a multi-message emission.",
+    "expected": "Return the specific malformed-brace selector from the normal parser and stored records. Do not infer general brace balance. Show missing historical playset coverage without hiding the diagnostic; no synthetic message or chronology is used."
+  },
+  "syntax-archive-localization": {
+    "question": "Find the genuine unexpected-localization-comma and missing-quoted-value diagnostics in their unchanged archived log.",
+    "expected": "Exercise both researched selectors through normal ingestion, stored records and the root CLI, including provisional matches. Counts must agree with public-handler records. Source playset unavailability stays visible."
+  },
+  "syntax-archive-substitutions": {
+    "question": "Find genuine unterminated localization substitutions and required quote-escaping errors in an unchanged archived log.",
+    "expected": "Exercise both exact researched selectors and preserve their specific stored values and match statuses. This single-Run check uses the retained file's actual timestamp and does not alter production history. Missing historical playset coverage must not remove the stored records."
+  },
+  "syntax-archive-statement": {
+    "question": "Find the genuine trailing-data-statement diagnostic in its unchanged archived log.",
+    "expected": "Return the specific researched statement selector through the actual root CLI. Keep the record readable with missing playset coverage. No general expression-parser or causal claim is made."
+  },
+  "archive-required-playset": {
+    "question": "Require a game-file association for syntax diagnostics from a genuine archived log whose playset was not retained.",
+    "expected": "Return source_filter_incomplete with exit 3 because the required playset evidence is unavailable. The adjacent optional-context syntax report should still succeed. No playset was deleted or replaced to create this case."
+  },
+  "runs-current": {
+    "question": "List eligible Runs from the fresh unchanged database backup, including Runs captured after the original reporting examples.",
+    "expected": "Show seven genuine eligible Runs in source-log timestamp order and retain the fourteen missing-timestamp exclusions. This checks that the larger available history is received without altering stored facts."
+  },
+  "worked-five-runs": {
+    "question": "Find script-system messages containing 'failed context switch' across exactly five available genuine Runs ending at the latest Run.",
+    "expected": "Show all five Runs, their actual matching counts, separate diagnostics and current file candidates. Compare counts, identities, observation fractions and newness against raw public-handler reads. This closes the earlier short trailing-window example gap."
+  },
+  "five-predecessors": {
+    "question": "Compare the latest genuine Run with five eligible preceding Runs using the default history window.",
+    "expected": "Include the selected Run and five predecessors. Per-diagnostic counts, observation fractions, newness and historical absences must agree with public-handler records. This checks the full preceding side of the window."
+  },
+  "five-successors": {
+    "question": "Compare the earliest genuine Run with five eligible subsequent Runs using the default history window.",
+    "expected": "Include the selected Run and five successors. Counts and observation fractions must agree with public-handler records. This checks the full subsequent side, separately from a simultaneous five-before/five-after window."
+  },
+  "both-sides-history": {
+    "question": "Select the middle of seven eligible genuine Runs and compare the available Runs before and after it.",
+    "expected": "Show three preceding Runs, the selected Run and three subsequent Runs. Keep preceding/subsequent counts and fractions distinct. Seven Runs do not establish the full eleven-Run window."
+  },
+  "synthetic-missing-files": {
+    "evidence_kind": "synthetic",
+    "question": "Report two genuine emissions after changing only their file LOCATOR paths to nonexistent filenames, using the original recorded playset membership.",
+    "expected": "Keep both diagnostics and their stored path/line references visible, one occurrence each. All 133 playset roots are readable, but neither fake file exists: report a complete search with no matching file. Text, JSON and HTML should agree. The fixture log, original emissions and normal playset JSON are linked below."
+  },
+  "synthetic-missing-hotspots": {
+    "evidence_kind": "synthetic",
+    "question": "Apply file hotspots to the two-entry fixture whose LOCATOR paths identify nonexistent files.",
+    "expected": "Keep both diagnostics and rank their two stored paths, with no current candidate files. An identifiable stored reference qualifies for hotspots even when that file is not found on disk."
+  },
+  "synthetic-find-missing-files": {
+    "evidence_kind": "synthetic",
+    "question": "Filter the two-entry fixture by its two recorded paths using scope.source.relative_path.exact.",
+    "expected": "Return both diagnostics, one occurrence each, even though neither file exists. This is a recorded-path filter; optional disk lookup supplies no candidates."
+  },
+  "synthetic-required-missing-files": {
+    "evidence_kind": "synthetic",
+    "question": "Filter the two-entry fixture by its two recorded file paths using scope.source.files.",
+    "expected": "Return both diagnostics successfully. File selection matches stored paths and does not require those files to exist on disk. The earlier required-file failure behavior has been corrected."
+  },
+  "synthetic-stored-missing-reference": {
+    "evidence_kind": "synthetic",
+    "question": "Select the first fixture diagnostic by its stored fake path using scope.source.referenced_paths, then request optional source context.",
+    "expected": "Return one diagnostic and one occurrence despite the file being absent. Stored-reference selection uses recorded text; optional disk lookup supplies no candidate."
+  },
+  "template-only": {
+    "question": "Find all diagnostics that use the common trigger-error template, without choosing a particular key, reason or message.",
+    "expected": "The report should show the shared placeholder pattern, its combined counts in each Run, and many separate diagnostics beneath it. D1 and D2 are specific diagnostics; neither is the template. This demonstrates template selection and per-Run history."
+  },
+  "worked": {
+    "question": "Find script-system messages containing 'failed context switch' in a window of up to five Runs ending at the selected Run.",
+    "expected": "Show totals for each available Run, the individual matching diagnostics and all candidate files. This is a message search: the phrase may be a value filled into a template. A short display limit should not reduce the totals."
+  },
+  "worked-full": {
+    "question": "Find script-system messages containing 'failed context switch' in up to five Runs ending at the selected Run, and display every matching diagnostic available in this dataset.",
+    "expected": "The query and totals should agree with the shorter worked example. Higher display limits should reveal all matching current and earlier diagnostics in this genuine dataset. This demonstrates a readable multi-Run investigation, not a second different search."
+  },
+  "worked-limit-zero": {
+    "question": "Run the failed-context-switch query while hiding every individual diagnostic from the displayed list.",
+    "expected": "Totals, rankings and Run counts should remain the same as the worked example. Only the detailed list is hidden. This demonstrates that display limits do not change the analysis."
+  },
+  "runs": {
+    "question": "List the Runs in the chosen processing package that have usable chronological timestamps.",
+    "expected": "Show eligible Runs newest first by original log modification time. List timestamp exclusions separately. This demonstrates package selection and chronological eligibility."
+  },
+  "runs-page": {
+    "question": "Skip the first eligible Run and show one Run on the next page.",
+    "expected": "The page should contain the second Run from the full eligible list. Exclusions should still describe the whole package. This demonstrates pagination after eligibility and ordering."
+  },
+  "ineligible": {
+    "question": "Request a genuine stored Run whose source-log timestamp is missing or unusable.",
+    "expected": "Reject chronological selection and identify the excluded Run and reason. This demonstrates an honest eligibility failure, not a successful empty report."
+  },
+  "unknown": {
+    "question": "Request a Run ID that is not stored in this database.",
+    "expected": "Report an unknown Run and fail clearly. Do not invent an empty Run or silently choose another one."
+  },
+  "conflicting-package": {
+    "question": "Request a named Run while supplying a package different from its stored processing package.",
+    "expected": "Reject the conflict and identify the Run's actual package. This demonstrates that a supplied package cannot override stored lineage."
+  },
+  "no-eligible": {
+    "question": "Request the latest Run in a package with no eligible stored Runs.",
+    "expected": "Explain that no eligible Run is available and fail clearly. This demonstrates that latest is restricted to the requested package."
+  },
+  "file-scope": {
+    "question": "Find failed-context-switch diagnostics associated with common/on_action/sea_minority_on_actions.txt, without choosing a mod.",
+    "expected": "Keep every matching diagnostic and both genuine candidate copies of the file, with their recorded mod names and load orders. Multiple candidates must not multiply the diagnostic total."
+  },
+  "member-file": {
+    "question": "Narrow the sea-minority file investigation to the recorded playset member at load order 115.",
+    "expected": "Show the candidate from EB+EC724 Compatibility Patch. The diagnostic total should remain the same in this dataset because the same two diagnostics are associated with that candidate. This demonstrates combined mod and file filters."
+  },
+  "member-file-exact": {
+    "question": "Select one exact failed-context-switch diagnostic referencing common/on_action/sea_minority_on_actions.txt in EB+EC724 Compatibility Patch, using its complete stored identity.",
+    "expected": "Keep only the chosen diagnostic, even though another diagnostic references the same file. This demonstrates that exact-record selection is narrower than template or file selection."
+  },
+  "member-only": {
+    "question": "Find failed-context-switch diagnostics associated with EB+EC724 Compatibility Patch, allowing all files in that mod.",
+    "expected": "Show matching diagnostics from the selected mod's candidate files. This demonstrates that mod selection works independently of a file filter."
+  },
+  "stored-reference-context": {
+    "question": "Select diagnostics by the sea-minority path stored in their messages, then obtain optional current file context.",
+    "expected": "The stored-reference filter should select the diagnostics independently of disk lookup. Current candidate files and their recorded mod names should accompany the result."
+  },
+  "outside-playset": {
+    "question": "Look up an exact stored diagnostic using an explicitly selected source root outside the recorded playset.",
+    "expected": "Show candidates only if that current root contains the referenced file. Recorded mod identity and load order must be unavailable for this explicit outside-playset root. This demonstrates optional source context without inventing provenance."
+  },
+  "grouped-message": {
+    "question": "Select one exact diagnostic and require its message to contain 'failed context switch', contain either 'trigger' or 'effect', and exclude an additional literal.",
+    "expected": "Return that diagnostic only if every AND condition and at least one OR alternative holds. This demonstrates grouped message filters, not a broad template search."
+  },
+  "bound-phrase-is-not-template": {
+    "withdrawn": "This contrived example did not represent the intended content-search workflow. Search the whole diagnostic, including literal wording and populated slot values; the assigned template is result data."
+  },
+  "message-unrecognized": {
+    "question": "Find every diagnostic containing 'unrecognized', wherever that word occurs in the message.",
+    "expected": "Search literal wording and populated slots together. In this genuine Run, the word matches literal text in 62 diagnostics assigned to four templates. Show eight diagnostics, their assigned template IDs and the match locations; keep totals for all 62."
+  },
+  "history-positions": {
+    "question": "Show the five requested Run positions before and after a middle Run, using the seven genuine eligible Runs currently stored.",
+    "expected": "Display Run -5 through Run +5, with Run 0 selected. Show the actual Run IDs and diagnostic counts in available positions; mark the other positions Not available. Missing positions are neither failed reads nor zero diagnostic counts."
+  },
+  "stored-data-io": {
+    "question": "Trace actual file access while the root CLI and its freshly started database worker report stored diagnostics containing 'unrecognized'.",
+    "expected": "Return the stored matches without reading any original error log or model artifact. The attached Python I/O trace includes both processes, database opens and child commands. It verifies the observed reporting path without removing input files; it is not a system-wide native trace."
+  },
+  "message-unrecognized-summary": {
+    "question": "Repeat the 'unrecognized' search with no individual diagnostics displayed.",
+    "expected": "Keep all 62 diagnostic matches, occurrence totals and the four assigned templates in the match summary. Display limits do not change the search result."
+  },
+  "message-context-switch": {
+    "question": "Find every diagnostic containing 'failed context switch', wherever that phrase occurs in the message.",
+    "expected": "Use the same whole-message search. In this genuine Run, the phrase matches REASON values in 51 diagnostics, totalling 245 occurrences, assigned to four templates. Show the stored slot location and assigned template beside each displayed diagnostic. No separate slot query or reclassification is needed."
+  },
+  "message-context-switch-summary": {
+    "question": "Repeat the 'failed context switch' search with no individual diagnostics displayed.",
+    "expected": "Keep the 51 matching diagnostics, 245 occurrences and four assigned templates in the REASON match summary."
+  },
+  "symbol-exact-partial-key": {
+    "question": "Select one exact diagnostic, then combine its template ID, exact template text, partial template text and KEY value.",
+    "expected": "Keep the chosen diagnostic because it satisfies all the combined conditions. This deliberately narrow composition check is not the example for selecting every diagnostic using a common template; use template-only for that."
+  },
+  "template-or": {
+    "question": "Select two stored error templates as alternatives, without selecting an exact diagnostic.",
+    "expected": "Return every diagnostic using either template. Keep their combined template totals and separate diagnostic counts. This demonstrates OR selection across templates."
+  },
+  "template-summary-no-details": {
+    "question": "Repeat the two-template query with a diagnostic display limit of zero.",
+    "expected": "Keep the same complete template totals and Run data while displaying no diagnostic details. This demonstrates that template aggregates are computed before display limits."
+  },
+  "syntax": {
+    "question": "Find diagnostics matching the nine researched syntax-error conditions in the supported package.",
+    "expected": "Include the genuine syntax matches, including both stored classification statuses. The generic trigger-error template qualifies only with the exact researched assignment-error reason. This demonstrates the syntax preset's bounded definition."
+  },
+  "syntax-window": {
+    "question": "Apply all nine researched syntax selectors across the available trailing window of up to five Runs.",
+    "expected": "Show matching templates, both stored match statuses where present, per-Run counts and separate diagnostic identities. A researched selector with no matching stored example in this window remains unverified through these CLI records; do not manufacture one."
+  },
+  "dlc-path": {
+    "question": "Select a genuine diagnostic referencing a DLC script file and look up its current candidates.",
+    "expected": "Show the base-game/DLC candidate as a plain file path. If a mod supplies another candidate, show that mod's recorded name and load order beside its path. Keep the diagnostic count independent of the number of candidates."
+  },
+  "syntax-empty": {
+    "question": "Apply the syntax preset and additionally require the message phrase 'failed context switch'.",
+    "expected": "Complete successfully with no matches in this dataset. The preset conditions and message condition are all retained."
+  },
+  "syntax-contradiction": {
+    "question": "Apply the syntax preset while requiring an emitter incompatible with all nine defining conditions.",
+    "expected": "Complete successfully with zero matches: no diagnostic can satisfy both this emitter filter and the preset's nine alternatives. Keep both conditions in the effective query."
+  },
+  "syntax-unsupported": {
+    "question": "Request the syntax preset for a package outside its researched package boundary.",
+    "expected": "State that the preset is unavailable for that package. Do not reuse selectors from a different model/package as if they were verified."
+  },
+  "new-contradiction": {
+    "question": "Request the newly observed preset while explicitly asking for records that are not newly observed.",
+    "expected": "Complete successfully with zero matches. A diagnostic cannot be both newly observed and not newly observed in the same window. Keep both filters visible and return ordinary empty totals, with the actual Run window disclosed."
+  },
+  "hotspots-contradiction": {
+    "question": "Request file hotspots, which require a path in the stored diagnostic, and also require that no such path can be identified. This does not mean a recorded path whose file is missing from disk.",
+    "expected": "Complete successfully with zero matches: no diagnostic can both identify and lack a stored file path. A path can come from a file-valued <LOCATOR> or literal stored text; a numeric line locator alone is insufficient. Hotspots still include recorded paths that cannot be found on disk."
+  },
+  "new-zero-count": {
+    "question": "Request newly observed diagnostics while requiring zero occurrences in the selected Run.",
+    "expected": "Complete successfully with zero matches. Newly observed diagnostics must be present in the selected Run, so none can also have a selected count of zero. Preserve both conditions."
+  },
+  "symbol-needs-selector": {
+    "question": "Request a symbol/template investigation without specifying any template or typed value.",
+    "expected": "Reject the incomplete input before any database request, including a named Run's package lookup. Explain which selector is missing. This checks CLI input validation; no diagnostic investigation should be submitted."
+  },
+  "hotspots": {
+    "question": "Find concentration of diagnostics associated with script/file references, displaying only two individual records.",
+    "expected": "Compute rankings over all matches before limiting display. Keep engine emitters, referenced paths and candidate-file associations separate. This demonstrates the hotspots preset without assigning blame to a file."
+  },
+  "new": {
+    "question": "Find exact diagnostics present in the selected Run but absent from all successfully read included predecessors.",
+    "expected": "Show each qualifying diagnostic and the actual counts that establish its newness within this window. This demonstrates the newly observed preset, not a first-ever or severity claim."
+  },
+  "selected-only-new": {
+    "question": "Apply the newly observed preset to a window containing only the selected Run.",
+    "expected": "Every positive diagnostic is new within this selected-only window. The preceding observation fraction is unavailable because there were no preceding reads."
+  },
+  "previously-observed": {
+    "question": "Use the frequent-diagnostics preset and also show a bounded list of earlier diagnostics absent from the selected Run.",
+    "expected": "Rank current diagnostics by frequency. Keep the earlier, now-absent records in a separate section with selected-Run count zero; do not add them to current totals. This also demonstrates the frequent preset."
+  },
+  "positive-excludes-historical": {
+    "question": "Require at least one occurrence in the selected Run while requesting comparison history.",
+    "expected": "The previously observed-but-absent section should be empty because those records have a selected count of zero. Current totals should agree with the unrestricted positive records."
+  },
+  "optional-unlocated": {
+    "question": "Select two genuine diagnostics: the culture Failed context switch at common/on_action/sea_minority_on_actions.txt line 141, and Data error in loc string 'duke_male_holder_irish'. Ask for optional current file context.",
+    "expected": "Keep both diagnostics: 32 occurrences of the culture error and 163 of the localisation error. The culture diagnostic has a path and two current mod-file candidates. The localisation template is Data error in loc string '<PARAM>'; it has no <LOCATOR> or literal file path. That missing context must not remove the diagnostic."
+  },
+  "required-partial": {
+    "question": "From the culture context-switch diagnostic and a pathless localisation diagnostic, keep only messages whose referenced file is found in EB+EC724 Compatibility Patch.",
+    "expected": "Return the matching culture diagnostic with 32 occurrences and exclude the pathless localisation diagnostic. Complete successfully without an unidentified-record warning or partial-result section. The historical example filename is unchanged; the earlier failure behavior has been corrected."
+  },
+  "path-excludes-unlocated": {
+    "question": "Keep messages referencing common/on_action/sea_minority_on_actions.txt from the same two genuine diagnostics.",
+    "expected": "Return the culture diagnostic only. Match its stored file reference; the pathless localisation diagnostic is an ordinary nonmatch and generates no warning or failure."
+  },
+  "path-only-unlocated": {
+    "question": "Apply the sea-minority path filter to a genuine localisation diagnostic that identifies no source file.",
+    "expected": "Complete successfully with zero matches. There is no matching path and no source lookup is needed."
+  },
+  "synthetic-unmentioned-file": {
+    "evidence_kind": "synthetic",
+    "question": "Ask for diagnostics referencing a path that neither fixture entry mentions.",
+    "expected": "Complete successfully with zero matches and no missing-file error."
+  },
+  "synthetic-directory": {
+    "evidence_kind": "synthetic",
+    "question": "Select fixture diagnostics whose stored paths are directly inside common/character_interactions.",
+    "expected": "Return just the first copied emission. The other entry is in common/on_action and is excluded; disk existence does not affect this directory filter."
+  },
+  "synthetic-absolute-file": {
+    "evidence_kind": "synthetic",
+    "question": "Select one fixture diagnostic using its absolute path under a recorded root.",
+    "expected": "Return the matching diagnostic using the stored relative reference and root metadata. The file need not exist; this lexical path correspondence establishes no ownership."
+  },
+  "synthetic-member-missing-files": {
+    "evidence_kind": "synthetic",
+    "question": "Require a current file candidate in EB+EC724 Compatibility Patch for the two fake fixture paths.",
+    "expected": "Return a successful empty result. The selected root is readable but neither file exists there. Neither missing file creates a coverage error."
+  },
+  "archive-path-without-playset": {
+    "question": "Find genuine archived syntax diagnostics referencing events/education_and_childhood/child_personality_events_2.txt, although no playset was retained.",
+    "expected": "Return the messages matching that stored path. Missing optional playset context must not prevent path filtering. Nonmatching and pathless records are excluded."
+  },
+  "archive-unmatched-path": {
+    "question": "Filter the same genuine archive for a path that no stored diagnostic mentions.",
+    "expected": "Complete successfully with zero matches. No playset or disk lookup is needed to determine that none of the recorded paths matches."
+  }
+}

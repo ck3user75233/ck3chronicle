@@ -575,13 +575,52 @@
   ],
   "constructions": [
     {
+      "id": "unknown-effect-diagnostic",
+      "source": "pdx_persistent_reader.cpp",
+      "pattern": "(?P<message>[ \\t]*Unknown effect:[\\s\\S]+)",
+      "region_order": [
+        "message"
+      ],
+      "comparison_regions": [
+        "message"
+      ],
+      "fields": {},
+      "authority": "Owner-reviewed case 10 and 2026-10-04 implementation authorization: effect is fixed category wording in Unknown effect, not a KEY. Retained-code tracing reproduces the first inference merging effect/trigger before revision guards can apply. Distinct declared constructions prevent this initial merge without forbidding either spelling inside reported identifier fields."
+    },
+    {
+      "id": "unknown-trigger-diagnostic",
+      "source": "pdx_persistent_reader.cpp",
+      "pattern": "(?P<message>[ \\t]*Unknown trigger:[\\s\\S]+)",
+      "region_order": [
+        "message"
+      ],
+      "comparison_regions": [
+        "message"
+      ],
+      "fields": {},
+      "authority": "Owner-reviewed case 10: retain trigger as fixed diagnostic category wording, using the same initial-construction boundary as Unknown effect. Initial discovery and later complete matching use the shared declaration; location markers and quoted/reported identifiers retain their existing types."
+    },
+    {
       "id": "untyped-effect",
       "authority": "Owner 2026-09-27 explicitly confirmed this complete formulation, preserving effect as literal wording and the bracketed interior as one opaque REASON. Owner 2026-10-03 supersedes the old Unknown typing: the location marker remains literal and Unknown is a LOCATOR value. Native leading spaces and line endings remain exact.",
       "source": "jomini_script_system.cpp",
       "pattern": "(?P<prefix> Script system error!\\n  Error: untyped effect \\[ )(?P<reason>[\\s\\S]*?)(?P<tail> \\]\\n  Script location:[\\s\\S]+)",
-      "region_order": ["prefix", "reason", "tail"],
-      "comparison_regions": ["prefix", "tail"],
-      "fields": {"reason": {"type": "REASON", "meaning": "Complete native bracketed reason", "allow_empty": true}},
+      "region_order": [
+        "prefix",
+        "reason",
+        "tail"
+      ],
+      "comparison_regions": [
+        "prefix",
+        "tail"
+      ],
+      "fields": {
+        "reason": {
+          "type": "REASON",
+          "meaning": "Complete native bracketed reason",
+          "allow_empty": true
+        }
+      },
       "evidence": "Complete retained log 9d3622ab1b6c85cbab45d83767bb870b06c6fb9d6da50ee44f5eba3674d98cbc; Task 06 review case 1."
     },
     {
@@ -589,9 +628,22 @@
       "authority": "Owner 2026-09-27 explicitly confirmed this complete formulation, preserving trigger as literal wording and the bracketed interior as one opaque REASON. Owner 2026-10-03 supersedes the old Unknown typing: the location marker remains literal and Unknown is a LOCATOR value. Native leading spaces and line endings remain exact.",
       "source": "jomini_script_system.cpp",
       "pattern": "(?P<prefix> Script system error!\\n  Error: untyped trigger \\[ )(?P<reason>[\\s\\S]*?)(?P<tail> \\]\\n  Script location:[\\s\\S]+)",
-      "region_order": ["prefix", "reason", "tail"],
-      "comparison_regions": ["prefix", "tail"],
-      "fields": {"reason": {"type": "REASON", "meaning": "Complete native bracketed reason", "allow_empty": true}},
+      "region_order": [
+        "prefix",
+        "reason",
+        "tail"
+      ],
+      "comparison_regions": [
+        "prefix",
+        "tail"
+      ],
+      "fields": {
+        "reason": {
+          "type": "REASON",
+          "meaning": "Complete native bracketed reason",
+          "allow_empty": true
+        }
+      },
       "evidence": "Complete retained log 10cbdcb23e34a5b571a16eb52d390e5e676663936f000fd43404af19d85027fb."
     },
     {
@@ -618,7 +670,10 @@
           "empty_authority": "Owner 2026-09-24: fix the native empty-reason failure. A present reason field may contain zero characters; keep complete surrounding whitespace runs, including line endings, literal and every raw gap whole. Empty is not absent, not an optional literal, and not a reason to invent content."
         }
       },
-      "excludes": ["untyped-effect", "untyped-trigger"],
+      "excludes": [
+        "untyped-effect",
+        "untyped-trigger"
+      ],
       "evidence": "docs/LEARNER_OUTER_DIAGNOSTIC_IMPLEMENTATION.md"
     },
     {
@@ -668,7 +723,10 @@
       },
       {
         "id": "line-location",
-        "literal_alternatives": ["line:", "near line:"],
+        "literal_alternatives": [
+          "line:",
+          "near line:"
+        ],
         "literal_alternatives_authority": "Owner 2026-09-28: near line: and line: are interchangeable immediately before a line LOCATOR; preserve exact native spelling and all remaining wording.",
         "forms": [
           [
@@ -688,7 +746,8 @@
   "inference_policy": {
     "field_similarity": {
       "authority": "Owner 2026-09-27 reiterates that a corresponding field at the correct position counts once, like one matching token, irrespective of its contents. Slot contents must not contribute individual word matches or become diagnostic wording.",
-      "mechanic": "Retain ordered literal-word units and one typed unit per recognized present field. Declared fields participate from recognition; inferred fields participate only after complete capture validation. Hypothesized unaccepted regions receive no field credit. Existing source/structure partitions and diagnostic-wording-loss protection still apply."
+      "mechanic": "Retain ordered literal-word units and one typed unit per recognized present field. Declared fields participate from recognition; inferred fields participate only after complete capture validation. Hypothesized unaccepted regions receive no field credit. Existing source/structure partitions and diagnostic-wording-loss protection still apply.",
+      "trailing_location_presence": "Owner 2026-10-03: a recognized message-ending variable-count location section contributes exactly one LOCATOR presence unit when it contains one or more locators, including contextual Unknown. Contents, number of entries and their repeated traces do not multiply this contribution. Absence contributes no presence unit. This exception applies only to the recognized trailing location sequence, not KEY, REASON, other PARAMs, other LOCATOR positions or arbitrary repeated fields. Exact ordered captures and message identity remain unchanged."
     },
     "date_keys": {
       "id": "native-dotted-date-key",
@@ -770,6 +829,119 @@
     }
   },
   "parameter_structures": [
+    {
+      "id": "invalid-comparison-side",
+      "mechanic": "line_sequence",
+      "source": "jomini_script_system.cpp",
+      "slot_type": "KEY",
+      "strict_capture": true,
+      "prefix": "Invalid ",
+      "content": "(?:left|right)(?= side during comparison ')",
+      "authority": "Owner-reviewed case 2 accepts left/right as one KEY field; 2026-10-04 implementation authorization closes the remaining literal left/scope formulation using the same explicit field positions."
+    },
+    {
+      "id": "invalid-comparison-identifier",
+      "mechanic": "line_sequence",
+      "source": "jomini_script_system.cpp",
+      "slot_type": "KEY",
+      "strict_capture": true,
+      "prefix": "Invalid (?:left|right) side during comparison '",
+      "content": "[^'\\s]+(?=')",
+      "authority": "Owner-reviewed case 2: the reported comparison identifier is a quoted KEY, including scope. This positional declaration does not make surrounding diagnostic words KEYs."
+    },
+    {
+      "id": "character-parent-state-phrase",
+      "mechanic": "line_sequence",
+      "source": "characterhistory.cpp",
+      "slot_type": "PARAM",
+      "strict_capture": true,
+      "prefix": "^[ \\t]*Parent \\([^\\r\\n]*\\) of [^\\r\\n]+ is ",
+      "content": "(?:hasn't been born|the wrong gender)(?= at file:)",
+      "authority": "Owner 2026-10-04 authorizes contextual hard-coded correction after the complete 73-log function-word survey. These two observed diagnostic phrases are one PARAM each, never three independent KEYs. Parent is literal game wording, not a taxonomy category. Preserve original grammar and complete full-ID fields."
+    },
+    {
+      "id": "formatting-tag-content",
+      "mechanic": "line_sequence",
+      "slot_type": "PARAM",
+      "strict_capture": true,
+      "prefix": "^[ \\t]*Unknown formatting tag '",
+      "content": "[\\s\\S]+(?='[ \\t]*(?:\\r?\\n)?$)",
+      "authority": "Owner-reviewed case 14 and implementation authorization 2026-10-04: the complete quoted formatting tag is PARAM, including embedded control characters and line endings. Opening and closing quotes remain literal; neither KEY syntax nor physical line breaks divide this field."
+    },
+    {
+      "id": "compare-trigger-identifier",
+      "mechanic": "line_sequence",
+      "source": "jomini_script_system.cpp",
+      "slot_type": "KEY",
+      "strict_capture": true,
+      "prefix": "Wrong scope for trigger for compare trigger '",
+      "content": "[^'\\s]+(?=': none, expected )",
+      "authority": "Owner-reviewed case 12: the quoted compare-trigger identifier is a KEY. Explicit recognition retains the same field for observed singleton and varying identifiers; surrounding diagnostic words remain literal."
+    },
+    {
+      "id": "compare-trigger-expected-scope",
+      "mechanic": "line_sequence",
+      "source": "jomini_script_system.cpp",
+      "slot_type": "KEY",
+      "strict_capture": true,
+      "prefix": "Wrong scope for trigger for compare trigger '[^'\\r\\n]+': none, expected ",
+      "content": "[A-Za-z_][A-Za-z0-9_]*(?=[ \\t\\r\\n]|$)",
+      "authority": "Owner-reviewed case 12 and implementation authorization 2026-10-04: expected scope is a KEY field. Character and war are observed scope values, not different diagnostic wording. No change to standalone effect/trigger diagnostic categories."
+    },
+    {
+      "id": "missing-localization-display",
+      "mechanic": "line_sequence",
+      "source": "pdx_locstring.cpp",
+      "slot_type": "PARAM",
+      "strict_capture": true,
+      "prefix": "^[ \\t]*Key is missing localization:[^\\S\\r\\n]+",
+      "content": "[^\\r\\n]+?(?=[^\\S\\r\\n]*(?:\\r?\\n|$))",
+      "authority": "Owner 2026-10-04 implementation authorization following the residual survey: capture the entire reported display field, including multiword and single-word members, as PARAM. This fixes inherited word-count splitting without a place-name dictionary or English stop-word ban. The field ends at the native line ending."
+    },
+    {
+      "id": "marked-character-line-reference",
+      "mechanic": "line_sequence",
+      "slot_type": "PARAM",
+      "strict_capture": true,
+      "prefix": "(?m)^(?:Cheater|With):[ \\t]+",
+      "content": "\\x15ONCLICK:CHARACTER,[0-9]+ \\x15TOOLTIP:CHARACTER,[0-9]+ \\x15L[^\\r\\n]+?(?=[ \\t]*(?:\\r?\\n|$))",
+      "authority": "Owner 2026-10-04 authorizes the reviewed whole-name boundary correction and overlapping name-template fix. Recognize the complete marked-up character reference in the demonstrated Cheater/With line fields, including ID markup, titles, lowercase particles, names and reset bytes. PARAM preserves the opaque reference; no new identity type or markup rewriting. Not restricted to any name, mod or script effect."
+    },
+    {
+      "id": "character-id-short",
+      "mechanic": "line_sequence",
+      "slot_type": "CHARACTER_ID_SHORT",
+      "strict_capture": true,
+      "prefix": "(?:^[ \\t]*|:[ \\t]+)",
+      "content": "(?P<name>[^\\s():][^():\\r\\n]*) \\([0-9]+, (?P<location>[^()\\r\\n]+)\\)(?=[:;,. \\t\\r\\n]|$)",
+      "authority": "Owner 2026-10-03 correction: the first name word is capitalized; later words are unrestricted. A first-capitalized display location follows the numeric ID and comma. Numeric parentheses distinguish this complete short identity; no date prerequisite. Starts use the existing emission/body or colon field boundary, not arbitrary interior name suffixes. Preserve names with leading transliteration modifiers, such as genuine ʾAmīr. This is source/mod/name independent; no global classification of plain Name of Place text.",
+      "capitalized_starts": [
+        "name",
+        "location"
+      ],
+      "leading_modifiers": "ʾʿ'"
+    },
+    {
+      "id": "receiver-before-default-location",
+      "mechanic": "line_sequence",
+      "slot_type": "CHARACTER_ID_SUPER_SHORT",
+      "strict_capture": true,
+      "prefix": "\\breceiver is ",
+      "content": "[^\\r\\n]+?(?=, default location is )",
+      "authority": "Owner 2026-10-03 requests the shortest character display-name form as a dedicated slot rather than PARAM, allowing receiver is as the recognition marker. The complete name between receiver is and the following comma/default-location marker is CHARACTER_ID_SUPER_SHORT. This reuses the bounded recognizer verified on all 75 genuine receivers; no global Name of Place classifier, source/mod/name whitelist, numeric-ID requirement or decomposition."
+    },
+    {
+      "id": "default-location-name",
+      "mechanic": "line_sequence",
+      "slot_type": "PARAM",
+      "strict_capture": true,
+      "prefix": "\\bdefault location is ",
+      "content": "(?P<location>[^ \\t\\r\\n][^\\r\\n]*?)(?=[ \\t]*(?:\\r?\\n|$))",
+      "authority": "Owner correction 2026-10-03: default location is <PARAM> starts at the capitalized word immediately after the marker and ends at the native line ending. All 75 values in 104 genuine logs have this boundary and no terminal period. Remove the unsupported period terminator; periods have no special boundary role. Preserve complete display names and separate trailing presentation whitespace.",
+      "capitalized_starts": [
+        "location"
+      ]
+    },
     {
       "id": "character-full-id",
       "mechanic": "full_id",
@@ -1046,6 +1218,19 @@
       "content_required": "(?:\\(Internal ID:[ \\t]|^\\(no character\\)$)",
       "meaning": "Character description including its ID parentheses; Character: and following diagnostic wording remain outside.",
       "evidence": "Native Basilia de Clare spouse-history message and same-source descriptions in the ten-log corpus."
+    },
+    {
+      "id": "formatted-linked-reference",
+      "mechanic": "line_sequence",
+      "slot_type": "PARAM",
+      "strict_capture": true,
+      "prefix": "(?=\\x15(?:ONCLICK|TOOLTIP):)",
+      "content": "(?P<link>\\x15ONCLICK:[^\\s\\x15]+[ \\t]+)?\\x15TOOLTIP:[^\\s\\x15]+[ \\t]+\\x15L;?[ \\t]+[^\\x15\\r\\n]+?\\x15!\\x15!(?(link)\\x15!)(?:\\x15!)*(?!\\x15!)",
+      "authority": "Owner 2026-10-04: the special game-formatting characters in context establish PARAM start/end markers. Recognize complete linked or tooltip display references from their ONCLICK/TOOLTIP opener through the complete consecutive reset run (at least three with ONCLICK, at least two without it; additional resets close surrounding formatting and stay in the capture). Preserve all metadata, displayed text and controls together as the opaque PARAM value. Existing declared fields and full identities retain precedence. No name, word-count, trait-ID, mod or emitter whitelist; do not treat a lone control character as sufficient evidence. Nested or incomplete markup is not generalized from these examples. Implementation preserves a larger surrounding quoted field for empirical inference; a reference occupying the entire quoted interior remains eligible.",
+      "defer_inside_quotes": [
+        "'",
+        "\""
+      ]
     }
   ],
   "assignment_policy": {
@@ -1108,6 +1293,16 @@
       "minimum_entries": 1,
       "label": "'s title: ",
       "authority": "Owner authorized continuation-aware model integration following parser v1.7 handoff. One opening plus ordered supporting title entries; complete character reference and each whole displayed title remain opaque. Recognition and entry boundaries come solely from the selected parser."
+    }
+  ],
+  "formatted_literals": [
+    {
+      "id": "game-date-prefix",
+      "text": "{game date}",
+      "prefix": "(?:^[ \\t]*|:[ \\t]+)",
+      "pattern": "(?:[0-9]{1,2} (?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9]{3,4}|[0-9]{1,2}-(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-[0-9]{3,4})",
+      "suffix": ":",
+      "authority": "Owner correction 2026-10-04: this format is an equivalent literal, never KEY or another slot type. At the same template position all conforming dates match. Retain the exact native spelling as a literal layout choice for rendering and message identity. Space-separated spelling is corpus-backed; hyphenated spelling was requested earlier but remains without a genuine witness. Dotted date KEYs and the outer timestamp are unchanged."
     }
   ]
 }

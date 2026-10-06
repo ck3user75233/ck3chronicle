@@ -1,0 +1,4 @@
+{
+  "purpose": "Find diagnostics containing unrecognized anywhere in their message.",
+  "refinement": {"message": {"contains": "unrecognized"}}
+}

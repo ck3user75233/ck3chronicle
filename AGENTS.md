@@ -49,6 +49,10 @@ If the working tree is not clean or work continues across tasks, also read
 [`docs/CURRENT_HANDOFF.md`](docs/CURRENT_HANDOFF.md) for the live change ledger
 and exact continuation point.
 
+Agreed team responsibilities, component/receiving boundaries and Advisory's
+authority are in
+[`docs/team-governance/README.md`](docs/team-governance/README.md).
+
 Use the focused specifications linked from [`README.md`](README.md) when
 changing a particular product boundary. Before reviving a deliberately removed
 design, check [`docs/BANNED_IDEAS.md`](docs/BANNED_IDEAS.md).
@@ -110,3 +114,11 @@ invented diagnostic/count scenarios, mock clients or injected failures as report
 acceptance tests. A case not represented by real evidence remains unverified;
 tests must not create additional product requirements. Report failed checks and
 any proposed requirements beyond the assigned task explicitly to the owner.
+
+Owner reporting-verification exception (2026-10-04): the owner explicitly
+authorized a disposable error.log containing two precise copies of genuine
+emissions with only fake file paths in their LOCATORs, using the normal captured
+playset JSON. Keep the original playset members and regenerate log hashes through
+the normal writer. Label this source-path fixture and its results synthetic;
+keep it separate from genuine history acceptance. This does not authorize mock
+clients, fabricated history or unrelated injected failures.

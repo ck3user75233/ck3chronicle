@@ -13,7 +13,8 @@ def shape(parts):
     for part in pattern_identity(parts):
         part = {k: v for k, v in part.items() if k != 'name'}
         if (part['kind'] == 'literal' and result and result[-1]['kind'] == 'literal'
-                and 'alternatives' not in part and 'alternatives' not in result[-1]):
+                and not {'alternatives', 'literal_format'} & part.keys()
+                and not {'alternatives', 'literal_format'} & result[-1].keys()):
             result[-1]['text'] += part['text']
         elif part.get('text') != '':
             result.append(part)

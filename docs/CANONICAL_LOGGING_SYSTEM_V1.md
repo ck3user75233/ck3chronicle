@@ -5,6 +5,10 @@ planning. This reference does not authorize implementation or production activat
 [Task 09A](TASK09A_PROMPT.md) commissions the plan; final implementation assignment
 and sequencing remain with the owner and incoming advisor.
 
+Owner clarification, 2026-10-05: Learner leads planning for implementation
+throughout CK3Chronicle, with component implementation and receiving ownership
+preserved. A learner-first slice does not limit the overall scope.
+
 The examples below are individually labelled **illustrative**. Existing function
 names and call signatures were checked against the checkout on 2026-10-03.
 `journal` and its methods describe a proposed API, not existing CK3Chronicle code.
@@ -212,19 +216,21 @@ recorded source location, and any counts reported by that code, without translat
 a separate operational ontology. Verify on bounded genuine execution, authentic
 release bytes and unchanged learner outcomes. Missing genuine cases stay unverified.
 
-## Adoption recommendation — not additional architectural requirements
+## Adoption scope and sequencing
 
-The outgoing advisor recommends a learner-first implementation after 09A planning:
-extend the shared owner minimally, retain it in a new candidate, and instrument a
-few real learner functions. Existing watcher/handler logging remains operational
-while wider adoption is assessed. Do not silently rename/delete its current events,
-request correlation, operator commands or destinations as collateral cleanup.
+The owner's 2026-10-05 direction requires project-wide implementation planning
+led by Learner. Cover Learner, Pipeline, Watcher, Data Intelligence/Reporting and
+application entry points. Plan small deliveries through their existing owners,
+with Pipeline receiving application packaging and integrated runtime effects.
+Useful current logging, request correlation, operator commands and destinations
+must be preserved or deliberately converted, not lost as collateral cleanup.
 
-Have the planner identify any necessary change to those consumers. The incoming
-advisor and owner decide whether a separate runtime conversion is worthwhile,
-which events it replaces, and how operators receive the new interface. This is
-not authorization for permanent compatibility shims, duplicate event streams or
-an application-wide conversion. Canonical journals themselves retain the v1 model.
+The planner must identify required changes and already-sufficient coverage across
+those consumers, which events change, and how operators receive the result. A
+learner-first delivery remains a sequencing option; other required component work
+stays explicit. This planning direction does not execute the implementation or
+authorize activation. No permanent compatibility shims, duplicate backends or
+indiscriminate function tracing are commissioned. Canonical journals retain v1.
 
 This direction supersedes the phase-based design in
 [the earlier learner proposal](LEARNER_LOGGING_PROPOSAL.md) and

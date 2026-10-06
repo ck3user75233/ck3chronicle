@@ -1,5 +1,538 @@
 # Project status
 
+## Database replaced; 31 new-model Runs active — 2026-10-05
+
+**Complete.** Production now uses
+`.ck3chronicle/wip/runtime/ck3chronicle-schema3-20261005T112504Z.sqlite3`: 31 Runs,
+all package `4ac4e8ee92346e6d14eacfbf` / parser v1.8, totaling 958,190 classified
+occurrences in 79,508 records. These are the 30 rebuilt retained captures plus the
+session the owner just closed. No database rows were migrated or imported.
+
+See the [replacement receipt](learner-next-release/PIPELINE_RECEIVING.md#database-replacement-complete--2026-10-05)
+and [operational record](learner-next-release/PIPELINE_CUTOVER.md). After a verified
+backup, config's database path switched at 12:07:47 UTC and the installed watcher
+restarted at 12:08:19. Watcher 51024 (launcher 55312); handler 54908 (launcher 60264),
+instance `f474dbf7100a44399e2ae4a6a05f6375`. Fresh heartbeat/public reads/reports pass.
+The old database/review namespace exists only in the backup at
+`.codex-tmp/pipeline-refresh-20261005/backup-20261005T120734Z/retired-original/`.
+Protected captures and other configuration remain unchanged. No rollback needed.
+
+The genuine CK3 lifecycle 11:16:27–12:06:14, capture and automatic new-model ingestion
+are verified; its active Run is `20261005-UYSOEO`. The earlier live-lifecycle follow-up
+is closed. R4 syntax remains separately owned Reporting work. Staging/deferral and
+older pending statements below are historical; do not rerun the 30-input rebuild.
+
+## Thirty-capture rebuild verified; switch deferred by owner — 2026-10-05
+
+All 30 readable protected captures are rebuilt and verified under production package
+`4ac4e8ee92346e6d14eacfbf` in the separate staged database
+`.ck3chronicle/wip/runtime/ck3chronicle-schema3-20261005T112504Z.sqlite3`.
+The [receipt](learner-next-release/PIPELINE_RECEIVING.md#thirty-capture-rebuild-staged-switch-deferred--2026-10-05)
+records 948,135 classified occurrences, 76,510 records, exact native-region/review
+checks, unchanged capture facts/playsets and passing genuine missing-time reports.
+Evidence: `.codex-tmp/pipeline-refresh-20261005/`; staging handler is shut down.
+
+**The owner explicitly deferred the database switch and asked to leave CK3 running.**
+Production still uses the September 28 database; configuration, watcher 64444,
+handler 47932 and protected originals remain unchanged. Do not execute stop/switch
+helpers while this deferral applies. Pipeline's next action after it is lifted:
+secure the naturally completed session, refresh inventory, back up the closed
+production store/evidence at the safe boundary, switch to this existing staged
+store, then reconcile startup duplicates and any newly protected unique captures.
+Do not rebuild the same 30 captures again. Natural production lifecycle verification
+remains distinct from the completed historical rebuild. R4 remains Reporting-owned.
+
+## Owner-requested database refresh pending game exit — 2026-10-05
+
+The owner requested clearing legacy-model results and ingesting protected originals
+under production package `4ac4e8ee92346e6d14eacfbf`. This authorizes the historical
+refresh, superseding the earlier no-reset/no-reprocessing restriction for this work.
+No reset has occurred. At 11:18:55 UTC CK3 PID 53004 is running under watcher 64444;
+leave capture observation intact until natural exit and completed publication/ingestion.
+Read-only inventory: `.codex-tmp/pipeline-refresh-20261005/refresh-inventory.json`.
+All 30 stored Runs have readable protected originals; 22 older directories still
+deny contents/ACL reads. They are not proven missing stored Runs.
+
+Pipeline continuation: verify the first naturally completed new-package lifecycle,
+refresh capture/request accounting, stop the verified watcher/handler safely, make
+and verify a fresh backup, explicitly initialize a new database through the existing
+API and switch its configured path, then let the sole installed watcher's ordinary
+startup ingestion rebuild the available genuine captures. Preserve original logs,
+metadata/playsets and archived database/review evidence. Run IDs/processing times
+may change; old classifications/lineage survive in backup. No permissions repair,
+fake input or fabricated missing history is authorized by this inventory work.
+
+## Production cutover complete; natural lifecycle follow-up pending — 2026-10-05
+
+**Production is on package `4ac4e8ee92346e6d14eacfbf` (learner v61/parser v1.8).
+No rollback.** The owner-authorized switch/restart superseded the prior hold.
+See the [activation receipt](learner-next-release/PIPELINE_RECEIVING.md#production-activated--2026-10-05)
+and [cutover record](learner-next-release/PIPELINE_CUTOVER.md). At 09:57:58 UTC the
+final R3 installed runtime started: watcher 64444 (launcher 64756), handler 47932
+(launcher 65896), instance `88739409838c4e38936bebc72166ae33`. Existing database,
+configuration, 30 Runs and capture/review evidence were preserved; the verified
+backup is `.codex-tmp/pipeline-activation-20261005/backup-20261005T095647Z/`.
+Fresh heartbeat, startup duplicate accounting and genuine existing-Run reports pass.
+
+No new unique capture occurred: **new-package stored ingestion lineage and live
+lifecycle verification remain pending**, distinct from successful activation.
+Pipeline retains the follow-up: correlate the next natural completed capture to
+its new Run, verify actual package/parser/application lineage, facts/counts,
+playset/review and reports, then append evidence. No fake capture or historical
+reprocessing. R1/R2/R3/R5 remain closed; R4 syntax remains separately owned Reporting
+work. Older holds and process observations below are historical where superseded.
+
+## R3 packaging closed; activation held — 2026-10-05
+
+**READY FOR OWNER ACTIVATION DECISION. R3 CLOSED.** The
+[final receipt](learner-next-release/PIPELINE_RECEIVING.md#r3-packaging-closed--2026-10-05)
+and [cutover](learner-next-release/PIPELINE_CUTOVER.md) supersede the earlier
+post-install override arrangement. Final wheel SHA-256:
+`7239a0c5b89e52f2df1d31028bdbf21b086e3600bf7c079347a1ee4f1d982959`; artifact and clean staged environment
+are under `.codex-tmp/pipeline-r3-packaging-20261005/`. The wheel contains a valid
+default referencing shipped package `4ac4e8ee92346e6d14eacfbf`. Outside-checkout
+default loading, all 556 installed members and installed rollback authenticate
+without a corrective file replacement. Application/distribution bytes are unchanged;
+prior independent Reporting/ingestion evidence is reused. Live configuration and
+immutable distributions remain untouched. The owner explicitly holds activation;
+new-package live lifecycle verification remains pending. Older entries below are
+historical where superseded.
+
+## Combined release ready for owner activation decision — 2026-10-05
+
+Pipeline independently received Reporting's R1/R2/R5 repair: 35 genuine-data
+checks, 28 installed CLI invocations and output-content checks passed. The
+[receipt](learner-next-release/PIPELINE_RECEIVING.md#pipeline-repair-receiving-completed--2026-10-05)
+and [cutover](learner-next-release/PIPELINE_CUTOVER.md) name the final repaired
+wheel and separate staged installation. Pipeline owns the verified installed
+default/rollback arrangement; the wheel's standalone default requires that explicit
+selection step. R4 syntax selectors remain separate Reporting work. No new learning
+or ingestion campaign was needed. Current read-only observations show the old live
+package, watcher/handler unchanged, CK3 absent and latest genuine Run 0UM3HN.
+Keep the production database. **READY FOR OWNER ACTIVATION DECISION**; no live
+switch, restart, production ingest/reset, historical processing, commit or push.
+
+## Reporting R1/R2/R5 repair ready for Pipeline receiving — 2026-10-05
+
+The [repair receipt](learner-next-release/PIPELINE_RECEIVING.md#reporting-repair-delivered--2026-10-05)
+delivers a new authenticated wheel and isolated installation. Genuine existing
+receiving Runs now pass repeat-template reports, all 44 preserved-byte exports,
+ordinary missing-time listing/message search and named reports with/without
+history. Missing timestamps stay missing; chronological context remains honest.
+Old-package compatibility and runtime logging ownership pass. R3's packaged
+default still requires the documented install override; R4 syntax selectors remain
+separate Reporting work. Pipeline re-receiving/cutover update and owner activation
+are pending. No production service, selection, database or retained release changed;
+no ingestion, synthetic history, commit or push. Broader 08C remains outside scope.
+
+## Pipeline received combined release; Reporting defects hold activation — 2026-10-05
+
+The [Pipeline receipt](learner-next-release/PIPELINE_RECEIVING.md) verifies exact
+package `4ac4e8ee92346e6d14eacfbf` through installed public-handler ingestion:
+172,130 new-package units, exact native captures/reconstruction, unresolved review
+and mixed-package storage. Session 55 preserves all 44 byte-bearing occurrences.
+Reporting's repeat-layout `KeyError` and surrogate export failure remain open;
+the owner has explicitly made the surrogate-export defect R2 nonblocking. The
+[fresh-chat repair prompt](learner-next-release/REPORTING_RECEIVING_REPAIR_PROMPT.md)
+covers R1/R2 and owner-identified R5: missing timestamps must not exclude Runs from
+ordinary listings, message searches, queries or reports. Only chronological
+placement is unavailable. R5 is an
+unrepaired selection defect, not an accepted prerequisite. New syntax selectors
+remain separately accountable work. No implementation is claimed by this update.
+A separate installed default and rollback are
+verified; the wheel's broken old default is disclosed. [Cutover is prepared](learner-next-release/PIPELINE_CUTOVER.md),
+with current database retention recommended. Live services still use the old
+package; today's genuine Run ZEHL9K/report and fresh heartbeat were checked
+read-only. No reset, production write, live switch or restart. The prior explicit
+restart prohibition remains; complete end-to-end acceptance is not claimed.
+
+## Combined learner / decoder release delivered — 2026-10-05
+
+The final [release packet](learner-next-release/README.md) records registered v61
+learner/parser v1.8 and model package `4ac4e8ee92346e6d14eacfbf`, the verified
+installed application, exact pins and proposed/previous selections. Same 20 Runs
+gain 13,184 classifications with no losses/downgrades; full 73-log preservation
+passes. Pipeline receiving and activation remain pending. Production selection
+`68f1ae5db205ab46afef9c4d` and services are unchanged. The Data Intelligence
+surrogate-bearing export defect remains disclosed for bounded repair or owner
+disposition. The preparation entries below are historical where superseded by
+this completed release; they do not change the remaining operational restrictions.
+
+
+## Combined learner / decoder release packet prepared — 2026-10-05
+
+The owner plans to include the decoder API in the next production replacement.
+The [release README](learner-next-release/README.md) consolidates implemented
+improvements and verified v60 outcomes; the [handoff](learner-next-release/HANDOFF.md)
+records integration, comparison and activation work. Decoder handoff is delivered
+for both learner and pipeline teams; receiving, combined build/verification and
+final identities are pending. Documentation preparation
+does not change the active production pin or runtime processes.
+
+## Thin shared decoder verified in disposable callers — 2026-10-05
+
+Owner approved known-encoding input through the single shared API, with detection
+for unknown encodings. Python codecs retain isolated undecodable bytes; display
+escapes them. The session-55 rejection regression is fixed in the development
+decoder. Actual disposable parser comparisons pass for four logs: 186,704
+emissions and 190,701 native matcher inputs, with original bytes preserved.
+The mod-only source comparison remains 941 readable files and one low-confidence
+file; source search/excerpts and genuine stored-query checks pass. Production
+callers and pinned packages remain unchanged until coordinated cutover. Details
+and evidence limits: TASK08C_ENCODING_RECOMMENDATION.md and TASK08C_HANDOFF.md.
+
+## Formatted-reference learner correction verified — 2026-10-04
+
+The unpromoted v58 work continues as a disposable v60 research candidate.
+Contextual ONCLICK/TOOLTIP and reset markers now delimit complete PARAMs; the
+73-log preflight recognizes 127 fields in 69 messages and preserves existing
+declared fields plus two larger quoted PARAMs. The same incremental build
+schedule completed: package `840957b2f8e16f1cf0f88ad2` has 394 templates and all
+71 focused messages pass exact captures/reconstruction. The 20 stored Runs gain
+13,184 classified occurrences; both that comparison and the full 73-log check
+have zero assignment losses or supported-to-provisional downgrades. All three
+original diagnostics remain supported. Numbered reports are in
+`.codex-tmp/marked-references-v60-final/CHANGES.html` and linked `FIXES.html`.
+This completes the formatting correction, not every remaining candidate gap.
+Production is still `68f1ae5db205ab46afef9c4d`; no runtime restart or Run mutation.
+Internally nested display labels and the separately documented activity field
+gap remain outside this change. See CURRENT_HANDOFF for the current build.
+
+## Decoder candidates only; existing callers restored — 2026-10-04
+
+Owner requires the decoder cutover with the coordinated pinned release, using
+only disposable caller copies meanwhile. Source-search/report integration and
+the dependency declaration have been restored; candidate copies are retained
+under ignored task evidence. The new decoder API has no production callers.
+Inconclusive or text-ambiguous decoding now fails explicitly; header repair is
+out of scope. Earlier integration-delivery statements are superseded. See the
+[current 08C handoff](TASK08C_HANDOFF.md) for restoration and staged checks.
+
+## Parser decoder-call boundary — 2026-10-04
+
+Owner clarified that the shared decoder should replace embedded decoding calls,
+without parser-mechanics changes absent prior alignment. The experimental source-
+reference replacement adapter was removed; parser integration is pending the
+coordinated upgrade. Source search/excerpts retain the shared decoder. The
+[08C handoff](TASK08C_HANDOFF.md) distinguishes current code from historical
+prototype comparisons. Pinned parser artifacts and ingestion are unchanged.
+
+## Shared automatic decoder delivered; ingestion upgrade remains staged
+
+Owner-directed unpinned `Decoder` now serves source search/excerpts through one
+automatic API. Genuine source and UTF-8 parser comparisons pass; one actual log
+with an invalid UTF-8 byte exposes a detector/parser mismatch, recorded for the
+coordinated package upgrade. Ingestion and pinned artifacts remain unchanged.
+See [08C handoff](TASK08C_HANDOFF.md) for APIs, evidence, limits and failed checks.
+
+## Source validation critical header warnings — 2026-10-04
+
+Owner-directed critical encoding-header warnings are delivered through the source
+service and JSON/text/HTML reports, separately from path resolution. Genuine
+mod headers supply five replacement-character cases; double-BOM/mojibake positive
+cases remain unrepresented. [08C handoff](TASK08C_HANDOFF.md) records scope,
+verification and the broader 08C work still pending. No production activation.
+
+## Activity field gap identified during owner review — 2026-10-04
+
+The corrected adjacent-field report covers full message families, groups actual
+production/candidate relationships and numbers examples E01–E27. Activity incidence
+is 10 distinct messages, not the two inference examples previously quoted. Both
+production and v58 select three different templates for eight messages and leave
+two unmatched. A bounded one-PARAM activity proposal uniquely matches all ten,
+preserving the full character identity and native formatting. It is not yet an
+implemented learner rule or published candidate. See CURRENT_HANDOFF and
+`.codex-tmp/coupled-words-v58-candidate/adjacent-word-audit/ADJACENT-WORDS.html`.
+The earlier candidate-completion statements do not cover this newly identified gap.
+Production activation and the previously requested restart remain pending.
+
+## v58 replacement ready; live switch pending — 2026-10-04
+
+The owner authorized the production replacement after candidate completion.
+Package `f23424ed8aa4d910bf4d3223` and its frozen learner are now retained and
+registered. The proposed selection, wheel and genuine-evidence verification
+are complete. Ten release-selection tests and runtime logging ownership pass;
+wheel-extracted application/package code classifies all three original errors
+as supported. Current production remains `68f1ae5db205ab46afef9c4d` until the
+owner resolves the earlier explicit runtime-restart prohibition: the running
+handler predates the required contract-renderer changes. See CURRENT_HANDOFF.
+No remaining candidate implementation or report work blocks release.
+
+## Learner v58 candidate delivered — 2026-10-04
+
+Replaced the disputed history-specific construction gates with reusable inference
+for adjacent alphabetic word fields that only vary together. Unsupported unmarked
+phrases retain literal formulations; no emitter/phrase list or global word ban
+was added. The full 73-log incremental candidate is built and exported, with
+production comparisons and updated sample/removal reports in
+.codex-tmp/coupled-words-v58-candidate/CHANGES.html. Package
+f23424ed8aa4d910bf4d3223 remains disposable and inactive.
+
+All original three diagnostics and all 16 history messages classify as supported.
+The same 20 Runs gain 11,495 previously unmatched occurrences with no losses or
+supported-template downgrades; the full training comparison also has no such
+regressions. Exact native reconstruction, identity and locator preservation pass.
+Current assigned implementation/test/report work is complete; production release
+and pinning await owner review. Previously deferred ideas remain deferred.
+See CURRENT_HANDOFF for evidence, package identity and verification limitations.
+
+## Learner comparison report corrected — 2026-10-04
+
+Owner review concerns learner code/outcomes, not approval of individual templates.
+The seven previously listed removals are now explained as three families. All
+630 missing-name messages, five scope-localization messages and 41 GUI parsing
+messages select supported templates with identical wording and captures in
+production and v57. Old alternative-template compatibility totals overlapped;
+repeated witnesses were a report defect, not duplicate message identities. The
+corrected report shows actual status, family counts and 12 GUI examples spanning
+35 statement values. No core learner/matcher or production behavior changed.
+See CURRENT_HANDOFF for evidence and the separate residual catalog redundancy.
+
+## Learner v57 subsequent owner review — 2026-10-04
+
+The owner rejects the history-wording implementation; its two hard-coded
+constructions remain disputed despite literal-output verification. No further
+history change or production activation has occurred. The 38 removed templates
+without selected witnesses narrow to seven not already covered by accepted
+changes; all 38 have genuine direct matches and complete candidate replacements.
+Two variable-threshold experiments on 46,393 genuine short messages simplify
+initial discovery for 15 messages, but production and v57 already select the
+same whole-expression PARAM template for all 15. No current classification gain
+is demonstrated. See CURRENT_HANDOFF for exact scope and review artifacts.
+
+## Reporting content search and concrete outcome corrections — 2026-10-04
+
+The owner's caller-wrapper clarification also closes a bounded CLI exception gap:
+unexpected Python exceptions now return operation/stage/type/message/traceback
+through the existing error response. Error-output failures preserve the original
+envelope on stderr. No database/source architecture changed; uninduced crash paths
+remain verification limits, not additional analytical features. See the handoff's
+caller exception boundary section.
+
+**08B implementation and owner-requested corrections are complete.** The
+[handoff's opening checklist](TASK08B_REPORTING_HANDOFF.md) lists all deliverables,
+review links and the two unexercised runtime fault groups. No known assigned
+feature/documentation work remains. Commits/pushes remain deferred; live Trusted
+Run acceptance is separate.
+
+Whole-message search includes literal text and populated slots. Reports now show
+match origins, assigned templates and full counts before limits; the contrived
+template-phrase example is withdrawn. Genuine CLI checks demonstrate 62
+`unrecognized` diagnostics and 51 `failed context switch` diagnostics. Requested
+history positions show unavailable Runs explicitly; a seven-Run check covers all
+-5…+5 positions without requiring eleven Runs. A cold CLI/worker I/O trace observed
+no original-log/model-artifact reads. Two specific runtime fault paths remain
+unexercised, separately from normal empty/missing-data outcomes. See
+[08B](TASK08B_REPORTING_HANDOFF.md) for exact evidence and inspection limits.
+This is reporting delivery; live Trusted Run acceptance remains separate.
+
+## Earlier reporting duplicate-detection requirement removal — 2026-10-04
+
+At the owner's direction, reporting no longer excludes or rejects stored Runs
+because their source timestamps are equal. Duplicate-ingestion handling stays
+with the pipeline. The rule, documentation obligations and verification gap are
+deleted; four other reporting evidence-gap groups remain. See the [08B handoff](TASK08B_REPORTING_HANDOFF.md).
+
+## Task 08B earlier-outcome reconciliation — 2026-10-04
+
+The review page now names all six original review IDs and 17 failed/empty-query
+cases, with expected behavior, actual saved CLI result and work status. Every
+report's opening explanation links directly to this table and to the four still-
+unverified groups. Those gaps remain open. This improves traceability of existing
+evidence; it is not new failure-case execution or a claim of owner acceptance.
+See the [08B handoff](TASK08B_REPORTING_HANDOFF.md).
+
+## Task 08B file labels and load-order source rule — 2026-10-04
+
+Reports now use **Resolved** / **File not found** and separate raw load order,
+mod name, path and line columns. Under the owner's new rule, the last matching
+playset member is the error source for each file/line; all copies remain visible.
+The reusable source service exports the same decision in JSON before content
+filtering. Three genuine CLI groups / 18 exports passed, including order 115 as
+the source with both 114/115 visible. Browser checks and current evidence are in
+the [08B handoff](TASK08B_REPORTING_HANDOFF.md). This supersedes earlier blanket
+unresolved-ownership wording for this specific case; production is unchanged.
+
+## Task 08B relative-path clarification — 2026-10-04
+
+The usual file selector is `scope.source.relative_path.exact`, relative to every
+recorded playset root. Optional leading `/` and either separator are accepted.
+Genuine root-CLI verification returns two diagnostics / 64 occurrences and both
+mod candidates at recorded orders 114 and 115. Every inventory stays in the named
+parent folder without recursion. A different folder with the same basename returns
+zero; SQL-only matching remains available. The explained `relative-path-all-members`
+report is in the review bundle. See [08B](TASK08B_REPORTING_HANDOFF.md) for evidence.
+
+## Task 08B no-path emission correction — 2026-10-04
+
+An emission without a file path is now labelled “Source lookup: not applicable.”
+It is not a reference limitation or incomplete evidence. No-path-only reports
+skip playset/root lookup and report zero filesystem work; lookup failures apply
+only to records with references. The shared source/query exports use neutral
+presence status instead of reference-completeness flags. Genuine CLI and library
+checks pass; exact evidence is in the [08B handoff](TASK08B_REPORTING_HANDOFF.md).
+
+## Task 08B recursion/count verification — 2026-10-04
+
+Source search now returns per-search file/folder counts and effective per-root
+scope/cache detail, displayed in report text/JSON/HTML. Independent PowerShell
+enumeration matches source search across 29 real-tree comparisons: base game
+48,472 files / 3,736 folders recursively, selected mod 17,875 / 385; recursion-off,
+directory/exact-file restrictions and cache reuse also agree. The CLI's scoped
+example checks 130 names in one folder and returns two diagnostics / 64 occurrences.
+An initial checker newline-normalization failure was corrected; the full rerun
+passed. Exact receipts and remaining limits are in the [08B handoff](TASK08B_REPORTING_HANDOFF.md).
+No production change, commit or push.
+
+## Task 08B explicit unresolved-path filter — 2026-10-04
+
+The owner's requested selector is implemented as `scope.source.resolution` with
+`resolved`/`unresolved` values. Per-reference status is exported and displayed;
+pathless records and incomplete searches are not classified as missing files.
+Ordinary path selection still works without disk existence. A genuine Run query
+returns 60 identities / 386 occurrences, checked against handler records and
+filesystem existence within its recorded roots. The authorized two-entry fixture
+also passes, with synthetic provenance retained. See the [current reporting
+handoff](TASK08B_REPORTING_HANDOFF.md) for commands, checks and scope limits.
+No production change, commit/push or claim of completed live Trusted Run acceptance.
+
+## Task 08B owner correction: ordinary path filtering — 2026-10-04
+
+Path-only queries now return matching recorded references, excluding pathless and
+nonmatching records without warnings or partial results. Disk existence is not a
+condition of a recorded-path match. Member/root/content predicates still require
+their current candidate evidence; missing individual files are nonmatches. The
+old explicit-required-file/pathless-error interpretation below is superseded.
+
+Two genuine CLI groups, four source groups plus an expanded path-composition
+check, nineteen synthetic fixture exports and seven genuine archive exports pass.
+The broad `file-path-all` example returns every matching diagnostic for its selected
+Run/path: two identities / 64 occurrences, verified in all three CLI formats against
+public-handler records. The current outcome page and reports explain the corrected
+behavior. See [the handoff](TASK08B_REPORTING_HANDOFF.md) for exact evidence.
+No production/process/package change or commit/push. Other evidence gaps and the
+separate live Trusted Run milestone remain explicit.
+
+## Earlier Task 08B evidence follow-up and authorized fixture — 2026-10-04
+
+The owner-authorized two-entry fixture changes only genuine emissions' file
+LOCATOR paths, using the normal playset writer with all 133 original members.
+The original five-check / eleven-export fixture included an incorrect expectation
+that an explicit file filter should fail for a nonexistent file. That expectation
+and implementation have since been corrected: matching stored LOCATOR paths return
+their diagnostics, and no matching stored paths return an empty result. Physical
+file absence is not unavailable database evidence. The current fixture checks are
+in the opening handoff sections. Reports link the input log, playset, original
+emissions and verification receipt and are labelled synthetic.
+
+Fresh unchanged genuine evidence now supplies seven eligible Runs and fourteen
+timestamp exclusions. A full trailing-five investigation, separate five-neighbor
+sides and three neighbors each side pass count/identity/fraction/newness checks.
+Five unchanged retained logs, ingested into independent single-Run storage, add
+all nine syntax selectors and genuine missing-playset optional/required behavior:
+seventeen CLI exports, 85 syntax diagnostics. No archive receipt enters production
+history. The temporary-capture access failure and successful retry are disclosed.
+
+The bundle now has 54 explained reports and 16,161 checked local links. Chrome
+passed fifteen new routes plus status/return/fixture links; screenshots inspected.
+Two final genuine CLI regression groups, logging ownership and imports pass.
+`outcomes.html` lists four remaining evidence gaps; [the handoff](TASK08B_REPORTING_HANDOFF.md)
+records exact paths, commands and limits. Production data, process/configuration,
+package selection, commits and pushes are unchanged. Trusted Run remains separate.
+
+## Earlier Task 08B integrated explanation correction — 2026-10-04
+
+The review bundle now includes `outcomes.html`, linked from every example, to
+reconcile the earlier incomplete deliverables visibly. Completed corrections and
+still-unverified genuine-data cases are separate; each gap states
+the evidence needed to close it. The template report is only one investigation.
+
+Further owner review found that the prior outcome links still required readers
+to locate the supporting evidence. Reports now place the question, expected and
+actual results, relevant template/Run counts and diagnostic examples together.
+Links from that explanation jump to specific entries or highlighted verbose
+source excerpts. All 38 example links open this section. The rebuilt bundle has
+12,077 checked local links; analytical payloads are unchanged. Genuine CLI format
+and partial-source groups and Chrome navigation passed. See the latest correction
+and evidence in [the reporting handoff](TASK08B_REPORTING_HANDOFF.md).
+
+### Earlier reporting implementation checks — 2026-10-04
+
+The previously open navigation, explanation, query behavior and browser-review
+work is complete. The [closure register and deliverable matrix](TASK08B_REPORTING_HANDOFF.md)
+record the changes and exact evidence. Mutually exclusive valid preset filters
+now return successful empty results; missing symbol inputs fail before database
+access. Required-source partials visibly retain the pathless diagnostic separately
+from known matches. Template patterns, diagnostic Run counts, recorded mod names
+and base-game/DLC paths have been inspected in the rendered reports.
+
+Actual closure checks passed: eight genuine root-CLI groups (161.987 seconds),
+six query checks (13.926 seconds), nine source checks (260.071 seconds), focused
+partial-source checks, additional DLC/syntax-window exports, logging/imports/pip,
+and actual Chrome outcome/return/excerpt navigation. The refreshed 38-example
+bundle has 10,559 checked local links; desktop and narrow screenshots were reviewed.
+
+Available-case verification is complete. Naturally
+failed comparison reads/roots/playsets, decoding/ripgrep failures, seven syntax
+selectors absent from the four eligible Runs, and a full comparison window remain
+unverified as allowed by the assignment. No evidence was manufactured. Production
+operations and active package selection are unchanged; commits/pushes deferred.
+This closes reporting implementation work, not the separate live Trusted Run
+milestone or a claim of owner acceptance of that milestone.
+
+### Earlier implementation evidence — 2026-10-03
+
+Owner reading refinements are delivered: plain-English question/expected/actual
+explanations in all formats; check-specific example descriptions; explicit
+diagnostic labels; visible mod-name/path pairs from each evidence Run's recorded
+playset. All eight genuine CLI groups passed again (276.954 seconds); template
+results and recorded mod names were independently checked through the public
+handler. The reporting handoff links the refreshed examples and remaining limits.
+
+Template investigations now present the stored template pattern and combined Run
+counts before explicitly labelled individual diagnostics. Reusable template
+aggregates preserve full definition boundaries and ignore display truncation.
+Genuine CLI/raw-handler verification passed; details are in the reporting handoff.
+
+Owner example clarification: the primary template example now selects the whole
+trigger-error template, without culture/message restrictions. Genuine CLI exports
+show 202 selected records / 396 occurrences and visible per-diagnostic Run counts;
+the four available Runs contain 263 matching identities / 1,415 occurrences.
+Text/JSON/HTML agreement passed; details are in the reporting handoff.
+
+[Reporting handoff](TASK08B_REPORTING_HANDOFF.md): root `runs`/`report`, five
+presets, composable JSON queries, text/JSON/offline HTML and linked verbose source
+appendices are delivered. Reports reuse the current handler/query/source services.
+Bounded upstream additions expose stored-reference presence, per-Run/window
+contributors and association rankings, candidate provenance and readable partial
+matches. Chronology, exact identity, counts/fractions and window newness retain
+the owner-corrected rules. No median/notability replacement was introduced.
+
+Actual 08B verification: eight genuine root-CLI groups passed (179.454 seconds),
+six diagnostic-library and nine source-library checks passed; configured disposable
+database selection, logging ownership, imports, pip check and wheel resources
+passed. Four eligible Runs and fourteen missing-time exclusions were retained.
+Worked example: 245 selected occurrences / 51 exact records, 94 separate historical
+identities; four-Run window sum 1,074. First-pass newline/test-assumption failures
+were corrected and are disclosed. Browser visual layout remains unverified after
+restricted headless rendering failed; generated content/escaping/links were checked.
+
+Naturally failed reads, missing roots/playsets,
+decoding/ripgrep failures and full history capacity remain genuine-evidence gaps.
+Production runtime/configuration/data and active package selection are unchanged;
+commits/pushes deferred. Full live Trusted Run acceptance remains separate.
+Earlier statements that 08B or its received traversal repair is outstanding are
+historical. Existing unrelated learner/advisory work is preserved.
+
+## Trusted Run advisory pathway prepared — 2026-10-03
+
+[Completion pathway](TRUSTED_RUN_COMPLETION_PATHWAY.md) separates delivered work,
+remaining configuration/setup/doctor and 08B gaps, and unresolved milestone scope.
+Read-only inspection found later complete normal/crash lifecycle evidence; the
+older attachment-only evidence is no longer the sole live evidence. No milestone
+acceptance or new implementation/activation is claimed. The recommended sequence
+and 09A timing await owner review; existing task prompts are unchanged.
+
 ## Canonical logging reference and 09A prompt prepared — 2026-10-03
 
 Created [owner architecture reference](CANONICAL_LOGGING_SYSTEM_V1.md) and
@@ -78,7 +611,7 @@ Exact recurrence, different source bindings, stored template-reference OR
 selection, whole-message filtering, fractions/medians/novelty/notability and
 per-Run recorded-playset file/mod filtering passed. Excluded source identities
 do not contribute to filtered totals. No runtime changes, synthetic evidence or
-new requirements were needed. Missing-read and duplicate-timestamp cases remain
+new requirements were needed. Missing-read cases remain
 unexercised. Readable report: `.codex-tmp/task08-multirun/TIMESTAMPED_MULTIRUN_REPORT.md`.
 The October 2 blocked result below is historical. 08B and its traversal-scope
 receiving repair remain separate.

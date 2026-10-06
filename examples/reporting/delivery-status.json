@@ -1,0 +1,201 @@
+{
+  "updated": "2026-10-04",
+  "summary": "08B implementation and the owner-requested corrections are complete. No known assigned feature or documentation work remains. The current deliverable checklist is at the start of docs/TASK08B_REPORTING_HANDOFF.md. Two runtime fault groups below were not encountered in verification and are not claimed as executed tests. Full live Trusted Run acceptance is separate; commits and pushes remain deferred.",
+  "earlier_assessment": [
+    {"id": "08B-UX-01", "item": "Investigation, explanation, result and return navigation", "status": "Implemented and checked", "outcome": "The explanation and result are integrated. This page now lists the formerly problematic queries individually, with direct links to their results.", "examples": ["template-only", "no-eligible", "relative-path-all-members"]},
+    {"id": "08B-UX-02", "item": "Template versus diagnostic, visible Run counts, and mod/file meaning", "status": "Implemented and checked", "outcome": "Templates and specific diagnostics are separate. Run counts are visible. File tables now separate load order, mod name, path and line and identify the last-load-order error source.", "examples": ["template-only", "worked-five-runs", "relative-path-all-members"]},
+    {"id": "08B-QUERY-01", "item": "Opposing preset filters and missing required input", "status": "Corrected and checked", "outcome": "Valid opposing predicates return an empty set. Missing required symbol/template input is rejected before a database request. The query table below shows each saved outcome.", "examples": ["new-contradiction", "hotspots-contradiction", "symbol-needs-selector", "required-partial"]},
+    {"id": "08B-QA-01", "item": "Browser inspection and working source-excerpt links", "status": "Checked", "outcome": "Actual Chrome navigation, layout, return links and highlighted source excerpts have passed checks. Earlier failed browser attempts do not remain the final outcome.", "examples": ["worked", "relative-path-all-members"]},
+    {"id": "08B-EVID-01", "item": "Missing acceptance examples and genuine failure cases", "status": "Available-data checks completed; two runtime fault paths unexercised", "outcome": "The DLC example, nine syntax selectors, five-Run windows, unavailable history positions, missing-playset behavior and stored-data I/O independence were exercised. Missing-file behavior has the labelled authorized fixture. The two specific runtime fault paths below were not encountered; normal absence is not such a fault.", "examples": ["dlc-path", "syntax-archive-equals", "history-positions", "stored-data-io", "synthetic-missing-files", "archive-required-playset"]},
+    {"id": "08B-CLOSE-01", "item": "Handoff, documentation and reconciliation of deliverables", "status": "Reporting delivery complete; verification limits disclosed", "outcome": "The handoff now starts with the authoritative current deliverable checklist and what remains unverified. Earlier unfinished-work statements are marked historical. No known assigned implementation or documentation work remains; unencountered runtime faults are not claimed tested, and full live Trusted Run acceptance is separate.", "examples": []}
+  ],
+  "query_outcomes": [
+    {"case": "new-contradiction", "status": "Corrected and checked", "disposition": "The earlier rejection expectation was wrong. These valid opposing filters should return an empty set.", "expected_status": "completed", "expected_exit": 0, "expected_records": 0},
+    {"case": "hotspots-contradiction", "status": "Corrected and checked", "disposition": "The hotspot condition and no-reference condition have no common matches. Empty success is the intended result.", "expected_status": "completed", "expected_exit": 0, "expected_records": 0},
+    {"case": "syntax-contradiction", "status": "Corrected and checked", "disposition": "The syntax condition remains in force alongside the refinement. Their empty intersection is a successful query.", "expected_status": "completed", "expected_exit": 0, "expected_records": 0},
+    {"case": "new-zero-count", "status": "Checked: empty result", "disposition": "A positive newly observed diagnostic cannot also have zero occurrences in the selected Run.", "expected_status": "completed", "expected_exit": 0, "expected_records": 0},
+    {"case": "symbol-needs-selector", "status": "Corrected and checked", "disposition": "Missing required input is rejected at input validation, before any diagnostic investigation or package lookup is submitted.", "expected_status": "invalid_query", "expected_exit": 2, "expected_stage": "input_validation"},
+    {"case": "required-partial", "status": "Corrected and checked", "disposition": "The old example name is retained. It now returns the matching diagnostic normally; the pathless message is excluded without a partial-result error.", "expected_status": "completed", "expected_exit": 0, "expected_records": 1},
+    {"case": "path-only-unlocated", "status": "Corrected and checked", "disposition": "A diagnostic with no path is a normal nonmatch for this path filter. Its stored emission is complete.", "expected_status": "completed", "expected_exit": 0, "expected_records": 0},
+    {"case": "synthetic-required-missing-files", "status": "Corrected; checked with authorized fixture", "disposition": "Both recorded fake paths match the filter even though neither file exists. This is the explicitly authorized two-emission fixture, not genuine history.", "expected_status": "completed", "expected_exit": 0, "expected_records": 2},
+    {"case": "synthetic-unmentioned-file", "status": "Checked with authorized fixture", "disposition": "A path mentioned by neither stored entry returns an empty set, without a missing-file error.", "expected_status": "completed", "expected_exit": 0, "expected_records": 0},
+    {"case": "no-eligible", "status": "Checked: expected selection error", "disposition": "The requested package has no eligible Run. The selection error is the demonstrated expected behavior.", "expected_status": "run_selection_error", "expected_exit": 2},
+    {"case": "unknown", "status": "Checked: expected selection error", "disposition": "The requested Run ID does not exist. This is not an empty diagnostic query.", "expected_status": "run_selection_error", "expected_exit": 2},
+    {"case": "ineligible", "status": "Checked: expected selection error", "disposition": "This genuine Run lacks a usable source timestamp. It verifies missing-timestamp rejection.", "expected_status": "run_selection_error", "expected_exit": 2},
+    {"case": "conflicting-package", "status": "Checked: expected selection error", "disposition": "The supplied package conflicts with the named Run's stored package.", "expected_status": "run_selection_error", "expected_exit": 2},
+    {"case": "syntax-unsupported", "status": "Checked: expected preset error", "disposition": "The syntax preset is unavailable for a package outside its verified model/package boundary.", "expected_status": "invalid_query", "expected_exit": 2},
+    {"case": "archive-required-playset", "status": "Checked: genuine missing-playset outcome", "disposition": "The archive has no retained playset. Its stored messages remain readable, but the requested current-member lookup cannot identify its roots. This does not verify unreadable-root or database-read failures.", "expected_status": "source_filter_incomplete", "expected_exit": 3},
+    {"case": "unresolved-archive-unknown", "status": "Checked: genuine missing-playset outcome", "disposition": "The requested current-file resolution cannot be established without the archive's source roots. Ordinary stored-path selection remains available.", "expected_status": "source_filter_incomplete", "expected_exit": 3}
+  ],
+  "completed": [
+    {
+      "item": "Requested history positions and honest availability",
+      "outcome": "Run -5 through Run +5 are displayed, with Run 0 selected. The seven-Run middle-window check shows three actual neighbors on each side and four Not available positions. Existing genuine checks already cover five predecessors and five successors separately. Eleven simultaneous Runs are not an acceptance prerequisite. Missing positions do not enter counts or observation fractions.",
+      "examples": ["history-positions", "five-predecessors", "five-successors"]
+    },
+    {
+      "item": "Stored-data independence verified through file-I/O tracing",
+      "outcome": "A cold reporting CLI and its disposable database worker were traced: 667 Python audit events, with no original-log or model-artifact access. The query returned 62 diagnostics. Inputs were not removed. The trace covers Python file/directory/SQLite operations and child command arguments, not arbitrary native I/O.",
+      "examples": ["stored-data-io"]
+    },
+    {
+      "item": "Whole-message search and visible match origins",
+      "outcome": "Phrase search includes template literals and populated slot values together. Results show the stored origin of each match and each diagnostic's assigned template. Summaries retain full counts before display limits. The contrived bound-phrase-is-not-template example is withdrawn; it was not a useful user workflow or an acceptance requirement.",
+      "examples": ["message-unrecognized", "message-context-switch"]
+    },
+    {
+      "item": "Plain resolution labels, separate file columns and last-load-order error source",
+      "outcome": "File status is Resolved for one or more matches and File not found for none after completed lookup. Tables separate raw load order, mod name, path and line. For each file/line, the last matching playset member is marked Error source; both copies remain visible. The genuine two-file example assigns load order 115, and JSON exports the same decision. Content filtering cannot promote an earlier copy. Three genuine CLI groups / 18 exports and focused browser checks passed.",
+      "examples": ["relative-path-all-members", "unresolved-genuine-paths", "resolution-content-independent"]
+    },
+    {
+      "item": "Relative paths select the same location beneath every recorded playset member",
+      "outcome": "The usual filter is scope.source.relative_path.exact. It accepts /common/... or common/... and either separator. Genuine CLI reports return two diagnostics / 64 occurrences with both matching mod candidates at recorded orders 114 and 115. All inventories stay in common/on_action without recursion: 433 file names across 77 existing parent folders, two matching files. The same basename in a different relative directory returns an empty set. SQL-only filtering and explicit physical-file access retain their separate behavior.",
+      "examples": ["relative-path-all-members", "relative-path-no-slash", "relative-path-backslashes", "relative-path-other-directory"]
+    },
+    {
+      "item": "No-path emissions are complete; source lookup is not applicable",
+      "outcome": "No-path records now carry a neutral presence status, without reference limitations or completeness penalties. When no selected emission supplies a path, no playset/root lookup is performed and filesystem counts are zero. Genuine normal and archived records render successfully; in mixed reports, lookup problems are shown only on diagnostics that actually reference files. Ordinary source filters still exclude pathless nonmatches normally.",
+      "examples": ["pathless-emission", "pathless-archive", "mixed-archive-source-context"]
+    },
+    {
+      "item": "Source recursion independently counted and exposed in reports",
+      "outcome": "Twenty-nine comparisons passed against independent PowerShell enumeration and actual file sets. Recursive totals agree for base-game sources (48,472 files / 3,736 folders) and the selected mod (17,875 / 385). Recursion off, restricted and overlapping directories, exact-file parent lookup, filename search and cached/repeated roots are checked. Root-CLI JSON/text/HTML disclose per-search counts; its known-path example checks 130 files in one folder. Folders include the starting directory. A checker line-ending issue was corrected and the complete verification rerun successfully.",
+      "examples": ["recursion-scoped-report"]
+    },
+    {
+      "item": "Explicit unresolved-path selection and per-reference current status",
+      "outcome": "The new scope.source.resolution filter accepts unresolved or resolved. A genuine Run returns 60 identities / 386 occurrences with unresolved paths in its recorded roots, independently checked over 561 stored paths. Existing-file and pathless exclusions, content-independent resolution, and the authorized two-entry fake-path fixture pass. A genuine archive without a playset remains unknown when resolution is required; its ordinary path query still succeeds. Status describes current scoped evidence, not historical file contents.",
+      "examples": ["unresolved-genuine-paths", "synthetic-unresolved-paths", "resolved-paths", "unresolved-excludes-existing-and-pathless", "resolution-content-independent", "unresolved-archive-unknown", "archive-path-without-playset"]
+    },
+    {
+      "item": "Path selection returns matching diagnostics without errors for excluded records",
+      "outcome": "File, directory and other path-only predicates select stored references. Missing disk files do not suppress those matches. Pathless or nonmatching records produce no warning or partial-result entry. Mod/content conditions still evaluate current file candidates. Genuine CLI/library and authorized two-entry fixture checks pass; the old required-file/pathless-error semantics are superseded.",
+      "examples": [
+        "file-path-all",
+        "required-partial",
+        "path-excludes-unlocated",
+        "path-only-unlocated",
+        "synthetic-required-missing-files",
+        "synthetic-unmentioned-file",
+        "archive-path-without-playset"
+      ]
+    },
+    {
+      "item": "Full trailing-five Run investigation and each five-neighbor side",
+      "outcome": "A fresh backup contains seven eligible genuine Runs. The actual root CLI passed a five-Run trailing investigation, five predecessors, five successors and a middle Run with three neighbors on each side. Counts, identities, fractions and newness were checked against public-handler records. The full simultaneous eleven-Run window remains unverified.",
+      "examples": [
+        "worked-five-runs",
+        "five-predecessors",
+        "five-successors",
+        "both-sides-history"
+      ]
+    },
+    {
+      "item": "Nonexistent diagnostic file paths — owner-authorized synthetic fixture",
+      "outcome": "The two genuine emissions retain all content except their fake file LOCATOR paths and use normal playset JSON with the same 133 members. Nine checks across nineteen CLI exports pass: visible missing-file diagnostics, hotspots, relative/exact/absolute/directory path matching, stored references and successful empty nonmatches, including current-mod candidate filtering. No required-file existence error remains.",
+      "examples": [
+        "synthetic-missing-files",
+        "synthetic-missing-hotspots",
+        "synthetic-find-missing-files",
+        "synthetic-required-missing-files",
+        "synthetic-stored-missing-reference"
+      ]
+    },
+    {
+      "item": "All nine syntax selectors exercised through the CLI",
+      "outcome": "Five unchanged retained CK3 logs were ingested into separate disposable single-Run databases. Seventeen root-CLI exports exercise all nine selectors over 85 matching diagnostics, including template and provisional statuses and the exact assignment REASON condition. Public-handler records supply the independent count/status checks. These archive receipts do not extend production history.",
+      "examples": [
+        "syntax-archive-equals",
+        "syntax-archive-brace",
+        "syntax-archive-localization",
+        "syntax-archive-substitutions",
+        "syntax-archive-statement"
+      ]
+    },
+    {
+      "item": "Stored diagnostics remain readable without a retained playset",
+      "outcome": "The five genuine archives have no retained playset. Optional-context syntax reports succeeded in text, JSON and HTML and disclosed the missing playset. Requiring a game-file association produced source_filter_incomplete with exit 3. No playset was removed to create this case.",
+      "examples": [
+        "syntax-archive-equals",
+        "archive-required-playset"
+      ]
+    },
+    {
+      "item": "Plain-English explanations and usable navigation",
+      "outcome": "Each example opens with its question, expected behavior, actual result and supporting evidence together. Links lead directly to diagnostic details and numbered source excerpts. Reading copies were rebuilt, and representative links were clicked in Chrome.",
+      "examples": [
+        "template-only",
+        "worked-full",
+        "no-eligible"
+      ]
+    },
+    {
+      "item": "Templates distinguished from diagnostics; visible Run history",
+      "outcome": "The shared placeholder pattern has its own combined counts. D1, D2 and later entries are explicitly separate diagnostics, each with counts showing the Runs where it was observed. Genuine CLI format/history checks passed.",
+      "examples": [
+        "template-only",
+        "worked-full",
+        "previously-observed"
+      ]
+    },
+    {
+      "item": "Opposing filters and missing required input",
+      "outcome": "Valid opposing filters now complete with zero matches. A symbol/template request without a selector fails validation before any database request. These behaviors were exercised through the root CLI.",
+      "examples": [
+        "new-contradiction",
+        "hotspots-contradiction",
+        "syntax-contradiction",
+        "symbol-needs-selector"
+      ]
+    },
+    {
+      "item": "Mod names, file paths and the previously missing DLC example",
+      "outcome": "Mod candidates show recorded playset names and load-order numbers beside paths. Base-game and DLC paths remain plain. The additional genuine DLC example includes two referenced paths and three candidates, including Unofficial Patch at load order 28.",
+      "examples": [
+        "member-file",
+        "dlc-path"
+      ]
+    },
+    {
+      "item": "Pathless diagnostics are excluded by a source filter",
+      "outcome": "The earlier required-partial example now succeeds with only the matching culture diagnostic. The pathless localisation diagnostic is excluded without a warning or partial-result section. Optional unfiltered context still keeps both diagnostics visible.",
+      "examples": [
+        "required-partial",
+        "optional-unlocated"
+      ]
+    },
+    {
+      "item": "Browser inspection and source-excerpt navigation",
+      "outcome": "Chrome checks passed for 13 representative report routes, six direct evidence links, and a source link from the explanation to its highlighted excerpt and back. Desktop and narrow screenshots were inspected. The earlier failed browser attempts no longer leave this check outstanding.",
+      "examples": [
+        "template-only",
+        "worked-full",
+        "required-partial"
+      ]
+    },
+    {
+      "item": "Handoff, usage documentation and deliverable reconciliation",
+      "outcome": "The reporting handoff, README, current status, current handoff and reporting ledger are updated. This page makes the earlier open-item dispositions and remaining evidence gaps visible in the review bundle. Commits and pushes remain deferred as instructed.",
+      "examples": []
+    }
+  ],
+  "unverified": [
+    {
+      "item": "Database-handler operation or transport error during a comparison read",
+      "available": "This means a runtime problem such as a lost worker connection or database operation exception. Busy requests queue in the existing handler, which retries database contention. Connection loss is not rejection because the queue is busy. The handler/library surface operation, Run ID and error; the CLI handles unexpected Python exceptions at its caller boundary. The failure branches were inspected; genuine reads here succeeded. Empty results and missing Run positions are normal outcomes.",
+      "needed": "If an actual handler operation/transport error is encountered, retain its request result and verify the report response. No error is manufactured and no additional Run data is required for ordinary window acceptance.",
+      "examples": []
+    },
+    {
+      "item": "Source-search process launch failure or abnormal/error exit",
+      "available": "This means ripgrep cannot start or exits with an error, possibly after a crash. Exit 1 is normal no-match. Python checks source encoding and extracts excerpts; ripgrep searches current-source contents. An unreadable or unsupported file is a per-file result with a reason, not a crashed search process. Those file outcomes and process-error handling were inspected; no process failure was deliberately triggered. Stored diagnostic search does not invoke ripgrep. Missing files and no-path emissions are checked normal outcomes.",
+      "needed": "Retain and check an actual search-process launch/error outcome if encountered. Unreadable-file outcomes are separately reported as files not searched or excerpts unavailable; ordinary stored-path matching does not depend on reading source contents.",
+      "examples": [
+        "synthetic-missing-files",
+        "archive-required-playset"
+      ]
+    }
+  ],
+  "boundary": "Full live Trusted Run acceptance remains separate. The owner's later permission authorizes the labelled two-emission LOCATOR fixture; it does not turn synthetic file paths into genuine history or evidence of other failures. Remaining untested cases are still explicit."
+}

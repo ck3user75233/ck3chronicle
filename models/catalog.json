@@ -190,7 +190,44 @@
         "assignment.py",
         "continuations.py"
       ]
+    },
+    {
+      "family": "model",
+      "release_id": "f23424ed8aa4d910bf4d3223",
+      "package_id": "f23424ed8aa4d910bf4d3223",
+      "model_revision_id": "0f4a012e91e6ffa253d9d858",
+      "retained_path": "releases/f23424ed8aa4d910bf4d3223",
+      "manifest_sha256": "504710350c8f87666f0358fbacc35f85e4e50045e1cee5d270d25e63ea377c21",
+      "matcher_api_version": "ck3-native-matcher-v3",
+      "parser": {
+        "artifact": "parser.py",
+        "sha256": "a8005254df58daf20e000e454c9e3e9b40304be4cd0962e1fa88e90cea86baab",
+        "version": "ck3-lossless-v1.7"
+      },
+      "selector_version": "complete-assignment-v2",
+      "availability": "available",
+      "publication_status": "production",
+      "production_order": 7,
+      "publication_evidence": "docs/LEARNER_PARSER_PIPELINE_HANDOFF.md"
+    },
+    {
+      "family": "model",
+      "release_id": "4ac4e8ee92346e6d14eacfbf",
+      "package_id": "4ac4e8ee92346e6d14eacfbf",
+      "model_revision_id": "789219fdbd81c8dab950bc93",
+      "retained_path": "releases/4ac4e8ee92346e6d14eacfbf",
+      "manifest_sha256": "839548e8c8143e01b63059848557dc94e9fe66f5e1924f6026442f7331a8ba9f",
+      "matcher_api_version": "ck3-native-matcher-v3",
+      "parser": {
+        "artifact": "parser.py",
+        "sha256": "0357b8d1c342c546452ed8f294405bfe41c86c7116eca51eddf8bc5b67984135",
+        "version": "ck3-lossless-v1.8"
+      },
+      "selector_version": "complete-assignment-v2",
+      "availability": "available",
+      "publication_status": "production",
+      "production_order": 8,
+      "publication_evidence": "docs/learner-next-release/HANDOFF.md#combined-release-delivered--2026-10-05"
     }
-  ],
-  "production_order_basis": "Explicit documented native publication sequence: v25, v26, v27, v29, v41, v45. Earlier empirical-model order remains unverified; never use this partial historical order for pruning."
+  ]
 }

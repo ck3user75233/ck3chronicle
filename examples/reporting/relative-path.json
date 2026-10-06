@@ -1,0 +1,11 @@
+{
+  "purpose": "Find every diagnostic referencing this relative path across the recorded playset.",
+  "scope": {
+    "source": {
+      "relative_path": {
+        "exact": ["/common/on_action/sea_minority_on_actions.txt"]
+      }
+    }
+  },
+  "analytics": {"history": false}
+}

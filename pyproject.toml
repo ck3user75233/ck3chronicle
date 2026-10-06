@@ -18,7 +18,7 @@ classifiers = [
   "Programming Language :: Python :: 3.13",
   "Operating System :: OS Independent",
 ]
-dependencies = []
+dependencies = ["chardet>=7.6,<8"]
 
 [project.scripts]
 ck3chronicle = "ck3chronicle.cli:main"
@@ -30,8 +30,9 @@ where = ["src", "tools"]
 include = ["ck3chronicle*", "template_learning*"]
 
 [tool.setuptools.package-data]
+"ck3chronicle.reporting" = ["templates/*.html", "templates/*.css"]
 "template_learning" = ["owner_rules.json"]
-"template_learning.parsers" = ["v1/parser.py", "v1/manifest.json", "v1_7/parser.py", "v1_7/manifest.json", "v1_7/recovery_rules.json"]
+"template_learning.parsers" = ["v1/parser.py", "v1/manifest.json", "v1_7/parser.py", "v1_7/manifest.json", "v1_7/recovery_rules.json", "v1_8/parser.py", "v1_8/manifest.json", "v1_8/recovery_rules.json"]
 
 [tool.setuptools.data-files]
 "share/ck3chronicle/learners" = [
@@ -351,4 +352,197 @@ include = ["ck3chronicle*", "template_learning*"]
   "learners/releases/cff09dcdc1ef6ea063c589850ad37d1d2711a52e7bc766877422ffda96e1452e/template_learning/parsers/v1_7/manifest.json",
   "learners/releases/cff09dcdc1ef6ea063c589850ad37d1d2711a52e7bc766877422ffda96e1452e/template_learning/parsers/v1_7/parser.py",
   "learners/releases/cff09dcdc1ef6ea063c589850ad37d1d2711a52e7bc766877422ffda96e1452e/template_learning/parsers/v1_7/recovery_rules.json",
+]
+
+"share/ck3chronicle/learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a" = [
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/launcher.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/manifest.json",
+]
+
+"share/ck3chronicle/learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning" = [
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/additive_learning.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/artifacts.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/assignment.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/build_review_pack.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/build_visual_review.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/clustering.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/constructions.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/continuations.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/diagnostic_wording.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/evaluate_unseen_session.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/evidence.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/evidence_serialization.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/formatted_literals.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/full_ids.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/incremental_template_registry.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/inspect_outer_diagnostics.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/inventory.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/learn_error_templates.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/learner_loader.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/literal_guidance.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/location_sequences.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/matcher_loader.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/matching_defaults.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/matching_primitives.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/matching_validation.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/native_matching.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/owner_rules.json",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/owner_rules.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/parameter_structures.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/patterns.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/publish_native_model.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/records.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/refinement_history.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/regions.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/release_evaluation.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/research_matching.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/review_assignment_changes.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/selection_evidence.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/template_retirement.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/template_review.html",
+]
+
+"share/ck3chronicle/learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/parsers" = [
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/parsers/__init__.py",
+]
+
+"share/ck3chronicle/learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/parsers/v1_7" = [
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/parsers/v1_7/manifest.json",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/parsers/v1_7/parser.py",
+  "learners/releases/2951fe80c0dd31a83cd639562a427d2658daaeab30279dcd15d32069ea1f2d8a/template_learning/parsers/v1_7/recovery_rules.json",
+]
+
+"share/ck3chronicle/models" = [
+  "models/catalog.json",
+  "packaging/models/selection.json",
+]
+
+"share/ck3chronicle/models/releases/44a0401b8adf0a2953d26705" = [
+  "models/releases/44a0401b8adf0a2953d26705/assignment.py",
+  "models/releases/44a0401b8adf0a2953d26705/continuations.py",
+  "models/releases/44a0401b8adf0a2953d26705/empirical_template_model.json",
+  "models/releases/44a0401b8adf0a2953d26705/full_ids.py",
+  "models/releases/44a0401b8adf0a2953d26705/manifest.json",
+  "models/releases/44a0401b8adf0a2953d26705/matcher_loader.py",
+  "models/releases/44a0401b8adf0a2953d26705/matching_primitives.py",
+  "models/releases/44a0401b8adf0a2953d26705/matching_validation.py",
+  "models/releases/44a0401b8adf0a2953d26705/native-validation.json",
+  "models/releases/44a0401b8adf0a2953d26705/native_matching.py",
+  "models/releases/44a0401b8adf0a2953d26705/owner_rules.json",
+  "models/releases/44a0401b8adf0a2953d26705/parser-manifest.json",
+  "models/releases/44a0401b8adf0a2953d26705/parser.py",
+]
+
+"share/ck3chronicle/models/releases/68f1ae5db205ab46afef9c4d" = [
+  "models/releases/68f1ae5db205ab46afef9c4d/assignment.py",
+  "models/releases/68f1ae5db205ab46afef9c4d/continuations.py",
+  "models/releases/68f1ae5db205ab46afef9c4d/empirical_template_model.json",
+  "models/releases/68f1ae5db205ab46afef9c4d/full_ids.py",
+  "models/releases/68f1ae5db205ab46afef9c4d/manifest.json",
+  "models/releases/68f1ae5db205ab46afef9c4d/matcher_loader.py",
+  "models/releases/68f1ae5db205ab46afef9c4d/matching_primitives.py",
+  "models/releases/68f1ae5db205ab46afef9c4d/matching_validation.py",
+  "models/releases/68f1ae5db205ab46afef9c4d/native-validation.json",
+  "models/releases/68f1ae5db205ab46afef9c4d/native_matching.py",
+  "models/releases/68f1ae5db205ab46afef9c4d/owner_rules.json",
+  "models/releases/68f1ae5db205ab46afef9c4d/parser-manifest.json",
+  "models/releases/68f1ae5db205ab46afef9c4d/parser.py",
+]
+
+"share/ck3chronicle/models/releases/f23424ed8aa4d910bf4d3223" = [
+  "models/releases/f23424ed8aa4d910bf4d3223/assignment.py",
+  "models/releases/f23424ed8aa4d910bf4d3223/continuations.py",
+  "models/releases/f23424ed8aa4d910bf4d3223/empirical_template_model.json",
+  "models/releases/f23424ed8aa4d910bf4d3223/formatted_literals.py",
+  "models/releases/f23424ed8aa4d910bf4d3223/full_ids.py",
+  "models/releases/f23424ed8aa4d910bf4d3223/location_sequences.py",
+  "models/releases/f23424ed8aa4d910bf4d3223/manifest.json",
+  "models/releases/f23424ed8aa4d910bf4d3223/matcher_loader.py",
+  "models/releases/f23424ed8aa4d910bf4d3223/matching_primitives.py",
+  "models/releases/f23424ed8aa4d910bf4d3223/matching_validation.py",
+  "models/releases/f23424ed8aa4d910bf4d3223/native-validation.json",
+  "models/releases/f23424ed8aa4d910bf4d3223/native_matching.py",
+  "models/releases/f23424ed8aa4d910bf4d3223/owner_rules.json",
+  "models/releases/f23424ed8aa4d910bf4d3223/parser-manifest.json",
+  "models/releases/f23424ed8aa4d910bf4d3223/parser.py",
+]
+
+"share/ck3chronicle/learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/ck3chronicle" = [
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/ck3chronicle/decoder.py",
+]
+
+"share/ck3chronicle/learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de" = [
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/launcher.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/manifest.json",
+]
+
+"share/ck3chronicle/learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning" = [
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/additive_learning.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/artifacts.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/assignment.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/build_review_pack.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/build_visual_review.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/clustering.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/constructions.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/continuations.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/diagnostic_wording.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/evaluate_unseen_session.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/evidence.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/evidence_serialization.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/formatted_literals.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/full_ids.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/incremental_template_registry.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/inspect_outer_diagnostics.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/inventory.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/learn_error_templates.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/learner_loader.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/literal_guidance.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/location_sequences.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/matcher_loader.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/matching_defaults.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/matching_primitives.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/matching_validation.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/native_matching.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/owner_rules.json",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/owner_rules.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/parameter_structures.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/patterns.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/publish_native_model.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/records.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/refinement_history.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/regions.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/release_evaluation.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/research_matching.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/review_assignment_changes.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/selection_evidence.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/template_retirement.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/template_review.html",
+]
+
+"share/ck3chronicle/learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/parsers" = [
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/parsers/__init__.py",
+]
+
+"share/ck3chronicle/learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/parsers/v1_8" = [
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/parsers/v1_8/manifest.json",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/parsers/v1_8/parser.py",
+  "learners/releases/0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de/template_learning/parsers/v1_8/recovery_rules.json",
+]
+
+"share/ck3chronicle/models/releases/4ac4e8ee92346e6d14eacfbf" = [
+  "models/releases/4ac4e8ee92346e6d14eacfbf/assignment.py",
+  "models/releases/4ac4e8ee92346e6d14eacfbf/continuations.py",
+  "models/releases/4ac4e8ee92346e6d14eacfbf/empirical_template_model.json",
+  "models/releases/4ac4e8ee92346e6d14eacfbf/formatted_literals.py",
+  "models/releases/4ac4e8ee92346e6d14eacfbf/full_ids.py",
+  "models/releases/4ac4e8ee92346e6d14eacfbf/location_sequences.py",
+  "models/releases/4ac4e8ee92346e6d14eacfbf/manifest.json",
+  "models/releases/4ac4e8ee92346e6d14eacfbf/matcher_loader.py",
+  "models/releases/4ac4e8ee92346e6d14eacfbf/matching_primitives.py",
+  "models/releases/4ac4e8ee92346e6d14eacfbf/matching_validation.py",
+  "models/releases/4ac4e8ee92346e6d14eacfbf/native-validation.json",
+  "models/releases/4ac4e8ee92346e6d14eacfbf/native_matching.py",
+  "models/releases/4ac4e8ee92346e6d14eacfbf/owner_rules.json",
+  "models/releases/4ac4e8ee92346e6d14eacfbf/parser-manifest.json",
+  "models/releases/4ac4e8ee92346e6d14eacfbf/parser.py",
 ]

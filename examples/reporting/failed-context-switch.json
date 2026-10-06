@@ -1,0 +1,7 @@
+{
+  "purpose": "Script-system failed context switches across a trailing window of five eligible Runs",
+  "scope": {"source_families": ["jomini_script_system.cpp"]},
+  "refinement": {"message": {"contains": "failed context switch"}},
+  "analytics": {"trailing_runs": 5, "include_absent": true},
+  "display": {"limit": 200, "historical_limit": 200}
+}

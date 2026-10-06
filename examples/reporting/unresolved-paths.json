@@ -1,0 +1,6 @@
+{
+  "purpose": "Find diagnostic messages with a recorded path that has no current file in the recorded playset's source roots",
+  "scope": {"source": {"resolution": "unresolved"}},
+  "analytics": {"history": false},
+  "display": {"limit": 20}
+}

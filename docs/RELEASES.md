@@ -29,10 +29,34 @@ descriptive; exact release/package identity selects executable code.
 
 The catalogs and external manifest pins are the local trust anchors. Hashes
 detect disagreement with them; they are not publisher signatures. Python 3.11+
-and its standard library are platform prerequisites. No third-party Python
-runtime dependencies are required by the retained operations. Execution receipts
+and its standard library are platform prerequisites. Parser v1.8 uses the shared
+application `ck3chronicle.decoder.decode_fragment` API. New learner distributions
+retain the application decoder source in their authenticated closure; installed
+model packages use the application module shipped with the application artifact.
+Known-UTF-8 fragment processing requires no detector. Automatic physical-source
+detection requires the application's declared `chardet>=7.6,<8` dependency; the
+combined release verifies 7.6.0. There is no decoder catalog, independent release
+or Run-lineage pin. Execution receipts
 record actual Python implementation/version and Unicode version. Verification
 does not establish bitwise reproducibility across interpreters or operating systems.
+
+## Application wheel default
+
+Pipeline owns the application wheel and its installed default. Setuptools maps
+[`packaging/models/selection.json`](../packaging/models/selection.json) to
+`share/ck3chronicle/models/selection.json` in the wheel. This packaging source is
+separate from the checkout's active `models/selection.json`: preparing a wheel
+must not switch a running checkout. The packaged default must name a shipped
+`releases/<package_id>` directory and its authenticated manifest pin. It must load
+after an ordinary installation without a corrective selection-file replacement.
+
+Build into fresh build/staging/output directories to avoid stale copied modules.
+Authenticate source-to-wheel correspondence, the installed default from outside
+the checkout, and an explicit rollback selection against shipped resources. Keep
+retained learner/model/parser distributions immutable. The current exact wheel,
+dependency, clean installation and rollback instructions are in the
+[Pipeline cutover](learner-next-release/PIPELINE_CUTOVER.md); publishing this
+packaging default does not authorize live activation.
 
 ## Learner selection
 
@@ -64,8 +88,9 @@ provenance alongside evaluation/publication results.
 
 The launcher authenticates the selection, then starts its retained launcher with
 `python -I -S -B`. Authenticated in-memory source supplies learner imports in the
-child. Application imports and missing learner modules fail; neither installed
-learner code nor the working checkout supplies a fallback. A candidate and
+child. Only the explicitly retained `ck3chronicle.decoder` application module is
+available in new releases; other application imports and missing learner modules
+fail. Neither installed learner code nor the working checkout supplies a fallback. A candidate and
 incremental registry must belong to the selected release. The parser must come
 from that release. Explicit state/input paths avoid application configuration;
 only the outer command resolves convenience defaults when those paths are omitted.
@@ -114,7 +139,7 @@ packages. Run lineage must come from the loaded package through
 
 ## Creating and registering releases
 
-Use `learner_loader create --source tools/template_learning --output <release-root>`
+Use `learner_loader create --source tools/template_learning --application-source src/ck3chronicle --output <release-root>`
 to snapshot the declared closure, then `register --source <snapshot-directory>
 --manifest-sha256 <pin> --root <learner-root>`. `pipeline.catalog register --source
 <package-directory> --manifest-sha256 <pin>` authenticates and copies an already
@@ -127,6 +152,14 @@ annotations and historical incomplete entries are inventory maintained by the ow
 Update `pyproject.toml` data-file entries when adding retained distributions, then
 verify the installed resources. Registration alone does not add a new distribution
 to an already-built wheel. Keep `.gitattributes` byte-preserving release rules.
+
+Build application wheels with fresh setuptools build and wheel-staging directories.
+A reused `build/lib` can retain deleted modules even when all current source files
+are present in the wheel. Verify both directions: every required source/resource
+is included, and every included executable/resource corresponds to current source
+or an explicitly retained distribution. The combined release's
+[final handoff](learner-next-release/HANDOFF.md#reproduction-and-intake-commands)
+records the clean-build recipe and a receiving repair of this exact failure.
 
 Repackaging existing schema-5 model definitions against another implementation
 requires an explicit learner release and `publish -- --source-release <source>

@@ -3,6 +3,39 @@ import hashlib
 import json
 
 
+def json_chunks(value, *, pretty=False):
+    """Bound serialization buffers; retain canonical JSON spelling and ordering."""
+    encoder = json.JSONEncoder(ensure_ascii=True, sort_keys=True,
+        **({'indent': 2} if pretty else {'separators': (',', ':')}))
+    chunks, size = [], 0
+    for fragment in encoder.iterencode(value):
+        chunks.append(fragment)
+        size += len(fragment)
+        if size >= 1024 * 1024:
+            yield ''.join(chunks).encode('ascii')
+            chunks, size = [], 0
+    if chunks:
+        yield ''.join(chunks).encode('ascii')
+
+
+def json_identity(value):
+    digest = hashlib.sha256()
+    for chunk in json_chunks(value):
+        digest.update(chunk)
+    return digest.hexdigest()
+
+
+def write_json(path, value):
+    digest = hashlib.sha256()
+    with path.open('wb') as stream:
+        for chunk in json_chunks(value, pretty=True):
+            stream.write(chunk)
+            digest.update(chunk)
+        stream.write(b'\n')
+        digest.update(b'\n')
+    return digest.hexdigest()
+
+
 def inspect_bundle(folder):
     """Authenticate retained data only. Never load a parser or learner implementation."""
     from pathlib import Path
@@ -66,7 +99,7 @@ def write_native_evidence(path, evidence):
     return digest.hexdigest()
 
 
-def native_evidence_rows(path, *, retain_occurrences=False):
+def native_evidence_rows(path, *, retain_occurrences=False, metadata=None):
     """Stream ordinary JSON evidence, retaining one occurrence per row by default.
 
     Serialization whitespace is not a schema boundary. Decode one contextual
@@ -119,10 +152,12 @@ def native_evidence_rows(path, *, retain_occurrences=False):
                 return result
 
         take('{')
+        found_records = False
         while peek() != '}':
             key = value()
             take(':')
             if key == 'records':
+                found_records = True
                 take('[')
                 while peek() != ']':
                     row = value()
@@ -133,11 +168,15 @@ def native_evidence_rows(path, *, retain_occurrences=False):
                     if peek() != ']':
                         take(',')
                 take(']')
-                return
-            value()
+            else:
+                item = value()
+                if metadata is not None:
+                    metadata[key] = item
             if peek() != '}':
                 take(',')
-        raise ValueError('missing native evidence records')
+        take('}')
+        if not found_records:
+            raise ValueError('missing native evidence records')
 
 
 

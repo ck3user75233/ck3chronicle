@@ -14,6 +14,10 @@ submitted or copied again. Reject it before parsing or creating another Run ID.
 Do not add duplicate overrides, one-log/many-run identities, or receipt systems
 to support this impossible case.
 
+Duplicate-ingestion handling belongs to the pipeline. Reporting must not add
+timestamp-based duplicate detection, Run exclusion or rejection. The owner
+removed that reporting requirement on 2026-10-04; it is not a verification gap.
+
 ## BAN-002 — Historical tests defining product scope
 
 Deleted or superseded tests do not create requirements. Every new test must

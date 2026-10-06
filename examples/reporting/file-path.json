@@ -1,0 +1,6 @@
+{
+  "purpose": "Find diagnostics referencing the sea-minority script path recorded in their messages",
+  "scope": {
+    "source": {"files": ["common/on_action/sea_minority_on_actions.txt"]}
+  }
+}

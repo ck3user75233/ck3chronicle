@@ -544,6 +544,47 @@ def cmd_ingest(args: argparse.Namespace) -> int:
     return 0 if result.status == COMPLETED else 1
 
 
+def cmd_runs(args: argparse.Namespace) -> int:
+    from .reporting.cli import cmd_runs as run
+    return run(args)
+
+
+def cmd_report(args: argparse.Namespace) -> int:
+    from .reporting.cli import cmd_report as run
+    return run(args)
+
+
+def _register_reporting(sub):
+    runs = sub.add_parser('runs', help='List all package Runs by Run ID, including unavailable source dates.')
+    runs.add_argument('--database', type=Path, help='Existing database; defaults to watcher.database in current config.')
+    runs.add_argument('--package-id', required=True, help='Explicit stored processing package.')
+    runs.add_argument('--format', choices=('text', 'json'), default='text')
+    runs.add_argument('--offset', type=int, default=0)
+    runs.add_argument('--limit', type=int, default=50)
+    runs.add_argument('--output', type=Path, help='UTF-8 destination; default stdout.')
+    runs.set_defaults(func=cmd_runs)
+    report = sub.add_parser('report', help='Investigate stored diagnostics and current candidate sources.')
+    report.add_argument('run', help='Run ID or latest (latest requires --package-id).')
+    report.add_argument('--database', type=Path, help='Existing database; defaults to watcher.database in current config.')
+    report.add_argument('--package-id', help="Processing package; a named Run's stored lineage may supply it.")
+    mode = report.add_mutually_exclusive_group(required=True)
+    mode.add_argument('--preset', choices=('hotspots', 'frequent', 'syntax', 'new', 'symbol'))
+    mode.add_argument('--custom', action='store_true', help='Explicit non-preset investigation; requires --query.')
+    report.add_argument('--query', type=Path, help='Validated structured JSON query/refinement.')
+    report.add_argument('--format', choices=('text', 'json', 'html'), default='text')
+    report.add_argument('--output', type=Path, help='UTF-8 destination; required for HTML.')
+    report.add_argument('--limit', type=int, help='Current and per-Run display limit; default 50.')
+    report.add_argument('--historical-limit', type=int, help='Separate previously observed display limit; default 20.')
+    report.add_argument('--no-history', action='store_true', help='Omit recent-Run comparisons (conflicts with new/trailing queries).')
+    report.add_argument('--verbose', action='store_true', help='Numbered source excerpts; HTML writes a linked appendix.')
+    report.add_argument('--source-context', type=Path, help='Optional source-selection JSON, separate from required scope.source.')
+    report.add_argument('--source-root', action='append', help='Optional absolute source root; repeat to preserve caller order.')
+    report.add_argument('--source-directory', action='append', help='Optional directory relative to each context root.')
+    report.add_argument('--no-recursive', action='store_true', help='Optional context: enumerate selected directories only.')
+    report.add_argument('--ripgrep', default='rg', help='Source library content-search executable.')
+    report.set_defaults(func=cmd_report)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="ck3chronicle",
@@ -554,6 +595,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     sub = parser.add_subparsers(dest="command", required=True)
+
+    _register_reporting(sub)
 
     p_ingest = sub.add_parser('ingest', help='Store a completed capture or explicit manual error log.')
     inputs = p_ingest.add_mutually_exclusive_group(required=True)

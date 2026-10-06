@@ -6,6 +6,7 @@ consumes completed bindings and checks correspondence only; aggregation is later
 from copy import deepcopy
 import hashlib
 import json
+import re
 
 from .domain import NativeClassification, ResultIntegrityError
 
@@ -90,18 +91,23 @@ def _repeat_parts(parts, layout):
 
 def _literal_parts(parts, layout):
     """Resolve explicit layout choices only; never match or normalize text."""
-    expected = [i for i, p in enumerate(parts) if 'alternatives' in p]
+    expected = [i for i, p in enumerate(parts) if 'alternatives' in p or 'literal_format' in p]
     choices = layout.get('literal_choices', [])
     _require(isinstance(choices, list) and all(isinstance(c, list) and len(c) == 2
-             and all(type(v) is int for v in c) for c in choices), 'invalid literal choices')
+             and type(c[0]) is int and type(c[1]) in (int, str) for c in choices), 'invalid literal choices')
     _require([i for i, _ in choices] == expected, 'incomplete or unordered literal choices')
     selected = dict(choices)
     result = []
     for index, part in enumerate(parts):
         if index in selected:
             choice = selected[index]
-            _require(0 <= choice < len(part['alternatives']), 'literal choice is not in definition')
-            result.append({'kind': 'literal', 'text': part['alternatives'][choice]})
+            if 'literal_format' in part:
+                _require(isinstance(choice, str) and re.fullmatch(part['format_pattern'], choice) is not None,
+                         'literal spelling does not conform to declared format')
+                result.append({'kind': 'literal', 'text': choice})
+            else:
+                _require(type(choice) is int and 0 <= choice < len(part['alternatives']), 'literal choice is not in definition')
+                result.append({'kind': 'literal', 'text': part['alternatives'][choice]})
         else:
             result.append(part)
     return result
@@ -196,23 +202,51 @@ def identity_digest(values: dict) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
-def render_regions(definition: dict, values: dict) -> list[tuple[str, str]]:
-    """Exact original region text in framing order, from JSON-compatible data."""
+def _rendered_regions(definition, values):
+    """One rendering path for text and its stored literal/slot provenance."""
     rendered = {}
     for region, parts in _checked_regions(definition, values):
         bindings = iter(region['bindings'])
-        text = []
+        segments = []
+
+        def append(text, kind='literal', **origin):
+            if text:
+                segments.append(dict(text=text, kind=kind, region=region['name'], **origin))
+
         for part in parts:
             if part['kind'] == 'literal':
-                text.append(part['text'])
+                append(part['text'])
             else:
                 binding = next(bindings)
                 if binding['present']:
-                    text.append(part['prefix'] + binding['value'] + part['suffix'])
-        rendered[region['name']] = ''.join(text)
+                    append(part['prefix'])
+                    append(binding['value'], 'slot', slot_id=binding['slot_id'], type=binding['type'])
+                    append(part['suffix'])
+        rendered[region['name']] = segments
     order = ['prefix', 'body', 'suffix'] if 'prefix' in rendered else ['body']
     order.extend(r['name'] for r in values['regions'] if r['component_index'] is not None)
     return [(name, rendered[name]) for name in order]
+
+
+def render_regions(definition: dict, values: dict) -> list[tuple[str, str]]:
+    """Exact original region text in framing order, from JSON-compatible data."""
+    return [(name, ''.join(s['text'] for s in segments))
+            for name, segments in _rendered_regions(definition, values)]
+
+
+def render_segments(definition: dict, values: dict) -> list[dict]:
+    """Rendered text segments with character offsets and stored literal/slot origin.
+
+    Offsets are Python character indices, end-exclusive, in render()'s output.
+    This exposes the existing assignment; it does not match or classify text.
+    """
+    result, offset = [], 0
+    for _, segments in _rendered_regions(definition, values):
+        for segment in segments:
+            end = offset + len(segment['text'])
+            result.append(dict(segment, start=offset, end=end))
+            offset = end
+    return result
 
 
 def render(definition: dict, values: dict) -> str:

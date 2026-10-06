@@ -1,12 +1,188 @@
 # Task 08A.1 — Diagnostic query and analysis delivery
 
+## Combined-release compatibility and ordinary Run eligibility — 2026-10-05
+
+The [R1/R2/R5 repair receipt](learner-next-release/PIPELINE_RECEIVING.md#reporting-repair-delivered--2026-10-05)
+supersedes earlier timestamp eligibility statements. `list_runs` includes every
+Run in the explicit package, paginated in labelled Run-ID order (not session
+chronology). `chronology_exclusions` describes only unavailable time placement;
+it does not reduce ordinary listing totals. Named `investigate` works without
+source time, including with optional history requested. `latest` still requires
+actual source chronology, and package/unknown-Run errors remain explicit.
+
+`DiagnosticAnalysis.search_runs(package_id=..., query=..., offset=0, limit=None)`
+searches every package Run through the existing query engine, with each Run's own
+counts and no chronological window. It returns `searched_count`, `matching_count`
+and paginated `runs` containing Run metadata and matching totals. Matching precedes
+pagination. Chronological novelty/trailing-window refinements are not supported
+by this all-Run operation; read failures propagate instead of becoming nonmatches.
+
+`window.chronology_available`, `history_available` and `unavailable_reason` separate
+time placement from successful diagnostic reads. An unplaceable selected Run has
+no relative positions; obtained history sizes and historical-entry totals are
+null, and novelty/observation fields are unavailable. Its selected counts,
+identities, filtering and grouping remain available. A requested novelty filter
+fails explicitly when time placement is unavailable. No timestamp is substituted.
+
+Template text now describes repeat names/structures, declared minimum and layout
+alternatives without choosing an instance repetition count. Formatted literals
+retain their declared display text; actual dates, ordered repeated bindings and
+layout choices remain in native diagnostic messages and identities. Message
+provenance continues to use the existing contract renderer.
+
+## Whole-message search origins and requested positions — 2026-10-04
+
+Owner clarification: `refinement.message` searches the whole rendered diagnostic,
+including literal text and populated slot values. Template assignment is returned
+data, not a new classification or a source of emissions. Analysis now includes
+`message_matches` character spans with stored literal/slot origins and typed slot
+IDs, using the contract renderer's shared `render_segments` path. Positive terms
+from satisfied branches are annotated. Selected/per-Run/window
+`rollups.message_matches` preserve exact record counts and assigned template
+references before display limits; overlapping origin buckets are nonadditive.
+No slot-only filter or special template-discovery query was added.
+
+`window.positions` exposes requested relative offsets, actual Run IDs and
+availability, including unfilled -5…+5 positions. Missing positions do not become
+zero observations or errors. A Run disappearing/changing after selection is
+separate from an operation error (`coverage.comparison_unavailable` versus
+`comparison_errors`). Selected-Run unavailability is a selection outcome;
+actual handler errors retain `ReadError`. The disappearance transition was
+source-inspected only. Genuine content, grouped-filter, worked-history and
+requested-position checks and I/O tracing are recorded in [08B](TASK08B_REPORTING_HANDOFF.md).
+
+## Reporting duplicate-detection rule removed — 2026-10-04
+
+At the owner's direction, reporting no longer groups equal source timestamps to
+exclude Runs or reject their selection. Duplicate-ingestion handling belongs to
+the pipeline. The requirement and associated verification gap have been deleted
+from the reporting prompts, handoffs and review ledger. `chronology` now selects
+the package, excludes missing/unusable source timestamps and sorts stored Runs.
+No replacement duplication check, tie policy or pipeline change was introduced.
+See [08B](TASK08B_REPORTING_HANDOFF.md) for the genuine-data regression checks.
+
+## Owner-directed file/line source assignment — 2026-10-04
+
+Analysis forwards the source resolver's new `file_line_sources` groups into every
+selected, historical/per-Run and partial diagnostic entry. Each group identifies
+the last matching playset member in load order as the error source for that
+file/line, following the owner's current reporting rule. The source library owns
+this calculation before file-content filtering. Stored identities, counts,
+chronology and diagnostic selection are unchanged. See [08A.2](TASK08A_2_SOURCE_SEARCH_HANDOFF.md)
+for the data contract and [08B](TASK08B_REPORTING_HANDOFF.md) for executed checks.
+
+## Owner correction: no-path emissions are complete — 2026-10-04
+
+08A.2 now distinguishes reference presence (`present` / `no_path`) from lookup
+completion. Analysis forwards that as `source_path_status` on ordinary, historical,
+per-Run and known-match partial entries. Without a source resolver it is
+`not_evaluated`. An emission with no path has no source lookup to perform and
+does not constitute incomplete evidence. Misleading reference-limitation and
+reference-completeness coverage fields are removed by the source owner; required
+path/source predicates continue to exclude no-path records normally. Genuine
+verification is recorded in [08B](TASK08B_REPORTING_HANDOFF.md).
+
+## Owner-requested current path-resolution selection — 2026-10-04
+
+`InvestigationQuery.scope.source.resolution` now accepts `resolved` or `unresolved`.
+08A.2 evaluates this current-source predicate before totals/history/display limits;
+08A.1 continues to consume its matches. Every exported record (including historical,
+per-Run and known-match partial entries) carries `reference_resolution`, forwarded
+from the source resolver. No SQLite schema or stored identity changes.
+
+An unresolved match requires at least one selected stored reference with a completed
+search and no current file within the selected roots. Pathless rows are nonmatches;
+incomplete coverage is not a missing-file conclusion. Ordinary stored-path queries
+remain independent of disk existence. See [08A.2](TASK08A_2_SOURCE_SEARCH_HANDOFF.md)
+for statuses/composition and [08B](TASK08B_REPORTING_HANDOFF.md) for executed checks.
+
+## Owner correction: source nonmatches are excluded — 2026-10-04
+
+08A.2 now evaluates path-only filters against stored references, with disk
+candidates optional. Records with no usable matching path are excluded normally;
+missing individual files do not trigger `SourceEvaluationError`. Root/member/
+content filters still require their actual current candidate evidence. The core
+continues to consume the resolver's matches before totals, histories and limits.
+Its exported `filter_meaning.source` explains this distinction.
+
+The earlier `unidentified_records` / `unidentified_record_count` error extension
+has been removed: pathless nonmatches must not appear in a warning or partial
+result. Genuine failures evaluating required disk evidence still retain known
+matching records and coverage. See [08A.2](TASK08A_2_SOURCE_SEARCH_HANDOFF.md) and
+the [08B follow-up](TASK08B_REPORTING_HANDOFF.md) for current checks and evidence.
+
+## Earlier 08B owner-review completion — 2026-10-04
+
+The owner's empty-set feedback and instruction to complete the remaining work
+supersede the earlier 08B rule rejecting mutually exclusive preset refinements.
+`refinement.all` now accepts a nonempty list of compound refinement objects,
+ANDed with the ordinary refinement and scope. These clauses use the existing
+record predicates, OR `selectors`, `occurrences` and `newly_observed`; they also
+accept stored `has_source_reference`. One additional level is supported, not a
+general expression language. Presets append their base clause here without
+overwriting supplied filters. Opposite booleans, disjoint template/emitter
+conditions or disjoint occurrence bounds yield ordinary complete empty results.
+Malformed inputs, missing symbol selection and incompatible execution controls
+(such as disabling history while filtering newness) still produce `QueryError`.
+The effective query exports every clause; counts/newness remain anchored to the
+selected Run. All matching and aggregation stay in this library.
+
+Required-source errors now additionally expose bounded `unidentified_records`
+and `unidentified_record_count` from the resolver's `reference_limitations`.
+These carry stored messages, identity, history and `evaluation_issue`, separately
+from known matching `records`. This makes missing path evidence inspectable.
+It does not change source-filter truth, match totals or error status.
+
+Genuine verification: eight root-CLI groups passed (161.987 seconds); six retained
+query-library checks passed (13.926 seconds). The additional real partial-source
+presentation check passed separately. See the current [08B handoff](TASK08B_REPORTING_HANDOFF.md)
+for exact outputs and the later presentation check. No synthetic histories or
+injected failures were introduced.
+
+## 08B receiving additions — 2026-10-03
+
+Reports consume the same `DiagnosticAnalysis` and `InvestigationResult.to_dict()`.
+Bounded consumer gaps are now implemented in the owning library:
+
+- `rollups.templates`, `window.runs[].rollups.templates` and
+  `window.rollups.templates` group matching diagnostics by complete stored
+  definition reference (model revision, contract version and template ID).
+  Buckets contain `template` metadata/text, occurrence/distinct-record counts and
+  contributing exact identity keys. They are computed before display limits,
+  also without a source resolver. Individual records remain separate. This
+  supports the 08B template-pattern summary after owner review found that the
+  diagnostic-first report obscured the distinction between templates and instances.
+- `scope.has_source_reference: bool` selects presence/absence of identifiable
+  stored file evidence using 08A.2's `source_references`. It performs no disk
+  access. The hotspots preset uses true; a referenced file need not exist today.
+- Each `window.runs` row additionally returns bounded `records` and complete
+  `rollups`. `run_count` is that Run's actual occurrence count; `selected_count`
+  and history remain anchored to the selected Run. `display.limit` bounds each
+  per-Run view after all totals/rankings. Failed reads return null views/rollups.
+- `window.totals` sums matching occurrences across successful included reads,
+  counts distinct full identities across that window, and reports successful
+  reads. `window.rollups` ranks emitter/reference/candidate associations across
+  the window, adding counts only to candidates associated in the same Run.
+  Distinct identities are deduplicated across Runs, never merged by template.
+- Candidate-file buckets retain candidate provenance alongside their keys, so a
+  bounded report can name every ranked association without another search.
+- Incomplete required-source exceptions preserve the resolver's entire partial
+  payload and add Run/effective query, bounded rendered known-match `records`
+  and `known_matching_records`. These remain incomplete evidence, not an
+  `InvestigationResult` or a complete total.
+
+No chronology, identity, count/fraction/newness or required-source evaluation
+rule changed. See [08B delivery](TASK08B_REPORTING_HANDOFF.md) for actual root CLI
+verification and presentation semantics. SQL/source invariance verification now
+compares window counts/history separately from the newly added candidate data.
+
 Current genuine-history verification: [multi-Run receiving results](TASK08A_MULTIRUN_VERIFICATION_HANDOFF.md).
 The October 3 owner correction removes the median-based comparison and novelty
 unavailable-read veto. Newness uses actual included predecessors. The unchanged
 backup has four eligible Runs and 14 excluded older Runs; 18 investigations / 359
 real-data comparisons plus two single-Run checks passed. Template selections use
 stored ingestion references; message searches include slot values. Naturally
-unavailable reads and duplicate timestamps remain unexercised.
+unavailable reads remain unexercised.
 
 Delivered 2026-10-02 in `ck3chronicle.reporting`. This is the SQL-derived library
 delivery, not reports/CLI, source search, or live Trusted Run acceptance.
@@ -173,16 +349,13 @@ before pagination or diagnostic filters. Only
 timestamps are excluded with Run IDs and the stored value. No backfill, process
 time, capture time or Run-ID fallback is used.
 
-All members of each duplicate **stored timestamp string** group are excluded;
-the exclusion includes the shared timestamp and guidance to inspect duplicated
-session data or overwritten/corrupted timestamps. An explicitly selected member
-raises `RunSelectionError` with `.exclusions`. `latest` chooses the latest remaining
+Duplicate-ingestion handling belongs to the pipeline. Reporting does not add a
+second duplicate-detection or rejection policy. `latest` chooses the latest
 eligible Run, or raises a clear no-eligible-Run error. `list_runs` returns newest
 first, total eligible count and all package exclusions even on a one-item page.
 
 Standard Python aware ISO `datetime` ordering is used. Original timestamp strings
-are retained in every result and are used directly for duplicate grouping; they
-are never rounded into duplicate groups. No special nanosecond chronology is
+are retained in every result. No special nanosecond chronology is
 introduced. The producer's canonical UTC timestamp format is the receiving
 contract; sub-microsecond distinctions between distinct sessions are not claimed.
 
@@ -238,7 +411,7 @@ to the selected Run's occurrences, distinct count or hotspot rollups.
 |---|---|
 | `run`, `package_id` | Selected stored facts, counters and processing lineage. |
 | `effective_query`, `filter_meaning` | Validated query with analytics/display defaults and composition/count/text semantics. |
-| `chronology_exclusions` | All missing/unusable and duplicate timestamp exclusions in this package. |
+| `chronology_exclusions` | All missing/unusable timestamp exclusions in this package. |
 | `window` | Requested window, obtained/read sizes, chronological Run IDs/timestamps/roles, per-Run filtered occurrence and distinct totals, full identity-to-count maps, read errors, completeness. |
 | `totals` | Selected occurrences and distinct records, plus separate historical entry count, all before limits. |
 | `records`, `historical` | Separate limited views; identity/equality key, origin, complete stored definition/typed values/provenance/status, rendered message/template, selected count, full window counts, observation fractions, window-relative newness and completeness. |
@@ -385,8 +558,8 @@ The dataset contains one eligible Run, 2,475 distinct diagnostics and 4,182
 occurrences. Checks exercise real filtering and rendering, OR template selection,
 exact identities and typed values, template-versus-message matching, count filters,
 review metadata, display limits, emitter rollups and the actual absence of
-preceding history. Genuine multi-Run recurrence/disappearance, duplicate-time
-exclusions, five-Run history, threshold boundaries, failed historical reads and
+preceding history. Genuine multi-Run recurrence/disappearance,
+five-Run history, threshold boundaries, failed historical reads and
 nonzero review counts remain **unverified by this dataset**. No synthetic stand-in
 is counted as evidence for those cases.
 

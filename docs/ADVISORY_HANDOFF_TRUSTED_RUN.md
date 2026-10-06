@@ -165,7 +165,7 @@ Settled receiving rules:
   imply identical messages.
 - Reporting chronology uses `run["facts"]["error_log_source_modified_at"]`, accepted
   by the owner as session-end ordering. Missing facts are excluded, without
-  fallback/backfill. Same-package only; duplicate timestamp groups are excluded.
+  fallback/backfill. Same-package only; duplicate-ingestion handling stays in the pipeline.
 - Default history is up to five predecessors and five successors. Trailing five
   includes the selected Run and at most four predecessors.
 - New means positive in the selected Run and absent from all successfully read
@@ -187,8 +187,8 @@ Settled receiving rules:
 Latest upstream evidence reports four eligible genuine Runs: 18 investigations /
 359 comparisons plus two single-Run checks; subsequent scope repair reports 41
 scope comparisons, four source investigations / 93 comparisons and nine source
-tests. Fourteen older Runs lack timestamps and remain excluded. Failed-read,
-duplicate-time and other absent genuine cases remain unverified. See
+tests. Fourteen older Runs lack timestamps and remain excluded. Failed-read
+and other absent genuine cases remain unverified. See
 [receiving review](TASK08B_RECEIVING_REVIEW.md) for the distinction between the
 advisor's earlier checks and later source/document inspection. Do not claim you
 reran this evidence.

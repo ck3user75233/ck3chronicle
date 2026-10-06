@@ -23,7 +23,7 @@ def _usable_path(value):
 
 
 def source_references(record: dict) -> dict:
-    """Return ordered path/line evidence and limitations for one stored record.
+    """Return ordered path/line references and their presence in one stored record.
 
     Exact LOCATOR values take priority. Literal paths visible in rendered regions
     supplement them. Line labels must be adjacent; numeric locators alone never
@@ -68,5 +68,4 @@ def source_references(record: dict) -> dict:
                           'slot_id': slot, 'evidence': kind,
                           'role': 'supporting' if region['component_index'] is not None or
                           text[:start].rsplit('\n', 1)[-1].strip() == 'file:' else 'location'})
-    return {'references': found, 'limitation': None if found else
-            'Stored evidence does not identify a file reference; numeric locators and engine emitters are not files.'}
+    return {'references': found, 'status': 'present' if found else 'no_path'}

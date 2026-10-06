@@ -4,10 +4,20 @@ from dataclasses import replace
 from template_learning.native_matching import Matcher
 
 
+def research_matcher(model):
+    """The matcher needs executable definitions, not a copy of research history."""
+    from template_learning.publish_native_model import compact_template
+    data = {k: v for k, v in model.items() if k not in {
+        'refinement_history', 'template_retirement', 'region_discovery',
+        'evidence', 'excluded_evidence', 'duplicates', 'learning_update'}}
+    data['templates'] = [compact_template(t) for t in model['templates']]
+    return Matcher(data)
+
+
 def evaluate_records(model, grouped, stats):
     from template_learning.learner_loader import require_candidate
     require_candidate(model)
-    matcher = Matcher(model)
+    matcher = research_matcher(model)
     rows,counts = [],Counter({name:0 for name in ("full","provisional","unknown")})
     for source,records in grouped.items():
         contextual_records = []

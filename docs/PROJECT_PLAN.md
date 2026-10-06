@@ -1,5 +1,141 @@
 # Named capability-milestone plan
 
+## Logging and first-use delivery direction — 2026-10-05
+
+The owner clarified that Task 09 logging requires implementation throughout the
+application, with Learner leading the plan. [09A](TASK09A_PROMPT.md) now covers all
+component owners and a staged delivery sequence; it still commissions planning only.
+[09B](TASK09B_PROMPT.md) follows: break the plan into team-owned implementation
+deliverables and begin using Trekker to track execution, dependencies, continuation
+and receipt. Evaluate the need for 09C during 09B; no 09C is presumed necessary.
+Trekker is independent tracking available across teams. Its bounded
+[CLI pilot setup](TREKKER_CLI_PILOT_PROMPT.md) is the prerequisite to actual tracker
+use in 09B; neither saving these prompts nor executing 09A activates it.
+
+Configuration and package-selection setup are required. The owner wants someone
+to download CK3Chronicle cold and start using it. [Proposed Task 10](TASK10_PROMPT.md)
+therefore targets a usable installation and first-run setup, with Pipeline as
+recommended lead. A Windows bundle/installer is proposed, not yet selected or
+implemented. A separate doctor command is undecided; setup validation remains
+necessary. This supersedes treating Task 10 as only a readiness/closure review.
+The completed cutover, 31-Run rebuild/live receipt and existing accepted limitations
+are inputs, not assignments to repeat. Saving these directions authorizes no
+installation, publication, service restart or production change.
+
+## Reporting content-search clarification — 2026-10-04
+
+08B reporting implementation is delivered, including owner-review corrections.
+The [current handoff checklist](TASK08B_REPORTING_HANDOFF.md) identifies the complete
+deliverable set and two unexercised fault groups. Full live Trusted Run acceptance
+remains separate; no additional 08B feature implementation is currently open.
+
+Phrase/token search covers the whole diagnostic. Stored literal/slot provenance
+and assigned templates are now visible result data; no separate classification or
+special template-discovery query is introduced. The earlier contrived query is
+withdrawn. Requested history positions, honest missing-Run display and file-I/O
+verification replace the earlier demand for eleven simultaneous Runs or removing
+raw logs/models. Two concrete runtime fault paths remain unexercised; normal
+absence is not an operation failure. [08B](TASK08B_REPORTING_HANDOFF.md) records
+the delivered corrections and genuine checks. No new milestone or dependency.
+
+## Reporting duplicate-detection requirement removed — 2026-10-04
+
+The owner deleted reporting's timestamp-based Run exclusion/rejection rule.
+Duplicate-ingestion handling remains pipeline-owned. Reporting code, specifications
+and the outstanding-check register now follow that boundary; it is not an unverified
+requirement or a milestone dependency. See [08B](TASK08B_REPORTING_HANDOFF.md).
+
+## 08B file presentation and source rule — 2026-10-04
+
+Owner-directed labels/columns and last-load-order file/line source assignment are
+delivered through the existing source, analysis and report services. Genuine CLI
+and browser verification is recorded in [08B](TASK08B_REPORTING_HANDOFF.md). No new
+milestone, schema, dependency or production change is involved.
+
+## 08B relative-path clarification — 2026-10-04
+
+Relative paths select the same location beneath each recorded playset member.
+The explicit relative-path filter accepts an optional leading slash; candidate
+lookup remains confined to the named parent folder. Genuine CLI, source and
+presentation evidence is recorded in the [08B handoff](TASK08B_REPORTING_HANDOFF.md).
+This is a bounded receiving correction, with no change to milestone scope.
+
+## 08B no-path emission correction — 2026-10-04
+
+The owner clarified that a pathless emission is complete by design. Source
+context is not applicable to it, and no source lookup is performed when all
+selected emissions are pathless. Query exports and reports now reflect this
+without warnings or reference-completeness penalties. See the [08B handoff](TASK08B_REPORTING_HANDOFF.md).
+
+## 08B source recursion measurement — 2026-10-04
+
+Owner-requested independent recursion validation is delivered: per-search file and
+folder counts, effective directories and cache use are exported and rendered.
+Twenty-nine comparisons against real source-tree enumeration pass, including
+recursive/nonrecursive and cached/scoped searches; the root CLI shows the counts.
+[08B handoff](TASK08B_REPORTING_HANDOFF.md) records the checker correction and exact
+evidence. This does not change source selection, production state or milestone scope.
+
+## 08B explicit unresolved-path selection — 2026-10-04
+
+Owner-requested `scope.source.resolution` now selects current resolved/unresolved
+references, separately from ordinary stored-path matching. Reports expose each
+reference's status. No-path records are excluded; incomplete coverage remains
+unknown. This is a bounded query/source/report addition with genuine and authorized
+fixture verification; [08B handoff](TASK08B_REPORTING_HANDOFF.md) has the evidence.
+Stored identity, schema, production selection and Trusted Run scope are unchanged.
+
+## 08B path-query correction — 2026-10-04
+
+The owner's latest clarification supersedes missing-file/pathless-filter failures.
+Path-only selection matches stored references and excludes nonmatches normally;
+current disk existence is optional context. The source/query owners and report
+examples are updated, including a broad all-diagnostics-for-path query. Genuine
+CLI/library, authorized two-emission fixture and archive checks pass. See the
+[current handoff](TASK08B_REPORTING_HANDOFF.md). This changes filter behavior within
+the assigned libraries, not the architecture or the separate Trusted Run milestone.
+
+## Earlier 08B verification follow-up — 2026-10-04
+
+The owner-authorized two-entry fake-LOCATOR fixture now passes five checks through
+normal capture/playset writing, disposable handler ingestion and eleven root-CLI
+exports. It is labelled synthetic and preserves genuine playset membership.
+Fresh genuine history supplies seven eligible Runs, verifying the full trailing
+five and each five-neighbor side. Five unchanged archives separately verify all
+nine syntax selectors and missing-playset behavior. No synthetic history is used.
+
+The [current reporting handoff](TASK08B_REPORTING_HANDOFF.md) and generated
+`outcomes.html` distinguish those completed checks from the five remaining evidence
+gaps. Fifty-four explained examples have checked offline links and new browser
+evidence. Live Trusted Run acceptance and later architecture remain separate;
+production state, package selection, commits and pushes are unchanged.
+
+## Earlier 08B reporting implementation and verification record — 2026-10-04
+
+The remaining 08B navigation, explanation, filter and browser-verification work is
+complete. [The closure matrix](TASK08B_REPORTING_HANDOFF.md) maps the assigned CLI,
+five presets, reusable queries, formats, history, candidates and source appendices
+to implementation and executed genuine-data/browser evidence. Valid opposing
+filters return an empty set; missing required input is rejected before submission.
+The example bundle has 38 explained investigations with outcome and return links.
+
+Genuine verification uses four eligible Runs and 14 timestamp exclusions. Actual
+DLC-file presentation now has CLI/browser evidence. Unrepresented failure/full-
+window cases and seven absent syntax selectors remain disclosed evidence limits;
+they are not fabricated or treated as passing checks. Full live Trusted Run,
+configuration/bootstrap replacement and later adapters remain separate. No
+production activation, commit or push was performed.
+
+
+## Proposed Trusted Run completion pathway — 2026-10-03
+
+[Advisory assessment](TRUSTED_RUN_COMPLETION_PATHWAY.md) recommends finishing 08B,
+closing concrete configuration/setup/doctor gaps, then bounded integration/readiness
+and candidate acceptance. Existing later full-lifecycle evidence should be received
+before proposing more live work. 09A planning can proceed independently; canonical
+implementation is not automatically a milestone gate. These are recommendations,
+not approved replacement Tasks 09–12 or an amendment to owning specifications.
+
 ## Canonical logging direction and provisional 09A — 2026-10-03
 
 [Canonical Logging System v1](CANONICAL_LOGGING_SYSTEM_V1.md) records the owner's

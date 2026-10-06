@@ -13,7 +13,6 @@ import uuid
 from ck3chronicle.pipeline.request_handler import HandlerClient
 from ck3chronicle.reporting import (
     DiagnosticAnalysis, exact_identity, identity_key,
-    template_text,
 )
 
 
@@ -85,25 +84,13 @@ class GenuineStoredInvestigationChecks(unittest.TestCase):
         exact = self.service.investigate('latest', package_id=self.package, query=query)
         self.assertEqual(exact.totals['distinct_records'], 1)
         self.assertEqual(exact.records[0]['identity'], exact_identity(first))
+        # The whole real diagnostic spans its literal wording and populated slots.
+        matches = exact.records[0]['message_matches']
+        self.assertEqual(matches[0]['text'], entry['message'])
+        self.assertEqual({o['kind'] for o in matches[0]['origins']}, {'literal', 'slot'})
+        self.assertEqual(''.join(o['text'] for o in matches[0]['origins']), entry['message'])
         query['refinement']['templates'] = [{'template_id': next(t for t in grouped if t != definition['template_id'])}]
         self.assertEqual(self.service.investigate('latest', package_id=self.package, query=query).totals['distinct_records'], 0)
-
-    def test_template_text_never_searches_bound_values(self):
-        row, value = next((r, b['value']) for r in self.rows for region in r['values']['regions']
-                         for b in region['bindings'] if b['present'] and len(b['value']) > 5
-                         and b['value'].casefold() not in template_text(r['definition']).casefold())
-        base = {'identities': [exact_identity(row)]}
-        message = self.service.investigate('latest', package_id=self.package, query={
-            'refinement': {**base, 'message': {'contains': value}}})
-        pattern = self.service.investigate('latest', package_id=self.package, query={
-            'refinement': {**base, 'template_text': {'contains': value}}})
-        self.assertEqual(message.totals['distinct_records'], 1)
-        self.assertEqual(pattern.totals['distinct_records'], 0)
-        text = template_text(row['definition'])
-        exact = self.service.investigate('latest', package_id=self.package, query={
-            'refinement': {**base, 'template_exact': [text], 'template_text': {'and': [
-                {'contains': text[:4]}, {'contains': text[-4:]}, {'not_contains': value}]}}})
-        self.assertEqual(exact.totals['distinct_records'], 1)
 
     def test_record_selector_and_positive_occurrence_filter(self):
         row = self.rows[0]

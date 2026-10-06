@@ -1,5 +1,41 @@
 # Native outer-diagnostic model contract
 
+## Formatted literal equivalence — 2026-10-04, v57 candidate
+
+An experimental literal part may declare `literal_format` and `format_pattern`
+in addition to `kind: literal` and its display `text`. The shared matcher verifies
+the pattern against the snapshotted owner declaration and matches complete native
+parser boundaries. This represents game-date equivalence, not a KEY or a new slot
+type. The following colon remains an ordinary literal. No date dictionary is used.
+
+For this part, `[part_index, exact_spelling]` in `literal_choices` retains the
+selected native spelling; finite line-label choices still use integer indexes.
+The contract renderer validates the spelling's declared format and renders it
+verbatim. Both forms are included in existing identity data. There is no new
+database column, source-log rewrite, parser change or timestamp normalization.
+The candidate requires the accompanying contract-renderer change before any
+future activation. Existing production artifacts and integer choices are intact.
+
+## Research refinement lineage — 2026-10-04, v54 candidate
+
+Refinement evidence is recorded at creation, not copied into each descendant.
+Each split records its shared observation once. Children retain parent references
+and only their own decision (for example, `retained_value`). Consolidation records
+references to its inputs rather than concatenating their ancestor histories.
+Research templates' `inference_refinements` contain event IDs; the research model's
+`refinement_history` table stores each event's parents and local delta. IDs are
+sequential within the build, not content hashes. Additive builds preserve prior
+IDs and append new events. Retirement records use the same table. Native evidence
+and exact executable definitions are preserved; runtime exports exclude history.
+
+Research JSON writing and revision hashing stream bounded chunks. The producer
+validates its in-memory model and the written payload hashes without decoding a
+second complete model. Independent consumers still authenticate and load bundles.
+Training evaluation gives the existing matcher only executable definitions, so
+its defensive copy does not copy review history. Review packs stream native rows
+and link to one saved definition per template instead of embedding it per example.
+These are candidate storage/work corrections, not new inference requirements.
+
 2026-10-03 owner clarification (disposable combined implementation/test authorized):
 location markers such as `Script location:` remain literal. Following entry count
 must not cause dissimilarity or split otherwise compatible diagnostic patterns.
