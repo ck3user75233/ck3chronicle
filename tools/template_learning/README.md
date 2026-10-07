@@ -1,5 +1,20 @@
 # Current delivered learner: v61
 
+## Canonical logging candidate — 2026-10-06
+
+TREK-2 delivers authenticated config-free shared logging, worker transport and
+receipt handling, exactly four call scopes, and create/list/register foreground
+logging. The fresh two-log pre/post comparison preserves templates, complete
+assignments and native evidence. This is a disposable candidate, not a production
+replacement; Pipeline receiving and packaging remain open.
+
+See [the logging handoff](../../docs/learner-next-release/LOGGING_INTEGRATION.md)
+for final IDs/pins, source patches, genuine metrics, limitations and receiving
+actions. Use `run --log-dir PATH` **before** the operation. Omitted worker paths
+use receipt-parent `learner-logs`, then `<cwd>/.ck3chronicle/wip/learner-logs`;
+administrative commands accept their own `--log-dir`. Old releases retain their
+original protocol when no explicit log directory is requested.
+
 The combined decoder/parser/learner release is locally registered and verified.
 Learner `0dc8130a0740d2209e1da8e2cc7241d7d735df2c0252342075b7624bfad0e3de`
 (publication order 9) and runtime package `4ac4e8ee92346e6d14eacfbf` (order 8)

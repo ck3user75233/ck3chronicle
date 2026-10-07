@@ -31,9 +31,10 @@ def main():
     p.add_argument('phase', choices=['extract', 'run'])
     p.add_argument('--bundle', type=Path)
     p.add_argument('--output', type=Path, required=True)
+    p.add_argument('--application-source', type=Path, required=True)
     p.add_argument('--policy', choices=['fixed', 'gentle', 'lower'], default='fixed')
     a = p.parse_args(); a.output.mkdir(parents=True, exist_ok=True)
-    implementation = implementation_identity(Path(__file__).parent)
+    implementation = implementation_identity(Path(__file__).parent, application_source=a.application_source)
     if a.phase == 'extract':
         seen = set(); counts = Counter(); kept = 0
         with (a.output/'short-records.jsonl').open('w', encoding='utf-8') as f:

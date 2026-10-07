@@ -1,5 +1,22 @@
 # Task 08A.1 — Diagnostic query and analysis delivery
 
+## TREK-5 search scope — 2026-10-06
+
+Owner-issued Reporting Adoption adds only `journal.call()` around the complete
+`DiagnosticAnalysis.search_runs` body. Listing, investigation, pagination,
+matching counts and missing-time/history semantics are unchanged; no progress
+counter, extra read or local logging configuration was added. Existing exception
+objects still propagate through the shared no-traceback scope.
+
+Fresh genuine public-handler before/after search results include the stored
+missing-time Run and agree exactly. AST equivalence after removing only the
+scope/import/binding and runtime logging ownership checks pass. See the
+[08B delivery](TASK08B_REPORTING_HANDOFF.md#trek-5-canonical-reporting-adoption--2026-10-06)
+for exact source hashes/patches, commands, foreground request receipt, limits,
+the corrected evidence-recorder failure and pending Pipeline receiving.
+No R4 selector work, synthetic history or ingestion is included.
+
+
 ## Combined-release compatibility and ordinary Run eligibility — 2026-10-05
 
 The [R1/R2/R5 repair receipt](learner-next-release/PIPELINE_RECEIVING.md#reporting-repair-delivered--2026-10-05)

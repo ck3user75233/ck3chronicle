@@ -10,6 +10,7 @@ import subprocess
 import tempfile
 from time import perf_counter
 
+from ..journal import get_journal
 from ..runtime_logging import event, get_logger
 from ..decoder import HEADER_INSPECTION_BYTES, Decoder, inspect_source_header, normalize_newlines, physical_lines
 from .analysis import DiagnosticAnalysis, SourceEvaluationError, identity_key
@@ -18,6 +19,7 @@ from .source_query import normalize_source
 from .source_references import source_references
 
 LOGGER = get_logger('source_search')
+journal = get_journal('source_search')
 
 
 def _physical(path):
@@ -533,122 +535,123 @@ class SourceSearch:
             return None, {**_issue(path, str(exc)), 'content_searched': False}
 
     def _content(self, files, expression):
-        expression = deepcopy(expression)
-        for predicate in _leaves(expression):
-            op = 'contains' if 'contains' in predicate else 'not_contains'
-            predicate[op] = normalize_newlines(predicate[op])
-        paths = list(dict.fromkeys(f['physical_path'] for f in files))
-        cache_key = (tuple(paths), json.dumps(expression, sort_keys=True))
-        executable = shutil.which(self.ripgrep)
-        if executable is None:
-            raise SourceEvaluationError('ripgrep is required for content search. Install ripgrep for Windows '
-                                        '(for example winget install BurntSushi.ripgrep.MSVC), or pass '
-                                        'SourceSearch(ripgrep=the_full_path_to_rg_exe).')
-        started = perf_counter()
-        issues, usable, decoded_files = [], [], {}
-        for path in paths:
-            decoded, issue = self._read_source(path)
-            if issue:
-                issues.append(issue)
-            else:
-                usable.append(path)
-                decoded_files[path] = decoded
-        if not issues and cache_key in self._contents:
-            return self._contents[cache_key]
-        predicates = list(_leaves(expression))
-        patterns = list(dict.fromkeys(p.get('contains', p.get('not_contains')) for p in predicates))
-        found = defaultdict(set)
-        unavailable = set()
-        lines = defaultdict(dict)
-        # Use case-insensitive broad matching whenever any leaf needs it; the
-        # shared literal evaluator applies each leaf's own case setting below.
-        insensitive = any(not p.get('case_sensitive', False) for p in predicates)
-        with tempfile.TemporaryDirectory(prefix='ck3-source-', dir=self.scratch_directory) as scratch:
-            transport = {}
-            for index, path in enumerate(usable):
-                target = Path(scratch, f'source-{index}.txt')
-                target.write_bytes(decoded_files[path].working_text.encode('utf-8', errors='strict'))
-                transport[_physical(target)] = path
-            pattern_file = Path(scratch, 'patterns.txt')
-            pattern_file.write_bytes(('\n'.join(patterns) + '\n').encode('utf-8'))
-            arguments = [executable, '--no-config', '--json', '--fixed-strings', '--text',
-                         '--hidden', '--no-ignore', '--encoding', 'none', '--no-mmap',
-                         '--color', 'never', '--line-number', '--with-filename',
-                         '--ignore-case' if insensitive else '--case-sensitive']
-            if any('\n' in p or '\r' in p for p in patterns):
-                arguments.append('--multiline')
-                for pattern in patterns:
-                    arguments.extend(['-e', pattern])
-            else:
-                arguments.extend(['-f', str(pattern_file)])
-            batches, batch, size = [], [], sum(len(a) + 3 for a in arguments)
-            for path in transport:
-                # Windows command lines are limited; batching is transport sizing,
-                # never a result cap. All selected files are sent exactly once.
-                if batch and size + len(path) + 3 > 24000:
+        with journal.call():
+            expression = deepcopy(expression)
+            for predicate in _leaves(expression):
+                op = 'contains' if 'contains' in predicate else 'not_contains'
+                predicate[op] = normalize_newlines(predicate[op])
+            paths = list(dict.fromkeys(f['physical_path'] for f in files))
+            cache_key = (tuple(paths), json.dumps(expression, sort_keys=True))
+            executable = shutil.which(self.ripgrep)
+            if executable is None:
+                raise SourceEvaluationError('ripgrep is required for content search. Install ripgrep for Windows '
+                                            '(for example winget install BurntSushi.ripgrep.MSVC), or pass '
+                                            'SourceSearch(ripgrep=the_full_path_to_rg_exe).')
+            started = perf_counter()
+            issues, usable, decoded_files = [], [], {}
+            for path in paths:
+                decoded, issue = self._read_source(path)
+                if issue:
+                    issues.append(issue)
+                else:
+                    usable.append(path)
+                    decoded_files[path] = decoded
+            if not issues and cache_key in self._contents:
+                return self._contents[cache_key]
+            predicates = list(_leaves(expression))
+            patterns = list(dict.fromkeys(p.get('contains', p.get('not_contains')) for p in predicates))
+            found = defaultdict(set)
+            unavailable = set()
+            lines = defaultdict(dict)
+            # Use case-insensitive broad matching whenever any leaf needs it; the
+            # shared literal evaluator applies each leaf's own case setting below.
+            insensitive = any(not p.get('case_sensitive', False) for p in predicates)
+            with tempfile.TemporaryDirectory(prefix='ck3-source-', dir=self.scratch_directory) as scratch:
+                transport = {}
+                for index, path in enumerate(usable):
+                    target = Path(scratch, f'source-{index}.txt')
+                    target.write_bytes(decoded_files[path].working_text.encode('utf-8', errors='strict'))
+                    transport[_physical(target)] = path
+                pattern_file = Path(scratch, 'patterns.txt')
+                pattern_file.write_bytes(('\n'.join(patterns) + '\n').encode('utf-8'))
+                arguments = [executable, '--no-config', '--json', '--fixed-strings', '--text',
+                             '--hidden', '--no-ignore', '--encoding', 'none', '--no-mmap',
+                             '--color', 'never', '--line-number', '--with-filename',
+                             '--ignore-case' if insensitive else '--case-sensitive']
+                if any('\n' in p or '\r' in p for p in patterns):
+                    arguments.append('--multiline')
+                    for pattern in patterns:
+                        arguments.extend(['-e', pattern])
+                else:
+                    arguments.extend(['-f', str(pattern_file)])
+                batches, batch, size = [], [], sum(len(a) + 3 for a in arguments)
+                for path in transport:
+                    # Windows command lines are limited; batching is transport sizing,
+                    # never a result cap. All selected files are sent exactly once.
+                    if batch and size + len(path) + 3 > 24000:
+                        batches.append(batch)
+                        batch, size = [], sum(len(a) + 3 for a in arguments)
+                    batch.append(path)
+                    size += len(path) + 3
+                if batch:
                     batches.append(batch)
-                    batch, size = [], sum(len(a) + 3 for a in arguments)
-                batch.append(path)
-                size += len(path) + 3
-            if batch:
-                batches.append(batch)
-            for batch in batches:
-                with tempfile.TemporaryFile(dir=scratch) as stderr:
-                    command = [*arguments, '--', *batch]
-                    try:
-                        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=stderr,
-                            creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
-                    except OSError as exc:
-                        issues.append(_issue(None, 'Could not start ripgrep.', exc))
-                        unavailable.update(_physical(transport[p]) for p in batch)
-                        continue
-                    try:
-                        for raw in process.stdout:
-                            message = json.loads(raw)
-                            if message['type'] != 'match':
-                                continue
-                            data = message['data']
-                            path = data['path'].get('text')
-                            text = data['lines'].get('text')
-                            if path is None or text is None:
-                                issues.append(_issue(path, 'ripgrep returned non-UTF-8 path or match data.'))
-                                unavailable.update(_physical(transport[p]) for p in batch)
-                                continue
-                            key = _physical(transport[_physical(path)])
-                            positive = False
-                            for predicate in predicates:
-                                op = 'contains' if 'contains' in predicate else 'not_contains'
-                                literal = predicate[op]
-                                if evaluate_text(text, {'contains': literal, 'case_sensitive': predicate.get('case_sensitive', False)}):
-                                    found[key].add((literal, predicate.get('case_sensitive', False)))
-                                    positive |= op == 'contains'
-                            if positive:
-                                for offset, line in enumerate(physical_lines(text)):
-                                    lines[key][data['line_number'] + offset] = line
-                        code = process.wait()
-                    finally:
-                        process.stdout.close()
-                        if process.poll() is None:
-                            process.terminate()
-                            process.wait()
-                    stderr.seek(0)
-                    errors = stderr.read().decode('utf-8', errors='replace')
-                    self.metrics['ripgrep_invocations'].append({'files': len(batch), 'exit_code': code,
-                                                               'stderr': errors, 'options': arguments[1:-1]})
-                    if code not in (0, 1) or errors:
-                        issues.append(_issue(None, f'ripgrep search incomplete (exit {code}).', errors))
-                        unavailable.update(_physical(transport[p]) for p in batch)
-        def qualifies(path):
-            key = _physical(path)
-            # Known positive branches can qualify even when another OR branch
-            # needs unavailable absence evidence. Unknown never becomes False.
-            return evaluate_group(expression, lambda literal, sensitive:
-                (literal, sensitive) in found[key], complete=key not in unavailable) is True
-        matches = {path: [{'line': n, 'text': text} for n, text in sorted(lines[_physical(path)].items())]
-                   for path in usable if qualifies(path)}
-        self.metrics['content_seconds'] += perf_counter() - started
-        self._contents[cache_key] = (matches, issues)
-        return matches, issues
+                for batch in batches:
+                    with tempfile.TemporaryFile(dir=scratch) as stderr:
+                        command = [*arguments, '--', *batch]
+                        try:
+                            process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=stderr,
+                                creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
+                        except OSError as exc:
+                            issues.append(_issue(None, 'Could not start ripgrep.', exc))
+                            unavailable.update(_physical(transport[p]) for p in batch)
+                            continue
+                        try:
+                            for raw in process.stdout:
+                                message = json.loads(raw)
+                                if message['type'] != 'match':
+                                    continue
+                                data = message['data']
+                                path = data['path'].get('text')
+                                text = data['lines'].get('text')
+                                if path is None or text is None:
+                                    issues.append(_issue(path, 'ripgrep returned non-UTF-8 path or match data.'))
+                                    unavailable.update(_physical(transport[p]) for p in batch)
+                                    continue
+                                key = _physical(transport[_physical(path)])
+                                positive = False
+                                for predicate in predicates:
+                                    op = 'contains' if 'contains' in predicate else 'not_contains'
+                                    literal = predicate[op]
+                                    if evaluate_text(text, {'contains': literal, 'case_sensitive': predicate.get('case_sensitive', False)}):
+                                        found[key].add((literal, predicate.get('case_sensitive', False)))
+                                        positive |= op == 'contains'
+                                if positive:
+                                    for offset, line in enumerate(physical_lines(text)):
+                                        lines[key][data['line_number'] + offset] = line
+                            code = process.wait()
+                        finally:
+                            process.stdout.close()
+                            if process.poll() is None:
+                                process.terminate()
+                                process.wait()
+                        stderr.seek(0)
+                        errors = stderr.read().decode('utf-8', errors='replace')
+                        self.metrics['ripgrep_invocations'].append({'files': len(batch), 'exit_code': code,
+                                                                   'stderr': errors, 'options': arguments[1:-1]})
+                        if code not in (0, 1) or errors:
+                            issues.append(_issue(None, f'ripgrep search incomplete (exit {code}).', errors))
+                            unavailable.update(_physical(transport[p]) for p in batch)
+            def qualifies(path):
+                key = _physical(path)
+                # Known positive branches can qualify even when another OR branch
+                # needs unavailable absence evidence. Unknown never becomes False.
+                return evaluate_group(expression, lambda literal, sensitive:
+                    (literal, sensitive) in found[key], complete=key not in unavailable) is True
+            matches = {path: [{'line': n, 'text': text} for n, text in sorted(lines[_physical(path)].items())]
+                       for path in usable if qualifies(path)}
+            self.metrics['content_seconds'] += perf_counter() - started
+            self._contents[cache_key] = (matches, issues)
+            return matches, issues
 
     def search(self, selection: dict, *, run_id: str | None = None) -> dict:
         """All matching files, ordered associations and explicit coverage. No result cap."""

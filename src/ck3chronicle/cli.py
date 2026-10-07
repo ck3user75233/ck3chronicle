@@ -499,31 +499,6 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_observe_logging(args: argparse.Namespace) -> int:
-    """Journal incremental error/game timestamp progress for one CK3 run."""
-    from . import config
-    from .logging_observer import observe_logging_progress
-    from .watcher import ProcessProbeError, find_process
-
-    logs_root = Path(args.logs) if args.logs else config.ROOT_LOGS
-    try:
-        journal = observe_logging_progress(
-            logs_root=logs_root,
-            runtime_root=config.ROOT_CK3CHRONICLE,
-            process_probe=lambda: find_process(args.process_name),
-            poll_seconds=float(args.poll_seconds),
-            heartbeat_seconds=float(args.heartbeat_seconds),
-        )
-    except ProcessProbeError as exc:
-        print(f"ERROR [process_probe]: {exc}", file=sys.stderr)
-        return 2
-    except (OSError, ValueError) as exc:
-        print(f"ERROR [logging_observer]: {exc}", file=sys.stderr)
-        return 2
-    print(f"logging observation journal: {journal}")
-    return 0
-
-
 def cmd_ingest(args: argparse.Namespace) -> int:
     from .pipeline.ingestion import ingest
     from .pipeline.request_handler import COMPLETED
@@ -563,6 +538,7 @@ def _register_reporting(sub):
     runs.add_argument('--limit', type=int, default=50)
     runs.add_argument('--output', type=Path, help='UTF-8 destination; default stdout.')
     runs.set_defaults(func=cmd_runs)
+    _add_foreground_logging(runs)
     report = sub.add_parser('report', help='Investigate stored diagnostics and current candidate sources.')
     report.add_argument('run', help='Run ID or latest (latest requires --package-id).')
     report.add_argument('--database', type=Path, help='Existing database; defaults to watcher.database in current config.')
@@ -583,6 +559,12 @@ def _register_reporting(sub):
     report.add_argument('--no-recursive', action='store_true', help='Optional context: enumerate selected directories only.')
     report.add_argument('--ripgrep', default='rg', help='Source library content-search executable.')
     report.set_defaults(func=cmd_report)
+    _add_foreground_logging(report)
+
+
+def _add_foreground_logging(parser):
+    parser.add_argument('--log-dir', type=Path,
+                        help='Invocation journal directory; defaults to configured runtime logging.')
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -606,6 +588,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_ingest.add_argument('--captures-root', type=Path, help='Pending directory for an unprotected manual log.')
     p_ingest.add_argument('--package-id', help='Retained executable package; omission uses catalog default.')
     p_ingest.set_defaults(func=cmd_ingest)
+    _add_foreground_logging(p_ingest)
 
     p_capture = sub.add_parser(
         "capture",
@@ -615,6 +598,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_capture.add_argument("--logs", metavar="PATH", help="Path to CK3 logs folder.")
 
     p_capture.set_defaults(func=cmd_capture)
+    _add_foreground_logging(p_capture)
 
     p_watch = sub.add_parser(
         "watch",
@@ -648,28 +632,56 @@ def build_parser() -> argparse.ArgumentParser:
     p_doctor = sub.add_parser("doctor", help="Health check.")
 
     p_doctor.set_defaults(func=cmd_doctor)
-
-    p_observe_logging = sub.add_parser(
-        "observe-logging",
-        help="Journal error.log/game.log timestamp progress for one CK3 lifecycle.",
-    )
-
-    p_observe_logging.add_argument("--logs", metavar="PATH")
-
-    p_observe_logging.add_argument("--process-name", default="ck3.exe")
-
-    p_observe_logging.add_argument("--poll-seconds", type=float, default=2.0)
-
-    p_observe_logging.add_argument("--heartbeat-seconds", type=float, default=30.0)
-
-    p_observe_logging.set_defaults(func=cmd_observe_logging)
+    _add_foreground_logging(p_doctor)
 
     return parser
+
+
+def _foreground(args: argparse.Namespace):
+    """Own one foreground stream; component return codes remain authoritative."""
+    from uuid import uuid4
+    from . import config, runtime_logging as backend
+
+    invocation_id = uuid4().hex
+    directory = (args.log_dir.expanduser().resolve() if args.log_dir is not None
+                 else config.ROOT_CK3CHRONICLE / 'logging')
+    destination = backend.invocation_log_path(directory, args.command, invocation_id)
+    handler = backend.configure_runtime_logging(destination=destination,
+                                                settings=backend.logging_settings())
+    logger = backend.get_logger('cli')
+    try:
+        with backend.log_context(invocation_id=invocation_id, foreground_invocation=True):
+            backend.event(logger, 'invocation_started', operation=args.command,
+                          source_file=__file__, journal_path=str(destination))
+            try:
+                result = args.func(args)
+            except BaseException as error:
+                if isinstance(error, SystemExit):
+                    fields = dict(outcome='success' if error.code in (None, 0) else 'nonzero_exit',
+                                  exit_code=error.code)
+                else:
+                    fields = dict(outcome='interrupted' if isinstance(error, KeyboardInterrupt) else 'failed',
+                                  exception_class=type(error).__name__)
+                backend.event(logger, 'invocation_finished', **fields,
+                              exc_info=not isinstance(error, (SystemExit, KeyboardInterrupt)))
+                raise
+            else:
+                backend.event(logger, 'invocation_finished',
+                              outcome='success' if result in (None, 0) else 'nonzero_exit',
+                              exit_code=result)
+                return result
+    finally:
+        try:
+            backend.close_runtime_logging(handler)
+        except BaseException:
+            pass
 
 
 def main(argv: list[str] | None = None) -> None:
     parser = build_parser()
     args = parser.parse_args(argv)
+    if args.command in {'capture', 'ingest', 'runs', 'report', 'doctor'}:
+        sys.exit(_foreground(args))
     sys.exit(args.func(args))
 
 

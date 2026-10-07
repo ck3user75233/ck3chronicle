@@ -1,0 +1,15 @@
+{
+  "name": "ck3chronicle-trekker-pilot",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Bounded local Trekker CLI pilot; separate from the product runtime",
+  "dependencies": {
+    "@obsfx/trekker": "1.11.0",
+    "@toon-format/toon": "2.1.0",
+    "bun": "1.3.10",
+    "commander": "13.1.0",
+    "dayjs": "1.11.19",
+    "drizzle-orm": "0.38.4"
+  }
+}

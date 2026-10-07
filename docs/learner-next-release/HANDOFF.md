@@ -1,5 +1,18 @@
 # Combined learner / decoder release handoff
 
+
+## Task 09 production-scope candidate delivered — 2026-10-07
+
+[Full Learner baseline delivery](PRODUCTION_SCOPE_BASELINE.md): fresh authenticated
+73-log 20/40/60/73 build through logging-enabled Observer-free Learner `2ec4b671428a75de65c0ccd614b3bf15e04fdb83444689821d71864c2caaf485`.
+Production-scope model `2b12932103f3a3111a4e1880`, manifest
+`02c70654c3ffa9678df80108985206a12c92bb67b0c36311fbec393b329e1505`, is ready for Pipeline receiving on TREK-2.
+All four checkpoints preserve complete native evidence byte-for-byte; model
+changes are provenance/path identities only. Actual journals and full export
+parity pass. The v61 algorithm and production selections remain unchanged.
+Pipeline owns final packaging/receiving and external placement on TREK-6; no
+activation, production registration, commit, tag or push. Prior history follows.
+
 **Database replacement complete — 2026-10-05.** Production now has 31 freshly
 ingested Runs under the new model: the 30 retained captures plus the session just
 closed. The former database exists only in backup; no Run rows were migrated.

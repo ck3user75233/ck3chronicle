@@ -122,3 +122,28 @@ playset JSON. Keep the original playset members and regenerate log hashes throug
 the normal writer. Label this source-path fixture and its results synthetic;
 keep it separate from genuine history acceptance. This does not authorize mock
 clients, fabricated history or unrelated injected failures.
+
+## Enrolled Trekker pilot sessions
+
+The bounded pilot is delivered; see
+[`docs/TREKKER_CLI_PILOT_HANDOFF.md`](docs/TREKKER_CLI_PILOT_HANDOFF.md).
+Enroll only owner-named real work through the protected route described there.
+For genuinely enrolled work, use only the absolute `tools/work_state/pilot.mjs`
+helper and canonical store documented there, including for reads. On startup or
+resume, query `team-state TEAM`, read the owner-assigned ID, its checkpoint and
+governing links. Tracker readiness never selects or dispatches replacement work.
+Use Trekker to retrieve information before acting, not only to leave updates.
+Look for incoming deliveries you must receive, upstream artifacts/interfaces and
+their limits, comments requesting coordination on your assigned work, and responses
+to your own outgoing deliveries. Open the linked technical handoffs before using
+their outputs. Read later delivery/receipt comments alongside the checkpoint:
+an earlier accurate checkpoint is history, not an error to erase. Check named
+dependencies/follow-ups directly even if they are absent from your team's incoming
+list. Refresh affected records before integration, receiving or resuming dependent
+work; no automatic notification is provided. See
+[`What to retrieve from Trekker`](docs/DEVELOPMENT_ENVIRONMENT.md#what-to-retrieve-from-trekker).
+At meaningful pauses append completed work, stopping point, next action, evidence
+limits and artifact links. Record delivery and receipt separately on the same
+record; preserve unrelated tags, assigned follow-ups and owner decisions. Stop on
+incomplete writes and follow the handoff's reconciliation procedure before retrying.
+Assignment Markdown remains execution authority; do not invent historical state.

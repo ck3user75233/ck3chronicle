@@ -1,5 +1,16 @@
 # Canonical Logging v1 implementation plan — Task 09A
 
+**Current direction — 2026-10-07:** the Owner ordered Observer deletion.
+[Pipeline replacement receiving](learner-next-release/OBSERVER_FREE_PIPELINE_RECEIVING.md)
+records the cleaned backend, replacement artifact and actual receiving status.
+Observer lifecycle and sole-stream confirmations in earlier sections are superseded
+requirements, not passed checks. The required Watcher capture/timestamp/playset/
+processing path is independent, as documented in the
+[dependency review](WATCHER_OBSERVER_DEPENDENCY_REVIEW.md). CK3Chronicle execution
+logging remains required. Historical delivery evidence below is preserved;
+Observer-bearing artifacts are not the replacement candidate. External physical
+placement remains a separate unresolved receiving obligation.
+
 Revised 2026-10-06 under the owner's targeted 09A corrective. Learner-led planning only. This document proposes implementation and
 verification; neither has been performed for canonical logging. The work for 09A
 was read-only source/document inspection, local identity comparison, and writing
@@ -93,7 +104,7 @@ line numbers will move during concurrent work.
 | [harvester.py](../src/ck3chronicle/harvester.py), `spool_logs` | Protected-copy and publication owner; no logger of its own. Existing callback/Watcher events expose capture entry, completion and failure. Internal checkpoints remain available for targeted diagnosis; ordinary capture does not need duplicate hooks. |
 | [analysis.py](../src/ck3chronicle/reporting/analysis.py), `DiagnosticAnalysis`; [source_search.py](../src/ck3chronicle/reporting/source_search.py), `SourceSearch`; [reporting/cli.py](../src/ck3chronicle/reporting/cli.py) | Existing investigation/source-completion/export/error events use shared loggers, but foreground CLI never configures a file. Handler logs do not observe client-side filtering, source search, rendering or output. `_content` already materializes ripgrep batches and records actual subprocess return codes. |
 | [cli.py](../src/ck3chronicle/cli.py), `main`; [pipeline/catalog.py](../src/ck3chronicle/pipeline/catalog.py), `main` | Root CLI dispatches `args.func` and exits with its result. Three installed console entry points exist in `pyproject.toml`. Help must remain configuration-independent. Learner outer administration and model catalog operations also need a deliberate foreground disposition. |
-| [logging_observer.py](../src/ck3chronicle/logging_observer.py), `observe_logging_progress` | Additional direct JSONL writer: `log-progress-<timestamp>-<pid>.jsonl`, plus a replaceable heartbeat. Its measurement is actual product behaviour; move ordinary JSONL emission to the shared owner without removing measurement or inventing another monitoring thread. |
+| Observer baseline (historical) | Removed by Owner direction on 2026-10-07. Its independent log-growth measurement is not a required product function; see Watcher dependency review. |
 
 ## B. Minimal architecture
 
@@ -127,9 +138,9 @@ the files actually being changed in each delivery's rollback set (H).
 | Initial learner hooks — Learner | `tools/template_learning/records.py`: `collect_records` scope and completed-input index / total inputs. `incremental_template_registry.py`: `sync_registry` scope and existing completed-path count. `artifacts.py`: `build_model` scope/existing source-summary count and `write_bundle` scope only. These are the four selected call scopes; no routine bare hooks. |
 | Direct mapping consumers — Learner | `tools/template_learning/recover_large_candidate_export.py`: replace local-only byte assertion with mapping helper. `tools/template_learning/review_short_thresholds.py`: pass explicit application source when fingerprinting mutable source. Interface repairs only; do not run either experiment/recovery operation. |
 | Pipeline — Pipeline | `src/ck3chronicle/pipeline/request_handler.py`: one accepted-request observation in the foreground client using the returned `RequestRef` and existing invocation context; no wire/poll change. `pipeline/catalog.py`: foreground invocation around command dispatch; no extra evaluator scope. Existing handler/preparation/storage events otherwise suffice. |
-| Watcher — Watcher | `src/ck3chronicle/logging_observer.py`: delegate ordinary JSONL to shared backend/path helper, preserving measurements and heartbeat. No initial edits to `watcher.py`, `watcher_processing.py` or `harvester.py`; existing lifecycle/capture/triggers are covered. |
+| Watcher — Watcher | Delete `logging_observer.py` under the removal assignment. Preserve `watcher.py`, `watcher_processing.py`, `harvester.py`, process helpers, EventJournal/lease/heartbeat, capture/source timestamps/playset/ingestion. |
 | Reporting — Data Intelligence / Reporting | `src/ck3chronicle/reporting/analysis.py`: `search_runs` call scope only. `reporting/source_search.py`: `_content` scope only. `reporting/cli.py`: `_emit` scope only. Existing events, counts, error ownership and console/export behaviour remain. |
-| Application composition/enforcement — Pipeline, affected owners receive | `src/ck3chronicle/cli.py`: foreground setup/cleanup/outcomes around dispatch, leaving watch/observer destination ownership intact. `tools/check_runtime_logging.py`: cover adapter and declared learner-hook sources; authenticate retained copies separately. `learner_loader.py` also supplies administrative foreground setup in A. `pyproject.toml`: later authorized new distribution resource entries only. |
+| Application composition/enforcement — Pipeline, affected owners receive | `src/ck3chronicle/cli.py`: foreground setup/cleanup/outcomes around dispatch, leaving required Watcher destination ownership intact. `tools/check_runtime_logging.py`: cover adapter and declared learner-hook sources; authenticate retained copies separately. `learner_loader.py` also supplies administrative foreground setup in A. `pyproject.toml`: later authorized new distribution resource entries only. |
 | Delivery documentation — respective owners | Update `docs/RELEASES.md`, `docs/TASK07E_RUNTIME_LOGGING_HANDOFF.md`, `tools/template_learning/README.md` and affected component handoffs when implemented/received. This does not authorize 09A edits to them. |
 
 Compared with the earlier first slice, `clustering.py` is removed from the edit set.
@@ -184,8 +195,6 @@ def configure_runtime_logging(*, database=None, runtime_root=None,
                               destination=None): ...
 
 def invocation_log_path(log_dir, component, invocation_id) -> Path: ...
-
-def observer_log_path(runtime_root, *, timestamp, pid) -> Path: ...
 ```
 
 Move `ConfigurationError`/`load_config` imports inside `logging_settings()`.
@@ -213,9 +222,8 @@ Setup makes/opens the destination before substantive work; failure is visible.
 After setup, formatter/write/rotation errors and close/remove-handler errors are
 best effort. Preserve encoding, severity fields, UTC timestamp, PID/thread fields,
 scoped context and scoped suppression of logging failures. Do not install a second
-root handler in a watcher/observer that already owns its destination.
-`observer_log_path` preserves `watch/log-progress-<timestamp>-<pid>.jsonl`;
-its arguments are the observer's existing timestamp/PID, not newly inferred facts.
+root handler in the Watcher that already owns its destination. The independent
+Observer path helper is removed; it is not part of the current shared API.
 
 ### Call/checkpoint adapter
 
@@ -621,16 +629,15 @@ to make their vocabulary resemble canonical event names.
 | `EventJournal`, `cli.cmd_watch`, `watch_sessions` | Existing watcher/process/capture lifecycle and failures identify observed work | Existing polls/captures are observed facts, not work-to-total | None; no per-poll journal | Already sufficient/no logging edits. Preserve lease-owned setup/close and failed-startup PID destination. No duplicate canonical lifecycle pair. |
 | `harvester.spool_logs` | Caller capture start/completion/failure and manual foreground invocation suffice | No count selected; optional debug/crash attachments make a naive fraction misleading | Remove copy/metadata/callback/rename punctuation | No logging edit or scope. Preserve protected-copy/publication ordering and optional degradation. |
 | `watcher_processing.start/_startup/_ingest/_monitor_results/_maintain/close` | Existing submit/accepted/outcome/warning/unavailable/retention events provide useful facts | Existing actual results/references suffice | None | Already sufficient. Preserve retries, unavailable-result clearing, silent polls and closing workers before journal/lease. |
-| `logging_observer.observe_logging_progress` | Existing observation events are useful but ordinary JSONL bypasses sole backend owner | Existing measurements remain heartbeat data; no new counters | None | Required W: delegate existing ordinary events and path to shared owner/rotation. Preserve returned path, timestamp/PID naming, heartbeat content/replacement/removal and measurement algorithm. No new scope/thread/read. |
+| Removed Observer | No instrumentation or execution requirement remains. | None | None | Watcher deletes the implementation; Pipeline removes CLI/helper and receives absence in the replacement artifact. Required Watcher functions are independent. |
 | Playset/crash inventory/process probe | Caller warning/failure/fact events cover operations | None added | Diagnosis-only | No changes or extra scans/inferred facts. |
 
 Watcher JSONL stays `<runtime-root>/watch/events-watcher.jsonl`; failed startup
 stays `events-startup-<pid>.jsonl`. Preserve `schema_version`, `watcher_pid`, capture
 facts, warnings, existing error fields/tracebacks and operator queries. Do not add
-`exc_info` overrides or redistribute capture/probe exceptions. `observe-logging`
-uses the shared standard formatter for ordinary existing event names/payloads;
-its replaceable measurement heartbeat remains a separate existing state artifact,
-not another backend. Preserve old files and all existing observation behaviour.
+`exc_info` overrides or redistribute capture/probe exceptions. Preserve required
+Watcher heartbeat and lifecycle behavior. The independent Observer implementation,
+command and helper are deleted; its old evidence remains historical.
 
 ### Data Intelligence / Reporting — delivery R
 
@@ -654,7 +661,7 @@ configure files. Application entry provides the configured foreground destinatio
 | Entry | Disposition |
 |---|---|
 | `ck3chronicle.cli.main`: capture/ingest/runs/report/doctor | Required A: foreground invocation setup/terminal after parsing, with explicit `--log-dir` override. When configuration is used, obtain resolved writable destination/settings through its existing path authority; use shared path naming under `<ROOT_CK3CHRONICLE>/logging` for the current application. Preserve stdout/stderr/help and return/exception semantics. No doctor or caught-error redesign. |
-| Root `watch` and `observe-logging` | Existing component owns destination/lifecycle. Do not wrap it in another handler, call scope or canonical terminal pair. W converts only observer JSONL backend. |
+| Root `watch` | Existing component owns destination/lifecycle. Do not wrap it in another handler, call scope or canonical terminal pair. The independent Observer command is removed. |
 | Learner `run` | L child owns canonical invocation. Parent authenticates, resolves/transports logging options and preserves subprocess semantics; no parent terminal in child's journal. |
 | Learner `create/list/register`; `pipeline.catalog.main` | Required A: foreground invocation around actual dispatch, no individual helper tracing. Prefer explicit `--log-dir`; standalone config-free default is `<cwd>/.ck3chronicle/wip/learner-logs` for learner administration, or `<cwd>/.ck3chronicle/wip/model-release-logs` for model catalog. When already using application configuration, consume its resolved destination instead. No fallback on open failure. Component filenames remain `learner-admin-<id>.jsonl` / `model-release-<id>.jsonl`. Preserve JSON stdout and existing authentication/registration. |
 | Direct handler module entry | Existing exclusive-listener/bootstrap/file/close behaviour is sufficient; no new hooks. |
@@ -662,7 +669,7 @@ configure files. Application entry provides the configured foreground destinatio
 
 The first executable slice is shared owner/API plus **L**. **P, W, R and A remain
 explicit subsequent deliveries**, including their no-change receiving checks.
-P adds foreground request references; W removes the observer's duplicate backend;
+P adds foreground request references; W removes the independent Observer;
 R adds three substantial client-side scopes; A makes foreground evidence durable.
 A is needed to receive R's CLI journaling. Completing L alone is not project-wide
 adoption; integrated packaging/receiving remains Pipeline-owned.
@@ -751,11 +758,13 @@ authorized next; reuse applicable existing evidence and name unverified cases.
    where available; do not ingest again merely to test a client observation.
    Confirm existing watcher/handler paths, setup ordering, request/queue fields,
    warnings and traceback behaviour remain unchanged by the shared extension.
-   Do not restart live services. Observer backend conversion needs bounded genuine
-   observation at a safe natural lifecycle; if unavailable, leave it unverified
-   pending separate authorization. No fake process, forced failure, raw expiry or
-   repeated historical ingestion is justified by logging. Old evidence plus source
-   review is not fresh verification of changed observer execution.
+   Do not restart live services. Under the 2026-10-07 removal assignment, receive
+   absent Observer command/implementation/helper and embedded retained copies in
+   the exact replacement artifact. Use Watcher dependency review, preserved source
+   correspondence and existing genuine lifecycle evidence for unchanged required
+   Watcher behavior. No new CK3 run is required for independent Observer removal.
+   Unexpected changes to a required path are defects to report. Observer lifecycle
+   and sole-stream checks are superseded, not passed or relabelled Watcher checks.
 7. **Reporting.** Reuse existing genuine stored receiving Runs through public
    `HandlerClient`, preferably the retained disposable receiving store. Verify
    listing, cross-Run search, history, source search/content, and JSON/HTML/text
@@ -858,7 +867,7 @@ small logging edit into a preservation project.
 | 0 | Each delivery owner: coordinate overlapping edits, save/verify only its rollback set and identify needed reproduction inputs separately | Pipeline coordinates shared files/packaging; Learner authenticates actual candidate closure. No blanket freeze or complete-source archive. |
 | 1 | Pipeline: extend shared backend **without changing current callers**; add adapter | Learner receives config-free/authenticated-import suitability; Watcher/Pipeline confirm existing destinations/settings/fields unchanged. No new hooks yet. |
 | 2 — first slice L | Learner: mapping/capability/identity/authentication/transport/terminal repairs, then selected learner hooks | Learner authenticates and genuinely checks isolated candidate; Pipeline receives distribution/package interface. “L complete” means this slice only. No model activation or full-corpus build. |
-| 3 — P and W | Pipeline: foreground accepted-request reference and catalog invocation; Watcher: observer backend conversion | Watcher/Pipeline confirm existing request/capture/lifecycle coverage unchanged. Pipeline receives observer integration. No ingestion/handler/capture instrumentation rewrite or live restart. |
+| 3 — P and W | Pipeline: foreground accepted-request reference and catalog invocation; Watcher: delete independent Observer | Pipeline receives removal, checks preserved required Watcher code correspondence and reuses unchanged genuine lifecycle evidence. No new CK3 run, ingestion/handler/capture rewrite or live restart is needed for removal. |
 | 4 — A and R | Pipeline: foreground setup/entry composition; Reporting: only `search_runs`, `_content` and `_emit` scopes | Reporting receives configured CLI seam; Pipeline receives genuine public-handler/source/export results with existing error behaviour unchanged. Coordinate shared CLI sections. |
 | 5 | Pipeline: integrate exact received sources and immutable resources into a fresh application artifact | Each component repairs its defects; Pipeline records integrated receiving and remaining limits. New source/resource hashes and installed correspondence, not a mutable label, identify delivery. |
 | Separate | Owner decides whether/when to activate the concrete received artifact | Pipeline coordinates activation; Watcher owns observation/caller effects. No release registration as production, switch, restart or historical ingestion is implied by technical readiness. |

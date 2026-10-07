@@ -1,5 +1,497 @@
 # Task 07E — Shared runtime logging and request traceability
 
+**Current direction — 2026-10-07:** the Owner ordered Observer deletion.
+[Pipeline replacement receiving](learner-next-release/OBSERVER_FREE_PIPELINE_RECEIVING.md)
+records the cleaned backend, replacement artifact and actual receiving status.
+Observer lifecycle and sole-stream confirmations in earlier sections are superseded
+requirements, not passed checks. The required Watcher capture/timestamp/playset/
+processing path is independent, as documented in the
+[dependency review](WATCHER_OBSERVER_DEPENDENCY_REVIEW.md). CK3Chronicle execution
+logging remains required. Historical delivery evidence below is preserved;
+Observer-bearing artifacts are not the replacement candidate. External physical
+placement remains a separate unresolved receiving obligation.
+
+## TREK-6 Observer-free replacement — 2026-10-07
+
+Fresh candidate: `.codex-tmp/trek6-removal-20261007/application/ck3chronicle-0.0.1-py3-none-any.whl`,
+SHA-256 `1a325cd40eb29878e6c7c44a25615ea3eb3e47e4173eb6b72c3d6f8e596fb7ae`. Clean stage:
+`.codex-tmp/trek6-removal-20261007/deployment`. Application identity:
+`application-source-sha256:eb41a2f7aee62c55004e642e35deccb6f89c2233042f8be1af76b5246602924b`.
+Learner `2ec4b671428a75de65c0ccd614b3bf15e04fdb83444689821d71864c2caaf485` /
+manifest pin `9ba2c5faa9253aafb2ddea5dc473819be68d43f669abc63a23463d6613151b8e`.
+All 605 source/wheel/installed members correspond, all eight retained releases
+authenticate, and Observer is absent including embedded copies. Approved defaults
+and historical artifacts are preserved. Installed genuine Reporting yields 13
+output comparisons, 15 normal call pairs and 64 real request links, plus the
+default-console request. Catalog administration and retained isolated help log
+one start/finish pair each. No production restart/activation.
+
+**Receiving remains open:** Learner CMT-44 has not yet delivered genuine evaluation
+for the changed identity; physical external payload placement also remains
+unverified under checkout-only write access. Retained help is not evaluation.
+Observer checks are superseded, not passed. Rotation/exception/periodic gaps stay
+disclosed. Exact results, journal paths, raw measurements, per-record dispositions
+and rollback are in [the consolidated receiving handoff](learner-next-release/OBSERVER_FREE_PIPELINE_RECEIVING.md).
+
+## TREK-6 installed combination — required receiving open — 2026-10-06
+
+Pipeline's fresh application wheel SHA-256 is
+`cfdb38f68bbf0ed84ec326bf18951349411c53c6f5094bc884ce52bdc87b6dea`, at
+`.codex-tmp/trek6-packaging-20261006/application/ck3chronicle-0.0.1-py3-none-any.whl`.
+All 606 code/resource members match source, wheel and separate installation in
+both directions, including the retained Learner backend/adapter and administrative
+launcher. No backend, observer, foreground, Reporting or Learner source was edited
+by packaging. Default model and current configuration remain unchanged.
+
+Installed genuine receiving passed 13 Reporting output comparisons, 15 scope pairs,
+64 matched foreground request references plus one default-console reference,
+all 44 preserved-byte occurrences, retained config-free evaluation and 13 console
+commands. Only the task-started disposable handler was shut down. Runtime ownership
+and installed dependency checks pass. See the [full Pipeline receipt](learner-next-release/PIPELINE_RECEIVING.md#trek-6-final-packaging--bounded-installed-receipt-required-checks-open--2026-10-06)
+for exact sources/pins, results, raw measurements, verifier corrections and rollback.
+
+**TREK-6 remains open.** Physical external payload placement is unavailable within
+the session's writable checkout boundary. A fresh 21:04:51 Hong Kong process probe
+found no CK3; installed observer/root execution and required natural lifecycle remain
+unverified. Watcher's final caller/sole-stream confirmation remains on TREK-3/4.
+Previous bounded genuine attachments and unchanged lifecycle evidence are reused
+only within their limits; they do not certify changed installed execution.
+Periodic/rotation and exceptional cases remain unrepresented as specified in plan G.
+No owner acceptance, production activation/restart or project-wide completion is
+inferred. Existing operator paths, queries and prior handoff sections remain valid.
+
+
+## TREK-4 Pipeline foreground integration — 2026-10-06
+
+**Implemented and verified on bounded genuine reads; consuming receipt remains
+open.** The owner issued [Pipeline Integration](task09-deliverables/PIPELINE_INTEGRATION.md)
+in the Pipeline chat on this date. TREK-4 stays `in_progress` through Reporting
+receipt and Watcher compatibility disposition. Final Packaging is separate.
+Earlier prepared/todo planning text is historical; the protected record carries
+the current checkpoint. This delivery adds no new backend or component scopes.
+
+### Configured foreground interface
+
+After successful argument parsing, root `capture`, `ingest`, `runs`, `report` and
+`doctor` dispatch through `_foreground(args)`. Their subcommands accept
+`--log-dir PATH`; explicit paths resolve from the caller's cwd. The default is
+`config.ROOT_CK3CHRONICLE / 'logging'`, using the existing configured path authority
+and `runtime_logging.logging_settings()` validation. Shared `invocation_log_path`
+names `<command>-<invocation_id>.jsonl`. Task 10 remains an eventual interface
+supplier; no installer, configuration authority or doctor behavior was changed.
+
+Setup opens one shared handler before dispatch; failure propagates without a
+fallback. `log_context(invocation_id=..., foreground_invocation=True)` surrounds
+actual dispatch, making existing component events and Reporting's future journal
+scopes durable in that file. `invocation_started` records the operation, actual
+source path and journal path. No input/model/application hash or lazy property is
+computed for logging. `invocation_finished` reports the observed return code;
+caught component failures keep their original nonzero code and error ownership.
+Escaping `SystemExit`, interrupts and other exceptions are re-raised, with one
+terminal observation; only the latter add the boundary's traceback. Context is
+restored on exit and handler cleanup cannot replace the substantive outcome.
+No argument dump, per-call identity or scope/context transport was introduced.
+
+`watch` and `observe-logging` still dispatch directly. Their command bodies are
+AST-identical to the saved baseline; neither gets a foreground flag, second
+handler, call scope or terminal pair. `watch --once` also stays on its original
+route. The observer/backend/adapter retain the exact received source hashes.
+
+Standalone `pipeline.catalog.main` accepts `--log-dir PATH` **before** its
+subcommand. It already uses no application configuration and retains that property:
+default `<cwd>/.ck3chronicle/wip/model-release-logs`, file
+`model-release-<invocation_id>.jsonl`, shared config-free settings. Dispatch alone
+gets setup/start/outcome/cleanup. Listing, selection, registration and evaluation
+algorithms are unchanged; no evaluator scope or post-write checkpoint was added.
+Root/catalog stdout and stderr receive no new announcement. Help performs no
+logging setup and remains configuration-independent.
+
+The [07D section](TASK07D_DATABASE_REQUEST_HANDLER_HANDOFF.md#trek-4-foreground-request-links--2026-10-06)
+documents the one foreground `request_accepted` event. It uses the real returned
+reference and preserves Watcher's independent acceptance evidence and silent polls.
+
+### Coordination, incoming receipt and ownership
+
+Consumed Learner's CMT-9/CMT-12 coordination: the checker now also covers
+`learner_loader.py`, `artifacts.py`, `records.py` and
+`incremental_template_registry.py`; TREK-1's adapter/import-closure enforcement
+is preserved. Static ownership does not authenticate retained copies or prove
+isolated execution. Pipeline separately authenticated all 48 payloads of Learner
+release `9c02a343c389aed3d6a4b679b10ac5df01d7dca76e8b1eb991f5138b09c1af12`
+at external manifest pin
+`0edc5b9e2149e0a64cd360502bbdfe74f3b9ff6753c76230e73dd93794cadfd3` and matched
+the shared bytes to the current delivered backend/adapter. TREK-2 records that
+interface receipt while retaining installed/external-placement follow-ups.
+Unchanged genuine Learner two-log/isolated-execution evidence is reused with its
+original limits; no training or immutable release creation was repeated.
+
+Applied Learner's exact proposed RELEASES wording after verifying its source pin.
+Git's patch application rejected the hunk despite that matching pin; direct
+newline-aware application preserved the supplied wording. Watcher's delivered
+07E section is preserved intact. Its bounded genuine observation and unchanged
+lifecycle evidence are reused; final root caller/stream confirmation remains
+Watcher-owned. Reporting TREK-5 was still prepared at intake; this delivery makes
+its authorized future foreground integration possible without closing TREK-4.
+
+### Genuine verification and limits
+
+Evidence root **P4**: `.codex-tmp/trek4-pipeline-20261006/` (ignored). Commands and
+raw stdout/stderr are in `before-output/`, `baseline-supplement/`, `after/` and
+`commands.py`; `output-review.json` records the exact commands/cwd and assertions.
+Only the existing disposable genuine receiving database was used. Examples:
+
+```powershell
+# From the existing disposable receiving config context; DB is the 07D path above.
+python -B -m ck3chronicle.cli runs --database $DB --package-id 4ac4e8ee92346e6d14eacfbf --format json --log-dir $LOGS
+python -B -m ck3chronicle.cli report 20261005-BND9AS --database $DB --preset frequent --format json --limit 5 --log-dir $LOGS
+python -B -m ck3chronicle.cli report 20261005-BND9AS --database $DB --custom --query $P4/source-query.json --format json --verbose --log-dir $LOGS
+python -B -m ck3chronicle.pipeline.catalog --log-dir $LOGS list
+```
+
+Actual commands use the repository `.venv/Scripts/python.exe`; paths/arguments
+are fully recorded in the JSON evidence. Eighteen changed-code CLI commands
+returned zero: genuine catalog list/selection, Run listing JSON/text, frequent
+report JSON/text with history, verbose hotspots HTML/linked source appendix,
+missing-source-time reporting, source-content query and nine help variants.
+Ten output comparisons passed, excluding only labelled report-generation times
+and named source-search duration measurements. JSON diagnostic/native/history/
+source payloads, text/HTML contents, export paths and stderr otherwise agree.
+The real content query on captured-playset file
+`common/scripted_triggers/99_tct_scripted_triggers.txt`, literal
+`saintdays_province`, retained 12 records / 49,853 occurrences, complete source
+coverage and actual current-file content/excerpts. No fake source path was used.
+
+Eleven reviewed journals each contain exactly one start/terminal pair; 50 unique
+foreground acceptance references exactly match real handler acceptance and
+completion. No journal adds an argument dump or traceback. The existing genuine
+new-package syntax restriction was also exercised against the same stored Run:
+both baseline/current return code 2 and the same `invalid_query` output; the new
+terminal truthfully says `nonzero_exit`, code 2. This is an unchanged documented
+Reporting limitation, not a newly failed acceptance check. Config-free catalog
+listing with an explicit writable destination and root help also ran from
+`C:/Windows`. Default and explicit journal destinations were both observed.
+
+The initial baseline's first seven commands dispatched before the source edit;
+missing-time/help were independently rerun from exact saved source to remove
+timing ambiguity. The source query also used that preserved baseline entry.
+No client or context was mocked/injected. A slow exploratory text diff was replaced
+by bounded normalization/comparison; only the saved review is acceptance evidence.
+
+`python -B tools/check_runtime_logging.py`, compile/AST boundary review and scoped
+whitespace checks pass. Shared backend, adapter and observer source pins are
+unchanged. **Unverified here:** escaping exceptions/interrupts, setup/write/cleanup
+failures, actual rotation, capture/ingest/doctor execution, Watcher natural lifecycle,
+new Reporting scopes and installed combined packaging. No synthetic suite or
+fault injection was introduced. No raw retention, historical reingestion,
+production registration/selection, activation/restart, publication, commit or push.
+An optional process-command inventory was denied by CIM; psutil is not installed.
+Neither is an acceptance dependency or a claim of production process inspection.
+
+### Exact preservation and continuation
+
+P4 `before.json` and `before/` preserve exact current bytes of only the four source
+files plus 07D/07E/RELEASES. `source-review.json` records old/new SHA-256 and byte
+counts, preserved AST boundaries and unchanged producer pins. `source.patch`
+SHA-256 is `f97f23fc6669f88f57714393ef9624f40219583e563ff6369464f50b5b172dcd`.
+`after.json`, `after-bytes/`, `delivery.patch` and `delivery-manifest.json` record the
+complete source/document delivery. Wider immutable evidence is referenced in
+`intake.json`, not copied into rollback storage. Rollback must reconcile any
+intervening changes rather than blindly replacing shared files.
+
+Next: Reporting receives foreground journaling/request links on TREK-4 through
+its issued assignment; Watcher confirms final owned-stream/caller compatibility.
+Natural-lifecycle/rollover limits in TREK-3 remain open, and Final Packaging owns
+installed correspondence and combined receiving. Producer defects stay with their
+owners. Delivery permits authorized consumption; it does not invent receipt,
+close assigned follow-ups or authorize activation.
+
+## TREK-3 observer backend integration - 2026-10-06
+
+Watcher implemented the owner-issued [Watcher Integration assignment](task09-deliverables/WATCHER_INTEGRATION.md).
+Pipeline's confirmation relayed in the Watcher chat established that the delivered
+`observer_log_path` / `configure_runtime_logging` APIs were ready, the backend hash
+was unchanged, and no Pipeline edits were underway to the observer or this handoff.
+Pipeline confirmed **sole observer stream ownership**: root foreground dispatch
+must not install a second handler for `observe-logging`. Pipeline Integration
+retains that application-composition obligation. Shared API readiness is separate
+from execution verification.
+
+### Delivered behavior and operator effects
+
+Only `src/ck3chronicle/logging_observer.py` and this added handoff section changed.
+The observer passes its actual UTC filename timestamp and PID to the shared path
+helper and returns the same `watch/log-progress-<timestamp>-<pid>.jsonl` path form.
+Its ordinary events now use `configure_runtime_logging(destination=...)`,
+`get_logger("logging_observer")`, `event` and `close_runtime_logging`.
+The observer closes its handler before the existing heartbeat cleanup, including
+when observation raises. No call scope, canonical invocation pair, extra counter,
+measurement read, monitoring thread or alternate backend was added.
+
+Existing event names, `schema_version`, states and process payloads remain.
+Ordinary JSONL now has the standard formatter's `severity`, `component`,
+`process_id` and `thread_name`; its `timestamp_utc` comes from the actual logging
+record. JSON spacing/key order and non-ASCII presentation follow the shared
+formatter rather than the old compact sorted serializer. Consumers should parse
+JSON fields, not compare serialized line formatting.
+
+The explicit destination uses the shared config-free defaults: INFO, 10 MiB,
+five backups. Rollover belongs to the backend and uses the existing `.1`–`.5`
+suffixes at this invocation's path. It is no longer an unbounded exclusive-create
+writer: the standard handler opens in append mode. Actual timestamp/PID filenames
+separate observations; this delivery does not rename, migrate or prune old
+observation files. Setup failures still propagate; after setup ordinary logging
+write/format/rotation and handler cleanup follow the shared best-effort policy.
+No exception trace or success outcome is inferred from a missing record.
+
+The replaceable `log-progress-heartbeat-<pid>.json` keeps its original compact
+sorted schema, timestamp, actual measurements, atomic replacement and removal.
+It is not emitted into ordinary JSONL. `IncrementalTimestampLog`, its byte reads,
+timestamp-header accounting, poll timing and lifecycle loop are unchanged.
+
+### Compatibility and unchanged genuine evidence
+
+Source review confirms unchanged Watcher/handler destinations and startup-PID
+path, lease-before-Watcher-logging and listener-before-handler-logging ordering.
+Request acceptance uses the actual reference; queued polls stay silent; warning,
+outcome-unavailable and existing exception/traceback ownership are unchanged.
+No edits were made to `watcher.py`, `watcher_processing.py`, `harvester.py`, root
+CLI, request handler, shared backend, adapter or checker.
+The backend SHA-256 still matches TREK-1:
+`d18a6888713d374b0b7266b733d3fd11302372dd8ea94fa06538017a73a1d2b5`.
+
+The [2026-10-05 genuine lifecycle/capture receipt](learner-next-release/PIPELINE_RECEIVING.md#database-replacement-complete--2026-10-05)
+remains evidence for unchanged behavior only: observed CK3 lifecycle, protected
+capture, automatic ingestion, actual facts/playset and startup duplicate outcomes.
+It is not fresh verification of this observer, the extended backend inside live
+Watcher/handler processes, or final installed composition. Watcher supplies this
+bounded compatibility disposition; Pipeline retains shared-owner defects and
+records application receipt separately.
+
+### Preservation and continuation
+
+Evidence root: `.codex-tmp/trek3-watcher-20261006/` (ignored).
+`before.json` and `before/` preserve and verify exactly the observer and this
+handoff's prior bytes, including Pipeline's existing section. They were rechecked
+after coordination before edits. `after.json`, `after/`, `source.patch` and
+`delivery.patch` identify the exact delivered files; document hashes remain in
+the manifest to avoid self-reference. `source-review.json` records AST equality
+of the measurement classes/loop, signature, event payload construction, heartbeat
+branch/cleanup and returned-path expression, plus the unchanged backend hash.
+The required runtime ownership checker and targeted whitespace checks passed.
+
+Rollback requires comparing current bytes and resolving intervening owner edits;
+saved copies do not authorize overwriting later work. Prior sections and old
+evidence are retained. No synthetic test, injected failure, raw expiry, historical
+reingestion, production activation/restart, publication, commit or push occurred.
+
+TREK-3 remains open for Pipeline's actual observer/application receiving and the
+execution gaps recorded below. Component defects remain Watcher-owned. Technical
+delivery does not imply owner acceptance or production activation.
+
+### Fresh genuine observation and exact remaining gaps
+
+At 10:41:51–10:44:02 UTC (18:41:51–18:44:02 Hong Kong), the saved baseline and
+changed observer each made a sequential 64-second bounded attachment to genuine
+CK3 PID 58904. Observer PID was 54992. Both used the existing `find_process`,
+configured real `error.log` / `game.log`, default two-second polls and 30-second
+heartbeats. The existing `stop_requested` callback bounded each observation;
+CK3 and live Watcher/handler services were not stopped or restarted. The runner
+used ignored `genuine/before` and `genuine/after` runtime destinations and no
+second file handler. These are genuine execution checks, not synthetic process
+or log fixtures. The runner and full results are `observe_genuine.py` and
+`genuine-observation.json` in the evidence root.
+
+Both executions emitted `observer_started`, `game_started` (attachment to the
+already-running process), and `observer_stopped`; ordinary payloads matched after
+excluding actual timestamps and the newly added standard formatter fields.
+Each produced two distinct heartbeat snapshots, atomically replacing the same
+PID-specific path; each removed that heartbeat on normal bounded stop. The returned
+JSONL path contained its actual filename timestamp and PID and remained readable.
+Shared-handler detachment/close restored the initial logger handler set.
+
+Actual measurements, without rounding or inferred events:
+
+| Log | Baseline heartbeat observations | Changed observer heartbeat observations |
+|---|---|---|
+| `error.log` | 839,564 bytes; 4,069 headers; last `18:36:51`, both snapshots | Identical, both snapshots |
+| `game.log` | 477,645 bytes / 2,011 headers, then 477,765 / 2,012; last `18:36:51`, then `18:42:52` | 478,005 bytes / 2,014 headers; last `18:43:15`, both snapshots |
+
+The game's log grew naturally between observations, so whole measurement snapshots
+were correctly unequal. Independent regex counting over the corresponding real
+log prefixes matched all eight byte/header/last-timestamp observations; each
+observer's cumulative `bytes_read` matched its actual observed prefix length.
+`measurements-verification.json` records those counts and prefix hashes. Later
+prefix reads do not independently prove historical filesystem mtimes. The baseline
+JSONL hash remained unchanged after the changed execution.
+
+The changed execution used exactly one `_RuntimeFileHandler`, `_JsonFormatter`,
+10,485,760-byte threshold and five backups. All three rows had actual observer PID,
+`component=logging_observer`, `severity=INFO` and `thread_name=MainThread`.
+No heartbeat was duplicated into JSONL and no canonical lifecycle pair was added.
+
+**Still unverified:** changed-code observation of a natural CK3 start/exit or
+replacement, rotation actually crossing its threshold, exceptional cleanup or
+write failure, final root CLI composition and installed application receiving.
+The game stayed running throughout the bounded observations. Rollover was not
+forced by lowering limits or flooding events. The source reviews and old genuine
+lifecycle evidence do not close these gaps. Pipeline must preserve sole-stream
+dispatch and record receipt against the actual application combination; leave
+required natural-lifecycle receiving open pending an appropriate opportunity or
+explicit owner disposition. No fabricated exit or outcome is permitted.
+
+## TREK-1 shared backend/API ready for consumers - 2026-10-06
+
+Pipeline implemented the owner-issued [Shared Backend/API assignment](task09-deliverables/SHARED_BACKEND_PIPELINE.md)
+under corrected plan B/C and H stage 1. This is implementation readiness for
+consumer integration, not proof of Learner execution, component receipt, installed
+packaging or activation. TREK-1 remains open for actual receiving dispositions.
+The owner confirmed in this assignment chat that no other owner is editing this
+handoff and Task 10 has not begun. Task 10 is not a prerequisite: it may later
+supply a resolved destination/settings through this interface. Existing component
+implementation ownership remains unchanged. The older delivery, test and activation
+records below are historical; they do not authorize new synthetic tests or restarts.
+
+### Delivered interface
+
+```python
+# ck3chronicle.runtime_logging
+CHECKPOINT_INTERVAL_SECONDS = 5.0
+def default_logging_settings() -> dict: ...
+def logging_settings(): ...
+def configure_runtime_logging(*, database=None, runtime_root=None,
+                              startup_pid=None, settings=None,
+                              destination=None): ...
+def close_runtime_logging(handler): ...
+def invocation_log_path(log_dir, component, invocation_id) -> Path: ...
+def observer_log_path(runtime_root, *, timestamp, pid) -> Path: ...
+
+# ck3chronicle.journal; imports only stdlib and the backend
+def get_journal(component: str) -> Journal: ...
+class Journal:
+    def call(self) -> CallScope: ...
+    def checkpoint(self, completed: int | None = None,
+                   total: int | None = None) -> None: ...
+```
+
+`default_logging_settings()` returns a fresh INFO/10485760-byte/five-backup dict.
+Setup selects supplied settings first, config-free defaults for an explicit
+destination second, otherwise existing application settings. Validation accepts
+the existing five level names and positive integer sizes/counts (not bools),
+fills omitted keys with defaults, and copies selected values. Invalid explicit
+settings raise `ValueError`; application configuration retains `ConfigurationError`.
+The only config import is local to `logging_settings()`. An explicit destination
+cannot be combined with any database/runtime-root/startup selector. Directory/file
+opening occurs during setup and failures propagate before substantive work.
+
+The return value remains the configured rotating handler. Existing legacy
+keyword callers are unchanged. Call setup once in the stream-owning entry point;
+the journal never configures output or adds a handler. Existing Watcher/observer
+owners must retain their destination instead of adding a foreground handler.
+`close_runtime_logging` independently attempts removal and close, suppressing
+ordinary failures from either. Existing post-setup event/format/write/rotation
+failure handling remains best effort and local to this backend.
+
+`invocation_log_path` returns `<log_dir>/<component>-<invocation_id>.jsonl`;
+component and invocation ID are caller-owned filename tokens, not discovered
+paths or generated identities. `observer_log_path` returns the existing
+`<runtime_root>/watch/log-progress-<timestamp>-<pid>.jsonl` using the supplied
+timestamp/PID. Helpers do no I/O or configuration discovery. Legacy Watcher,
+startup-PID, database-handler and bootstrap path functions are unchanged.
+
+Use a fresh `with journal.call():` at a selected real call boundary. It emits
+`call_started`, then `call_finished` only for a normal return, with monotonic
+`elapsed_seconds`. A returned failure value is still a normal return; no success
+or commit is inferred. An escaping exception (including `SystemExit(0)`) adds no
+call terminal or traceback. The scope restores its enclosing `ContextVar` token
+on exit and returns false. There are no call IDs, parent IDs or scope transport.
+
+Both events and checkpoints include `module`, `function` (actual `co_qualname`),
+`source_file` (actual filename), `function_line` (definition first line), and
+`source_line` (executed hook line). Module identity prefers `__spec__.name`, then
+`__name__`; normal-return records reuse entry identity rather than guessing the
+return line. The immediate external `with`/checkpoint caller is inspected, without
+frame skipping or symbol registries. Temporary frames are deleted in `finally`
+before emission; retained identity contains scalars, not code/locals/arguments.
+Existing backend invocation/request context continues to merge into events.
+
+Bare checkpoints emit immediately without counts or changes to counted throttling.
+Counted hooks accept nonnegative integers excluding bools; total requires completed
+and `completed <= total`. Invalid observations are discarded without raising or
+clamping. A matching component/function/source scope holds only the last counted
+line/emission time. The first observation, a changed hook line, and observations
+after five seconds emit. The exact bypass is
+`completed is not None and total is not None and completed == total`, including
+explicit `(0, 0)` and repeated complete totals. Outside a matching scope, counts
+emit without retained throttle state. Helpers identify themselves. Nested calls
+restore enclosing state; each fresh call starts fresh. No inferred final flush,
+work discovery, count computation, routine bare hooks or component hooks were added.
+
+### Preservation, exact source identity and patch
+
+Evidence root (repository relative):
+`.codex-tmp/task09-shared-backend-20261006/`. It is ignored storage.
+`before.json` records the exact working bytes of the backend, checker and this
+handoff plus prior absence of `journal.py`. Saved copies were hashed against the
+source before editing and checked again during evidence generation. `after/`
+and `after.json` retain all four delivered files and hashes; `source-after.json`
+identifies the three implementation files. No imported dependencies were added
+to the rollback set, and no retained release was changed.
+
+| Source | Bytes | SHA-256 |
+|---|---:|---|
+| `src/ck3chronicle/runtime_logging.py` | 7738 | `d18a6888713d374b0b7266b733d3fd11302372dd8ea94fa06538017a73a1d2b5` |
+| `src/ck3chronicle/journal.py` | 4558 | `b48a1fde03f31e7e8d42e91a0f114fc15ed239afecbd265cabbd0412ecc2e8cc` |
+| `tools/check_runtime_logging.py` | 3191 | `997fcc95dcaed266bb167db13514aa776266d855214032ab96202a4b5c65d608` |
+
+The byte-preserving unified source patch is
+[source.patch](../.codex-tmp/task09-shared-backend-20261006/source.patch), SHA-256
+`764f3560e93aecdeec31c6c6a4134b51e427110d971541ee8c1eda6f402ef533`.
+It contains only the backend (+50/-13), new adapter (+115), and checker (+18).
+[delivery.patch](../.codex-tmp/task09-shared-backend-20261006/delivery.patch)
+also includes this handoff section; exact document hash belongs in `after.json`
+to avoid a self-referential hash. Rollback must compare current bytes and resolve
+intervening owner changes before applying the inverse patch; saved bytes are not
+permission to overwrite later work. The broader pre-existing dirty tree is intact.
+
+### Verification and receiving limits
+
+- Required `.\.venv\Scripts\python.exe -B tools/check_runtime_logging.py` passed.
+  The checker scans the adapter under the existing ownership rule and now rejects
+  adapter imports outside stdlib/the shared backend. It remains a small AST check,
+  not a defense against dynamic evasion or retained-payload authentication.
+- A fresh repository-Python import loaded both modules from this checkout and
+  reported `ck3chronicle.config` absent from `sys.modules`. All three changed
+  sources parsed successfully. Exact patch boundaries and whitespace were checked.
+- Static AST comparison with saved bytes confirms unchanged `runtime_log_path`,
+  `bootstrap_log_path`, `open_bootstrap_log`, formatter, rotating-handler subclass,
+  logger/event helpers, scoped context and Watcher severity adapter. Source review
+  covered lazy settings selection, setup propagation, best-effort removal/close,
+  frame cleanup, nested context restoration, count validation and suppression.
+- Existing real callers inspected: `watcher.EventJournal.__enter__/__exit__` and
+  `pipeline.database_handler.serve` retain their original setup/cleanup keywords.
+  The observer's existing filename construction matches the new helper. A read-only
+  query using current application configuration returned INFO/10485760/five and
+  the existing runtime Watcher path plus handler/bootstrap paths for
+  `ck3chronicle-schema3-20261005T112504Z.sqlite3`; no handler was started or configured.
+  This is current settings/path evidence and static compatibility, not fresh
+  changed-code Watcher/handler execution. See `review.json` for the review record.
+- No synthetic API harness, recursion/timing scenario, injected failure, event
+  flooding or broad historical suite was created or executed. Dynamic bare/count
+  throttling, nested/exception cleanup, rotation and error cases remain explicitly
+  unverified. No overhead or retained execution claim is made. These limits do not
+  block shared interface readiness under the issued assignment.
+
+Learner receives the config-free retained import/payload interface and performs
+genuine consumer integration under its own issued assignment, retaining the exact
+two shared source files. That later work supplies authentication/import and real
+consumer evidence; it is not a prerequisite to this implementation readiness.
+Watcher still owes its compatibility disposition; Pipeline records the static
+and current-configuration compatibility evidence above and retains actual shared
+backend receiving defects. Record actual dispositions on TREK-1 without inventing
+receipt, closing the producer early, or making all of Learner Integration a
+prerequisite. No candidate generation, production activation/restart, publication,
+commit or push was performed.
+
 ## Owner correction to test guidance — 2026-10-02
 
 The owner directed removal of synthetic and fault-injection checks, including

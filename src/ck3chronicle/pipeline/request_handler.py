@@ -15,7 +15,8 @@ import sys
 import threading
 import time
 
-from ..runtime_logging import open_bootstrap_log, bootstrap_log_path
+from ..runtime_logging import (open_bootstrap_log, bootstrap_log_path,
+                               context_fields, event, get_logger)
 
 ENQUEUED = 'ENQUEUED'
 COMPLETED = 'COMPLETED'
@@ -158,7 +159,13 @@ class HandlerClient:
                 if arguments.get(key) is not None:
                     arguments[key] = str(Path(arguments[key]).absolute())
         self._ensure_started()
-        return RequestRef(**self._rpc('submit', operation=operation, arguments=arguments))
+        ref = RequestRef(**self._rpc('submit', operation=operation, arguments=arguments))
+        if context_fields().get('foreground_invocation'):
+            event(get_logger('request_client'), 'request_accepted',
+                  request_id=ref.request_id, handler_instance=ref.instance,
+                  enqueued_at=ref.enqueued_at, operation=operation,
+                  database=str(self.database))
+        return ref
 
     def wait(self, ref: RequestRef, timeout: float | None = None) -> RequestResult:
         if timeout is not None and timeout < 0:

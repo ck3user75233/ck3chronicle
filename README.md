@@ -53,7 +53,7 @@ valid error log to proceed. Daily watcher maintenance preserves configurable
 30-elapsed-day raw expiry. Selection and the existing Run writer are unchanged.
 Removed providers and generation replay remain excluded.
 
-Commands are `runs`, `report`, `ingest`, `watch`, `capture`, `doctor` and `observe-logging`;
+Commands are `runs`, `report`, `ingest`, `watch`, `capture` and `doctor`;
 `watch --once` retains manual error-only copying. The [earlier watcher activation](docs/WATCHER_LIVE_ACTIVATION_HANDOFF.md)
 and [September 30 handler/logging activation](docs/TASK07E_RUNTIME_LOGGING_HANDOFF.md)
 are historical records, not evidence of current live status.

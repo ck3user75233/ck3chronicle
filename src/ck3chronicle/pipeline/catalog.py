@@ -162,8 +162,12 @@ def evaluate_package(package_id, log, *, models_root=None):
 def main():
     import argparse
     import json
+    from uuid import uuid4
+    from .. import runtime_logging as backend
     p=argparse.ArgumentParser(description='List and select retained model packages; never changes the active default.')
     p.add_argument('--models-root',type=Path)
+    p.add_argument('--log-dir',type=Path,
+                   help='Invocation journal directory; default .ck3chronicle/wip/model-release-logs under cwd.')
     commands=p.add_subparsers(dest='command',required=True)
     commands.add_parser('list')
     select=commands.add_parser('selection');select.add_argument('--package',required=True)
@@ -173,17 +177,45 @@ def main():
     register.add_argument('--manifest-sha256',required=True);register.add_argument('--production-order',type=int)
     register.add_argument('--publication-evidence')
     a=p.parse_args()
-    if a.command=='list':result=list_releases(models_root=a.models_root)
-    elif a.command=='selection':result=package_selection(a.package,models_root=a.models_root)
-    elif a.command=='register':result=register_package(a.source,expected_manifest_sha256=a.manifest_sha256,
-        models_root=a.models_root or selected_models_root(),production_order=a.production_order,
-        publication_evidence=a.publication_evidence)
-    else:
-        result=evaluate_package(a.package,a.log,models_root=a.models_root)
-        a.output.parent.mkdir(parents=True,exist_ok=True)
-        a.output.write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
-        result={k:v for k,v in result.items() if k!='records'}
-    print(json.dumps(result,indent=2))
+    invocation_id = uuid4().hex
+    directory = (a.log_dir.expanduser().resolve() if a.log_dir is not None else
+                 Path.cwd() / '.ck3chronicle/wip/model-release-logs')
+    destination = backend.invocation_log_path(directory, 'model-release', invocation_id)
+    handler = backend.configure_runtime_logging(destination=destination)
+    logger = backend.get_logger('model-release')
+    try:
+        with backend.log_context(invocation_id=invocation_id, foreground_invocation=True):
+            backend.event(logger, 'invocation_started', operation=a.command,
+                          source_file=__file__, journal_path=str(destination))
+            try:
+                if a.command=='list':result=list_releases(models_root=a.models_root)
+                elif a.command=='selection':result=package_selection(a.package,models_root=a.models_root)
+                elif a.command=='register':result=register_package(a.source,expected_manifest_sha256=a.manifest_sha256,
+                    models_root=a.models_root or selected_models_root(),production_order=a.production_order,
+                    publication_evidence=a.publication_evidence)
+                else:
+                    result=evaluate_package(a.package,a.log,models_root=a.models_root)
+                    a.output.parent.mkdir(parents=True,exist_ok=True)
+                    a.output.write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
+                    result={k:v for k,v in result.items() if k!='records'}
+                print(json.dumps(result,indent=2))
+            except BaseException as error:
+                if isinstance(error, SystemExit):
+                    fields = dict(outcome='success' if error.code in (None, 0) else 'nonzero_exit',
+                                  exit_code=error.code)
+                else:
+                    fields = dict(outcome='interrupted' if isinstance(error, KeyboardInterrupt) else 'failed',
+                                  exception_class=type(error).__name__)
+                backend.event(logger, 'invocation_finished', **fields,
+                              exc_info=not isinstance(error, (SystemExit, KeyboardInterrupt)))
+                raise
+            else:
+                backend.event(logger, 'invocation_finished', outcome='success')
+    finally:
+        try:
+            backend.close_runtime_logging(handler)
+        except BaseException:
+            pass
 
 
 if __name__=='__main__':

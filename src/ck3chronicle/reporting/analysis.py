@@ -8,10 +8,12 @@ from typing import Protocol
 
 from ..pipeline.contracts import identity_data, render, render_segments
 from ..pipeline.request_handler import COMPLETED, HandlerClient
+from ..journal import get_journal
 from ..runtime_logging import event, get_logger
 from .query import InvestigationQuery, QueryError, SELECTOR_FIELDS, evaluate_text, _integer, refinement_clauses
 
 LOGGER = get_logger('reporting')
+journal = get_journal('reporting')
 
 
 class ReadError(RuntimeError):
@@ -417,26 +419,27 @@ class DiagnosticAnalysis:
         Counts and refinements are evaluated in each Run. Pagination follows
         matching, and a failed read propagates rather than becoming a nonmatch.
         """
-        _integer(offset, 'offset')
-        if limit is not None:
-            _integer(limit, 'limit')
-        value = (query.to_dict() if isinstance(query, InvestigationQuery) else deepcopy(query))
-        analytics = value.get('analytics', {})
-        if 'trailing_runs' in analytics or any('newly_observed' in c for c in
-                refinement_clauses(value.get('refinement', {}))):
-            raise QueryError('all-Run search does not supply chronological refinements')
-        value['analytics'] = {'history': False, 'include_absent': False}
-        effective = InvestigationQuery.from_dict(value)
-        listing = self.list_runs(package_id)
-        matched = []
-        for metadata in listing['runs']:
-            result = self.investigate(metadata['run_id'], package_id=package_id, query=effective)
-            if result.totals['distinct_records']:
-                matched.append({'run': metadata, 'totals': result.totals})
-        return {'package_id': package_id, 'ordering': listing['ordering'],
-                'searched_count': listing['eligible_count'], 'matching_count': len(matched),
-                'runs': matched[offset:None if limit is None else offset + limit],
-                'offset': offset, 'limit': limit, 'effective_query': effective.to_dict()}
+        with journal.call():
+            _integer(offset, 'offset')
+            if limit is not None:
+                _integer(limit, 'limit')
+            value = (query.to_dict() if isinstance(query, InvestigationQuery) else deepcopy(query))
+            analytics = value.get('analytics', {})
+            if 'trailing_runs' in analytics or any('newly_observed' in c for c in
+                    refinement_clauses(value.get('refinement', {}))):
+                raise QueryError('all-Run search does not supply chronological refinements')
+            value['analytics'] = {'history': False, 'include_absent': False}
+            effective = InvestigationQuery.from_dict(value)
+            listing = self.list_runs(package_id)
+            matched = []
+            for metadata in listing['runs']:
+                result = self.investigate(metadata['run_id'], package_id=package_id, query=effective)
+                if result.totals['distinct_records']:
+                    matched.append({'run': metadata, 'totals': result.totals})
+            return {'package_id': package_id, 'ordering': listing['ordering'],
+                    'searched_count': listing['eligible_count'], 'matching_count': len(matched),
+                    'runs': matched[offset:None if limit is None else offset + limit],
+                    'offset': offset, 'limit': limit, 'effective_query': effective.to_dict()}
 
     def investigate(self, run: str, *, package_id: str,
                     query: InvestigationQuery | dict | None = None) -> InvestigationResult:

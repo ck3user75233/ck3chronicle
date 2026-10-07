@@ -1,10 +1,114 @@
 # Retained learner and model releases
 
+## Source publication for Task 09 baseline — 2026-10-07
+
+The Owner requested a reviewed commit/tag/push script after the Git report.
+The 2026-10-07 report confirms local and remote `main` at `450b1f71...`, no staged
+work, no remote tags and no drift in the received build inputs. The publication
+plan includes the received implementation, pinned retained releases, catalog/default
+adoption and reviewed coordination documents, including the two dated Advisory
+pilot-review documents. Runtime evidence and local configuration remain excluded.
+
+The source pin is the annotated tag **`task09-baseline-2026-10-07`**, created on
+the new reviewed commit by the owner-run script, then pushed atomically with `main`.
+Before that execution, the tag is only intended. Its annotation and protected
+TREK-6 completion receipt carry the actual commit/hash results without a
+self-referential documentation edit. Do not infer publication from this paragraph.
+See [the exact baseline](TASK09_RELEASE_BASELINE.md) for pins, script/receipt locations and verification.
+
+Local production model order **9**, Learner order **10** and repository default
+are already adopted. Package version remains **0.0.1**, algorithm **v61**; orders
+are sequence numbers. Physical external installation is deferred/unperformed for
+Task 10. No live switch/restart or hosted wheel upload is part of this Git script.
+Earlier pending/authorization statements below are dated history; the Owner's
+later request authorizes preparing this bounded remote update for owner execution.
+
+## Task 09 baseline — 2026-10-07: publication continuation
+
+Owner issued [the publication assignment](task09-deliverables/RELEASE_PUBLICATION_PIPELINE.md). Local production publication
+and repository adoption are complete and freshly reauthenticated: wheel
+`2dbb613d...`, model `2b12932103f3a3111a4e1880` (order 9), Learner `2ec4b671...`
+(order 10). Orders are publication sequence numbers; package version is **0.0.1**,
+Learner algorithm **v61**. [The baseline](TASK09_RELEASE_BASELINE.md) gives full pins and receipts.
+
+The now-required local reviewed commit and annotated tag remain unexecuted:
+this session's filesystem policy makes `.git` read-only, with no escalation route.
+TREK-6 is continued as `in_progress` for that precise publication obligation;
+prior CMT-63 completed receiving/local adoption, not the newly issued Git step.
+No further owner approval is needed. Pipeline must finish in a Git-writable session
+using the refreshed 193-path review; no old HEAD/tag substitution. Task 09 receiving
+has no implementation defect; final publication/owner-closure readiness awaits
+that source pin. Existing staged work is empty and untouched.
+
+Operational installed selection is a separate file and still authenticates prior
+package `4ac4e8ee92346e6d14eacfbf`; repository adoption does not establish running
+service identity. No live switch/restart, push or upload occurred or is authorized.
+External installation verification is deferred/unperformed for separately issued
+Task 10. Earlier completion statements below retain their narrower historical scope.
+
+## Latest production release published locally — 2026-10-07
+
+The Owner has adopted this verified Task 09 application/Learner/full-model
+combination as the newest production release. Model **2b12932103f3a3111a4e1880**
+is published at **order 9**, Learner **2ec4b671...** at **order 10**, and the
+repository default now selects the new exact manifest pin. Wheel **2dbb613d...**
+and its verified isolated installation contain and select that same 73-log model.
+The wheel's distribution label remains **0.0.1** and the algorithm label remains
+**v61**; release hashes/catalog identities distinguish this production build.
+
+See [the production baseline](TASK09_RELEASE_BASELINE.md) for full pins, locations, acceptance evidence,
+publication receipt and rollback. Genuine installed classification and retained
+Learner evaluation passed; the publication reauthenticated all 620 installed
+members and both default selections. No component receiving defect remains.
+TREK-2 is received; TREK-6 receiving is complete under the Owner's explicit
+deferral of physical external installation verification to Task 10. That check
+is unperformed, not passed. Task 10 still requires its own assignment.
+
+Repository production publication/default adoption are executed. The running
+Watcher/handler and config are unchanged; no live service switch is claimed.
+Git commit/tag/push and remote upload are unexecuted: this session cannot write
+`.git`, and no remote release has been created. The exact reviewed source
+include/exclude and commit/tag proposal remain in the baseline evidence.
+Earlier status/proposal entries below are history, superseded where inconsistent.
+
+**Current direction — 2026-10-07:** the Owner ordered Observer deletion.
+[Pipeline replacement receiving](learner-next-release/OBSERVER_FREE_PIPELINE_RECEIVING.md)
+records the cleaned backend, replacement artifact and actual receiving status.
+Observer lifecycle and sole-stream confirmations in earlier sections are superseded
+requirements, not passed checks. The required Watcher capture/timestamp/playset/
+processing path is independent, as documented in the
+[dependency review](WATCHER_OBSERVER_DEPENDENCY_REVIEW.md). CK3Chronicle execution
+logging remains required. Historical delivery evidence below is preserved;
+Observer-bearing artifacts are not the replacement candidate. External physical
+placement remains a separate unresolved receiving obligation.
+
 Selecting a release selects retained executable bytes. Author learner changes in
 `tools/template_learning/`; never edit a distribution under `learners/releases/`
 or `models/releases/`. Changing the closure creates a new learner release ID.
 Changing a model's executable combination creates a new package ID, even when
 the model revision is unchanged.
+
+## TREK-6 Observer-free replacement — 2026-10-07
+
+Fresh candidate: `.codex-tmp/trek6-removal-20261007/application/ck3chronicle-0.0.1-py3-none-any.whl`,
+SHA-256 `1a325cd40eb29878e6c7c44a25615ea3eb3e47e4173eb6b72c3d6f8e596fb7ae`. Clean stage:
+`.codex-tmp/trek6-removal-20261007/deployment`. Application identity:
+`application-source-sha256:eb41a2f7aee62c55004e642e35deccb6f89c2233042f8be1af76b5246602924b`.
+Learner `2ec4b671428a75de65c0ccd614b3bf15e04fdb83444689821d71864c2caaf485` /
+manifest pin `9ba2c5faa9253aafb2ddea5dc473819be68d43f669abc63a23463d6613151b8e`.
+All 605 source/wheel/installed members correspond, all eight retained releases
+authenticate, and Observer is absent including embedded copies. Approved defaults
+and historical artifacts are preserved. Installed genuine Reporting yields 13
+output comparisons, 15 normal call pairs and 64 real request links, plus the
+default-console request. Catalog administration and retained isolated help log
+one start/finish pair each. No production restart/activation.
+
+**Receiving remains open:** Learner CMT-44 has not yet delivered genuine evaluation
+for the changed identity; physical external payload placement also remains
+unverified under checkout-only write access. Retained help is not evaluation.
+Observer checks are superseded, not passed. Rotation/exception/periodic gaps stay
+disclosed. Exact results, journal paths, raw measurements, per-record dispositions
+and rollback are in [the consolidated receiving handoff](learner-next-release/OBSERVER_FREE_PIPELINE_RECEIVING.md).
 
 ## Storage and authentication
 
@@ -88,9 +192,9 @@ provenance alongside evaluation/publication results.
 
 The launcher authenticates the selection, then starts its retained launcher with
 `python -I -S -B`. Authenticated in-memory source supplies learner imports in the
-child. Only the explicitly retained `ck3chronicle.decoder` application module is
-available in new releases; other application imports and missing learner modules
-fail. Neither installed learner code nor the working checkout supplies a fallback. A candidate and
+child. Only explicitly retained application modules are available: the decoder and,
+for `journal_api: 1` releases, the shared logging backend/adapter. Application
+configuration and missing learner modules still fail. Neither installed learner code nor the working checkout supplies a fallback. A candidate and
 incremental registry must belong to the selected release. The parser must come
 from that release. Explicit state/input paths avoid application configuration;
 only the outer command resolves convenience defaults when those paths are omitted.
@@ -186,3 +290,80 @@ one-month captured-log policy is independent of release retention.
 
 See [Task 07C handoff](TASK07C_SELF_CONTAINED_RELEASES_HANDOFF.md) for exact inventory,
 verification evidence and named historical gaps.
+
+## Learner logging capability (TREK-2, 2026-10-06)
+
+New complete learner distributions authenticate exact shared
+`ck3chronicle/runtime_logging.py` and `ck3chronicle/journal.py` bytes, alongside
+the existing decoder. Capability `journal_api: 1` selects the new worker protocol.
+Learner-local hash keys remain unchanged; shared logging hashes extend the
+implementation fingerprint. Older manifests keep their original formula/protocol.
+No application configuration or installed-module fallback is retained.
+
+For capable releases, place `--log-dir PATH` before the positional operation:
+`ck3chronicle-learner-release run --release ID --receipt receipt.json --log-dir logs learn -- --log INPUT --output-dir OUTPUT`.
+Everything following the operation remains operation argv. Omitted destination
+uses the receipt parent's `learner-logs`, otherwise
+`<cwd>/.ck3chronicle/wip/learner-logs`. Setup failure has no fallback. Older
+releases run unchanged when `--log-dir` is omitted and reject an explicit value.
+The successfully opened journal is announced once on stderr; stdout stays with
+the command. Worker receipts retain module/audit provenance plus invocation,
+rotation, journal path and observed terminal details; the child alone emits its terminal.
+
+Administrative `create`, `list` and `register` accept `--log-dir PATH`, otherwise
+use `<cwd>/.ck3chronicle/wip/learner-logs`, with a separate
+`learner-admin-<id>.jsonl`. Help remains free of logging setup. Creation still
+requires explicit `--application-source`; registration does not select production.
+Every later loader/shared-source edit requires a fresh authenticated distribution.
+Final application packaging must include the new learner's `ck3chronicle/`
+payloads; never patch a retained release. Candidate pins, genuine evidence and
+limits are in [Learner logging delivery](learner-next-release/LOGGING_INTEGRATION.md).
+
+## Application and model-catalog foreground logging (TREK-4, 2026-10-06)
+
+Root `capture`, `ingest`, `runs`, `report` and `doctor` accept `--log-dir PATH`
+after the subcommand. Default journals are
+`<ROOT_CK3CHRONICLE>/logging/<command>-<invocation_id>.jsonl`, using existing
+application path authority and validated logging settings. `watch` retains its
+own paths and lifecycle. Help remains independent
+of configuration and opens no journal. Component stdout/stderr and return codes
+are preserved; the journal does not infer successful work from a caught error.
+
+For standalone catalog commands, put the option before the subcommand:
+`python -B -m ck3chronicle.pipeline.catalog --log-dir PATH list`.
+Omission uses `<cwd>/.ck3chronicle/wip/model-release-logs`, filename
+`model-release-<invocation_id>.jsonl`, without application configuration. This
+also wraps selection/evaluate/register dispatch, without changing model behavior
+or permitting registration/selection as a logging verification operation. An open
+failure propagates; no fallback destination is chosen.
+
+Foreground accepted requests carry the exact handler/request reference alongside
+the invocation ID. Polls stay silent, and existing handler/Watcher evidence stays
+with its owner. See [Pipeline logging delivery](TASK07E_RUNTIME_LOGGING_HANDOFF.md#trek-4-pipeline-foreground-integration--2026-10-06)
+for the exact configured interface, source hashes, genuine commands, output
+comparisons and unverified cases. Reporting/Watcher consuming receipt and fresh
+application packaging remain separate; these source edits do not activate them.
+
+## Canonical logging application candidate (TREK-6, 2026-10-06)
+
+Pipeline built a fresh wheel with the received TREK-1–5 sources and immutable
+Learner release `9c02a343c389aed3d6a4b679b10ac5df01d7dca76e8b1eb991f5138b09c1af12`,
+manifest pin `0edc5b9e2149e0a64cd360502bbdfe74f3b9ff6753c76230e73dd93794cadfd3`.
+The existing registration mechanism added it as **research only**, with all older
+catalog rows preserved. Five new `pyproject.toml` groups include all 49 retained
+files, including `ck3chronicle` logging resources. Retained bytes and the approved
+model default are unchanged.
+
+Wheel: `.codex-tmp/trek6-packaging-20261006/application/ck3chronicle-0.0.1-py3-none-any.whl`;
+SHA-256 `cfdb38f68bbf0ed84ec326bf18951349411c53c6f5094bc884ce52bdc87b6dea`.
+The separate `deployment/` beneath that evidence root passes two-way correspondence
+for all 606 code/resource members and bounded genuine installed checks. Actual
+source hashes, rollback, component receipts, verification failures and cost/rotation
+limits are in the [Pipeline receipt](learner-next-release/PIPELINE_RECEIVING.md#trek-6-final-packaging--bounded-installed-receipt-required-checks-open--2026-10-06).
+
+**Required receiving remains open:** physical external Learner placement and
+installed/natural-lifecycle Watcher receiving, including final caller confirmation.
+Isolated execution from `C:/Windows` passes but is not physical external placement.
+TREK-6 remains `in_progress`; this candidate is not an activation-ready declaration.
+Prior R3 wheel `7239a0c5…82959` remains the identified rollback artifact. No live
+selection, production registration, restart, external publication, commit or push.

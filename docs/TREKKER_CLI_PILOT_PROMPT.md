@@ -1,7 +1,11 @@
 # Revised implementation assignment — Trekker CLI pilot
 
-Saved 2026-10-04 for later resumption. **Deferred; do not execute this prompt
-until the owner commissions the pilot.** This consolidates the revised assignment,
+Saved 2026-10-04 for later resumption. **Commissioned 2026-10-06 with Pipeline as
+bounded pilot implementer; awaiting the owner's issuance to Pipeline.** See
+[the actual owner disposition](TASK09_OWNER_DECISIONS.md#o13--pilot-commission)
+and [prepared dispatch prompt](task09-deliverables/TREKKER_PILOT_PIPELINE.md).
+The design below is unchanged. This does not give Advisory installation authority
+or Pipeline broader/permanent tooling ownership. This consolidates the revised assignment,
 the owner's corrections and the subsequent deliverable-breakdown clarification.
 It supersedes the draft implementation section in the earlier
 [investigation](TREKKER_WORK_STATE_REVIEW.md) and
@@ -178,4 +182,4 @@ Exclude forks/schema changes, a custom tracker/database, MCP, stock plugin,
 dashboard, session hooks, broad migration, mass documentation cleanup and unrelated
 runtime/product changes. Do not commit, push or activate production services.
 Deliver the helper, minimal guidance and one concise pilot handoff when the owner
-later commissions this assignment.
+issues this commissioned assignment to Pipeline.

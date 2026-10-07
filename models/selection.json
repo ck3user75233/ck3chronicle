@@ -1,9 +1,9 @@
 {
   "schema": "ck3chronicle.native-model-selection",
   "schema_version": 2,
-  "revision_id": "789219fdbd81c8dab950bc93",
-  "package_id": "4ac4e8ee92346e6d14eacfbf",
-  "artifact_directory": "releases/4ac4e8ee92346e6d14eacfbf",
-  "manifest_sha256": "839548e8c8143e01b63059848557dc94e9fe66f5e1924f6026442f7331a8ba9f",
+  "revision_id": "3bc531d578074e6a430c161e",
+  "package_id": "2b12932103f3a3111a4e1880",
+  "artifact_directory": "releases/2b12932103f3a3111a4e1880",
+  "manifest_sha256": "02c70654c3ffa9678df80108985206a12c92bb67b0c36311fbec393b329e1505",
   "matcher_api_version": "ck3-native-matcher-v3"
 }

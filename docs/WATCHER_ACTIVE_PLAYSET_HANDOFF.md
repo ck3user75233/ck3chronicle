@@ -1,5 +1,16 @@
 # Watcher active-playset delivery and Task 07 receiving contract
 
+2026-10-07 implementation follow-up: the [Observer removal handoff](WATCHER_OBSERVER_REMOVAL_HANDOFF.md)
+records deletion of the independent module and byte-identical preservation of the
+required Watcher path. Pipeline owns the remaining CLI/backend cleanup and actual
+replacement-candidate receipt on TREK-3 for TREK-6. Observer-only checks are removed
+requirements, not passed tests. The dependency-review paragraph below is historical.
+
+2026-10-07 dependency review: the [Observer deletion handoff](WATCHER_OBSERVER_DEPENDENCY_REVIEW.md)
+traces the current lifecycle, capture, source timestamp, playset and handler path.
+These functions are independent of Observer code/output. Findings are delivered
+on existing TREK-3 for Pipeline's TREK-6; no deletion or release change is claimed.
+
 Delivered 2026-09-28 following owner approval. The watcher producer is implemented.
 Task 07 remains a subsequent task; no pipeline storage or application cutover was
 performed as part of this delivery.

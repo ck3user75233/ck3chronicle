@@ -13,8 +13,9 @@ import json
 from pathlib import Path
 import re
 import time
+from types import SimpleNamespace
 
-from template_learning.learner_loader import authenticate, FILES
+from template_learning.learner_loader import authenticate, source_payloads
 from template_learning.location_candidate_experiment import save, sha
 from template_learning.publish_native_model import (
     compact_model, compact_template, validate_native_export, canonical_bytes,
@@ -77,6 +78,7 @@ def main():
     cli.add_argument('--release',type=Path,required=True)
     cli.add_argument('--release-pin',required=True)
     cli.add_argument('--output',type=Path,required=True)
+    cli.add_argument('--application-source',type=Path,required=True)
     args=cli.parse_args();start=time.monotonic();bundle=args.bundle.resolve();out=args.output.resolve()
     assert not out.exists();out.mkdir(parents=True)
     assert sha(bundle/'manifest.json')==args.bundle_pin
@@ -84,8 +86,8 @@ def main():
     release,payloads=authenticate(args.release,args.release_pin)
     # The adapter calls unchanged owning implementations, never ambient replacements.
     source=Path(__file__).parent
-    for name in FILES:
-        assert (source/name).read_bytes()==payloads['template_learning/'+name],name
+    for name, data in source_payloads(source, application_source=args.application_source).items():
+        assert data==payloads[name],name
     expected_release=dict(release_id=release['release_id'],manifest_sha256=args.release_pin,
                           learner_identity=release['learner_identity']['sha256'])
     assert manifest['learner_release']==expected_release
@@ -109,7 +111,8 @@ def main():
                  method='Read-only research projection; unchanged owner compaction; complete native export parity required.')
     save(out/'projection-provenance.json',proof)
     print('Starting full native export parity',flush=True)
-    validation=validate_native_export(model,bundle)
+    validation=validate_native_export(model,bundle, execution_context=SimpleNamespace(
+        manifest=release, folder=args.release.resolve()))
     payload={'empirical_template_model.json':canonical_bytes(model),
              'parser.py':(bundle/'parser.py').read_bytes(),
              'parser-manifest.json':canonical_bytes(model['parser']),

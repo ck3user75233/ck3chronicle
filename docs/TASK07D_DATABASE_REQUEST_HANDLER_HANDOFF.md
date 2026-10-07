@@ -1,5 +1,37 @@
 # Task 07D — current database and ingestion handoff
 
+## TREK-4 foreground request links — 2026-10-06
+
+Pipeline implemented the owner-issued [Pipeline Integration assignment](task09-deliverables/PIPELINE_INTEGRATION.md).
+`HandlerClient.submit` constructs the real `RequestRef` after the unchanged submit
+RPC, then emits one client `request_accepted` only when the backend context has
+`foreground_invocation=True`. Root foreground dispatch establishes that local
+context with an `invocation_id`; neither field travels over the wire. The event's
+`request_id`, `handler_instance` and `enqueued_at` come from the returned reference;
+`operation` and the client's resolved `database` identify the accepted request.
+No arguments, call scope, polling event or new request identity is added.
+
+Watcher/direct callers without foreground context retain their existing evidence.
+The handler's own acceptance/terminal events and all preparation, queue, storage,
+transaction, retention and traceback behavior remain unchanged. A client acceptance
+observation is not completion; unavailable outcomes remain unavailable.
+
+Using the existing genuine receiving database at
+`.codex-tmp/pipeline-receiving-20261005/context/runtime/disposable/ck3chronicle-schema3-20261005T060419Z.sqlite3`,
+Pipeline matched **50** new client observations to actual handler acceptance and
+`COMPLETED` records, including exact instance/request/enqueued/operation/database
+fields. Handler instance was `e9c16508faa24d49b5fb7dc483a15288`; its PID 21964
+was started for these read commands and shut down afterward. Production services
+were not restarted. No ingestion, raw retention or database setup was performed.
+
+Evidence: `.codex-tmp/trek4-pipeline-20261006/output-review.json`,
+`existing-outcome.json`, `disposable-handler-shutdown.json`, and the
+[07E delivery](TASK07E_RUNTIME_LOGGING_HANDOFF.md#trek-4-pipeline-foreground-integration--2026-10-06).
+Transport/polls and other client methods are AST-identical to the saved current
+baseline. Reporting receiving of the configured interface and Watcher confirmation
+of final caller/stream compatibility remain open on TREK-4; no consuming receipt
+or production activation is inferred.
+
 ## Incoming shared decoder / combined release — 2026-10-05
 
 The decoder delivery is ready. Pipeline receiving responsibilities are in the

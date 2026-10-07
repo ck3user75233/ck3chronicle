@@ -7,12 +7,14 @@ import sys
 import traceback
 
 from ..pipeline.request_handler import COMPLETED, HandlerClient
+from ..journal import get_journal
 from ..runtime_logging import event, get_logger
 from .analysis import DiagnosticAnalysis, QueryError, ReadError, RunSelectionError, SourceEvaluationError
 from .presets import build_query, preset_description, validate_package
 from .source_search import SourceSearch
 
 LOGGER = get_logger('report_cli')
+journal = get_journal('report_cli')
 
 
 def serialize_json(payload):
@@ -58,34 +60,35 @@ def _package(client, run, supplied):
 
 
 def _emit(args, payload, kind):
-    from .explanation import explain
-    from .presentation import render_html, render_text
-    payload = {'explanation': explain(payload, requested_run=getattr(args, 'run', None)), **payload}
-    output = args.output
-    appendix = appendix_bytes = None
-    if args.format == 'json':
-        rendered = serialize_json(payload)
-    elif args.format == 'html':
-        appendix = output.with_name(output.stem + '-sources.html')
-        rendered, appendix_html = render_html(payload, report_name=output.name, appendix_name=appendix.name)
-        if appendix_html is not None:
-            appendix_bytes = appendix_html.encode('utf-8')
-    else:
-        rendered = render_text(payload, kind=kind)
-    # Finish encoding both documents before opening either destination. An
-    # encoding error must not create/truncate the main output or its appendix.
-    output_bytes = rendered.encode('utf-8')
-    if output:
-        output.parent.mkdir(parents=True, exist_ok=True)
-        if appendix_bytes is not None:
-            appendix.write_bytes(appendix_bytes)
-        output.write_bytes(output_bytes)
-        print(f'{kind} written: {output.resolve()}', file=sys.stderr)
-    else:
-        # Python's redirected Windows console can otherwise use a lossy encoding.
-        if hasattr(sys.stdout, 'reconfigure'):
-            sys.stdout.reconfigure(encoding='utf-8', newline='\n')
-        sys.stdout.write(rendered)
+    with journal.call():
+        from .explanation import explain
+        from .presentation import render_html, render_text
+        payload = {'explanation': explain(payload, requested_run=getattr(args, 'run', None)), **payload}
+        output = args.output
+        appendix = appendix_bytes = None
+        if args.format == 'json':
+            rendered = serialize_json(payload)
+        elif args.format == 'html':
+            appendix = output.with_name(output.stem + '-sources.html')
+            rendered, appendix_html = render_html(payload, report_name=output.name, appendix_name=appendix.name)
+            if appendix_html is not None:
+                appendix_bytes = appendix_html.encode('utf-8')
+        else:
+            rendered = render_text(payload, kind=kind)
+        # Finish encoding both documents before opening either destination. An
+        # encoding error must not create/truncate the main output or its appendix.
+        output_bytes = rendered.encode('utf-8')
+        if output:
+            output.parent.mkdir(parents=True, exist_ok=True)
+            if appendix_bytes is not None:
+                appendix.write_bytes(appendix_bytes)
+            output.write_bytes(output_bytes)
+            print(f'{kind} written: {output.resolve()}', file=sys.stderr)
+        else:
+            # Python's redirected Windows console can otherwise use a lossy encoding.
+            if hasattr(sys.stdout, 'reconfigure'):
+                sys.stdout.reconfigure(encoding='utf-8', newline='\n')
+            sys.stdout.write(rendered)
 
 
 def _failure(args, exc, *, kind, stage=None):

@@ -89,6 +89,15 @@ owner and avoid a competing backend. Neither task depends on Trekker.
 
 ## Verification and handoff
 
+**Owner direction, 2026-10-07:** physical outside-checkout installation and
+execution verification deferred from Task 09 belongs here. See the
+[recorded disposition](TASK09_OWNER_DECISIONS.md#external-installation-verification-deferred-to-task-10--2026-10-07).
+Verify the actual Task 10 distribution in an authorized location physically outside
+the repository, with isolated writable state and no checkout imports/resources.
+Changing only the working directory is insufficient. This check was not performed
+for the [Task 09 baseline](TASK09_RELEASE_BASELINE.md); do not report it as inherited
+acceptance evidence. This direction adds no immediate Task 10 dispatch.
+
 Exercise the actual produced artifact and setup in a fresh permitted location,
 without ambient checkout modules or dependence on the development environment.
 Use genuine CK3 inputs and explicit paths in isolated application storage. Check

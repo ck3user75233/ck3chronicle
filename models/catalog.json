@@ -228,6 +228,25 @@
       "publication_status": "production",
       "production_order": 8,
       "publication_evidence": "docs/learner-next-release/HANDOFF.md#combined-release-delivered--2026-10-05"
+    },
+    {
+      "family": "model",
+      "release_id": "2b12932103f3a3111a4e1880",
+      "package_id": "2b12932103f3a3111a4e1880",
+      "model_revision_id": "3bc531d578074e6a430c161e",
+      "retained_path": "releases/2b12932103f3a3111a4e1880",
+      "manifest_sha256": "02c70654c3ffa9678df80108985206a12c92bb67b0c36311fbec393b329e1505",
+      "matcher_api_version": "ck3-native-matcher-v3",
+      "parser": {
+        "artifact": "parser.py",
+        "sha256": "0357b8d1c342c546452ed8f294405bfe41c86c7116eca51eddf8bc5b67984135",
+        "version": "ck3-lossless-v1.8"
+      },
+      "selector_version": "complete-assignment-v2",
+      "availability": "available",
+      "publication_status": "production",
+      "production_order": 9,
+      "publication_evidence": "docs/TASK09_RELEASE_BASELINE.md#owner-adoption-proposal"
     }
   ]
 }

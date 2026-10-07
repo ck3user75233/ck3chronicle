@@ -1,5 +1,109 @@
 # Pipeline receipt and cutover preparation — 2026-10-05
 
+## Source publication for Task 09 baseline — 2026-10-07
+
+The Owner requested a reviewed commit/tag/push script after the Git report.
+The 2026-10-07 report confirms local and remote `main` at `450b1f71...`, no staged
+work, no remote tags and no drift in the received build inputs. The publication
+plan includes the received implementation, pinned retained releases, catalog/default
+adoption and reviewed coordination documents, including the two dated Advisory
+pilot-review documents. Runtime evidence and local configuration remain excluded.
+
+The source pin is the annotated tag **`task09-baseline-2026-10-07`**, created on
+the new reviewed commit by the owner-run script, then pushed atomically with `main`.
+Before that execution, the tag is only intended. Its annotation and protected
+TREK-6 completion receipt carry the actual commit/hash results without a
+self-referential documentation edit. Do not infer publication from this paragraph.
+See [the exact baseline](../TASK09_RELEASE_BASELINE.md) for pins, script/receipt locations and verification.
+
+Local production model order **9**, Learner order **10** and repository default
+are already adopted. Package version remains **0.0.1**, algorithm **v61**; orders
+are sequence numbers. Physical external installation is deferred/unperformed for
+Task 10. No live switch/restart or hosted wheel upload is part of this Git script.
+Earlier pending/authorization statements below are dated history; the Owner's
+later request authorizes preparing this bounded remote update for owner execution.
+
+## Task 09 baseline — 2026-10-07: publication continuation
+
+Owner issued [the publication assignment](../task09-deliverables/RELEASE_PUBLICATION_PIPELINE.md). Local production publication
+and repository adoption are complete and freshly reauthenticated: wheel
+`2dbb613d...`, model `2b12932103f3a3111a4e1880` (order 9), Learner `2ec4b671...`
+(order 10). Orders are publication sequence numbers; package version is **0.0.1**,
+Learner algorithm **v61**. [The baseline](../TASK09_RELEASE_BASELINE.md) gives full pins and receipts.
+
+The now-required local reviewed commit and annotated tag remain unexecuted:
+this session's filesystem policy makes `.git` read-only, with no escalation route.
+TREK-6 is continued as `in_progress` for that precise publication obligation;
+prior CMT-63 completed receiving/local adoption, not the newly issued Git step.
+No further owner approval is needed. Pipeline must finish in a Git-writable session
+using the refreshed 193-path review; no old HEAD/tag substitution. Task 09 receiving
+has no implementation defect; final publication/owner-closure readiness awaits
+that source pin. Existing staged work is empty and untouched.
+
+Operational installed selection is a separate file and still authenticates prior
+package `4ac4e8ee92346e6d14eacfbf`; repository adoption does not establish running
+service identity. No live switch/restart, push or upload occurred or is authorized.
+External installation verification is deferred/unperformed for separately issued
+Task 10. Earlier completion statements below retain their narrower historical scope.
+
+## Latest production release published locally — 2026-10-07
+
+The Owner has adopted this verified Task 09 application/Learner/full-model
+combination as the newest production release. Model **2b12932103f3a3111a4e1880**
+is published at **order 9**, Learner **2ec4b671...** at **order 10**, and the
+repository default now selects the new exact manifest pin. Wheel **2dbb613d...**
+and its verified isolated installation contain and select that same 73-log model.
+The wheel's distribution label remains **0.0.1** and the algorithm label remains
+**v61**; release hashes/catalog identities distinguish this production build.
+
+See [the production baseline](../TASK09_RELEASE_BASELINE.md) for full pins, locations, acceptance evidence,
+publication receipt and rollback. Genuine installed classification and retained
+Learner evaluation passed; the publication reauthenticated all 620 installed
+members and both default selections. No component receiving defect remains.
+TREK-2 is received; TREK-6 receiving is complete under the Owner's explicit
+deferral of physical external installation verification to Task 10. That check
+is unperformed, not passed. Task 10 still requires its own assignment.
+
+Repository production publication/default adoption are executed. The running
+Watcher/handler and config are unchanged; no live service switch is claimed.
+Git commit/tag/push and remote upload are unexecuted: this session cannot write
+`.git`, and no remote release has been created. The exact reviewed source
+include/exclude and commit/tag proposal remain in the baseline evidence.
+Earlier status/proposal entries below are history, superseded where inconsistent.
+
+## Task 09 full-model baseline received; placement open — 2026-10-07
+
+Owner-issued baseline receiving produced the fresh full-model wheel `2dbb613d...`
+and isolated installation; all 620 members authenticate. New package
+`2b12932103f3a3111a4e1880` / manifest `02c70654...` selects the exact 73-log model.
+Installed genuine G2 classification gives 4,141 template / 65 provisional records,
+with complete record equality to production; installed retained Learner evaluation
+and journals pass. Unchanged Reporting/Watcher evidence is explicitly reused.
+[The exact baseline and adoption proposal](../TASK09_RELEASE_BASELINE.md) records identities, commands,
+placement, orders 9/10, metadata/default and reviewed Git commit/tag proposal.
+
+Learner TREK-2 is received and closed; Pipeline-only physical external placement
+remains on TREK-6. Session writes are checkout-only; next owner action is authorized
+external staging at `C:/Users/nateb/Documents/ck3chronicle-task09-stage` or explicit
+placement disposition, then Pipeline completes that bounded check. Task 09 is not
+declared closed and this requirement is not passed into Task 10. Production catalogs,
+active repository selection/config, services and Git remain unchanged. Repository
+adoption, source commit/tag, live activation and Task 10 issuance are separate.
+Earlier preparation/status entries below remain historical.
+
+**2026-10-07 bounded acceptance:** the exact installed replacement plus explicitly
+selected external research model passed genuine classification (3,197 template /
+1,009 provisional records) and consolidated Canonical Logging receiving. See the
+[operation acceptance table](OBSERVER_FREE_PIPELINE_RECEIVING.md#consolidated-bounded-build-to-pinned-classification-acceptance--2026-10-07).
+TREK-2 delivery received; TREK-2/6 remain open only for physical external placement.
+Production activation is not authorized.
+
+**2026-10-07 supersession:** this file retains prior receiving history. Continue in
+[Observer-free replacement receiving](OBSERVER_FREE_PIPELINE_RECEIVING.md).
+The Owner removed Observer and its lifecycle/sole-stream completion requirements;
+they are not passed tests. Prior Observer-bearing artifacts remain historical
+rollback material. The separate external-placement issue remains open.
+
 **DATABASE REPLACEMENT COMPLETE.** Production has 31 freshly ingested Runs, all
 on the new model. The [replacement receipt](#database-replacement-complete--2026-10-05)
 records the safe backup/switch, archived former store, current services and verified
@@ -752,3 +856,183 @@ under `before/` and `after/`, and the exported production reports. Original stag
 and activation receipts remain historical evidence. R4's unavailable new-model
 syntax preset remains separately owned Reporting work; accepted source/appendix
 limitations are unchanged. No commit, push, fake capture or model rebuild occurred.
+
+## TREK-6 final packaging — bounded installed receipt, required checks open — 2026-10-06
+
+**Fresh artifact built and bounded installed checks passed. Final Packaging remains
+`in_progress`: required external-placement and Watcher receiving are open.** This
+is the owner-issued Final Packaging assignment, not owner acceptance or activation.
+The current Trekker records and later receipts supersede earlier prepared/todo
+snapshots. No production registration, switch, restart, publication, commit or push.
+
+Evidence root **P6**: `.codex-tmp/trek6-packaging-20261006/`. All generated results,
+logs, verification scripts and the staged environment remain ignored. Final artifact:
+
+- Wheel: `.codex-tmp/trek6-packaging-20261006/application/ck3chronicle-0.0.1-py3-none-any.whl`
+- SHA-256: `cfdb38f68bbf0ed84ec326bf18951349411c53c6f5094bc884ce52bdc87b6dea`
+- Size: 2,661,680 bytes; staged installation: `P6/deployment`.
+- Application source identity: `application-source-sha256:0093e743552d9d55416818ec10e116e3734463061800d066d27f84831822d615`.
+- Dependency: existing chardet 7.6.0 CPython 3.12 Windows wheel, SHA-256
+  `99bdf02c44a943448e82196ea735bd057a3ecc3e0b9a82dbbeff8f563fd9ae64`.
+
+### Exact packaged combination
+
+Pipeline consumed TREK-1–5 technical handoffs and later receipts, including CMT-17
+Learner interface receipt and CMT-21 Reporting receipt of Pipeline's foreground seam.
+`P6/intake.json`, `artifact.json` and `installed-receipt.json` identify actual source
+hashes and every source/resource member. The version label `0.0.1` is not identity.
+
+Learner release: `9c02a343c389aed3d6a4b679b10ac5df01d7dca76e8b1eb991f5138b09c1af12`;
+external manifest pin: `0edc5b9e2149e0a64cd360502bbdfe74f3b9ff6753c76230e73dd93794cadfd3`;
+learner fingerprint: `20ee0661d0c1d758a2b649a7b6c7473ac1982ca5c2e520825f2f9b9e47b42e0d`.
+All 48 payloads plus manifest were registered through the existing loader as
+**research only** and added to the wheel through five explicit resource groups.
+The retained `ck3chronicle` directory includes decoder, backend and adapter.
+Administrative launcher and local loader both authenticate as
+`f47c5b1b995033d3bac11059103ca66371b13b02940469911708949e60a5d3c7`.
+No retained distribution was rewritten, and no production publication order changed.
+
+Fresh setuptools build/staging directories prevent stale modules. Two-way checks
+verify **606** code/resource members: every required source/resource is included,
+and every wheel and installed member corresponds to its source. There are 50 added
+members (journal module and 49 retained files), 16 changed members and no removed
+member against R3. Existing retained distributions and packaged model selection
+remain byte-identical. `packaging/models/selection.json`, active selection,
+configuration, `.gitattributes` and component source guards all remain unchanged.
+
+The packaged default loads `4ac4e8ee92346e6d14eacfbf` with pin
+`839548e8c8143e01b63059848557dc94e9fe66f5e1924f6026442f7331a8ba9f` without any
+post-install replacement. Default/classifier and previous model selection both
+authenticate from `C:/Windows` using `-I -B`; application/Learner imports resolve
+only inside the staged installation. All 394 current definitions render.
+Retained execution uses its ordinary `-I -S -B` worker and authenticated sources.
+Physical payload placement still lies beneath the checkout's allowed writable
+root. **Outside-checkout cwd is verified; physical external placement is not.**
+
+### Genuine installed verification
+
+`P6/installed/`, `output-review.json`, `learner-review.json`, `console-review.json`
+and `final-checks.json` retain exact commands, results, source identities and limits.
+Only the existing disposable genuine receiving store was read through public
+`HandlerClient`; no historical ingestion or new history was created.
+
+- Ten Reporting CLI commands: nine exit zero; existing new-model syntax restriction
+  retains exit 2 and `invalid_query`. Thirteen comparisons against TREK-5 delivered
+  output pass, excluding only labelled generation/source timings and the explicitly
+  relocated export directory. Genuine history, missing-time eligibility, all 44
+  preserved-byte occurrences, JSON/HTML/text exports and source appendices remain.
+- Actual source queries return ripgrep 0 and 1, and repeated cached results require
+  no new subprocess. Fifteen normal scope pairs carry installed source identities:
+  `_emit` 10, `SourceSearch._content` 4, `DiagnosticAnalysis.search_runs` 1.
+  Eleven journals include ten correct CLI invocation pairs; 64 foreground references
+  match genuine handler acceptance and `COMPLETED`. A separate default-destination
+  console invocation adds one independently matched request reference.
+- Installed retained Learner evaluation uses the same genuine 633,966-byte log and
+  authenticated candidate as TREK-2. The complete result and stdout are equal:
+  3,197 full / 1,009 provisional / 0 unknown across 4,206 messages. All compiled
+  sources authenticate; shared modules use retained paths, config is absent, one
+  terminal and one stderr path announcement occur. This remains candidate structural
+  evidence, not production model acceptance. Other unchanged Learner semantics reuse
+  the producer's two-log comparison; no learning/build campaign was repeated.
+- Thirteen installed console commands verify root/help, catalog/help/list,
+  Learner/help/list and default root destination. Eight root help outputs are
+  byte-equal to TREK-4. Catalog console help differs only in actual launcher name
+  and argparse wrapping. Config-free commands/help run from `C:/Windows` with
+  explicit writable admin destinations. No destructive command ran for coverage.
+- Ownership checker and installed `pip check` pass. `handler-intake.json` established
+  no existing disposable handler; `handler-shutdown.json` identifies and stops only
+  the instance started by these reads. Production processes were not restarted.
+
+The first runner preparation used a relative interpreter from the separate context
+cwd and failed before product checks; absolute paths corrected it. The initial
+console comparator wrongly demanded identical module/console program names;
+`P6/console/` retains those outputs, and corrected `console-v2/` checks only the
+explained difference. A one-line rollback inventory command had a quoting syntax
+error before execution; saved `final_checks.py` verifies all 556 prior installed
+members. These are disclosed verification-tool failures, not component repairs.
+
+### Output counts, cost and rotation conditions
+
+TREK-2's unchanged same-input pre/post comparison supplies 5,137 emissions,
+6,357 messages, 97 templates and 5,268 full / 1,089 provisional training assignments;
+complete native evidence/assignments agree with only specified identity/path fields
+excluded. Its sequential pre/post wall seconds: learn 4.166/4.364, sync 1.517/1.682,
+build 3.399/3.650, evaluate 1.889/2.236, export 1.686/1.839; corresponding CPU:
+3.328/3.609, 1.297/1.391, 3.172/3.359, 1.719/2.156, 1.469/1.562.
+Five workers emit 39 events / 25,913 bytes. Full conditions and hashes remain in
+[Learner delivery](LOGGING_INTEGRATION.md#measured-cost-and-limits) and P6's reused
+evidence references; these are reused measurements, not new P6 overhead trials.
+
+TREK-5 baseline/changed CLI wall totals were 77.365/76.754 seconds; library wall
+7.968/9.845 and caller CPU 3.141/3.156; journals 62,914/77,033 bytes and 125/155 events.
+P6 installed CLI total was 58.072 seconds, library wall 7.475 and caller CPU 2.484;
+155 events / 79,668 bytes. Installed Learner evaluation took 1.690 seconds and
+produced 5 events / 3,330 bytes. These single shared-machine observations include
+launch/authentication/I/O and changing caches/path lengths. P6 has no equivalent
+pre-logging benchmark; differences do not establish a speedup or an overhead bound.
+Handler/subprocess CPU is excluded from Reporting caller CPU. No rotation occurred
+and no threshold was lowered or workload fabricated to force it.
+
+### Component receiving dispositions and remaining work
+
+| Record | Received evidence | Remaining obligation / owner |
+|---|---|---|
+| TREK-1 Shared Backend | Learner config-free receipt retained; installed application/handler use and ownership verified. | Final Watcher caller compatibility confirmation remains open; Pipeline owns backend defects. |
+| TREK-2 Learner | Exact installed resources, launcher, authentication and retained execution received. | Physical external-placement check remains open for Pipeline packaging; Learner retains component defects. |
+| TREK-3 Watcher | Exact source/payload correspondence; prior genuine bounded observer attachments and eight real-prefix checks reused within their limits. | Installed observer/root execution and required natural lifecycle remain open. Final Watcher caller/sole-stream confirmation also remains open. No final observer receipt is claimed. |
+| TREK-4 Pipeline | Reporting's consuming receipt plus independent installed request/destination/output checks. | Watcher final caller/sole-stream confirmation remains open; Pipeline owns composition defects. |
+| TREK-5 Reporting | Exact installed source, genuine public-handler/query/source/export receipt passed. | Unrepresented failures stay disclosed under plan G; no known assigned repair. Producer records follow-up disposition separately. |
+| TREK-6 Packaging | Fresh wheel/staging, authentication, bounded installed checks and rollback evidence delivered. | Required placement and Watcher receiving prevent technical completion. Owner acceptance/activation remain separate. |
+
+Fresh installed process probe at **21:04:51 Hong Kong (13:04:51 UTC)** found no
+`ck3.exe`; see `observer-availability.json`. No absent-process substitute was run.
+The root observer command AST remains unchanged, but source review and prior
+attachments cannot certify changed installed execution or a natural start/exit.
+Await a genuine opportunity or explicit authorized disposition; do not force exit,
+restart production, or infer live process identity from the dated R3 receipt.
+
+Other unrepresented cases remain explicit: periodic >5s, actual rotation,
+bare/count-only/empty/recursive/repeated-hash observations, exception/interrupt,
+receipt/open/write/flush/cleanup/crash, source/process/transport/export failures.
+Plan G permits disclosure of unrepresented cases; no synthetic approval is inferred.
+R4 syntax remains the existing separately owned limitation. No new 09C outcome was
+identified: unfinished checks belong to the existing TREK-2/3/4/6 boundaries.
+
+### Preservation and rollback
+
+Shared edit coordination was requested in the owner chat; no response/overlap was
+reported, and refreshed producer records contained no active competing edit.
+Pipeline stated that assumption, then guarded exact hashes before edits. P6 changes
+only `pyproject.toml`, `learners/catalog.json`, the 49 new immutable files and
+RELEASES/07E/this receiving document. `before.json` and `before/` preserve the five
+previous files' exact current bytes and 49 prior absences. `after.json`,
+`packaging.patch` and `delivery.patch` identify the delivered edits. Wider build and
+authentication inputs are referenced separately, not placed in rollback storage.
+
+Prior R3 artifact remains at
+`.codex-tmp/pipeline-r3-packaging-20261005/application/ck3chronicle-0.0.1-py3-none-any.whl`,
+SHA-256 `7239a0c5b89e52f2df1d31028bdbf21b086e3600bf7c079347a1ee4f1d982959`.
+All 556 prior installed code/resource members still authenticate. The new installation
+also loads the shipped previous model `68f1ae5db205ab46afef9c4d`, pin
+`2a84fe9c734a558e757df54649eac0812ea380a80ac8a2d0fe17129d50f24a5f`, via the existing
+explicit installed rollback selection. No deployment or source rollback was executed.
+Any future source rollback must compare P6 after hashes and reconcile intervening
+work; never overwrite later edits or retained distributions. Using the prior wheel
+does not require deleting the newly retained research release. Activation and any
+runtime rollback remain separately owner-authorized operational work.
+
+Tracker read-back: Reporting receipt is CMT-25 on TREK-5. TREK-2 already had
+received status, so the helper rejected a supplemental receipt before writing
+(`incompleteOperation: null`, no retained lock). Protected task/history reads
+confirmed unchanged comments and no recovery marker; installed evidence was
+then appended as follow-up CMT-26 without replaying the rejected operation.
+TREK-3 retains `handoff:pending` with CMT-27; CMT-28/29 preserve TREK-4/1
+follow-ups. TREK-6 checkpoint CMT-30 and its update retain `in_progress` without
+inventing a receiver. No upstream record was closed.
+
+The final whitespace check removed one appended blank line at the end of
+`pyproject.toml` after building. P6 `build-pyproject.toml` preserves the exact
+build input separately; `build-input-correspondence.json` records both hashes
+and identical parsed TOML. This affects no wheel member, metadata setting or
+resource mapping. Initial whitespace failure and its bounded correction are
+retained in this verification record.

@@ -1,5 +1,132 @@
 # Task 08B — reports and investigation experience
 
+## TREK-5 canonical Reporting adoption — 2026-10-06
+
+**Implemented; genuine foreground/library verification passed. Pipeline receipt
+of Reporting and Final Packaging remain pending.** The owner issued
+[Reporting Adoption](task09-deliverables/REPORTING_ADOPTION.md) in the Data
+Intelligence chat. TREK-5 remains `in_progress` until its receiving/follow-up
+disposition. R4 syntax selectors remain separate; no new syntax count is claimed.
+
+Only `reporting/analysis.py`, `reporting/source_search.py`, `reporting/cli.py`
+and the three 08A/08B handoff sections changed. One shared `journal.call()` wraps
+each of `DiagnosticAnalysis.search_runs`, `SourceSearch._content` and `_emit`,
+including the content cache return. No checkpoints, counters, field lookups or
+library logging configuration were added. Existing events and component error
+ownership remain. Removing just the new imports/journal bindings/scopes recovers
+the entire original AST; compilation and the runtime logging ownership check pass.
+This preserves query/history, subprocess cleanup, accepted ripgrep codes 0/1,
+native strings, render-before-write, appendix paths and missing-time behavior.
+
+Current Reporting files were clean at intake; protected team state and current
+handoffs identified no active R4 edit overlap. TREK-5's startup checkpoint records
+the bounded ownership. Each source edit required equality to its saved current
+bytes, and final correspondence checks detected no intervening source changes.
+Pipeline's root CLI, request client, catalog and checker match its TREK-4 delivery.
+No Pipeline/backend/checker or R4 source was edited.
+
+### Fresh genuine evidence
+
+Evidence root **R5**: `.codex-tmp/trek5-reporting-20261006/`. Actual `.venv` commands,
+cwd, return codes and wall times are in `baseline/receipt.json` and
+`changed/receipt.json`; raw stdout/stderr, JSON/HTML/text outputs and linked HTML
+appendix are adjacent. `verify_genuine.py`, `review_outputs.py` and
+`output-review.json` retain the reproducible bounded observations/comparisons.
+Only the existing genuine receiving database named by
+`.codex-tmp/pipeline-receiving-20261005/database.json` was read through public
+`HandlerClient`. No ingestion, synthetic input, mock client/context or fake source
+path was introduced. The disposable handler was absent at intake; only the handler
+started by these reads is shut down afterward, with identity in `handler-shutdown.json`.
+
+- Ten CLI invocations per version: Run listing JSON/text, cross-Run history
+  JSON/text, verbose source HTML with appendix, real source-content JSON, three
+  preserved-byte exports, and the existing syntax-unavailable result. Nine return
+  zero; syntax retains code 2 and its exact `invalid_query` output. All stderr
+  remains byte-identical, including export destinations.
+- 13 before/after comparisons pass. Only labelled current-generation time and
+  named source-search duration measurements are excluded; exact excluded JSON
+  paths are recorded. Native records, identities, results, counts, history,
+  source paths/encoding metadata, display text and appendices agree.
+- Library `search_runs` searches the genuine package for the stored
+  `Invalid supported_version` text and includes missing-time `20261005-XH88PI`.
+  `search-runs.json` preserves the complete before/after result. JSON/HTML/text
+  export the genuine session-55 byte witness; all 44 byte-bearing occurrences
+  remain, JSON stored records equal public-handler values and missing-time
+  history remains unavailable. `byte-witness.json` records that comparison.
+- Real captured-playset source query:
+  `common/scripted_triggers/99_tct_scripted_triggers.txt`, literal
+  `saintdays_province`. A repeated library search returns identical file results
+  without another ripgrep invocation; a search for the genuine diagnostic term
+  `Invalid supported_version` in that same source scope observes normal no-match.
+  Actual ripgrep return codes are [0, 1]; cache/normal completions are observed,
+  without changing files or inventing paths. Full coverage/encoding/excerpt
+  results and process metrics are in `source-library.json`.
+- 11 changed journals verify durable output and exact qualified module/function,
+  absolute source file, function line and scope line. Normal pairs observed:
+  `_emit` 10, `SourceSearch._content` 4, `DiagnosticAnalysis.search_runs` 1.
+  All ten CLI journals have one invocation start/terminal and the correct returned
+  code; the separate genuine library caller uses the shared backend without a
+  fabricated invocation context. No checkpoint or added traceback occurs.
+  64 actual foreground request references match handler acceptance fields and
+  `COMPLETED` events, including instance, request ID, enqueue time, operation and
+  database. This consumes TREK-4's configured foreground interface. Reporting's
+  receipt on TREK-4 does not close Pipeline's other follow-ups.
+
+Raw baseline/changed aggregate CLI wall time: 77.365 /
+76.754 seconds; library search wall time:
+7.968 / 9.845; caller CPU:
+3.141 / 3.156 seconds.
+Journal volume: 62914 / 77033 bytes,
+125 / 155 events. These are single sequential observations
+on the same already-populated store, with OS/source/handler cache effects and
+handler/subprocess CPU excluded from caller CPU; no overhead threshold or
+statistical performance claim is made. Per-command measurements remain in receipts.
+
+### Failures, reused evidence and limits
+
+The initial baseline evidence recorder attempted `dict(RequestRef)` instead of
+`dataclasses.asdict` after its product commands/library assertions. This raised
+`TypeError`; `baseline/receipt.json` retains the failure. The recorder was corrected
+while that already-loaded baseline ran, so its traceback displays the newer line
+text. `finish_baseline.py` re-read only the genuine byte witness and completed
+serialization in `baseline/completion-supplement.json`. No product repair or
+acceptance requirement resulted. Changed execution and final comparisons pass.
+
+Unchanged decoder/storage native-byte reconstruction and combined-release
+R1/R2/R5 behavior reuse the independent genuine receipts referenced in
+`correspondence.json` and the [combined-release receipt](learner-next-release/PIPELINE_RECEIVING.md#reporting-repair-delivered--2026-10-05).
+That reused evidence is not new execution of changed scopes. No original-byte
+ingestion/reconstruction was repeated for this logging assignment.
+
+Unrepresented: abnormal ripgrep/process failures, unavailable/changing source
+reads, transport loss, export/encoding/write failures, interrupts, nested exception
+propagation, rotation, naturally absent-input branches and installed combined
+execution. Existing cleanup/exception behavior is source-reviewed, not fault-tested.
+No synthetic test, broad historical discovery, production activation/restart,
+publication, commit or push occurred. R4 remains the explicit separate limitation.
+
+### Exact delivery and receiving
+
+R5 `before/` and `before.json` preserve only the exact six edited-file baselines.
+`after-bytes/`, `after.json`, `source-review.json`, `source.patch`, `delivery.patch`
+and `delivery-manifest.json` identify the exact delivered source/document bytes.
+Source patch SHA-256: `e9f92432974e101c70c088b15dddaf005358f6d15f43e0ae96eb1ef475523514`.
+
+| Reporting source | Delivered SHA-256 |
+|---|---|
+| `analysis.py` | `980985e73528c28e407c72b5258c7cd07e77381dcb70c2f24328e4bce486968f` |
+| `source_search.py` | `238b9a3686de3c929ea1c285c6343add364aff04a90775dea8155ea10bf04299` |
+| `cli.py` | `dc9bfe5260584a1ad5c9f99b800a16b46c1be2ede85436dcf6f1cd64d95b8c37` |
+
+`correspondence.json` identifies unchanged received Pipeline dependencies and
+reused evidence separately from rollback files. Verification executed these exact
+current checkout bytes; no competing application wheel was built. Pipeline receives
+TREK-5 and then Final Packaging builds/authenticates the installed combination.
+Rollback must resolve intervening edits against the before/after hashes and patch;
+never replace shared files blindly with the saved baseline. Leave TREK-5 open until
+actual Pipeline receipt and any assigned follow-up disposition.
+
+
 ## Combined-release Reporting repairs — 2026-10-05
 
 R1 repeat-template compatibility, R2 preserved-byte exports and R5 ordinary

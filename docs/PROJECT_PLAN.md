@@ -1,5 +1,123 @@
 # Named capability-milestone plan
 
+## Source publication for Task 09 baseline — 2026-10-07
+
+The Owner requested a reviewed commit/tag/push script after the Git report.
+The 2026-10-07 report confirms local and remote `main` at `450b1f71...`, no staged
+work, no remote tags and no drift in the received build inputs. The publication
+plan includes the received implementation, pinned retained releases, catalog/default
+adoption and reviewed coordination documents, including the two dated Advisory
+pilot-review documents. Runtime evidence and local configuration remain excluded.
+
+The source pin is the annotated tag **`task09-baseline-2026-10-07`**, created on
+the new reviewed commit by the owner-run script, then pushed atomically with `main`.
+Before that execution, the tag is only intended. Its annotation and protected
+TREK-6 completion receipt carry the actual commit/hash results without a
+self-referential documentation edit. Do not infer publication from this paragraph.
+See [the exact baseline](TASK09_RELEASE_BASELINE.md) for pins, script/receipt locations and verification.
+
+Local production model order **9**, Learner order **10** and repository default
+are already adopted. Package version remains **0.0.1**, algorithm **v61**; orders
+are sequence numbers. Physical external installation is deferred/unperformed for
+Task 10. No live switch/restart or hosted wheel upload is part of this Git script.
+Earlier pending/authorization statements below are dated history; the Owner's
+later request authorizes preparing this bounded remote update for owner execution.
+
+## Task 09 baseline — 2026-10-07: publication continuation
+
+Owner issued [the publication assignment](task09-deliverables/RELEASE_PUBLICATION_PIPELINE.md). Local production publication
+and repository adoption are complete and freshly reauthenticated: wheel
+`2dbb613d...`, model `2b12932103f3a3111a4e1880` (order 9), Learner `2ec4b671...`
+(order 10). Orders are publication sequence numbers; package version is **0.0.1**,
+Learner algorithm **v61**. [The baseline](TASK09_RELEASE_BASELINE.md) gives full pins and receipts.
+
+The now-required local reviewed commit and annotated tag remain unexecuted:
+this session's filesystem policy makes `.git` read-only, with no escalation route.
+TREK-6 is continued as `in_progress` for that precise publication obligation;
+prior CMT-63 completed receiving/local adoption, not the newly issued Git step.
+No further owner approval is needed. Pipeline must finish in a Git-writable session
+using the refreshed 193-path review; no old HEAD/tag substitution. Task 09 receiving
+has no implementation defect; final publication/owner-closure readiness awaits
+that source pin. Existing staged work is empty and untouched.
+
+Operational installed selection is a separate file and still authenticates prior
+package `4ac4e8ee92346e6d14eacfbf`; repository adoption does not establish running
+service identity. No live switch/restart, push or upload occurred or is authorized.
+External installation verification is deferred/unperformed for separately issued
+Task 10. Earlier completion statements below retain their narrower historical scope.
+
+## Latest production release published locally — 2026-10-07
+
+The Owner has adopted this verified Task 09 application/Learner/full-model
+combination as the newest production release. Model **2b12932103f3a3111a4e1880**
+is published at **order 9**, Learner **2ec4b671...** at **order 10**, and the
+repository default now selects the new exact manifest pin. Wheel **2dbb613d...**
+and its verified isolated installation contain and select that same 73-log model.
+The wheel's distribution label remains **0.0.1** and the algorithm label remains
+**v61**; release hashes/catalog identities distinguish this production build.
+
+See [the production baseline](TASK09_RELEASE_BASELINE.md) for full pins, locations, acceptance evidence,
+publication receipt and rollback. Genuine installed classification and retained
+Learner evaluation passed; the publication reauthenticated all 620 installed
+members and both default selections. No component receiving defect remains.
+TREK-2 is received; TREK-6 receiving is complete under the Owner's explicit
+deferral of physical external installation verification to Task 10. That check
+is unperformed, not passed. Task 10 still requires its own assignment.
+
+Repository production publication/default adoption are executed. The running
+Watcher/handler and config are unchanged; no live service switch is claimed.
+Git commit/tag/push and remote upload are unexecuted: this session cannot write
+`.git`, and no remote release has been created. The exact reviewed source
+include/exclude and commit/tag proposal remain in the baseline evidence.
+Earlier status/proposal entries below are history, superseded where inconsistent.
+
+## Task 09 full-model baseline received; placement open — 2026-10-07
+
+Owner-issued baseline receiving produced the fresh full-model wheel `2dbb613d...`
+and isolated installation; all 620 members authenticate. New package
+`2b12932103f3a3111a4e1880` / manifest `02c70654...` selects the exact 73-log model.
+Installed genuine G2 classification gives 4,141 template / 65 provisional records,
+with complete record equality to production; installed retained Learner evaluation
+and journals pass. Unchanged Reporting/Watcher evidence is explicitly reused.
+[The exact baseline and adoption proposal](TASK09_RELEASE_BASELINE.md) records identities, commands,
+placement, orders 9/10, metadata/default and reviewed Git commit/tag proposal.
+
+Learner TREK-2 is received and closed; Pipeline-only physical external placement
+remains on TREK-6. Session writes are checkout-only; next owner action is authorized
+external staging at `C:/Users/nateb/Documents/ck3chronicle-task09-stage` or explicit
+placement disposition, then Pipeline completes that bounded check. Task 09 is not
+declared closed and this requirement is not passed into Task 10. Production catalogs,
+active repository selection/config, services and Git remain unchanged. Repository
+adoption, source commit/tag, live activation and Task 10 issuance are separate.
+Earlier preparation/status entries below remain historical.
+
+## 09B assignments and Trekker enrollment complete — 2026-10-06
+
+The owner accepted both Task 09 recommendations, with explicit lightweight-journal,
+counting, preservation and component-boundary qualifications recorded in the
+[disposition](TASK09_OWNER_DECISIONS.md). The [assignment index](CANONICAL_LOGGING_V1_DELIVERABLES.md)
+packages that corrected scope for staged owner issuance. Advisory recommends no
+09C because implementation and integrated receiving already have owners.
+Pipeline delivered the bounded pilot. Advisory enrolled the owner's six consolidated
+logging deliverables as `TREK-1` through `TREK-6`, with real dependencies/checkpoints
+and verified team-state views. All await owner dispatch; next is Shared Backend/API
+to Pipeline. The index links the aligned prompts and protected startup commands.
+09B is complete as coordination/enrollment, not logging implementation or receiving.
+No implementation dispatch or production activation occurred in 09B. This supersedes
+the earlier pending-decision/enrollment wording below.
+
+## 09B advisory preparation and owner decisions — 2026-10-06
+
+[09B](TASK09B_PROMPT.md), led by Advisory, now prepares concrete recommended
+decisions and clearly labelled draft assignments when a scope disposition is
+missing. It must not stop with only a request that the owner reconstruct the
+scope. [The decision brief](TASK09_OWNER_DECISIONS.md) recommends the corrected
+09A logging scope and Pipeline-owned Trekker pilot setup. These remain
+recommendations until accepted. Enrollment requires approved scope and the
+delivered protected helper; component implementation, dispatch and activation
+retain their existing authority boundaries. The prior all-or-nothing 09B entry
+gate is superseded; other 09B limits remain.
+
 ## Logging and first-use delivery direction — 2026-10-05
 
 The owner clarified that Task 09 logging requires implementation throughout the

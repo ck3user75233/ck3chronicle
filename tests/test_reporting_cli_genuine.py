@@ -398,7 +398,7 @@ class GenuineReportingCLI(unittest.TestCase):
         self.assertFalse(empty['coverage']['source'][self.latest]['issues'])
 
     def test_08_existing_commands_and_html_destination(self):
-        for command in ('ingest', 'watch', 'capture', 'doctor', 'observe-logging', 'runs', 'report'):
+        for command in ('ingest', 'watch', 'capture', 'doctor', 'runs', 'report'):
             result = subprocess.run([sys.executable, '-I', '-B', '-m', 'ck3chronicle.cli', command, '--help'], capture_output=True, encoding='utf-8')
             self.assertEqual(result.returncode, 0, result.stderr)
         reply = subprocess.run([sys.executable, '-I', '-B', '-m', 'ck3chronicle.cli', 'report', 'latest', '--preset', 'frequent', '--format', 'html'], capture_output=True, encoding='utf-8')

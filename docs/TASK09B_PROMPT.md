@@ -1,35 +1,46 @@
 # Task 09B — Organize logging implementation and track delivery in Trekker
 
-Prepared for assignment only after 09A **and an explicit owner disposition of the 09A plan**.
+Prepared for assignment after 09A. Advisory prepares any missing owner decisions before proceeding to approved assignments and enrollment.
 
-**Lead: Learner**, continuing its planning role; implementation and receiving stay with the owning teams.
+**Lead: Advisory for coordination only; this creates no approval gate or implementation ownership.** Advisory is an established role under [team governance](team-governance/README.md). Learner supplies technical clarification of the 09A plan; implementation and receiving remain with the owning teams, and approval remains with the owner.
 
 Saving this prompt does not start work.
 
 Evaluate the need for **09C during this task**.
 
-## Entry gate
+## Start with the available owner direction
 
-**Do not start 09B merely because 09A is complete.**
+**09A completion does not authorize implementation. It does provide the input for useful advisory preparation.**
 
-Before beginning this assignment, the owner must have reviewed `docs/CANONICAL_LOGGING_V1_IMPLEMENTATION_PLAN.md` and identified the implementation scope authorized for assignment.
+Read `docs/CANONICAL_LOGGING_V1_IMPLEMENTATION_PLAN.md` and identify which owner decisions are already established in the supplied assignment, conversation or linked documents. Do not ask the owner to repeat settled direction merely because it is not in a separate disposition file.
+
+Record each actual owner decision in the assignment index with a precise source reference and, where useful for disambiguation, a short exact quotation. Identify the plan revision and scope it covers. Do not infer approval from the plan, a consultant recommendation or an unavailable prior conversation.
+
+Specifically surface any unresolved owner correction to the 09A plan before producing the affected implementation assignment. Check the current revision rather than carrying forward a superseded discrepancy. At preparation time, the corrected 2026-10-06 plan already uses a trivial local completed-input counter (`enumerate(logs, 1)`) against `len(logs)` in `collect_records`, emitted after each input completes; see sections C and E. It does not use `len(evidence_stats)`, which counts distinct hashes rather than completed inputs. Make that counting recommendation explicit in the owner decision brief and preserve it in the proposed scope. Its presence in the plan is not implementation authorization. If an actual conflict with owner direction remains, surface it for disposition rather than silently choosing between instructions.
 
 Recommendations, sequencing and proposed changes in 09A are not commissioned work merely because they appear in the plan.
 
-If no owner disposition is available:
+If a material scope or pilot decision is missing:
 
-- identify the specific decisions needed;
-- do not create implementation assignments from unapproved recommendations;
-- do not enroll proposed logging implementation work in Trekker; and
-- stop.
+- prepare or update [the owner decision brief](TASK09_OWNER_DECISIONS.md), with each question, recommendation, alternative and practical consequence;
+- present concrete proposed scope and ownership, including a short disposition the owner can adopt or amend;
+- prepare clearly labelled provisional decomposition and draft prompts where the missing decision does not prevent useful preparation;
+- keep proposed work distinct from approved, owner-issued assignments and do not enroll unapproved work; and
+- return the concrete decisions and recommendations, not an empty-handed gate message. Continue independent authorized preparation where available.
+
+The decision brief is advisory until the owner accepts it. Do not mark recommendations approved merely by saving that file. Approval is required before treating its scope as commissioned or enrolling it; it is not required to prepare a reviewable proposal.
 
 ## Objective and inputs
 
-Turn the completed `docs/CANONICAL_LOGGING_V1_IMPLEMENTATION_PLAN.md` **and the owner's explicit scope decisions** into concise, independently assignable deliverables for project-wide logging implementation.
+Prepare any missing owner scope decisions, then turn the completed `docs/CANONICAL_LOGGING_V1_IMPLEMENTATION_PLAN.md` **and the owner's explicit scope decisions** into concise, independently assignable deliverables for project-wide logging implementation.
 
 Begin using Trekker to track their execution so responsible teams, next actions, dependencies and unresolved deliveries remain visible across chats.
 
 This task does not add a task tracker to the product.
+
+09B may write decision, draft-assignment and index documents and, when the approved pilot is available, create/update authorized Trekker records. It must not edit CK3Chronicle application/Learner source, implement logging, create candidate releases, perform component verification or execute the Trekker pilot installation itself.
+
+Package the approved plan and dependency order into assignments. Do not reopen its architecture; identify any concrete conflict with current evidence or owner direction for disposition without silently redesigning the work.
 
 Read:
 
@@ -37,7 +48,7 @@ Read:
 - current plan/status/handoff;
 - the 09A plan;
 - [canonical logging design](CANONICAL_LOGGING_SYSTEM_V1.md);
-- the owner's disposition of the 09A plan;
+- any available owner disposition and [the decision brief](TASK09_OWNER_DECISIONS.md), distinguishing actual decisions from recommendations;
 - [team ownership](team-governance/README.md); and
 - the saved [Trekker CLI pilot assignment](TREKKER_CLI_PILOT_PROMPT.md).
 
@@ -50,6 +61,10 @@ Proposed scope is not approved merely by being written into the plan or tracker.
 ## 1. Produce the implementation assignments
 
 Break the **owner-approved scope** into substantive outcomes that can be implemented, verified and received independently.
+
+Before approval, the same decomposition may be prepared only as a clearly labelled proposal for the owner. It must not be presented as an issued assignment or used to enroll implementation work.
+
+Where the approved disposition is already-sufficient/no-code-change, do not create an implementation deliverable merely to give that component a ticket. Create a receiving/compatibility check only if the owner-approved scope requires it.
 
 Split where ownership, dependencies or receiving decisions differ; keep minor coding steps inside a deliverable.
 
@@ -86,6 +101,8 @@ The index holds scope, prompt links and Trekker IDs.
 
 Live progress belongs in Trekker.
 
+Final technical evidence belongs in each component's normal handoff/delivery material. Trekker links to that evidence and records where work stands and what happens next.
+
 Implementation teams execute their owner-issued assignments.
 
 Preparing prompts does not dispatch chats, authorize cross-component repairs or commission every proposed change.
@@ -112,13 +129,15 @@ If a Trekker summary and the owner-issued assignment ever appear to conflict, th
 
 ## 2. Make the bounded Trekker pilot usable
 
-Inspect whether the saved CLI pilot has already been delivered.
+Inspect the saved CLI pilot's owner authorization and delivery state.
 
-If it has, identify and use the **exact protected helper, canonical store and documented invocation path delivered by that approved pilot**.
+If the approved pilot **has been delivered**, identify and use the **exact protected helper, canonical store and documented invocation path delivered by it**.
 
 Do not construct an alternate helper, alternate store, wrapper or substitute interface during 09B.
 
-If the pilot has not been delivered, make its setup the first prerequisite deliverable, with Pipeline as the proposed tooling owner, and prepare its assignment from the saved prompt.
+If the saved pilot assignment is already owner-approved but undelivered, prepare its prerequisite assignment using that existing ownership and scope. Do not modify its design, select a different owner or infer broader tooling authority. Enroll the prerequisite only when the approved protected helper is available.
+
+If pilot authorization or ownership is not established, recommend an owner and scope in the decision brief. The current recommendation is Pipeline as implementer of the bounded pilot. Do not infer broader or permanent tooling ownership beyond the approved pilot arrangement. This is a proposal, not permission for 09B to install tooling or choose an alternate design.
 
 You may still prepare the logging decomposition and assignment files while Trekker setup remains unavailable.
 
@@ -147,6 +166,8 @@ Link every record to its authoritative assignment and relevant plan section.
 
 Make pending owner decisions and assignment state explicit.
 
+Enrollment does not mean dispatch or execution. Until the owner actually issues the linked assignment, use the pilot-supported state equivalent to prepared/ready/awaiting dispatch, with owner dispatch as the explicit next action. Do not mark work assigned or in progress merely because 09B created a record. Use existing pilot conventions; do not add statuses, schema or another state system for this purpose.
+
 Use:
 
 - One team owner on every item, including internal work without a receiver.
@@ -157,12 +178,14 @@ Use:
 
 Do not invent historical sessions, delivery or receipt.
 
-Give each assigned team its record ID and startup/resume directions:
+Put the actual Trekker record ID and these startup/resume directions into each owner-assignable prompt and the index, so the team receives them when the owner dispatches the assignment:
 
 1. query its team state;
 2. inspect the assigned record and latest checkpoint;
 3. open the linked authoritative assignment; and
 4. proceed only within that authorization.
+
+Do not contact or dispatch implementation teams as part of preparing these materials.
 
 Record delivery and receiving outcomes as they actually happen.
 
@@ -207,6 +230,7 @@ Do not pre-authorize or manufacture 09C.
 
 Deliver:
 
+- any outstanding owner decisions with concrete recommendations, clearly separated from recorded approvals;
 - the assignment index and prompts;
 - actual Trekker IDs and dependencies for work that was genuinely enrolled;
 - usable team startup/update directions; and
@@ -221,5 +245,7 @@ Identify any pilot behaviour not yet naturally exercised.
 Leave component work and receiving repairs open in Trekker until their real completion.
 
 If pilot setup prevents enrollment, report 09B as partial with the accountable owner and next action. Do not invent Trekker IDs or substitute another tracker/helper.
+
+Missing scope approval likewise limits enrollment and commissioned assignments, not the advisory decision brief or clearly labelled drafts. State exactly what is prepared, which decision remains, and the recommended next action.
 
 No production switch, restart, publication, commit or push is authorized by this coordination assignment; those actions require their own applicable owner authorization.

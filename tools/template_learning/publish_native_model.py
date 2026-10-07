@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 from collections import Counter
 import json
+import sys
 from pathlib import Path
 
 from template_learning.artifacts import canonical_bytes, load_bundle, MODEL_SCHEMA, MODEL_VERSION
@@ -56,18 +57,19 @@ def compact_model(candidate):
     return result
 
 
-def verify_reference_implementation(model):
+def verify_reference_implementation(model, *, execution_context=None):
     """Guard replay against silently using different mutable learner code/rules."""
-    root = Path(__file__).parent
-    for name, digest in model['algorithm']['implementation_hashes'].items():
-        path = (root / name).resolve()
-        if not path.is_relative_to(root.resolve()) or sha256_file(path) != digest:
-            raise ValueError(f'reference implementation differs: {name}')
+    from template_learning.learner_loader import verify_implementation_reference
+    identity = model['algorithm']['learner_identity']
+    if model['algorithm']['implementation_hashes'] != identity['implementation_hashes']:
+        raise ValueError('candidate implementation hashes disagree')
+    verify_implementation_reference(identity,
+        execution_context=execution_context if execution_context is not None else sys.modules.get('_ck3_learner_execution'))
 
 
-def validate_native_export(model, bundle):
+def validate_native_export(model, bundle, *, execution_context=None):
     """Replay every complete contextual message, preserving all alternatives."""
-    verify_reference_implementation(model)
+    verify_reference_implementation(model, execution_context=execution_context)
     matcher = Matcher(model)
     counts = Counter(full=0, provisional=0, unknown=0)
     rows = captures = 0

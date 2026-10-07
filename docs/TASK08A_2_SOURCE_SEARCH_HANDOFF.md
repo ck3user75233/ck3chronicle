@@ -1,5 +1,22 @@
 # Task 08A.2 — source search and diagnostic context
 
+## TREK-5 content scope — 2026-10-06
+
+Owner-issued Reporting Adoption adds only `journal.call()` around all of
+`SourceSearch._content`, including its cache return and existing subprocess
+cleanup. No source resolution, algorithm, decoding, ripgrep acceptance/error
+rule, progress hook or logger configuration changed. Removing the scope/import/
+binding recovers the original AST.
+
+Fresh genuine captured-playset searches observe matching code 0, no-match code 1
+and a repeated cached result without another subprocess; all three scope exits
+complete normally. Actual paths, encoding/coverage, excerpts and source results
+match the baseline. No fake path, process fault or synthetic source was used.
+Incomplete/error branches remain unrepresented, with original behavior retained.
+The [08B delivery](TASK08B_REPORTING_HANDOFF.md#trek-5-canonical-reporting-adoption--2026-10-06)
+contains hashes/patches, genuine command/results, receipt and evidence limits.
+
+
 ## Owner rule: last load order identifies the file/line error source — 2026-10-04
 
 The owner now directs single-file/line analytics to identify the last matching

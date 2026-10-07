@@ -1,5 +1,271 @@
 # Current handoff
 
+## Source publication for Task 09 baseline — 2026-10-07
+
+The Owner requested a reviewed commit/tag/push script after the Git report.
+The 2026-10-07 report confirms local and remote `main` at `450b1f71...`, no staged
+work, no remote tags and no drift in the received build inputs. The publication
+plan includes the received implementation, pinned retained releases, catalog/default
+adoption and reviewed coordination documents, including the two dated Advisory
+pilot-review documents. Runtime evidence and local configuration remain excluded.
+
+The source pin is the annotated tag **`task09-baseline-2026-10-07`**, created on
+the new reviewed commit by the owner-run script, then pushed atomically with `main`.
+Before that execution, the tag is only intended. Its annotation and protected
+TREK-6 completion receipt carry the actual commit/hash results without a
+self-referential documentation edit. Do not infer publication from this paragraph.
+See [the exact baseline](TASK09_RELEASE_BASELINE.md) for pins, script/receipt locations and verification.
+
+Local production model order **9**, Learner order **10** and repository default
+are already adopted. Package version remains **0.0.1**, algorithm **v61**; orders
+are sequence numbers. Physical external installation is deferred/unperformed for
+Task 10. No live switch/restart or hosted wheel upload is part of this Git script.
+Earlier pending/authorization statements below are dated history; the Owner's
+later request authorizes preparing this bounded remote update for owner execution.
+
+## Task 09 baseline — 2026-10-07: publication continuation
+
+Owner issued [the publication assignment](task09-deliverables/RELEASE_PUBLICATION_PIPELINE.md). Local production publication
+and repository adoption are complete and freshly reauthenticated: wheel
+`2dbb613d...`, model `2b12932103f3a3111a4e1880` (order 9), Learner `2ec4b671...`
+(order 10). Orders are publication sequence numbers; package version is **0.0.1**,
+Learner algorithm **v61**. [The baseline](TASK09_RELEASE_BASELINE.md) gives full pins and receipts.
+
+The now-required local reviewed commit and annotated tag remain unexecuted:
+this session's filesystem policy makes `.git` read-only, with no escalation route.
+TREK-6 is continued as `in_progress` for that precise publication obligation;
+prior CMT-63 completed receiving/local adoption, not the newly issued Git step.
+No further owner approval is needed. Pipeline must finish in a Git-writable session
+using the refreshed 193-path review; no old HEAD/tag substitution. Task 09 receiving
+has no implementation defect; final publication/owner-closure readiness awaits
+that source pin. Existing staged work is empty and untouched.
+
+Operational installed selection is a separate file and still authenticates prior
+package `4ac4e8ee92346e6d14eacfbf`; repository adoption does not establish running
+service identity. No live switch/restart, push or upload occurred or is authorized.
+External installation verification is deferred/unperformed for separately issued
+Task 10. Earlier completion statements below retain their narrower historical scope.
+
+## Latest production release published locally — 2026-10-07
+
+The Owner has adopted this verified Task 09 application/Learner/full-model
+combination as the newest production release. Model **2b12932103f3a3111a4e1880**
+is published at **order 9**, Learner **2ec4b671...** at **order 10**, and the
+repository default now selects the new exact manifest pin. Wheel **2dbb613d...**
+and its verified isolated installation contain and select that same 73-log model.
+The wheel's distribution label remains **0.0.1** and the algorithm label remains
+**v61**; release hashes/catalog identities distinguish this production build.
+
+See [the production baseline](TASK09_RELEASE_BASELINE.md) for full pins, locations, acceptance evidence,
+publication receipt and rollback. Genuine installed classification and retained
+Learner evaluation passed; the publication reauthenticated all 620 installed
+members and both default selections. No component receiving defect remains.
+TREK-2 is received; TREK-6 receiving is complete under the Owner's explicit
+deferral of physical external installation verification to Task 10. That check
+is unperformed, not passed. Task 10 still requires its own assignment.
+
+Repository production publication/default adoption are executed. The running
+Watcher/handler and config are unchanged; no live service switch is claimed.
+Git commit/tag/push and remote upload are unexecuted: this session cannot write
+`.git`, and no remote release has been created. The exact reviewed source
+include/exclude and commit/tag proposal remain in the baseline evidence.
+Earlier status/proposal entries below are history, superseded where inconsistent.
+
+## Task 09 full-model baseline received; placement deferred to Task 10 — 2026-10-07
+
+Owner-issued baseline receiving produced the fresh full-model wheel `2dbb613d...`
+and isolated installation; all 620 members authenticate. New package
+`2b12932103f3a3111a4e1880` / manifest `02c70654...` selects the exact 73-log model.
+Installed genuine G2 classification gives 4,141 template / 65 provisional records,
+with complete record equality to production; installed retained Learner evaluation
+and journals pass. Unchanged Reporting/Watcher evidence is explicitly reused.
+[The exact baseline and adoption proposal](TASK09_RELEASE_BASELINE.md) records identities, commands,
+placement, orders 9/10, metadata/default and reviewed Git commit/tag proposal.
+
+Learner TREK-2 is received and closed. The Owner has since explicitly deferred
+physical external installation verification to Task 10; it is unperformed and no
+longer blocks this Task 09 release. See the
+[disposition](TASK09_OWNER_DECISIONS.md#external-installation-verification-deferred-to-task-10--2026-10-07).
+Pipeline should reconcile TREK-6 receiving closure without requesting external
+staging access for this release. Publication/adoption remain outstanding; production
+catalogs, active selection/config, services and Git are unchanged by this decision.
+Repository adoption, source commit/tag, live activation and Task 10 issuance remain
+separate from this receiving-scope disposition.
+Earlier preparation/status entries below remain historical.
+
+## Production-scope baseline prompts prepared — 2026-10-07
+
+The Owner requested a new model built with the logging-enabled code and a formally
+pinned repository baseline before advancing to Task 10. The
+[Learner prompt](task09-deliverables/RELEASE_BASELINE_LEARNER.md) rebuilds the same
+73-log production input basis/order/settings; the
+[Pipeline prompt](task09-deliverables/RELEASE_BASELINE_PIPELINE.md) receives it into
+a fresh pinned application, completes required placement/receiving, and prepares
+the exact final adoption operations. Continue TREK-2/6; no new task or 09C.
+Earlier two-log acceptance remains valid within its scope. Full-model build and
+baseline receiving await owner issuance of these prompts. Preparation changes no
+tracker state, product source, live selection, services or Git publication state.
+
+Pipeline can preflight external staging access while Learner works. It must not
+silently defer that existing receiving requirement to Task 10. Final evidence
+belongs in component handoffs with one concise baseline record; production
+activation and reviewed Git commit/tag remain separate explicit owner actions.
+
+## Trekker usefulness review delivered — 2026-10-07
+
+Advisory completed the [pilot usefulness review](TREKKER_PILOT_USEFULNESS_REVIEW.md)
+through CMT-54 using protected current records/history/team views, the saved
+in-flight snapshot and linked technical evidence. The Owner clarifies that teams
+largely retrieved shared information; occasional relay lapses were not a major
+problem. Recommendation: retain the pilot and its retrieval practice,
+shorten current summaries, and provide owner briefs at meaningful handoffs,
+integration/decision points and final receiving. Real delivery consumption and
+resumption are evidenced; productivity gains and fault resilience are not inferred.
+The latest acceptance materials include actual journal review (22 files/209 events),
+not just classification. TREK-2/6 remain open for one Pipeline placement obligation;
+the review recommends reconciling producer closure without waiving that check.
+Recommendations only: no tracker edits, team dispatch, runtime changes or testing.
+
+## Pipeline bounded logging acceptance delivered — 2026-10-07
+
+Owner issued the acceptance continuation. Pipeline received Learner CMT-51/52 on
+TREK-2 and authenticated the exact Observer-free installed wheel `1a325cd4...`.
+Task-local research registration and explicit package selection `a6d9bfcde287f2f9f3961503`
+produced 4,206 Error Contract records from genuine G2: 3,197 template / 1,009
+provisional, no unmatched/unresolved. Complete occurrence/capture/rendered-region
+comparison passes. Five exact installed Learner operations and successful same-wheel
+Reporting/CLI evidence are received/reused, not repeated. The
+[consolidated operation table](learner-next-release/OBSERVER_FREE_PIPELINE_RECEIVING.md#consolidated-bounded-build-to-pinned-classification-acceptance--2026-10-07)
+has commands, pins, receipts, actual journal lines and explicit natural evidence gaps.
+Evidence: `.codex-tmp/trek6-acceptance-20261007/`.
+
+TREK-2/6 remain in progress solely for Pipeline's physical external-placement
+follow-up: checkout-only writes prevent it here. Next is authorized writable
+outside-checkout staging and bounded relocated execution, or explicit owner
+disposition. Outside-checkout cwd does not satisfy placement. No pending Learner
+repair/confirmation, new task/09C, product code edit, rebuild, production selection,
+service restart or activation. Prior handoff entries below remain historical.
+
+## Bounded logging acceptance prompts prepared — 2026-10-07
+
+The Owner requested prompts to demonstrate genuine model build, pinning,
+classification and the resulting Canonical Logging v1 journals. The
+[Learner prompt](task09-deliverables/LOGGING_ACCEPTANCE_LEARNER.md) explicitly
+authorizes the fresh two-input model needed for the new authenticated identity
+when issued, resolving the earlier cleanup restriction. The
+[Pipeline prompt](task09-deliverables/LOGGING_ACCEPTANCE_PIPELINE.md) receives that
+model through explicit isolated selection and real installed classification, and
+consolidates actual/reused evidence in one acceptance report. Existing TREK-2/6
+remain the records; no production-default change or service restart is requested.
+Prompt preparation does not claim dispatch or execution. Physical external placement
+remains a separate unresolved receiving item.
+
+## Observer removal assignments prepared — 2026-10-07
+
+After Watcher's independent-path finding (TREK-3 CMT-32/33), the Owner requested
+separate Watcher/Learner/Pipeline deletion prompts, combining Pipeline removal and
+replacement receiving. The [assignment index](CANONICAL_LOGGING_V1_DELIVERABLES.md#project-deliverables)
+links all three. Pipeline delivers cleaned backend bytes first, Learner authenticates
+a new distribution, and Pipeline receives Watcher's removal and Learner's delivery
+into a fresh candidate. Historical immutable artifacts stay intact; Observer-bearing
+copies must be absent from the replacement. Observer-only lifecycle requirements are
+superseded; external-placement disposition remains separate. Documentation preparation
+only: no product edits, dispatch, tracker mutation or new receiving claimed here.
+
+## Observer boundary review precedes cleanup — 2026-10-07
+
+The Owner considers Watcher the sole owner of new CK3 log identification/capture,
+source-log timestamp recording and active playset JSON for database ingestion.
+The Owner believes the Observer is a parallel construction and has ordered its
+deletion. First, Watcher must establish whether necessary functions depend on
+Observer code or output and what must be preserved before deletion. The
+[dependency review prompt](task09-deliverables/WATCHER_OBSERVER_BOUNDARY_REVIEW.md)
+was issued to Watcher on existing TREK-3. The [completed dependency review](WATCHER_OBSERVER_DEPENDENCY_REVIEW.md)
+finds those functions independent of Observer code/output and identifies exact
+removal references, shared facilities to preserve and release/lineage accounting
+for Pipeline's TREK-6 receiving. Source inspection and existing genuine evidence
+only: no code/release changes, new CK3 run or synthetic test. Deletion is not
+complete; existing receiving obligations remain explicit on their original records.
+
+## Trekker usefulness review planned — 2026-10-07
+
+At the owner's request, Advisory prepared the
+[post-delivery review plan](TREKKER_PILOT_USEFULNESS_REVIEW_PLAN.md) while TREK-6
+is underway. It covers team retrieval/handoffs and potential Advisory/Owner review
+points, with observed effects separated from hypothetical benefits. Read-only
+protected snapshots of six tasks and five team views are retained under ignored
+`.codex-tmp/trekker-usefulness-review-20261007/`. Resume the main assessment when
+the owner returns with Final Packaging's handoff/receiving disposition; open limits
+remain explicit. No tracker changes, monitoring, dispatch or implementation work.
+
+## Trekker use clarified — 2026-10-06
+
+The owner has issued through TREK-4. Current delivery/receipt state belongs in
+Trekker; the enrollment snapshot below is historical. Root instructions,
+[the operating guide](DEVELOPMENT_ENVIRONMENT.md#what-to-retrieve-from-trekker)
+and all six assignment startup sections now explain what to retrieve: incoming
+deliveries, dependency evidence, coordination comments and remaining follow-ups.
+Read later receipts alongside earlier accurate checkpoints; do not erase history.
+This clarification changes no implementation scope, tracker state or helper code.
+
+## Task 09B enrollment delivered — 2026-10-06
+
+09B coordination/enrollment is complete. Use the owner's [deliverables index](CANONICAL_LOGGING_V1_DELIVERABLES.md)
+and its six aligned prompts. All six real records remain `todo`, awaiting owner
+issuance; next is Shared Backend/API `TREK-1` to Pipeline. No logging implementation
+has started through 09B, and no component delivery/receipt was invented.
+
+Genuine protected-helper checks: create six tasks, add ten prerequisite edges,
+append six preparation checkpoints, inspect `TREK-1`, and query all four teams.
+Pipeline sees `TREK-1/4/6`, Learner `TREK-2`, Watcher `TREK-3`, Reporting `TREK-5`.
+Each view has the correct latest checkpoint/next action/dependencies, no warnings,
+contradictions or pending recovery. Incoming/outgoing delivery queues are empty
+because implementation has not delivered anything. Evidence is retained under
+`.codex-tmp/task09b-enrollment-20261006-advisory/`, including four team-state JSON
+snapshots and `verification-summary.json`. Live state stays in Trekker.
+
+One real create request was rejected for two receiver tags before mutation; an
+empty protected inventory confirmed no create. The corrected Shared Backend record
+uses Learner as receiver; Watcher compatibility remains in its assignment. No helper
+repair was needed. A tool-output truncation affected local display of the last
+dependency response; protected readback confirmed all five Final Packaging edges,
+without replaying the write. No synthetic case was created or executed.
+
+Not naturally exercised: task patch updates, epics (none needed), actual delivery/
+receipt, team-to-team resumption, multi-page traversal, interrupted writes, lock
+recovery, backup/restore and concurrent access. Ordinary operation proves no crash
+safety. Actual pilot defects remain Pipeline-owned under its delivered handoff.
+
+Documentation changes consolidate Learner administration and Pipeline foreground
+work into their owning assignments and rename Watcher Integration, removing the
+unissued split prompts. Pipeline's helper/install/source and supplied handoff were
+unchanged. Existing edits remain intact; no commit, push or production action.
+All 44 current assignment/decision links and anchors resolve. Older 09B entries
+below are historical and superseded by this continuation.
+
+## Task 09B advisory continuation — 2026-10-06
+
+Continue from [the assignment index](CANONICAL_LOGGING_V1_DELIVERABLES.md) and
+[recorded owner disposition](TASK09_OWNER_DECISIONS.md). Both scope decisions
+are settled; team prompts are prepared but unissued. Pipeline's bounded pilot
+is commissioned but undelivered; owner dispatch is next. Do not install tooling
+in Advisory, guess helper commands or create IDs. Resume 09B enrollment only after
+the exact protected helper/canonical store is delivered. The index specifies the
+remaining ID/command amendments, team-state demonstration and 09C recommendation.
+
+Shared-checkout ledger for this advisory delivery: added index and
+`docs/task09-deliverables/` prompts; recorded the supplied owner reply in the
+pre-existing untracked decision brief; amended saved pilot commissioning metadata
+and current plan/status pointers. Opening changes to `PROJECT_PLAN.md` and
+`TASK09B_PROMPT.md` were preserved; `TASK09B_PROMPT.md` was not edited by this work.
+No application/Learner/tooling source, candidate, component verification, runtime,
+production, commit or push. This is a continuation pointer, not a second tracker.
+
+Documentation checks: 77 local assignment/decision links and their internal
+anchors resolved; `git diff --check` passed (Git reports existing CRLF normalization
+warnings). The plan's SHA-256 matches the reviewed revision recorded in the index.
+These are document checks only, not logging or pilot verification.
+
 ## Database replaced; 31 new-model Runs active — 2026-10-05
 
 **Complete.** Production now uses
