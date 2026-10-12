@@ -1,0 +1,27 @@
+{
+  "purpose": "Download-only inputs for Task 10B provenance comparison and corresponding notices; not installed or adopted automatically.",
+  "retrieved_release_metadata": "2026-10-08",
+  "assets": [
+    {
+      "label": "Astral standalone CPython 3.12.14 Windows x64, 20260901, install-only",
+      "filename": "cpython-3.12.14+20260901-x86_64-pc-windows-msvc-install_only.tar.gz",
+      "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20260901/cpython-3.12.14%2B20260901-x86_64-pc-windows-msvc-install_only.tar.gz",
+      "sha256": "e90c1b6419da3bd812dd73bb3de40287a21abf153438147639ec5e20375ea93f",
+      "hash_source": "https://github.com/astral-sh/python-build-standalone/releases/expanded_assets/20260901"
+    },
+    {
+      "label": "Astral standalone CPython 3.12.14 Windows x64, 20260901, full build metadata",
+      "filename": "cpython-3.12.14+20260901-x86_64-pc-windows-msvc-pgo-full.tar.zst",
+      "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20260901/cpython-3.12.14%2B20260901-x86_64-pc-windows-msvc-pgo-full.tar.zst",
+      "sha256": "b7cf8be5cd5222d1e456fbf71257efe558d84fe092757b6892c16584e5df01c2",
+      "hash_source": "https://github.com/astral-sh/python-build-standalone/releases/expanded_assets/20260901"
+    },
+    {
+      "label": "ripgrep 15.2.0 Windows x64 MSVC release",
+      "filename": "ripgrep-15.2.0-x86_64-pc-windows-msvc.zip",
+      "url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-x86_64-pc-windows-msvc.zip",
+      "sha256": "71b2fef860abe467217a538ff31de02f5258807c0129f771846f87bd029aafc5",
+      "hash_source": "https://github.com/BurntSushi/ripgrep/releases/expanded_assets/15.2.0"
+    }
+  ]
+}

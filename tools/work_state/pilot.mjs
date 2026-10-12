@@ -6,6 +6,7 @@ import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { randomUUID } from 'node:crypto';
+import { decodeTrekkerOutput } from './toon_output.mjs';
 
 const STORE = String.raw`C:\Users\nateb\Documents\ck3chronicle\.ck3chronicle\wip\tooling\work-state`;
 const TOOLCHAIN = path.join(STORE, 'toolchain');
@@ -137,7 +138,7 @@ function cli(args, writes = false) {
     (mutation ? 'A write may have committed; inspect before retrying.' : 'Read is incomplete.'));
   requireThat(!result.stderr.trim(), `Unexpected CLI stderr; outcome requires inspection: ${result.stderr}`);
   requireThat(result.stdout.trim(), 'Incomplete CLI output');
-  const value = decode(result.stdout, { strict: true });
+  const value = decodeTrekkerOutput(result.stdout, decode);
   requireThat(value !== undefined && value !== null && value.success !== false, 'Invalid or unsuccessful CLI result');
   if (writes) {
     mutation.completedSteps.push({ args, result: value });

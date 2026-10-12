@@ -49,6 +49,15 @@ def load_selected_package(*, models_root: Path | None = None,
 def load_selected_classifier(*, models_root: Path | None = None,
                              selection_path: Path | None = None, package_id: str | None = None,
                              cache_size: int = 4096) -> Classifier:
+    if models_root is None and selection_path is None and package_id is None:
+        from ..config import load_config, ConfigurationError
+        selected = load_config().get('model', {})
+        package_id = selected.get('package_id')
+        if not package_id:
+            raise ConfigurationError('model.package_id required; use setup to confirm the shipped default')
+        pin = package_selection(package_id)['manifest_sha256']
+        if selected.get('manifest_sha256') != pin:
+            raise ConfigurationError('configured model manifest differs from installed catalog')
     return Classifier(load_selected_package(models_root=models_root, selection_path=selection_path, package_id=package_id),
                       cache_size=cache_size)
 

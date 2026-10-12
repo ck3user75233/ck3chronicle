@@ -1,5 +1,99 @@
 # Project status
 
+## Current Task 10 continuation — C11 / r4, 2026-10-12
+
+Owner removed additional Python/ripgrep upstream verification/downloads; existing
+working payloads and notices are preserved. Previously blocked local assembly is
+complete: **C11**, application **0.0.3**, full **manual r4**, ZIP SHA-256
+`97f52263beca3387390d220d33ea461d6e60edaca7e70314096f473566750771`.
+All 1,506 payload files, 18 manual inputs and 157 manual links authenticate; affected
+installed checks pass locally. Prior receipts and genuine workflows remain intact.
+See [distribution](task10/DISTRIBUTION_HANDOFF.md) and
+[receiving](TASK10_HANDOFF.md) for exact pins, evidence and current actor/actions.
+
+TREK-10 local delivery and TREK-11 manual producer scope are received; TREK-16
+retains actual C11 external/clean-Windows and ordinary-console Watcher Ctrl+C /
+explicit handler-stop observations. The current session is checkout-write-only
+on a developer host. Prepared bounded Owner steps are linked in the receiving
+handoff. Task 10 is not yet ready for Owner acceptance; no production/Git action.
+The deferred ingestion redesign stays deferred. Older dependency/provenance waits,
+missing-manual claims and Watcher implementation gates below are dated history,
+superseded by this section; do not resume or reintroduce them.
+
+
+Owner direction, 2026-10-12: defer the newly discussed ingestion/hash-lookup,
+failed-Run metadata and retry changes until Task 10 is complete. The initial
+reconciliation-authority question is withdrawn; the proposed Watcher lookup
+does not run in the delivered application and is not a Task 10 acceptance
+requirement. No ingestion design decision is needed to finish Task 10.
+
+## Task 10C continuation — 2026-10-12
+
+**TREK-16** received the current 0.0.3 application corrections, authenticated C10
+as an integration input, and received the separately frozen 10D-r2 manual and
+Watcher r2 retention correction. Prior genuine C9 acceptance and completed 10E
+remain intact; no workflows or runtime operations were repeated. The same chat
+authored recent 10B/10D inputs, so this is not claimed as independent review.
+See [current receiving and exact limits](TASK10_HANDOFF.md).
+
+Task 10 is **not ready for Owner acceptance**. C10 lacks the six revised manual
+pages; 10B still owes final archive/provenance/notices. Pipeline TREK-9 and Docs
+TREK-11 are completed for received scope (CMT-158/159); Watcher retention prose
+is received (CMT-157). The Owner challenged the unclear reconciliation question;
+its secondhand scope claim is disputed, not an established acceptance gate.
+TREK-12 preserves that history without authorizing code changes. Final external/clean
+Windows and ordinary-console stop remain TREK-16 obligations; this session has
+checkout-only writes on a developer host. No publication or activation occurred.
+
+## Task 10C receiving — 2026-10-09
+
+**TREK-16** is owner-issued and in progress. Fresh isolated C9 guide checks pass:
+Run `20261008-3WKDZ4`, 1,066 records / 1,838 occurrences, 133 preserved playset
+members, reports/public-handler/SQLite agreement, repeat preservation and 23
+correlated journal request pairs. See [exact receiving and limits](TASK10_HANDOFF.md).
+The complete manual is not bundled in C9; next cache wheel `94987fb0...` is
+authenticated but not installed as a replacement distribution. 10B final
+artifact/provenance/notices and named producer follow-ups remain open.
+
+Prior Owner-run external C9 installation is received evidence, superseding older
+unperformed-placement wording below. This 10C session can write only inside the
+checkout and runs on a developer Windows host; cold-machine/final external
+acceptance and ordinary-console watcher stop remain unverified. Unchanged
+lifecycle evidence is reused with exact correspondence. Task 10 is **not ready
+for Owner acceptance**; no source publication or live activation occurred.
+
+Tooling recovery completed 2026-10-10: committed CMT-132 was reconciled without
+replay, marker archived/cleared and strict TOON output decoding repaired. Required
+deferred writes are saved: TREK-9 CMT-133, Watcher CMT-134, TREK-15 completed,
+TREK-16 description/checkpoint CMT-135. [Diagnosis and evidence](TREKKER_CMT132_RECOVERY.md).
+Product/distribution follow-ups and final acceptance remain open as above.
+
+## Pipeline cache follow-up — 2026-10-08
+
+Repository source and a fresh next-candidate wheel now retain **1,024 completed
+public operations**; outstanding requests remain outside eviction. Genuine public
+handler checks exercised the exact bound, normal eviction and unchanged persisted
+Runs/hash deduplication. Concurrency/waiter eviction is verified only by unchanged
+code, not a fresh runtime exercise. See the [delivery and limits](task10/REQUEST_RESULT_CACHE_HANDOFF.md).
+The externalized Windows C9 build retains 256; no installed release or production
+activation is claimed. Raw-log retention and models are unchanged. Older 256-result
+entries below describe their dated builds.
+
+## Task 10 first-use design — 2026-10-08
+
+Owner-issued [10A/TREK-7](task10-deliverables/10A_FIRST_USE_DESIGN.md) belongs to
+Launch & Distribution. The [first-use design](task10/FIRST_USE_DESIGN.md) specifies
+the proposed bundle/setup/configuration/runtime boundary; Pipeline technical
+receipt remains pending. No setup/application implementation is claimed. Live
+progress and receiving are on TREK-7; sibling work requires separate issuance.
+
+Task 09 publication is complete per TREK-6 CMT-69: commit
+`709ea7842a0202c420b43355b18be91d8ca196a3`, tag `task09-baseline-2026-10-07`.
+Local refs were independently verified in 10A; remote push remains producer-reported
+evidence. Physical external installation and clean-machine acceptance remain
+unperformed Task 10 work. No production config/database, retained release, service
+or source code changed in 10A. Older unexecuted-publication wording below is history.
+
 ## Source publication for Task 09 baseline — 2026-10-07
 
 The Owner requested a reviewed commit/tag/push script after the Git report.

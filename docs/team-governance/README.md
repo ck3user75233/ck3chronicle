@@ -2,15 +2,17 @@
 
 ## Current team responsibilities
 
-Updated 2026-10-05 following owner direction. This is the authoritative record of
-the team boundaries below, including the agreed addition of application packaging
-to Pipeline. Teams are owner-directed specialist tasks/chats; a role can have
-several bounded assignments. The roles do not require a new agent platform.
+Updated 2026-10-08 to incorporate the Owner's agreed [Task 10 split](../TASK10_DELIVERABLES.md).
+Pipeline retains application packaging; Launch & Distribution owns the outer
+distribution, setup experience and product manual. Teams are owner-directed
+specialist tasks/chats; a role can have several bounded assignments. The roles
+do not require a new agent platform.
 
 | Team / role | Core responsibilities | Delivery, receiving and repair accountability |
 |---|---|---|
-| **Pipeline** | **Production processing and classification; ingestion and deduplication; Error Contract implementation and native reconstruction; SQLite schema, persistence and per-Run lineage; unresolved review storage; shared database handler and public APIs; retention APIs.** Also owns application packaging, dependencies/resources, installed defaults, deployment preparation and rollback. | Receive and execute the approved Learner parser/matcher/model package on protected logs, preserve capture facts and evidence, and expose durable results to consumers. Own runtime composition, database and application packaging defects. Verify the final installed combination and coordinate integrated receiving/cutover while each component retains its repair owner. |
+| **Pipeline** | **Production processing and classification; ingestion and deduplication; Error Contract implementation and native reconstruction; SQLite schema, persistence and per-Run lineage; unresolved review storage; shared database handler and public APIs; retention APIs.** Also owns application wheel packaging, internal dependencies/resources, central configuration/initialization/selection, deployment preparation and rollback. | Receive and execute the approved Learner parser/matcher/model package on protected logs, preserve capture facts and evidence, and expose durable results to consumers. Own runtime composition, database and application packaging defects. Verify the integrated application and coordinate its technical receiving/cutover; Launch & Distribution leads Task 10's final distribution acceptance. Each component retains its repair owner. |
 | **Learner** | Empirical learning, parser/matcher/selection behavior, model construction, comparative evaluation and immutable learner/parser/matcher/model distributions with authenticated identities and pins. | Own the algorithms, model meaning and executable component delivery that Pipeline consumes. Supply interfaces and genuine evaluation evidence; repair defects in those components. Changed retained artifacts require new identities. Pipeline packages these distributions into the application without rewriting them. |
+| **Launch & Distribution** | Outer Windows distribution, bundled runtime/tools, setup/launch experience, installation acceptance and coherent product manual. Docs is a role within this team. | Receive Pipeline's application/configuration/storage interfaces; own bundle/launcher and guide defects. Coordinate component-authored references and verify user workflows. Lead Task 10 final distribution acceptance while component teams retain technical repair ownership. |
 | **Watcher** | **Separate from Pipeline:** CK3 lifecycle observation; protected log capture/publication; observed capture facts; active-playset extraction/publication; automatic ingestion and retention triggers, including startup handling and request-outcome consumption. | Own the capture boundary and the caller integration that invokes Pipeline's APIs. Deliver protected inputs and metadata to Pipeline. Pipeline owns processing/storage and retention implementation; Watcher owns triggering those operations and handling their outcomes. Neither team substitutes inferred facts for unavailable observations. |
 | **Data Intelligence / Reporting** | Diagnostic queries and cross-Run searches, history analysis, source search/context, report presentation and exports; compatibility with delivered model/contract structures. | Consume stored results through the public handler, implement analytical/report behavior and repair consumer incompatibilities. Supply genuine verification and source/artifact correspondence for integrated receiving. A task producing a repair wheel does not transfer application packaging ownership from Pipeline. |
 | **Advisory** | Owner-facing planning; evidence-based options and recommendations; requirements clarification; concise task prompts; dependency/sequence assessment; delivery and receiving review; decision and handoff continuity. | Own the accuracy of advice, summaries and prompts, including corrections when evidence or owner direction changes. Distinguish requirements, proposals, delivered behavior, reported checks and independently performed checks. Identify unresolved work and its accountable owner. Recommendations do not authorize scope, implementation or activation; Advisory is not a compulsory approval step between teams. |
@@ -34,20 +36,27 @@ and [Watcher capture/playset ownership](../WATCHER_ACTIVE_PLAYSET_HANDOFF.md).
 The older Watcher handoff's API details are superseded by the current Pipeline
 handoff where applicable.
 
-**Keep application packaging with Pipeline.** It is part of delivering a usable
-production runtime. The present work does not establish a need for another team.
-Use bounded Pipeline assignments when concurrent packaging and ingestion work
-need separate focus. Reconsider a team split only if practical delivery experience
-shows a persistent capacity or ownership problem; do not split merely because the
-responsibility list is long.
+**Separate the application from its outer distribution.** Pipeline owns the wheel,
+internal dependencies/resources, central configuration/initialization/selection,
+runtime composition and database interfaces. Launch & Distribution owns downloadable
+bundles, setup/launch presentation, installation acceptance and manual assembly.
+Its launcher calls Pipeline's interfaces rather than implementing a second owner.
+This Owner-approved Task 10 boundary supersedes the earlier recommendation against
+a separate distribution role; Task 09 packaging remains Pipeline's delivered work.
 
 ## Working and receiving
 
-Each implementing team owns relevant verification and documentation of its
-changes. The consumer verifies its use of the delivered interface. Pipeline owns
-consolidating the integrated application result; that does not require it to
-implement every component repair. Teams proceed independently within assignments;
-ownership does not expand scope into unrelated repairs or production operations.
+Each implementing team authors and maintains accurate technical reference content
+and examples with its changes. Launch & Distribution's Docs role organizes the
+manual and verifies worked examples; 10C follows the final manual against the
+installed distribution. Contributions require the explicit assignments in Task 10,
+not an inferred dispatch from this responsibility statement.
+
+The consumer verifies its use of the delivered interface. Pipeline consolidates
+the integrated application; Launch & Distribution consolidates Task 10 distribution
+acceptance. Neither implements another component's repairs. Teams proceed
+independently within assignments; ownership does not expand scope into unrelated
+repairs or production operations.
 
 An unfinished follow-up or receiving repair remains an explicit obligation with
 an owner and next action, even after the original delivery is complete. Separate

@@ -80,6 +80,10 @@ def create_database(root: Path, *, initialized_at: datetime | None = None):
         connection = sqlite3.connect(path)
         schema.initialize(connection, database_id=database_id,
                           created_at=_timestamp(now))
+    except Exception as exc:
+        # Setup must disclose partial creation without deleting or guessing state.
+        setattr(exc, 'created_database_path', str(path))
+        raise
     finally:
         if connection is not None:
             connection.close()

@@ -1,5 +1,18 @@
 # Trekker CLI pilot — Pipeline delivery to Advisory
 
+## CMT-132 decoder recovery completed — 2026-10-10
+
+The committed TREK-9 CMT-132 was reconciled without replay; its marker was archived
+under the canonical store's `recovery/CMT-132-20261010T113212Z/` and cleared under
+the exclusive lock with no Node/Bun clients present. The real TOON 2.1.0 decoding
+defect is repaired in the owning helper using `tools/work_state/toon_output.mjs`:
+quote object keys before unchanged strict decoding, preserving values and pins.
+Keep this module with `pilot.mjs` in source backups. Four genuine-record offline
+regressions and protected history/read-back/required writes pass. No automatic
+recovery or retry was added. [Exact diagnosis, receipts and limits](TREKKER_CMT132_RECOVERY.md).
+
+The original delivery and its dated verification limits follow.
+
 2026-10-06. **Delivered for resumption of 09B enrollment.** The pinned toolchain is
 installed, one canonical store is initialized and protected empty-store reads
 succeed. Mutation operations are implemented and reviewed against the installed

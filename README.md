@@ -5,6 +5,13 @@ It protects the useful output of completed runs, turns `error.log` into durable
 and reviewable diagnostic history, and provides libraries for comparison and
 bounded source context. Cautious action guidance remains planned.
 
+For the installed Windows candidate, start with the [user manual](docs/user/README.md),
+[practical workflows](docs/user/WORKFLOWS.md) and
+[external SQLite access](docs/user/EXTERNAL_DATA.md). These describe application
+0.0.3/candidate 11; final distribution acceptance remains pending.
+The complete proposed install ZIP is preserved in
+[the candidate checkpoint](release-candidates/task10/candidate11/README.md).
+
 The first product milestone is **Trusted Run**: observe one CK3 start-to-exit
 lifecycle, protect its live `error.log`, process it into SQLite, preserve
 unresolved evidence for review, and generate reports from stored records.
@@ -53,7 +60,7 @@ valid error log to proceed. Daily watcher maintenance preserves configurable
 30-elapsed-day raw expiry. Selection and the existing Run writer are unchanged.
 Removed providers and generation replay remain excluded.
 
-Commands are `runs`, `report`, `ingest`, `watch`, `capture` and `doctor`;
+Commands are `setup`, `runtime-stop`, `runs`, `report`, `ingest`, `watch`, `capture` and `doctor`;
 `watch --once` retains manual error-only copying. The [earlier watcher activation](docs/WATCHER_LIVE_ACTIVATION_HANDOFF.md)
 and [September 30 handler/logging activation](docs/TASK07E_RUNTIME_LOGGING_HANDOFF.md)
 are historical records, not evidence of current live status.
@@ -80,11 +87,10 @@ Explicit Run-result replacement and full Trusted Run milestone acceptance remain
 separate. Consult
 [project status](docs/PROJECT_STATUS.md) before operational work.
 
-The current implementation still reads the ignored repository-root
-`config.toml`, created from `config.example.toml`. The approved target is an
-exact `--config <path>` or one fixed LocalAppData `ck3chronicle/paths.toml`
-bootstrap with no path discovery. Until that transition is implemented, do not
-mistake the current bootstrap for the target contract.
+Application 0.0.3 uses an exact global `--config <path>` or the fixed
+LocalAppData `ck3chronicle/paths.toml` bootstrap. Existing checkout users must
+pass their repository configuration explicitly; there is no current-directory
+fallback. See the [configuration reference](docs/user/CONFIGURATION_REFERENCE.md).
 
 Use the repository `.venv`. Tested PowerShell commands and sandbox guidance are
 in [`docs/DEVELOPMENT_ENVIRONMENT.md`](docs/DEVELOPMENT_ENVIRONMENT.md).

@@ -1,5 +1,72 @@
 # Named capability-milestone plan
 
+## Current Task 10 continuation — C11 / r4, 2026-10-12
+
+Owner removed additional Python/ripgrep upstream verification/downloads; existing
+working payloads and notices are preserved. Previously blocked local assembly is
+complete: **C11**, application **0.0.3**, full **manual r4**, ZIP SHA-256
+`97f52263beca3387390d220d33ea461d6e60edaca7e70314096f473566750771`.
+All 1,506 payload files, 18 manual inputs and 157 manual links authenticate; affected
+installed checks pass locally. Prior receipts and genuine workflows remain intact.
+See [distribution](task10/DISTRIBUTION_HANDOFF.md) and
+[receiving](TASK10_HANDOFF.md) for exact pins, evidence and current actor/actions.
+
+TREK-10 local delivery and TREK-11 manual producer scope are received; TREK-16
+retains actual C11 external/clean-Windows and ordinary-console Watcher Ctrl+C /
+explicit handler-stop observations. The current session is checkout-write-only
+on a developer host. Prepared bounded Owner steps are linked in the receiving
+handoff. Task 10 is not yet ready for Owner acceptance; no production/Git action.
+The deferred ingestion redesign stays deferred. Older dependency/provenance waits,
+missing-manual claims and Watcher implementation gates below are dated history,
+superseded by this section; do not resume or reintroduce them.
+
+
+Owner direction, 2026-10-12: defer the newly discussed ingestion/hash-lookup,
+failed-Run metadata and retry changes until Task 10 is complete. The initial
+reconciliation-authority question is withdrawn; the proposed Watcher lookup
+does not run in the delivered application and is not a Task 10 acceptance
+requirement. No ingestion design decision is needed to finish Task 10.
+
+## Task 10 current convergence — 2026-10-12
+
+The [10C continuation](TASK10_HANDOFF.md) receives 0.0.3's completed application
+corrections, C10 as an integration candidate, the separate 10D-r2 manual and
+Watcher r2 retention prose, preserving prior acceptance. Final archive/manual
+inclusion and upstream provenance/notices remain with TREK-10; external/clean
+Windows and ordinary-console stop remain with TREK-16. Watcher TREK-12 retains
+a disputed secondhand reconciliation claim; the Owner challenged the question,
+and it is not an established implementation or acceptance requirement. Pipeline
+TREK-9 and Docs TREK-11 are completed for received scope (CMT-158/159), not held open for separate
+obligations. Task 10 remains unaccepted; no duplicate assignment or publication.
+
+## Task 10 integrated receiving — 2026-10-09
+
+Owner-issued 10C is **TREK-16**, Launch & Distribution. The
+[receiving handoff](TASK10_HANDOFF.md) records fresh C9 setup, genuine ingestion,
+reports, repeat preservation, SQLite/shard viewing and journal checks, alongside
+reused external/Watcher evidence. Final bundle/manual convergence, upstream
+provenance/notices and clean external installation remain open; Task 10 is not
+ready for Owner acceptance. Producer repairs remain on TREK-9/10/11/12; receiver
+environment/console-stop obligations stay on TREK-16. No Task09 reopening,
+publication or production activation is implied. Older planning below is history.
+
+## Task 10 first-use design issued — 2026-10-08
+
+Launch & Distribution owns [10A/TREK-7](task10-deliverables/10A_FIRST_USE_DESIGN.md)
+and its [first-use proposal](task10/FIRST_USE_DESIGN.md). Pipeline receives the
+technical boundary through separately issued 10A.1; implementation, distribution,
+manual contributions and acceptance follow the [Task 10 issuance sequence](TASK10_DELIVERABLES.md).
+Proposal delivery is not technical receipt or implementation. Live progress is in
+Trekker; the Owner halted the erroneous parallel 10A chat.
+
+TREK-6 CMT-69 records Task 09's completed source publication: commit
+`709ea7842a0202c420b43355b18be91d8ca196a3`, tag `task09-baseline-2026-10-07`.
+10A independently verified the local refs; remote push is the producer receipt.
+Physical outside-checkout installation remains unperformed and belongs to 10B/10C.
+The current [team boundaries](team-governance/README.md) distinguish Pipeline's
+application from Launch & Distribution's bundle/setup/manual. Older publication
+and Pipeline-lead statements below are dated history where superseded.
+
 ## Source publication for Task 09 baseline — 2026-10-07
 
 The Owner requested a reviewed commit/tag/push script after the Git report.

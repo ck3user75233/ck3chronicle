@@ -3,3 +3,7 @@
 # Immutable distributions are authenticated as bytes, including original newlines.
 /learners/releases/** -text
 /models/** -text
+
+# Preserve the received candidate archive and its authenticated manifest bytes.
+/release-candidates/task10/candidate11/ck3chronicle-0.0.3-task10b-candidate11-win-x64.zip -text
+/release-candidates/task10/candidate11/release-manifest.json -text

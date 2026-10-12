@@ -47,7 +47,7 @@ September 30 07D handoff's 59-check result. Evidence is ignored under
 
 The [07D API contract](TASK07D_DATABASE_REQUEST_HANDLER_HANDOFF.md) is preserved:
 one dedicated handler, one preparation thread, one database worker, exactly three
-public states, all unfinished requests plus the latest 256 terminal outcomes,
+public states, all unfinished requests plus the latest 1,024 terminal outcomes,
 `LookupError` for unavailable results, `exception_class`, and internal-only
 `cleanup_unaccepted`. Watcher `ingestion_outcome_unavailable` still creates no
 outcome or eviction retry. SQL/review/playset formats and ingestion/retention

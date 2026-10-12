@@ -65,6 +65,8 @@ htmlcov/
 
 # Local archives
 *.zip
+# One Owner-selected complete install candidate for source/workstation transfer
+!/release-candidates/task10/candidate11/ck3chronicle-0.0.3-task10b-candidate11-win-x64.zip
 
 # Generated learned-model data stays local until selected for publication.
 # Keep versioned processing code, resources, manifests and pins visible.

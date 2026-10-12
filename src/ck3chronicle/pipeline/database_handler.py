@@ -94,7 +94,8 @@ class _Handler:
             event(logger, 'request_completed' if outcome.status == COMPLETED else 'request_not_completed',
                   level='ERROR' if outcome.error else 'INFO', **fields)
             self.terminals[request.ref.request_id] = None
-            if len(self.terminals) > 256:
+            # Whole public operations only; unfinished requests never enter this cache.
+            if len(self.terminals) > 1024:
                 oldest, _ = self.terminals.popitem(last=False)
                 del self.requests[oldest]
             # Existing waiters hold the request object independently of lookup.
@@ -310,6 +311,8 @@ def serve(database):
 
 
 def _serve_connected(database, listener):
+    from .runtime_identity import runtime_identity
+    identity = runtime_identity()
     handler = _Handler(Path(database).resolve())
     exit_requested = threading.Event()
     shutdown_lock = threading.Lock()
@@ -320,14 +323,16 @@ def _serve_connected(database, listener):
             try:
                 message = _receive(connection)
                 command = message['command']
+                if command in ('hello', 'submit') and message.get('runtime_identity') != identity:
+                    raise RuntimeError('handler application/configuration differs; stop observation and run runtime-stop before retrying')
                 handler.ready.wait()
                 if handler.open_error is not None:
                     raise handler.open_error
-                if command == 'hello':
+                if command in ('hello', 'inspect'):
                     if handler.stopping.is_set():
                         raise RuntimeError('handler is shutting down')
                     reply = dict(instance=handler.instance, pid=os.getpid(),
-                                 worker_id=handler.worker.ident)
+                                 worker_id=handler.worker.ident, runtime_identity=identity)
                 elif command == 'submit':
                     reply = handler.submit(message['operation'], message['arguments'])
                 elif command == 'wait':
@@ -373,4 +378,11 @@ def _serve_connected(database, listener):
 
 if __name__ == '__main__':
     # Pre-configuration exceptions reach the launcher's bootstrap stderr file.
-    serve(Path(sys.argv[1]).resolve())
+    import argparse
+    from .. import config
+    parser = argparse.ArgumentParser()
+    parser.add_argument('database', type=Path)
+    parser.add_argument('--config', type=Path)
+    arguments = parser.parse_args()
+    config.configure(arguments.config)
+    serve(arguments.database.resolve())

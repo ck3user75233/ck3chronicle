@@ -49,14 +49,14 @@ class HandlerHardeningRequirements(unittest.TestCase):
             unfinished = [handler.submit('ingest', {'capture_directory': capture}) for _ in range(2)]
             self.assertEqual(handler.wait(asdict(unfinished[0]), .1).status, ENQUEUED)
             terminals = []
-            for number in range(256):
+            for number in range(1024):
                 operation, arguments = ('list_runs', {'limit': -1}) if number == 0 else ('latest_run', {})
                 ref = handler.submit(operation, arguments)
                 outcome = handler.wait(asdict(ref), 5)
                 self.assertEqual(outcome.status, NOT_COMPLETED if number == 0 else COMPLETED)
                 terminals.append(ref)
-            self.assertEqual(len(handler.terminals), 256)
-            self.assertEqual(len(handler.requests), 258)
+            self.assertEqual(len(handler.terminals), 1024)
+            self.assertEqual(len(handler.requests), 1026)
             # Reading an older result does not promote it in completion order.
             self.assertEqual(handler.wait(asdict(terminals[0]), 0).status, NOT_COMPLETED)
             newest = handler.submit('latest_run', {})
@@ -64,15 +64,15 @@ class HandlerHardeningRequirements(unittest.TestCase):
             with self.assertRaisesRegex(LookupError, 'no longer retained'):
                 handler.wait(asdict(terminals[0]), 0)
             self.assertEqual(handler.wait(asdict(terminals[1]), 0).status, COMPLETED)
-            self.assertEqual(len(handler.terminals), 256)
-            self.assertEqual(len(handler.requests), 258)
+            self.assertEqual(len(handler.terminals), 1024)
+            self.assertEqual(len(handler.requests), 1026)
             for ref in unfinished:
                 self.assertEqual(handler.wait(asdict(ref), 0).status, ENQUEUED)
         # No log was fabricated: after lock release, ordinary missing-input
         # failures finish both requests and also enter the terminal bound.
         for ref in unfinished:
             self.assertEqual(handler.wait(asdict(ref), 5).status, NOT_COMPLETED)
-        self.assertEqual(len(handler.requests), 256)
+        self.assertEqual(len(handler.requests), 1024)
 
     def test_waiter_holds_result_after_lookup_cache_eviction(self):
         handler = self.local_handler()
@@ -94,7 +94,7 @@ class HandlerHardeningRequirements(unittest.TestCase):
             waiter = pool.submit(handler.wait, asdict(ref), 10)
             self.assertTrue(entered.wait(5))
             external.rollback()
-            for _ in range(256):
+            for _ in range(1024):
                 newer = handler.submit('latest_run', {})
                 self.assertEqual(handler.wait(asdict(newer), 5).status, COMPLETED)
             with self.assertRaises(LookupError):
@@ -107,7 +107,7 @@ class HandlerHardeningRequirements(unittest.TestCase):
     def test_transport_maps_eviction_to_lookuperror_for_all_lookup_methods(self):
         oldest = self.client.submit('latest_run')
         self.assertEqual(self.client.result(oldest, 10).status, COMPLETED)
-        for _ in range(256):
+        for _ in range(1024):
             ref = self.client.submit('latest_run')
             self.assertEqual(self.client.result(ref, 5).status, COMPLETED)
         for method in (self.client.status, self.client.wait, self.client.result):

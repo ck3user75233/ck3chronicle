@@ -113,6 +113,9 @@ class HandlerClient:
         self.address = _address(self.database)
 
     def _rpc(self, command, **arguments):
+        if command in ('hello', 'submit'):
+            from .runtime_identity import runtime_identity
+            arguments['runtime_identity'] = runtime_identity()
         with Client(self.address, family='AF_PIPE') as connection:
             _send(connection, dict(command=command, **arguments))
             reply = _receive(connection)
@@ -120,7 +123,16 @@ class HandlerClient:
             raise RuntimeError(reply['admission_error'])
         if 'result_unavailable' in reply:
             raise LookupError(reply['result_unavailable'])
+        if command == 'hello' and reply.get('runtime_identity') != arguments['runtime_identity']:
+            raise RuntimeError('handler application/configuration differs; stop observation and run runtime-stop before retrying')
         return reply
+
+    def probe(self):
+        """Observe an existing handler without launching or requiring identity agreement."""
+        try:
+            return self._rpc('inspect')
+        except (OSError, EOFError):
+            return None
 
     def _ensure_started(self):
         with _startup_lock(self.database):
@@ -131,9 +143,10 @@ class HandlerClient:
             # The same module hosts every instance. The launching caller does no
             # preparation or database work and is free to exit after admission.
             with open_bootstrap_log(self.database) as bootstrap:
+                from ..config import default_config_path
                 process = subprocess.Popen(
                     [sys.executable, '-B', '-m', 'ck3chronicle.pipeline.database_handler',
-                     str(self.database)], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                     str(self.database), '--config', str(default_config_path())], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
                     stderr=bootstrap, creationflags=subprocess.CREATE_NO_WINDOW)
             # Reap the launcher handle if this client remains alive. This does
             # not tie the dedicated process lifetime to the launching client.
@@ -195,7 +208,7 @@ class HandlerClient:
             # Wait for the listener to close before another caller may launch.
             while True:
                 try:
-                    self._rpc('hello')
+                    self._rpc('inspect')
                 except (OSError, EOFError):
                     return
                 except RuntimeError:

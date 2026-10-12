@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ck3chronicle"
-version = "0.0.1"
+version = "0.0.3"
 description = "Preserve and triage Crusader Kings III runtime logs and crash evidence."
 readme = "README.md"
 requires-python = ">=3.11"

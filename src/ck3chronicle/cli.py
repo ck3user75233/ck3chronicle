@@ -495,7 +495,22 @@ def cmd_watch(args: argparse.Namespace) -> int:
 def cmd_doctor(args: argparse.Namespace) -> int:
     from .doctor import run_doctor
 
-    run_doctor()
+    return run_doctor(args.format)
+
+
+def cmd_setup(args):
+    from .setup import command
+    return command(args)
+
+
+def cmd_runtime_stop(args):
+    from . import config
+    from .pipeline.request_handler import HandlerClient
+    from .watcher import WatcherLease
+    with WatcherLease(config.ROOT_CK3CHRONICLE):
+        database = config.watcher_settings().database
+        HandlerClient(database).shutdown()
+    print(f'Handler stopped or absent: {database}. New requests may start it again.')
     return 0
 
 
@@ -557,7 +572,7 @@ def _register_reporting(sub):
     report.add_argument('--source-root', action='append', help='Optional absolute source root; repeat to preserve caller order.')
     report.add_argument('--source-directory', action='append', help='Optional directory relative to each context root.')
     report.add_argument('--no-recursive', action='store_true', help='Optional context: enumerate selected directories only.')
-    report.add_argument('--ripgrep', default='rg', help='Source library content-search executable.')
+    report.add_argument('--ripgrep', help='Source-search executable; defaults to configured tools.ripgrep.')
     report.set_defaults(func=cmd_report)
     _add_foreground_logging(report)
 
@@ -577,6 +592,21 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     sub = parser.add_subparsers(dest="command", required=True)
+    parser.add_argument('--config', type=Path, help='Exact TOML authority; omission uses only LocalAppData/ck3chronicle/paths.toml.')
+    setup = sub.add_parser('setup', help='Inspect or apply first/repeat setup; no implicit runtime start.')
+    inspection = setup.add_mutually_exclusive_group()
+    inspection.add_argument('--suggest-paths', action='store_true')
+    inspection.add_argument('--list-models', action='store_true')
+    inspection.add_argument('--apply', action='store_true')
+    for key in ('data-root', 'root-game', 'root-steam', 'root-local-mods', 'root-logs', 'root-crashes', 'database', 'ripgrep'):
+        setup.add_argument('--' + key, type=Path)
+    setup.add_argument('--package-id')
+    setup.add_argument('--accept-path', action='append', default=[],
+        choices=('root_game', 'root_steam', 'root_local_mods', 'root_logs', 'root_crashes'))
+    setup.add_argument('--format', choices=('text', 'json'), default='text')
+    setup.set_defaults(func=cmd_setup)
+    stop = sub.add_parser('runtime-stop', help='Explicit handler maintenance stop after observation stops.')
+    stop.set_defaults(func=cmd_runtime_stop)
 
     _register_reporting(sub)
 
@@ -586,7 +616,7 @@ def build_parser() -> argparse.ArgumentParser:
     inputs.add_argument('--error-log', type=Path)
     p_ingest.add_argument('--database', required=True, help='Explicit existing SQLite database file.')
     p_ingest.add_argument('--captures-root', type=Path, help='Pending directory for an unprotected manual log.')
-    p_ingest.add_argument('--package-id', help='Retained executable package; omission uses catalog default.')
+    p_ingest.add_argument('--package-id', help='Retained executable package override for this invocation; omission uses the saved model pin in configuration.')
     p_ingest.set_defaults(func=cmd_ingest)
     _add_foreground_logging(p_ingest)
 
@@ -630,9 +660,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_watch.set_defaults(func=cmd_watch)
 
     p_doctor = sub.add_parser("doctor", help="Health check.")
+    p_doctor.add_argument('--format', choices=('text', 'json'), default='text')
 
     p_doctor.set_defaults(func=cmd_doctor)
-    _add_foreground_logging(p_doctor)
 
     return parser
 
@@ -680,9 +710,25 @@ def _foreground(args: argparse.Namespace):
 def main(argv: list[str] | None = None) -> None:
     parser = build_parser()
     args = parser.parse_args(argv)
-    if args.command in {'capture', 'ingest', 'runs', 'report', 'doctor'}:
-        sys.exit(_foreground(args))
-    sys.exit(args.func(args))
+    from . import config
+    try:
+        if args.config is not None:
+            config.configure(args.config)
+        if args.command == 'report' and args.ripgrep is None:
+            tool = config.load_config().get('tools', {}).get('ripgrep')
+            # An absent tool stays unavailable; never discover an ambient executable.
+            args.ripgrep = str((config.default_config_path().parent / tool).resolve()) if tool else ''
+        if args.command in {'capture', 'ingest', 'runs', 'report'}:
+            sys.exit(_foreground(args))
+        sys.exit(args.func(args))
+    except config.ConfigurationError as exc:
+        print(f'ERROR [configuration]: {exc}', file=sys.stderr)
+        sys.exit(2)
+    except (OSError, RuntimeError, ValueError) as exc:
+        if args.command != 'runtime-stop':
+            raise
+        print(f'ERROR [runtime-stop]: {exc}; stop observation before maintenance.', file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

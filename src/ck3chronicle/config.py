@@ -1,14 +1,10 @@
-"""Project-local, fail-closed filesystem path authority for ck3chronicle.
-
-Operational code imports the module-level ``ROOT_*`` constants defined here.
-These configured machine and writable roots come only from the repository-root
-``config.toml`` and have no OS/user-profile fallback. Other bounded path
-inference that remains outside this module is documented as closure debt.
-"""
+"""One explicit configuration authority; importing it requires no configuration."""
 from __future__ import annotations
 
 from pathlib import Path
 from dataclasses import dataclass
+import os
+from copy import deepcopy
 
 try:
     import tomllib
@@ -39,7 +35,7 @@ def watcher_settings() -> WatcherSettings:
         raise ConfigurationError("watcher.database must name the initialized SQLite database file")
     path = Path(database)
     if not path.is_absolute():
-        path = CONFIG_FILE_PATH.parent / path
+        path = default_config_path().parent / path
     options = {}
     for key in ("ingest_enabled", "retention_enabled"):
         value = values.get(key, True)
@@ -54,9 +50,16 @@ def watcher_settings() -> WatcherSettings:
     return WatcherSettings(database=path.resolve(), **options)
 
 
-# This is an exact project contract, not a search path. Commands are run from
-# the canonical repository root, as required by AGENTS.md.
-CONFIG_FILE_PATH = Path("config.toml").resolve()
+_selected_path = None
+_document = None
+
+
+def configure(path=None):
+    """Select before runtime imports. Library callers must do this once at entry."""
+    global _selected_path, _document
+    _selected_path = Path(path).resolve() if path is not None else None
+    _document = None
+    return default_config_path()
 
 _REQUIRED_PATH_KEYS = (
     "root_game",
@@ -71,26 +74,36 @@ _REQUIRED_PATH_KEYS = (
 
 
 def default_config_path() -> Path:
-    """Return the one configured project file; no fallback search is allowed."""
-    return CONFIG_FILE_PATH
+    """Return the selected exact file or the single fixed Windows bootstrap."""
+    if _selected_path is not None:
+        return _selected_path
+    local = os.environ.get('LOCALAPPDATA')
+    if not local or not Path(local).is_absolute():
+        raise ConfigurationError('LocalAppData unavailable; specify --config PATH')
+    return (Path(local) / 'ck3chronicle' / 'paths.toml').resolve()
 
 
 def load_config(path: Path | None = None) -> dict[str, object]:
     """Load a complete project-local configuration without creating defaults."""
-    cfg_path = Path(path) if path is not None else CONFIG_FILE_PATH
+    global _document
+    if path is None and _document is not None:
+        return deepcopy(_document)
+    cfg_path = Path(path).resolve() if path is not None else default_config_path()
     if not cfg_path.is_file():
         raise ConfigurationError(
-            f"required project configuration is missing: {cfg_path}"
+            f"configuration is missing: {cfg_path}; use ck3chronicle --config PATH setup"
         )
     try:
         with cfg_path.open("rb") as stream:
             document = tomllib.load(stream)
     except (OSError, tomllib.TOMLDecodeError) as exc:
         raise ConfigurationError(
-            f"cannot load project configuration: {cfg_path}"
+            f"cannot load configuration {cfg_path}: {exc}"
         ) from exc
     if not isinstance(document, dict):
         raise ConfigurationError("project configuration must be a TOML table")
+    if path is None:
+        _document = deepcopy(document)
     return document
 
 
@@ -145,13 +158,7 @@ def validate_project_containment(
     root_learner_state: Path,
 ) -> None:
     """Fail closed unless every writable project root has one unambiguous owner."""
-    project_root = Path(config_path).resolve().parent
-    resolved_wip = require_strict_descendant(
-        root_wip,
-        project_root,
-        path_name="paths.root_wip",
-        parent_name="the project configuration directory",
-    )
+    resolved_wip = Path(root_wip).resolve()
     resolved_runtime = require_strict_descendant(
         root_ck3chronicle,
         resolved_wip,
@@ -175,27 +182,29 @@ def validate_project_containment(
         )
 
 
-_cfg = load_config(CONFIG_FILE_PATH)
-for _required_key in _REQUIRED_PATH_KEYS:
-    _configured_path(_cfg, _required_key, config_path=CONFIG_FILE_PATH)
+def paths_for(document, config_path):
+    roots = {key: _configured_path(document, key, config_path=config_path)
+             for key in _REQUIRED_PATH_KEYS}
+    validate_project_containment(config_path=config_path,
+        **{key: roots[key] for key in ('root_wip', 'root_ck3chronicle', 'root_learner_state')})
+    # Installed package bytes and all external evidence are read-only owners.
+    import sys
+    from .pipeline.catalog import selected_models_root
+    protected = [Path(__file__).resolve().parent, selected_models_root().resolve(),
+                 Path(sys.prefix).resolve(),
+                 *[roots[key] for key in _REQUIRED_PATH_KEYS[:5]]]
+    data = roots['root_wip']
+    for other in protected:
+        if data == other or data in other.parents or other in data.parents:
+            raise ConfigurationError(f'writable data root overlaps read-only files: {data} / {other}')
+        if Path(config_path).resolve().is_relative_to(other):
+            raise ConfigurationError(f'configuration destination is inside read-only files: {config_path} / {other}')
+    return roots
 
-ROOT_GAME = _configured_path(_cfg, "root_game", config_path=CONFIG_FILE_PATH)
-ROOT_STEAM = _configured_path(_cfg, "root_steam", config_path=CONFIG_FILE_PATH)
-ROOT_LOCAL_MODS = _configured_path(
-    _cfg, "root_local_mods", config_path=CONFIG_FILE_PATH
-)
-ROOT_LOGS = _configured_path(_cfg, "root_logs", config_path=CONFIG_FILE_PATH)
-ROOT_CRASHES = _configured_path(_cfg, "root_crashes", config_path=CONFIG_FILE_PATH)
-ROOT_WIP = _configured_path(_cfg, "root_wip", config_path=CONFIG_FILE_PATH)
-ROOT_CK3CHRONICLE = _configured_path(
-    _cfg, "root_ck3chronicle", config_path=CONFIG_FILE_PATH
-)
-ROOT_LEARNER_STATE = _configured_path(
-    _cfg, "root_learner_state", config_path=CONFIG_FILE_PATH
-)
-validate_project_containment(
-    config_path=CONFIG_FILE_PATH,
-    root_wip=ROOT_WIP,
-    root_ck3chronicle=ROOT_CK3CHRONICLE,
-    root_learner_state=ROOT_LEARNER_STATE,
-)
+
+def __getattr__(name):
+    if name == 'CONFIG_FILE_PATH':
+        return default_config_path()
+    if name.lower() in _REQUIRED_PATH_KEYS:
+        return paths_for(load_config(), default_config_path())[name.lower()]
+    raise AttributeError(name)

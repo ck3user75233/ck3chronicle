@@ -244,9 +244,9 @@
       },
       "selector_version": "complete-assignment-v2",
       "availability": "available",
-      "publication_status": "research",
-      "production_order": null,
-      "publication_evidence": null
+      "publication_status": "production",
+      "production_order": 9,
+      "publication_evidence": "docs/TASK09_RELEASE_BASELINE.md#owner-adoption-proposal"
     }
   ]
 }

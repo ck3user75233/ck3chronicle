@@ -137,12 +137,20 @@ received = ingest(database_file, error_log=Path(r'C:\evidence\retained-error.log
 `RequestRef` contains `instance`, `request_id`, and UTC `enqueued_at`. `submit`
 returns only after acceptance. Admission failures raise directly.
 
-The handler retains all unfinished requests plus the **256 most recently completed
+The handler retains all unfinished requests plus the **1,024 most recently completed
 terminal requests**, including both `COMPLETED` and `NOT_COMPLETED`. Completion
 order determines eviction; reading an outcome does not refresh it. The fixed limit
-counts requests, not bytes. There is no timer, release API, configuration setting,
+counts whole public operations, including ingestion and queries, not diagnostic
+rows, internal database calls/writes or bytes. Outstanding requests are outside
+completed-result eviction. There is no timer, release API, configuration setting,
 size accounting or durable storage. An existing waiter holds the request object
 independently and can receive its result after lookup-cache eviction.
+
+The request-result cache is temporary execution state. Eviction does not delete
+SQLite Runs or change full-content-hash deduplication: persisted Run metadata is
+the authoritative evidence that a log was ingested. The 1,024-result bound is a
+2026-10-08 repository candidate change; older 256-result delivery/verification
+entries below describe the earlier build.
 
 Lookup of a result not retained by the connected handler (including an earlier
 handler instance's reference) returns a transport `result_unavailable` response.

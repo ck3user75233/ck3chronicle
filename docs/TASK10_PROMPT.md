@@ -1,5 +1,14 @@
 # Proposed Task 10 — Installable production copy and first-run setup
 
+**Current authority:** [Task 10 deliverables](TASK10_DELIVERABLES.md) supersedes
+this draft's lead/sequence with the Owner-approved Launch & Distribution/Pipeline
+split. [10A design](task10/FIRST_USE_DESIGN.md) is issued as TREK-7; sibling
+assignments still require their own issuance. The dated draft below is retained
+for its underlying requirements, not as a competing dispatch or ownership rule.
+The Owner's 2026-10-08 correction in the index/design supersedes the draft's blanket
+setup-discovery restriction and optional-doctor language: offer bounded path
+suggestions with individual acceptance and substantive configuration diagnosis.
+
 Prepared 2026-10-05 for owner review and assignment. **Not commissioned by saving
 this draft.** Replaces the original cutover/retirement-manifest proposal and the
 subsequent readiness-only recommendation; neither old deletion nor cutover scope
